@@ -1,0 +1,15 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { SidebarComponent } from '../../components/sidebar/sidebar.component';
+import { FooterComponent } from '../../components/footer/footer.component';
+
+@Component({
+  selector: 'app-admin-layout',
+  templateUrl: './admin-layout.component.html',
+  styleUrls: ['./admin-layout.component.scss'],
+  standalone: true,
+  imports: [CommonModule, RouterModule, NavbarComponent, SidebarComponent, FooterComponent]
+})
+export class AdminLayoutComponent { }

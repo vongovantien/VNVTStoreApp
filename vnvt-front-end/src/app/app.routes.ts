@@ -7,6 +7,7 @@ import { CheckoutPageComponent } from './checkout/checkout-page/checkout-page.co
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { adminRoutes } from './admin/admin.routes';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 
 export const routes: Routes = [
   {
@@ -20,6 +21,10 @@ export const routes: Routes = [
       { path: 'checkout', component: CheckoutPageComponent }
     ]
   },
-  { path: 'admin', component: AdminDashboardComponent, children: adminRoutes },
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    children: adminRoutes
+  },
   { path: '**', redirectTo: '' }
 ];

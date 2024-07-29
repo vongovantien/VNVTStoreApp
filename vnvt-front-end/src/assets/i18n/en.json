@@ -1,4 +1,14 @@
 {
   "TITLE": "Welcome to My App",
-  "DESCRIPTION": "This is an Angular application with multi-language support."
+  "DESCRIPTION": "This is an Angular application with multi-language support.",
+  "NAVBAR": {
+    "HOME": "Home",
+    "PRODUCTS": "Products",
+    "CATEGORIES": "Categories",
+    "CART": "Cart",
+    "ACCOUNT": "Account",
+    "PROFILE": "Profile",
+    "ORDERS": "Orders",
+    "LOGOUT": "Logout"
+  }
 }

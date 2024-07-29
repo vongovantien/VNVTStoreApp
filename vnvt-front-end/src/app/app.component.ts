@@ -5,6 +5,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { ToastComponent } from './components/toast/toast.component';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -13,7 +14,9 @@ import { MainLayoutComponent } from './layouts/main-layout/main-layout.component
     MatButtonModule,
     TranslateModule,
     RouterModule,
-    MainLayoutComponent],
+    MainLayoutComponent,
+    ToastComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { Product, Category, Order, User, OrderItem } from '../models';
 
 @Injectable({
@@ -43,7 +43,7 @@ export class MockDataService {
       orders.push({
         id: faker.datatype.number(),
         orderDate: faker.date.recent(),
-        status: faker.random.arrayElement(['Pending', 'Shipped', 'Delivered']),
+        status: faker.helpers.arrayElement(['Pending', 'Shipped', 'Delivered']),
         items: this.generateFakeOrderItems(faker.datatype.number({ min: 1, max: 5 })),
         totalAmount: parseFloat(faker.commerce.price())
       });
@@ -75,10 +75,10 @@ export class MockDataService {
     for (let i = 0; i < count; i++) {
       users.push({
         id: faker.datatype.number(),
-        name: faker.name.findName(),
+        name: faker.person.fullName(),
         email: faker.internet.email(),
         password: faker.internet.password(),
-        role: faker.random.arrayElement(['Admin', 'Customer'])
+        role: faker.helpers.arrayElement(['Admin', 'Customer'])
       });
     }
     return users;

@@ -2,11 +2,13 @@ import { Component } from '@angular/core';
 import { ProductService } from '../../core/services';
 import { Product } from '../../core/models';
 import { CommonModule } from '@angular/common';
+import { CartProductComponent } from '../../cart-product/cart-product.component';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CartProductComponent, MatIconModule],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss'
 })
@@ -21,4 +23,5 @@ export class HomePageComponent {
       this.products = data;
     });
   }
+  onRemoveItem(item: any) { }
 }

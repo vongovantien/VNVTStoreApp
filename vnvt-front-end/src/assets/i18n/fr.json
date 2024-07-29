@@ -1,4 +1,14 @@
 {
   "TITLE": "Bienvenue dans mon application",
-  "DESCRIPTION": "Ceci est une application Angular avec prise en charge multi-langues."
+  "DESCRIPTION": "Ceci est une application Angular avec prise en charge multi-langues.",
+  "NAVBAR": {
+    "HOME": "Accueil",
+    "PRODUCTS": "Produits",
+    "CATEGORIES": "Catégories",
+    "CART": "Panier",
+    "ACCOUNT": "Compte",
+    "PROFILE": "Profil",
+    "ORDERS": "Commandes",
+    "LOGOUT": "Déconnexion"
+  }
 }

@@ -2,10 +2,12 @@
   <section class="home__products">
     <div class="home__products__title">Featured Products</div>
     <div class="home__products__list">
-      <div *ngFor="let product of products" class="home__products__item">
-        <img [src]="product.imageUrl" alt="{{ product.name }}" class="home__products__item__image">
-        <div class="home__products__item__name">{{ product.name }}</div>
-        <div class="home__products__item__price">${{ product.price }}</div>
+      <div class="cart-container">
+        <app-cart-product
+          *ngFor="let product of products"
+          [product]="product"
+          (remove)="onRemoveItem(product)">
+        </app-cart-product>
       </div>
     </div>
   </section>
@@ -13,21 +15,61 @@
   <section class="home__features">
     <div class="home__features__title">Our Features</div>
     <div class="home__features__content">
-      <!-- Add your feature content here -->
+      <div class="home__feature">
+        <mat-icon class="home__feature__icon">shopping_cart</mat-icon>
+        <div class="home__feature__description">
+          <h3>Easy Checkout</h3>
+          <p>Streamlined checkout process with multiple payment options.</p>
+        </div>
+      </div>
+      <div class="home__feature">
+        <mat-icon class="home__feature__icon">local_shipping</mat-icon>
+        <div class="home__feature__description">
+          <h3>Fast Shipping</h3>
+          <p>Quick delivery times to ensure you get your products on time.</p>
+        </div>
+      </div>
+      <div class="home__feature">
+        <mat-icon class="home__feature__icon">security</mat-icon>
+        <div class="home__feature__description">
+          <h3>Secure Payments</h3>
+          <p>Our payment system is secure and protects your information.</p>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="home__testimonials">
     <div class="home__testimonials__title">What Our Customers Say</div>
     <div class="home__testimonials__content">
-      <!-- Add your testimonials content here -->
+      <div class="home__testimonial">
+        <img src="path/to/avatar1.jpg" alt="Customer 1" class="home__testimonial__avatar">
+        <div class="home__testimonial__text">
+          <p>"This is the best online store I've ever used. The service was exceptional!"</p>
+          <p class="home__testimonial__author">- Jane Doe</p>
+        </div>
+      </div>
+      <div class="home__testimonial">
+        <img src="path/to/avatar2.jpg" alt="Customer 2" class="home__testimonial__avatar">
+        <div class="home__testimonial__text">
+          <p>"Fast delivery and great quality products. Highly recommend!"</p>
+          <p class="home__testimonial__author">- John Smith</p>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="home__cta">
     <div class="home__cta__title">Get Started Today</div>
     <div class="home__cta__content">
-      <!-- Add your call to action content here -->
+      <p>Don't miss out on our special offers. Sign up for our newsletter to stay updated!</p>
+      <form class="home__cta__form">
+        <mat-form-field appearance="fill">
+          <mat-label>Email</mat-label>
+          <input matInput placeholder="Enter your email">
+        </mat-form-field>
+        <button mat-raised-button color="primary">Subscribe</button>
+      </form>
     </div>
   </section>
 </div>

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { NavbarComponent } from '../navbar/navbar.component';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +12,8 @@ import { TranslateService, TranslateModule } from '@ngx-translate/core';
   imports: [
     CommonModule,
     MatToolbarModule,
-    TranslateModule
+    TranslateModule,
+    NavbarComponent
   ]
 })
 export class HeaderComponent {

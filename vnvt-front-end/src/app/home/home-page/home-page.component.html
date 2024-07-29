@@ -1,0 +1,33 @@
+<div class="home">
+  <section class="home__products">
+    <div class="home__products__title">Featured Products</div>
+    <div class="home__products__list">
+      <div *ngFor="let product of products" class="home__products__item">
+        <img [src]="product.imageUrl" alt="{{ product.name }}" class="home__products__item__image">
+        <div class="home__products__item__name">{{ product.name }}</div>
+        <div class="home__products__item__price">${{ product.price }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home__features">
+    <div class="home__features__title">Our Features</div>
+    <div class="home__features__content">
+      <!-- Add your feature content here -->
+    </div>
+  </section>
+
+  <section class="home__testimonials">
+    <div class="home__testimonials__title">What Our Customers Say</div>
+    <div class="home__testimonials__content">
+      <!-- Add your testimonials content here -->
+    </div>
+  </section>
+
+  <section class="home__cta">
+    <div class="home__cta__title">Get Started Today</div>
+    <div class="home__cta__content">
+      <!-- Add your call to action content here -->
+    </div>
+  </section>
+</div>

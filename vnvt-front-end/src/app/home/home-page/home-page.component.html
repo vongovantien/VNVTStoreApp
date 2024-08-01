@@ -1,18 +1,49 @@
 <div class="home">
-  <section class="home__products">
+  <!-- <section class="home__products">
     <div class="home__products__title">Featured Products</div>
     <div class="home__products__list">
-      <div class="cart-container">
-        <app-cart-product
-          *ngFor="let product of products"
-          [product]="product"
-          (remove)="onRemoveItem(product)">
-        </app-cart-product>
+      <div class="home__products__card-container">
+        <app-card-product *ngFor="let product of products" [product]="product" (remove)="onRemoveItem(product)">
+        </app-card-product>
       </div>
     </div>
-  </section>
+  </section> -->
+  <!-- home.component.html -->
+  <div class="home">
+    <section class="home__hero">
+      <div class="home__hero-content">
+        <h1 class="home__hero-title">Better clothing for the planet</h1>
+        <p class="home__hero-subtitle">Create screens directly in Method or add your images from Sketch or Figma. You
+          can even sync designs from your cloud storage!</p>
+        <button mat-button class="home__hero-button">Shop All</button>
+      </div>
+      <div class="home__hero-image"></div>
+    </section>
+    <section class="home__brands">
+      <img src="assets/brand-logo/binhminhlogo.png" alt="binhminhlogo" class="home__brands-logo">
+      <img src="assets/brand-logo/hoasenlogo.jpg" alt="hoasenlogo" class="home__brands-logo">
+      <img src="assets/brand-logo/cadivi-logo.jpg" alt="cadivi-logo" class="home__brands-logo">
+      <img src="assets/brand-logo/boschlogo.png" alt="boschlogo" class="home__brands-logo">
+    </section>
 
-  <section class="home__features">
+    <section class="home__hero">
+      <div class="home__hero-content">
+        <h1 class="home__hero-title">Our latest arrivals</h1>
+        <p class="home__hero-subtitle">Create screens directly in Method or add your images from Sketch or Figma. You
+          can
+          even sync designs from your cloud storage!</p>
+        <button type="button" mat-button class="home__hero-button">Shop All</button>
+      </div>
+      <div class="home__hero-images">
+        <div class="home__hero-image"></div>
+        <div class="home__hero-image home__hero-image--main" style="margin-top: 65px">
+          <img src="/mnt/data/image.png" alt="Main Arrival Image" />
+        </div>
+        <div class="home__hero-image"></div>
+      </div>
+    </section>
+
+    <!-- <section class="home__features">
     <div class="home__features__title">Our Features</div>
     <div class="home__features__content">
       <div class="home__feature">
@@ -37,39 +68,26 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
-  <section class="home__testimonials">
-    <div class="home__testimonials__title">What Our Customers Say</div>
-    <div class="home__testimonials__content">
-      <div class="home__testimonial">
-        <img src="path/to/avatar1.jpg" alt="Customer 1" class="home__testimonial__avatar">
-        <div class="home__testimonial__text">
-          <p>"This is the best online store I've ever used. The service was exceptional!"</p>
-          <p class="home__testimonial__author">- Jane Doe</p>
+    <section class="home__testimonials">
+      <h1 class="home__testimonials__title">What Our Customers Say</h1>
+      <div class="home__testimonials__content">
+        <div class="home__testimonial">
+          <img src="assets/images/avatar.png" alt="Customer 1" class="home__testimonial__avatar">
+          <div class="home__testimonial__text">
+            <p>"This is the best online store I've ever used. The service was exceptional!"</p>
+            <p class="home__testimonial__author">- Jane Doe</p>
+          </div>
+        </div>
+        <div class="home__testimonial">
+          <img src="assets/images/avatar.png" alt="Customer 2" class="home__testimonial__avatar">
+          <div class="home__testimonial__text">
+            <p>"Fast delivery and great quality products. Highly recommend!"</p>
+            <p class="home__testimonial__author">- John Smith</p>
+          </div>
         </div>
       </div>
-      <div class="home__testimonial">
-        <img src="path/to/avatar2.jpg" alt="Customer 2" class="home__testimonial__avatar">
-        <div class="home__testimonial__text">
-          <p>"Fast delivery and great quality products. Highly recommend!"</p>
-          <p class="home__testimonial__author">- John Smith</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="home__cta">
-    <div class="home__cta__title">Get Started Today</div>
-    <div class="home__cta__content">
-      <p>Don't miss out on our special offers. Sign up for our newsletter to stay updated!</p>
-      <form class="home__cta__form">
-        <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
-          <input matInput placeholder="Enter your email">
-        </mat-form-field>
-        <button mat-raised-button color="primary">Subscribe</button>
-      </form>
-    </div>
-  </section>
+    </section>
+  </div>
 </div>

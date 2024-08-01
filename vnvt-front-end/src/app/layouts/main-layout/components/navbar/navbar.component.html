@@ -1,22 +1,32 @@
-<mat-toolbar color="primary" class="navbar">
+<mat-toolbar color="primary" class="navbar  navbar--sticky">
   <ng-container *ngFor="let item of navbarItems">
-    <ng-container *ngIf="!item.submenu">
-      <button mat-button [routerLink]="[item.route]" class="navbar__item">{{ 'NAVBAR.' + item.name.toUpperCase() | translate
-        }}</button>
+    <ng-container *ngIf="!item.subItems">
+      <button type="button" mat-button [routerLink]="[item.route]" class="navbar__item">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        {{ item.name | translate }}
+      </button>
     </ng-container>
-    <ng-container *ngIf="item.submenu">
-      <button mat-icon-button [matMenuTriggerFor]="menu" class="navbar__item">
+    <ng-container *ngIf="item.subItems">
+      <button type="button" mat-icon-button [matMenuTriggerFor]="menu" class="navbar__item">
         <mat-icon>{{ item.icon }}</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <ng-container *ngFor="let subitem of item.submenu">
-          <button mat-menu-item [routerLink]="[subitem.route]" class="navbar__submenu-item">{{ 'NAVBAR.' + subitem.name.toUpperCase()
-            | translate }}</button>
+        <ng-container *ngFor="let subItem of item.subItems">
+          <button type="button" mat-menu-item [routerLink]="[subItem.route]" class="navbar__submenu-item">
+            <mat-icon>{{ subItem.icon }}</mat-icon>
+            {{ subItem.name | translate }}
+          </button>
         </ng-container>
       </mat-menu>
     </ng-container>
   </ng-container>
   <span class="navbar__spacer"></span>
-  <button mat-button (click)="switchLang('en')">EN</button>
-  <button mat-button (click)="switchLang('fr')">FR</button>
+  <button type="button" mat-button (click)="switchLang('en')">EN</button>
+  <button type="button" mat-button (click)="switchLang('vi')">VI</button>
+  <button type="button" mat-icon-button routerLink="/cart" class="navbar__icon">
+    <mat-icon>shopping_cart</mat-icon>
+    <span class="navbar__icon-badge">3</span>
+  </button>
+  <button type="button" mat-button routerLink="/login" class="navbar__item">{{'SIGN_IN' | translate}}</button>
+  <button type="button" mat-button routerLink="/register" class="navbar__item">{{'SIGN_UP' | translate}}</button>
 </mat-toolbar>

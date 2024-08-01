@@ -1,0 +1,21 @@
+<div class="login-container">
+  <h2>Welcome Back</h2>
+  <p>Login with email</p>
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <div class="input-group">
+      <input formControlName="email" type="email" placeholder="Email" required>
+    </div>
+    <div class="input-group">
+      <input formControlName="password" type="password" placeholder="Password" required>
+    </div>
+    <div class="input-group">
+      <input formControlName="rememberMe" type="checkbox" id="remember-me">
+      <label for="remember-me">Remember me</label>
+    </div>
+    <div class="actions">
+      <button type="submit" [disabled]="loginForm.invalid">Login</button>
+      <a href="#" class="forgot-password">Forgot Password?</a>
+    </div>
+  </form>
+  <p class="create-account">Or create an <a routerLink="/register">account</a></p>
+</div>

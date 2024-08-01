@@ -1,13 +1,78 @@
-footer {
-  background-color: #f8f8f8;
-  padding: 10px 0;
+/* footer.component.scss */
+.footer {
+  padding: 20px;
+  background: #f9f9f9;
   text-align: center;
-  position: fixed;
-  width: 100%;
-  bottom: 0;
+  justify-content: space-evenly;
+  display: flex;
+
+  &__newsletter {
+    margin-bottom: 20px;
+    width: 50%;
+
+    &-title {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+
+    &-text {
+      margin-bottom: 20px;
+      color: #666;
+    }
+
+    &-form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    &-input {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    &-button {
+      min-width: 100px;
+      margin-bottom: 20px;
+    }
+  }
+
+  &__link {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    //gap: 20px;
+    width: 50%;
+
+    &-section {
+      text-align: left;
+     // padding: 20px 10px;
+      width: calc(100% / 3);
+    }
+
+    &-title {
+      margin-bottom: 10px;
+    }
+
+    &-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    &-item {
+      margin-bottom: 5px;
+      text-decoration: none;
+      color: inherit;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }
 
-.footer-content {
-  width: 100%;
-  margin: auto;
+re-captcha.is-invalid > div {
+  border: 1px solid #dc3545 !important;
+  border-radius: 0.2rem;
 }

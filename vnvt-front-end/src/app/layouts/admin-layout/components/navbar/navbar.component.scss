@@ -1,0 +1,42 @@
+.navbar {
+  &__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #34495e;
+    /* Custom background color */
+    color: white;
+    /* Custom text color */
+    padding: 0 16px;
+
+    &--title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    &--spacer {
+      flex: 1 1 auto;
+    }
+
+    &--button {
+      color: white;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+
+    &--user-menu {
+      display: flex;
+      align-items: center;
+
+      &-icon {
+        margin-right: 8px;
+      }
+
+      &-text {
+        margin-left: 8px;
+      }
+    }
+  }
+}

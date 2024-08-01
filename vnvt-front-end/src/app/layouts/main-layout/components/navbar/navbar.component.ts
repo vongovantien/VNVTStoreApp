@@ -6,26 +6,28 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-export interface NavbarItem {
-  name: string;
-  icon?: string;
-  route: string;
-  submenu?: NavbarItem[];
-}
+import { MenuItem } from '../../../../core/models/menu-items.model';
 
-export const NAVBAR_ITEMS: NavbarItem[] = [
-  { name: 'Home', route: '/' },
-  { name: 'Products', route: '/products' },
-  { name: 'Categories', route: '/categories' },
-  { name: 'Cart', route: '/cart' },
+export const NAVBAR_ITEMS: MenuItem[] = [
+  { name: 'NAVBAR.HOME', route: '/', icon: 'home' },
+  { name: 'NAVBAR.PRODUCTS', route: '/products', icon: 'shopping_bag' },
+  { name: 'NAVBAR.CATEGORIES', route: '/categories', icon: 'category' },
+  { name: 'NAVBAR.ABOUT', route: '/about', icon: 'info' },
   {
-    name: 'Account',
+    name: 'NAVBAR.ACCOUNT',
     icon: 'account_circle',
-    route: '',
-    submenu: [
-      { name: 'Profile', route: '/profile' },
-      { name: 'Orders', route: '/orders' },
-      { name: 'Logout', route: '' } // Define the logout action in your component
+    subItems: [
+      { name: 'NAVBAR.PROFILE', route: '/profile', icon: 'person' },
+      { name: 'NAVBAR.ORDERS', route: '/orders', icon: 'list_alt' },
+      { name: 'NAVBAR.LOGOUT', route: '/logout', icon: 'logout' }
+    ]
+  },
+  {
+    name: 'NAVBAR.ADMIN',
+    icon: 'admin_panel_settings',
+    subItems: [
+      { name: 'NAVBAR.USERS', route: '/admin/users', icon: 'people' },
+      { name: 'NAVBAR.REPORTS', route: '/admin/reports', icon: 'bar_chart' }
     ]
   }
 ];
@@ -48,10 +50,10 @@ export const NAVBAR_ITEMS: NavbarItem[] = [
 })
 export class NavbarComponent {
 
-  navbarItems: NavbarItem[] = NAVBAR_ITEMS;
+  navbarItems: MenuItem[] = NAVBAR_ITEMS;
 
   constructor(private translate: TranslateService) {
-    this.translate.addLangs(['en', 'fr']);
+    this.translate.addLangs(['en', 'vi']);
     this.translate.setDefaultLang('en');
   }
 

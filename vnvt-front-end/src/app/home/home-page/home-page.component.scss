@@ -3,6 +3,118 @@
 .home {
   padding: 20px;
 
+  &__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #f5f5f5;
+
+    &-content {
+      max-width: 600px;
+      margin-bottom: 2rem;
+    }
+
+    &-title {
+      font-size: 2.5em;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    &-subtitle {
+      font-size: 2rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    &-button {
+      font-size: 1em;
+      border: 1px solid #000;
+      color: #000;
+      background: transparent;
+      padding: 10px 20px;
+      cursor: pointer;
+
+      &:hover {
+        background: #000;
+        color: #fff;
+      }
+    }
+
+    &-images {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      width: 45%;
+
+      &-image {
+        background-color: #e0e0e0;
+        width: 200px;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &--main {
+          width: 250px;
+          height: 350px;
+          margin-top: 1.5rem;
+
+          img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+          }
+        }
+      }
+    }
+  }
+
+  &__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #f5f5f5;
+
+    &-content {
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+
+    &-title {
+      font-size: 2em;
+      margin: 10px;
+    }
+
+    &-subtitle {
+      font-size: 1em;
+      margin-bottom: 20px;
+      color: #666;
+    }
+
+    &-image {
+      width: 100%;
+      height: 300px;
+      background-color: #ccc;
+      margin-top: 20px;
+    }
+  }
+
+  &__brands {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    gap: 20px;
+
+    &-logo {
+      max-height: 50px;
+    }
+  }
+
   &__products {
     margin-bottom: 40px;
 
@@ -13,7 +125,7 @@
     }
 
     &__list {
-      .home__products__cart-container {
+      .home__products__card-container {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 16px;
@@ -76,10 +188,12 @@
 
   &__testimonials {
     margin-bottom: 40px;
+    padding: 50px 20px;
 
     &__title {
-      font-size: 2rem;
+      font-size: 2em;
       margin-bottom: 20px;
+      font-weight: bold;
       text-align: center;
     }
 
@@ -88,11 +202,15 @@
       flex-direction: column;
       align-items: center;
 
-      .home__testimonials__testimonial {
+      .home__testimonial {
         display: flex;
         align-items: center;
         margin-bottom: 20px;
-        max-width: 600px;
+        width: 600px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
         &__avatar {
           width: 60px;
@@ -107,8 +225,9 @@
             font-size: 1rem;
           }
 
-          .home__testimonials__author {
+          .home__testimonial__author {
             font-style: italic;
+            text-align: end;
             color: #666;
           }
         }

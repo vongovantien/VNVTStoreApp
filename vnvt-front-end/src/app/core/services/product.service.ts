@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { Product } from '../models';
 import { MockDataService } from './mock-data.service';
 
@@ -44,5 +44,38 @@ export class ProductService {
       }
       return;
     }));
+  }
+
+  getTrendingProducts() {
+    return this.mockDataService.getProducts();
+  }
+
+
+  getProductFilter(filters: any): Observable<Product[]> {
+    return this.getProducts().pipe(
+      map(products => {
+        let filteredProducts = products;
+
+        if (filters.category) {
+          filteredProducts = filteredProducts.filter(p => p.categoryId === filters.category);
+        }
+        // if (filters.inStock) {
+        //   filteredProducts = filteredProducts.filter(p => p.inStock);
+        // }
+        // if (filters.freeShipping) {
+        //   filteredProducts = filteredProducts.filter(p => p.freeShipping);
+        // }
+
+        return filteredProducts;
+      })
+    );
+  }
+  searchProducts(searchTerm: string): Observable<Product[]> {
+    const lowerCaseTerm = searchTerm.toLowerCase();
+    return this.getProducts().pipe(
+      map(products => products.filter(p =>
+        p.name.toLowerCase().includes(lowerCaseTerm)
+      ))
+    );
   }
 }

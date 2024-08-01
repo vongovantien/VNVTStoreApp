@@ -1,0 +1,39 @@
+<h2 mat-dialog-title class="create-product-dialog__title">Create Product</h2>
+<mat-dialog-content class="create-product-dialog__content">
+  <form [formGroup]="productForm" class="create-product-dialog__form">
+    <div class="create-product-dialog__form-row">
+      <mat-form-field class="create-product-dialog__form-field" appearance="fill">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+
+      <mat-form-field class="create-product-dialog__form-field" appearance="fill">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="create-product-dialog__form-row">
+      <mat-form-field class="create-product-dialog__form-field" appearance="fill">
+        <mat-label>Price</mat-label>
+        <input matInput formControlName="price" type="number">
+      </mat-form-field>
+
+      <mat-form-field class="create-product-dialog__form-field" appearance="fill">
+        <mat-label>Image URL</mat-label>
+        <input matInput formControlName="imageUrl">
+      </mat-form-field>
+    </div>
+
+    <div class="create-product-dialog__form-row">
+      <mat-form-field class="create-product-dialog__form-field" appearance="fill">
+        <mat-label>Category ID</mat-label>
+        <input matInput formControlName="categoryId" type="number">
+      </mat-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close class="create-product-dialog__button">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" class="create-product-dialog__button">Save</button>
+</mat-dialog-actions>

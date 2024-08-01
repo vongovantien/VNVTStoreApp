@@ -1,4 +1,13 @@
 .navbar {
+  &--sticky {
+    position: -webkit-sticky;
+    /* For Safari */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    /* Ensure it stays above other content */
+  }
+
   &__item {
     margin-right: 10px;
   }
@@ -10,4 +19,16 @@
   &__submenu-item {
     min-width: 150px;
   }
+}
+
+.navbar__icon-badge {
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-size: 0.75rem;
+  position: relative;
+  top: -20px;
+  z-index: 999;
+  right: 10px;
 }

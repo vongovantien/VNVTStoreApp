@@ -1,1 +1,60 @@
-<p>cart-page works!</p>
+<div class="cart">
+  <div class="cart__header">
+    <h1 class="cart__title">Your cart</h1>
+    <p class="cart__shopping-link">Not ready to checkout? <a href="/shop">Continue Shopping</a></p>
+  </div>
+  <div class="cart__content">
+    <div class="cart__items">
+      <div *ngFor="let item of cartItems$ | async" class="cart__item">
+        <div class="cart__item__details">
+          <img [src]="item.imageUrl" alt="{{ item.name }}" class="cart__item__image">
+          <div class="cart__item__info">
+            <div class="cart__item__name">{{ item.name }}</div>
+            <!-- <div class="cart__item__size">Size: {{ item.size }}</div> -->
+            <div class="cart__item__quantity">Quantity: {{ item.quantity }}</div>
+            <div class="cart__item__price">${{ item.price }}</div>
+          </div>
+        </div>
+        <button mat-button class="cart__item__remove" (click)="removeItem(item)">Remove</button>
+      </div>
+    </div>
+    <div class="cart__summary">
+      <h2 class="cart__summary__title">Order Summary</h2>
+      <mat-form-field appearance="outline" class="cart__coupon">
+        <mat-label>Enter coupon code here</mat-label>
+        <input matInput [(ngModel)]="couponCode">
+        <button mat-icon-button matSuffix (click)="applyCoupon()">
+          <mat-icon>check</mat-icon>
+        </button>
+      </mat-form-field>
+      <div class="cart__summary__details">
+        <div class="cart__summary__line">
+          <span>Subtotal</span>
+          <span>${{ getSubtotal() }}</span>
+        </div>
+        <div class="cart__summary__line">
+          <span>Shipping</span>
+          <span>Calculated at the next step</span>
+        </div>
+        <div class="cart__summary__line cart__summary__total">
+          <span>Total</span>
+          <span>${{ getSubtotal() }}</span>
+        </div>
+      </div>
+      <button mat-raised-button color="primary" class="cart__checkout" (click)="proceedToCheckout()">Continue to
+        checkout</button>
+    </div>
+  </div>
+  <div class="cart__information">
+    <h2 class="cart__information__title">Order Information</h2>
+    <div class="cart__information__section">
+      <h3 class="cart__information__subtitle">Return Policy</h3>
+      <p class="cart__information__text">This is our example return policy which is everything you need to know about
+        our returns.</p>
+    </div>
+    <div class="cart__information__section">
+      <h3 class="cart__information__subtitle">Shipping Options</h3>
+      <p class="cart__information__text">Shipping Options details here.</p>
+    </div>
+  </div>
+</div>

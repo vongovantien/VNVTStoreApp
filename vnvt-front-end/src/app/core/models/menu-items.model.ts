@@ -30,7 +30,7 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: 'store',
     subItems: [
       { name: 'Product List', icon: 'inventory', route: '/admin/products' },
-      { name: 'Add Product', icon: 'add_circle', route: '/admin/products/add' }
+      { name: 'Add Product', icon: 'add_circle', route: '/admin/products/create' }
     ]
   },
   {

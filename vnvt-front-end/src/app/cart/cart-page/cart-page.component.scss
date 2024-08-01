@@ -1,0 +1,147 @@
+.cart {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  background-color: #f0f2f5;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 2rem;
+  }
+
+  &__shopping-link {
+    font-size: 1rem;
+    color: #007bff;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__items {
+    flex: 2;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-right: 2rem;
+
+    &__item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #ddd;
+
+      &__details {
+        display: flex;
+        align-items: center;
+
+        &__image {
+          width: 100px;
+          height: 100px;
+          background-color: #ccc;
+          margin-right: 1rem;
+          object-fit: cover;
+        }
+
+        &__info {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+
+          &__name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+          }
+
+          &__size,
+          &__quantity,
+          &__price {
+            margin-bottom: 0.5rem;
+          }
+        }
+      }
+
+      &__remove {
+        align-self: flex-start;
+        color: #ff0000;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__summary {
+    flex: 1;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    &__title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    &__details {
+      margin-bottom: 1rem;
+
+      &__line {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+
+      &__total {
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+    }
+
+    &__coupon {
+      margin-bottom: 1rem;
+    }
+
+    &__checkout {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+    }
+  }
+
+  &__information {
+    margin-top: 2rem;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    &__title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    &__section {
+      margin-bottom: 1rem;
+
+      &__subtitle {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      &__text {
+        font-size: 0.9rem;
+        color: #666;
+      }
+    }
+  }
+}

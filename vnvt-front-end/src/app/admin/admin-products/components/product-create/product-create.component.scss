@@ -1,0 +1,37 @@
+.create-product-dialog {
+  &__title {
+    text-align: center;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__form-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+
+    &>.create-product-dialog__form-field {
+      flex: 1;
+    }
+  }
+
+  &__form-field {
+    width: 100%;
+  }
+
+  &__button {
+    margin-left: 1rem;
+  }
+}

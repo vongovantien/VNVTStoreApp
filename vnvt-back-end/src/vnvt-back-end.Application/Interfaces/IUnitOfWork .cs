@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using vnvt_back_end.Infrastructure;
 
 namespace vnvt_back_end.Application.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        IProductRepository Products { get; }
+        IRepository<Product> ProductRepository { get; }
+        IRepository<Payment> PaymentRepository { get; }
+        IRepository<Order> OrderRepository { get; }
+        IRepository<Review> ReviewRepository { get; }
+        IRepository<Address> AddressRepository { get; }
+        IRepository<User> UserRepository { get; }
         IRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
         Task<int> CommitAsync();
     }

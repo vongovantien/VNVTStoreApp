@@ -2,7 +2,6 @@
 using System.Linq.Expressions;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Application.Models;
-using vnvt_back_end.Infrastructure.Contexts;
 using vnvt_back_end.Infrastructure.Extensions;
 
 namespace vnvt_back_end.Infrastructure.Repositories
@@ -35,7 +34,7 @@ namespace vnvt_back_end.Infrastructure.Repositories
                 }
             }
 
-            return await query.ToListAsync(); // Use query instead of _dbSet
+            return await query.ToListAsync();
         }
 
         public async Task AddAsync(T entity)

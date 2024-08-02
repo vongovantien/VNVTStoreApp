@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using System.Linq.Expressions;
-using vnvt_back_end.Application.DTOs;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Application.Models;
-using vnvt_back_end.Application.Utils;
 using vnvt_back_end.Infrastructure;
+using static vnvt_back_end.Application.DTOs.DTOs;
 
 namespace vnvt_back_end.Application.Services
 {
@@ -16,17 +14,14 @@ namespace vnvt_back_end.Application.Services
 
         public async Task<ApiResponse<IEnumerable<ProductDto>>> GetAllProductsAsync()
         {
-            var items = await _unitOfWork.Products.GetAllProductsAsync();
-            var result = _mapper.Map<IEnumerable<ProductDto>>(items);
-            return ApiResponseBuilder.Success(result);
+            var result = await base.GetAllAsync(x => x.Category);
+            return result;
         }
 
         public async Task<ApiResponse<PagedResult<ProductDto>>> GetPagedProductsAsync(PagingParameters pagingParameters)
         {
-            var pagedResult = await _unitOfWork.Products.GetPagedProductsAsync(pagingParameters);
-            var items = _mapper.Map<IEnumerable<ProductDto>>(pagedResult.Items);
-            var result = new PagedResult<ProductDto>(items, pagedResult.TotalItems, pagedResult.PageNumber, pagedResult.PageSize);
-            return ApiResponseBuilder.Success(result);
+            var pagedResult = await base.GetPagedAsync(pagingParameters);
+            return pagedResult;
         }
     }
 }

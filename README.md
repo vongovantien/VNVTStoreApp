@@ -34,8 +34,12 @@ The E-Commerce Platform is a comprehensive online shopping solution built with J
 
 ## Technologies Used
 
-- **Angular**: Version 17
-- **.NET**: Version 8
+- **.NET Framework/Core**
+- **Entity Framework**
+- **SQL Server**
+- **ASP.NET MVC/Web API**
+- **Bootstrap/CSS**
+- **JavaScript/TypeScript**
 
 ### Other Tools and Technologies
 
@@ -65,18 +69,22 @@ The platform follows a microservices architecture with a clear separation of con
    \`\`\`bash
    git clone https://github.com/hpham16/ShopApp-Angular-Java.git
    \`\`\`
-2. Navigate to the backend directory:
+2. Navigate to the project directory
    \`\`\`bash
-   cd ShopApp-backend
+   cd VNVTStoreApp
    \`\`\`
-3. Build the project:
+3. Restore the dependencies:
    \`\`\`bash
-   ./mvnw clean install
+   dotnet restore
    \`\`\`
 4. Run the application:
-   \`\`\`bash
-   ./mvnw spring-boot:run
-   \`\`\`
+   Update the database connection string in appsettings.json
+
+   Apply the migrations to your database
+
+   dotnet ef database update
+
+   dotnet run
 
 ### Frontend Setup
 
@@ -99,8 +107,8 @@ The platform follows a microservices architecture with a clear separation of con
 
 ## Usage
 
-- Access the frontend application at \`http://localhost:4200\`
-- API documentation is available at \`http://localhost:8088/swagger-ui.html\`
+Open your browser and navigate to http://localhost:5000
+Use the application interface to manage inventory, process sales, and manage customers.
 
 ## Contributing
 
@@ -121,5 +129,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For any inquiries or feedback, please contact us at:
 
-- Email:
+- Email:vongovantien@gmail.com
 - GitHub:

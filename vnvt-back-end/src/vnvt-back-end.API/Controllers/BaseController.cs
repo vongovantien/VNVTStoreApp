@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Application.Models;
@@ -6,14 +7,18 @@ using vnvt_back_end.Application.Utils;
 
 namespace vnvt_back_end.API.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    //[MiddlewareFilter(typeof(LocalizationMiddleware))]
+    [Route("api/v{version:apiVersion}/{lang}/[controller]")]
     [ApiController]
-    public abstract class BaseController<TDto> : ControllerBase
+    [Authorize]
+    public abstract class BaseController<TDto, TEntity> : ControllerBase
+        where TEntity : class
        where TDto : class, IBaseDto
     {
-        private readonly IBaseService<TDto> _baseService;
+        private readonly IBaseService<TDto, TEntity> _baseService;
 
-        protected BaseController(IBaseService<TDto> baseService)
+        protected BaseController(IBaseService<TDto, TEntity> baseService)
         {
             _baseService = baseService;
         }
@@ -29,7 +34,7 @@ namespace vnvt_back_end.API.Controllers
         [Route("paging")]
         public async Task<ActionResult<ApiResponse<PagedResult<TDto>>>> GetPaging([FromQuery] PagingParameters pagingParameters)
         {
-            var response = await _baseService.GetPagingAsync(pagingParameters);
+            var response = await _baseService.GetPagedAsync(pagingParameters);
             return StatusCode(response.StatusCode, response);
         }
 

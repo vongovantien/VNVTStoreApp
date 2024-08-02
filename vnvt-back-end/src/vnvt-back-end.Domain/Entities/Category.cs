@@ -11,8 +11,8 @@ namespace vnvt_back_end.Infrastructure;
 public partial class Category
 {
     [Key]
-    [Column("category_id")]
-    public int CategoryId { get; set; }
+    [Column("id")]
+    public int Id { get; set; }
 
     [Column("name")]
     [StringLength(100)]

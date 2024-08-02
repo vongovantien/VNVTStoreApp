@@ -12,8 +12,8 @@ namespace vnvt_back_end.Infrastructure;
 public partial class Order
 {
     [Key]
-    [Column("order_id")]
-    public int OrderId { get; set; }
+    [Column("id")]
+    public int Id { get; set; }
 
     [Column("user_id")]
     public int? UserId { get; set; }

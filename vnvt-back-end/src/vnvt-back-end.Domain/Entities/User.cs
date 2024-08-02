@@ -13,8 +13,8 @@ namespace vnvt_back_end.Infrastructure;
 public partial class User
 {
     [Key]
-    [Column("user_id")]
-    public int UserId { get; set; }
+    [Column("id")]
+    public int Id { get; set; }
 
     [Column("username")]
     [StringLength(50)]

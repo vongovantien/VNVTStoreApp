@@ -1,48 +1,32 @@
 ﻿using AutoMapper;
+using System.Linq.Expressions;
 using vnvt_back_end.Application.DTOs;
 using vnvt_back_end.Application.Interfaces;
+using vnvt_back_end.Application.Models;
+using vnvt_back_end.Application.Utils;
 using vnvt_back_end.Infrastructure;
 
 namespace vnvt_back_end.Application.Services
 {
-    public class ProductService : IProductService
+    public class ProductService : BaseService<Product, ProductDto>, IProductService
     {
-        private readonly IProductRepository _productRepository;
-        private readonly IMapper _mapper;
-
-        public ProductService(IProductRepository productRepository, IMapper mapper)
+        public ProductService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
-            _productRepository = productRepository;
-            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllAsync()
+        public async Task<ApiResponse<IEnumerable<ProductDto>>> GetAllProductsAsync()
         {
-            var products = await _productRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<ProductDto>>(products);
+            var items = await _unitOfWork.Products.GetAllProductsAsync();
+            var result = _mapper.Map<IEnumerable<ProductDto>>(items);
+            return ApiResponseBuilder.Success(result);
         }
 
-        public async Task<ProductDto> GetByIdAsync(int id)
+        public async Task<ApiResponse<PagedResult<ProductDto>>> GetPagedProductsAsync(PagingParameters pagingParameters)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            return _mapper.Map<ProductDto>(product);
-        }
-
-        public async Task AddAsync(ProductDto productDto)
-        {
-            var product = _mapper.Map<Product>(productDto);
-            await _productRepository.AddAsync(product);
-        }
-
-        public async Task UpdateAsync(ProductDto productDto)
-        {
-            var product = _mapper.Map<Product>(productDto);
-            await _productRepository.UpdateAsync(product);
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            await _productRepository.DeleteAsync(id);
+            var pagedResult = await _unitOfWork.Products.GetPagedProductsAsync(pagingParameters);
+            var items = _mapper.Map<IEnumerable<ProductDto>>(pagedResult.Items);
+            var result = new PagedResult<ProductDto>(items, pagedResult.TotalItems, pagedResult.PageNumber, pagedResult.PageSize);
+            return ApiResponseBuilder.Success(result);
         }
     }
 }

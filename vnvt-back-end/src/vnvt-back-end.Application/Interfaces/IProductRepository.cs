@@ -1,13 +1,12 @@
-﻿using vnvt_back_end.Infrastructure;
+﻿using System.Linq.Expressions;
+using vnvt_back_end.Application.Models;
+using vnvt_back_end.Infrastructure;
 
 namespace vnvt_back_end.Application.Interfaces
 {
-    public interface IProductRepository
+    public interface IProductRepository : IRepository<Product>
     {
-        Task<IEnumerable<Product>> GetAllAsync();
-        Task<Product> GetByIdAsync(int id);
-        Task AddAsync(Product product);
-        Task UpdateAsync(Product product);
-        Task DeleteAsync(int id);
+        Task<PagedResult<Product>> GetPagedProductsAsync(PagingParameters pagingParameters, Expression<Func<Product, bool>> filter = null);
+        Task<IEnumerable<Product>> GetAllProductsAsync();
     }
 }

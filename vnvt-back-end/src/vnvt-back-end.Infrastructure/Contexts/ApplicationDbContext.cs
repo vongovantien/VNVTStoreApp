@@ -40,8 +40,9 @@ public partial class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<Address>(entity =>
         {
-            entity.HasKey(e => e.AddressId).HasName("addresses_pkey");
+            entity.HasKey(e => e.Id).HasName("addresses_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('addresses_address_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -50,16 +51,18 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.CategoryId).HasName("categories_pkey");
+            entity.HasKey(e => e.Id).HasName("categories_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('categories_category_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("orders_pkey");
+            entity.HasKey(e => e.Id).HasName("orders_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('orders_order_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -68,8 +71,9 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.HasKey(e => e.OrderItemId).HasName("order_items_pkey");
+            entity.HasKey(e => e.Id).HasName("order_items_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('order_items_order_item_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -80,8 +84,9 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("payments_pkey");
+            entity.HasKey(e => e.Id).HasName("payments_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('payments_payment_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -90,8 +95,9 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.ProductId).HasName("products_pkey");
+            entity.HasKey(e => e.Id).HasName("products_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('products_product_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.StockQuantity).HasDefaultValue(0);
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -101,8 +107,9 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.ReviewId).HasName("reviews_pkey");
+            entity.HasKey(e => e.Id).HasName("reviews_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('reviews_review_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -113,8 +120,9 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("users_pkey");
+            entity.HasKey(e => e.Id).HasName("users_pkey");
 
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('users_user_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });

@@ -12,8 +12,8 @@ namespace vnvt_back_end.Infrastructure;
 public partial class Product
 {
     [Key]
-    [Column("product_id")]
-    public int ProductId { get; set; }
+    [Column("id")]
+    public int Id { get; set; }
 
     [Column("name")]
     [StringLength(100)]

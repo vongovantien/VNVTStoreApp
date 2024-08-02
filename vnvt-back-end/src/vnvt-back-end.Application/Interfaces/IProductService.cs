@@ -1,13 +1,15 @@
-﻿using vnvt_back_end.Application.DTOs;
+﻿using System.Linq.Expressions;
+using vnvt_back_end.Application.DTOs;
+using vnvt_back_end.Application.Models;
+using vnvt_back_end.Application.Utils;
+using vnvt_back_end.Infrastructure;
 
 namespace vnvt_back_end.Application.Interfaces
 {
-    public interface IProductService
+    public interface IProductService : IBaseService<ProductDto>
     {
-        Task<IEnumerable<ProductDto>> GetAllAsync();
-        Task<ProductDto> GetByIdAsync(int id);
-        Task AddAsync(ProductDto product);
-        Task UpdateAsync(ProductDto product);
-        Task DeleteAsync(int id);
+        Task<ApiResponse<IEnumerable<ProductDto>>> GetAllProductsAsync();
+        Task<ApiResponse<PagedResult<ProductDto>>> GetPagedProductsAsync(PagingParameters pagingParameters);
+
     }
 }

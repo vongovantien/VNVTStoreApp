@@ -13,8 +13,8 @@ namespace vnvt_back_end.Infrastructure;
 public partial class Review
 {
     [Key]
-    [Column("review_id")]
-    public int ReviewId { get; set; }
+    [Column("id")]
+    public int Id { get; set; }
 
     [Column("user_id")]
     public int? UserId { get; set; }

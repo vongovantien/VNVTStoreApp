@@ -1,48 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
 using vnvt_back_end.Application.Interfaces;
+using vnvt_back_end.Application.Models;
 using vnvt_back_end.Infrastructure.Contexts;
 
 namespace vnvt_back_end.Infrastructure.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : Repository<Product>, IProductRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public ProductRepository(ApplicationDbContext context)
+        public ProductRepository(ApplicationDbContext context) : base(context)
         {
-            _context = context;
         }
-
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<PagedResult<Product>> GetPagedProductsAsync(PagingParameters pagingParameters, Expression<Func<Product, bool>> filter = null)
         {
-            return await _context.Products.ToListAsync();
+            return await base.GetPagedAsync(pagingParameters, filter, x => x.CategoryId);
         }
-
-        public async Task<Product> GetByIdAsync(int id)
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
-            return await _context.Products.FindAsync(id);
-        }
-
-        public async Task AddAsync(Product product)
-        {
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(Product product)
-        {
-            _context.Products.Update(product);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
-            }
+            return await base.GetAllAsync(p => p.Category);
         }
     }
 }

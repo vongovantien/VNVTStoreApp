@@ -1,0 +1,14 @@
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\bin\Release\net8.0\vnvt-back-end.Domain.deps.json
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\bin\Release\net8.0\vnvt-back-end.Domain.runtimeconfig.json
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\bin\Release\net8.0\vnvt-back-end.Domain.dll
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\bin\Release\net8.0\vnvt-back-end.Domain.pdb
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.csproj.AssemblyReference.cache
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.AssemblyInfoInputs.cache
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.AssemblyInfo.cs
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.csproj.CoreCompileInputs.cache
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.dll
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\refint\vnvt-back-end.Domain.dll
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.pdb
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\vnvt-back-end.Domain.genruntimeconfig.cache
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.Domain\obj\Release\net8.0\ref\vnvt-back-end.Domain.dll

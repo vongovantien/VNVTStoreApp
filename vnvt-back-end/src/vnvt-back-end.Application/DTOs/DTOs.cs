@@ -9,6 +9,15 @@ namespace vnvt_back_end.Application.DTOs
 {
     public class DTOs
     {
+
+        public class UserProfileDto
+        {
+            public string Username { get; set; }
+            public string Email { get; set; }
+            public string FullName { get; set; }
+            // Add other profile properties as needed
+        }
+
         public class GenericDto<TKey> : IBaseDto
         {
             public int Id { get; set; }

@@ -9,7 +9,7 @@ namespace vnvt_back_end.API.Controllers
 {
     [ApiVersion("1.0")]
     //[MiddlewareFilter(typeof(LocalizationMiddleware))]
-    [Route("api/v{version:apiVersion}/{lang}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public abstract class BaseController<TDto, TEntity> : ControllerBase

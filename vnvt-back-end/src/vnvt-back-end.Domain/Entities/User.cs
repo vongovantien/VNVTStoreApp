@@ -34,6 +34,21 @@ public partial class User
     [Column("updateddate", TypeName = "timestamp without time zone")]
     public DateTime? Updateddate { get; set; }
 
+    [Column("lastname", TypeName = "character varying")]
+    public string? Lastname { get; set; }
+
+    [Column("firstname", TypeName = "character varying")]
+    public string? Firstname { get; set; }
+
+    [Column("lastlogindate", TypeName = "timestamp without time zone")]
+    public DateTime? Lastlogindate { get; set; }
+
+    [Column("status", TypeName = "character varying")]
+    public string? Status { get; set; }
+
+    [Column("role", TypeName = "character varying")]
+    public string? Role { get; set; }
+
     [InverseProperty("User")]
     public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
 

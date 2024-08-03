@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using vnvt_back_end.Infrastructure;
 
 namespace vnvt_back_end.Infrastructure.Contexts;
 
@@ -24,6 +27,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
+
+    public virtual DbSet<ProductImage> ProductImages { get; set; }
 
     public virtual DbSet<Review> Reviews { get; set; }
 
@@ -100,6 +105,11 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.Updateddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(d => d.Category).WithMany(p => p.Products).HasConstraintName("products_category_id_fkey");
+        });
+
+        modelBuilder.Entity<ProductImage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("product_images_pkey");
         });
 
         modelBuilder.Entity<Review>(entity =>

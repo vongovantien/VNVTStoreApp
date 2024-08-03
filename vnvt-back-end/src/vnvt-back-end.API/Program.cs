@@ -25,9 +25,9 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ECommerce.API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        In = ParameterLocation.Header,
-        Description = "Please enter a valid token",
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
+        In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
         BearerFormat = "JWT",
         Scheme = "Bearer"
@@ -42,11 +42,14 @@ builder.Services.AddSwaggerGen(c =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
-                }
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
             },
             Array.Empty<string>()
         }
-    }); 
+    });
 });
 // Add the configuration
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -58,7 +61,11 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
+builder.Services.Configure<JwtSettings>(jwtSettingsSection);
+var jwtSettings = jwtSettingsSection.Get<JwtSettings>();
+var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -66,6 +73,25 @@ builder.Services.AddAuthentication(options =>
 })
        .AddJwtBearer(options =>
        {
+           options.Events = new JwtBearerEvents
+           {
+               OnAuthenticationFailed = context =>
+               {
+                   context.Response.Headers.Add("Authentication-Failed", "true");
+                   return Task.CompletedTask;
+               },
+               OnTokenValidated = context =>
+               {
+                   // Additional validation can be done here
+                   return Task.CompletedTask;
+               },
+               OnChallenge = context =>
+               {
+                   // Additional logic during challenge
+                   return Task.CompletedTask;
+               }
+           };
+
            options.TokenValidationParameters = new TokenValidationParameters
            {
                ValidateIssuer = true,
@@ -74,7 +100,7 @@ builder.Services.AddAuthentication(options =>
                ValidateIssuerSigningKey = true,
                ValidIssuer = jwtSettings.Issuer,
                ValidAudience = jwtSettings.Audience,
-               IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+               IssuerSigningKey = new SymmetricSecurityKey(key)
            };
        });
 
@@ -94,6 +120,7 @@ builder.Services.Configure<RouteOptions>(options =>
 {
     options.LowercaseUrls = true; // Optional, if you also want query strings to be lowercase
 });
+builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
@@ -104,6 +131,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "ECommerce.API v1");
+        c.RoutePrefix = string.Empty; // Set Swagger UI at the root
     });
 }
 
@@ -111,6 +139,7 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 

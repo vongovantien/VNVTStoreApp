@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\vnvt-back-end.API.props" />
+</Project>

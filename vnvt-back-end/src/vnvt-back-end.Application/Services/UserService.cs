@@ -41,54 +41,73 @@ namespace vnvt_back_end.Application.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<User> GetUserByUsernameAndPasswordAsync(string username, string password)
+        public async Task RegisterAsync(string username, string email, string password)
         {
-            var user = await _userRepository.GetUserByUsernameAndPasswordAsync(username, password);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            var user = new User
             {
-                return null;
-            }
-            return user;
-        }
+                Username = username,
+                Email = email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+            };
 
-        public async Task<User> GetUserByEmailAsync(string email)
-        {
-            return await _userRepository.GetUserByEmailAsync(email);
-        }
-
-        public async Task CreateUserAsync(User user)
-        {
             await _userRepository.CreateUserAsync(user);
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task ForgotPasswordAsync(string email)
         {
-            return await _userRepository.GetUserByIdAsync(id);
+            //var user = await _userRepository.GetUserByEmailAsync(email);
+            //if (user == null) return;
+
+            //var token = Guid.NewGuid().ToString();
+            //var expiration = DateTime.UtcNow.AddHours(1);
+            //await _passwordResetTokenRepository.CreatePasswordResetTokenAsync(new PasswordResetToken
+            //{
+            //    Email = email,
+            //    Token = token,
+            //    Expiration = expiration
+            //});
+            //var resetLink = $"https://yourapp.com/reset-password?token={token}";
+            //await _emailService.SendEmailAsync(email, "Reset Your Password", $"Click <a href='{resetLink}'>here</a> to reset your password.");
         }
 
-        public async Task UpdateUserAsync(User user)
+        public async Task ResetPasswordAsync(string token, string newPassword)
         {
+            //var resetToken = await _passwordResetTokenRepository.GetPasswordResetTokenAsync(token);
+            //if (resetToken == null || resetToken.Expiration < DateTime.UtcNow) return;
+
+            //var user = await _userRepository.GetUserByEmailAsync(resetToken.Email);
+            //if (user == null) return;
+
+            //user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            //await _userRepository.UpdateUserAsync(user);
+
+            //await _passwordResetTokenRepository.DeletePasswordResetTokenAsync(resetToken.Id);
+        }
+
+        public async Task<UserProfileDto> GetUserProfileAsync(int userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return null;
+
+            return new UserProfileDto
+            {
+                Username = user.Username,
+                Email = user.Email,
+                // Map other properties
+            };
+        }
+
+        public async Task UpdateUserProfileAsync(int userId, UserProfileDto profile)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return;
+
+            user.Username = profile.Username;
+            user.Email = profile.Email;
+            //user.FullName = profile.FullName;
+            // Update other properties
+
             await _userRepository.UpdateUserAsync(user);
-        }
-
-        public Task ForgotPasswordAsync(string email)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ResetPasswordAsync(string token, string newPassword)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<UserDto> GetUserProfileAsync(int userId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateUserProfileAsync(int userId, UserDto profile)
-        {
-            throw new NotImplementedException();
         }
     }
 }

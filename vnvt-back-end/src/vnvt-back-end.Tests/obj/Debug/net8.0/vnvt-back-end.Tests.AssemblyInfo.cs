@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("vnvt-back-end.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8bab8c0ec8bc0c257cecc6105a5093cad22f2668")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+403c85b5835b757b29e048ab06adc6f1e34836cb")]
 [assembly: System.Reflection.AssemblyProductAttribute("vnvt-back-end.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("vnvt-back-end.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

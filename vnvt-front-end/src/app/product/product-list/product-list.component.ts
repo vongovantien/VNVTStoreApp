@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { PagingParameters } from '../../core/models';
 
 @Component({
   selector: 'app-product-list',
@@ -31,10 +32,12 @@ import { MatButtonModule } from '@angular/material/button';
 export class ProductListComponent implements OnInit {
   products: Product[] = [];
   categories: string[] = ['Electronics', 'Books', 'Clothing']; // Example categories
-  filters = {
-    inStock: false,
-    freeShipping: false,
-    category: ''
+  filters: PagingParameters = {
+    PageNumber: 1,
+    PageSize: 10,
+    Keyword: '',
+    SortField: '',
+    SortDescending: false
   };
   sortOption: string = 'popular';
 
@@ -46,37 +49,45 @@ export class ProductListComponent implements OnInit {
 
   loadProducts() {
     this.productService.getProductFilter(this.filters).subscribe(products => {
-      this.products = products;
+      console.log(products)
+      this.products = [...this.products, ...products];
     });
   }
 
   onSearch(event: any) {
-    this.productService.searchProducts(event.target.value).subscribe(products => {
-      this.products = products;
-    });
+    this.filters.PageNumber = 1; // Reset page number for new search
+    this.filters.Keyword = event.target.value;
+    this.loadProducts();
   }
 
   clearSearch() {
-    this.onSearch('');
+    this.filters.Keyword = '';
+    this.filters.PageNumber = 1;
+    this.loadProducts();
   }
 
   clearFilters() {
     this.filters = {
-      inStock: false,
-      freeShipping: false,
-      category: ''
+      PageNumber: 1,
+      PageSize: 10,
+      Keyword: '',
+      SortField: '',
+      SortDescending: false
     };
     this.loadProducts();
   }
-
   sortProducts() {
     if (this.sortOption === 'price') {
-      this.products.sort((a, b) => a.price - b.price);
+      this.filters.SortField = 'price';
+      this.filters.SortDescending = false; // Example sorting criteria
     } else if (this.sortOption === 'new') {
-      this.products.sort((a, b) => b.id - a.id); // Assuming higher ID means newer product
+      this.filters.SortField = 'id'; // Assuming higher ID means newer product
+      this.filters.SortDescending = true;
     } else {
-      // Default to popular, no specific action needed
+      this.filters.SortField = '';
+      this.filters.SortDescending = false;
     }
+    this.loadProducts();
   }
 
   loadMore() {

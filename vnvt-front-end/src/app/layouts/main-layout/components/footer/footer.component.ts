@@ -8,7 +8,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
 import { NgForm } from '@angular/forms';
 @Component({
   selector: 'app-footer',
@@ -26,12 +25,6 @@ import { NgForm } from '@angular/forms';
     FormsModule,
   ],
   providers: [
-    {
-      provide: RECAPTCHA_SETTINGS,
-      useValue: {
-        siteKey: '6LfMFhwqAAAAAGpVXRMYifLnW6q3Hjxh9hCxlqFr',
-      } as RecaptchaSettings,
-    },
   ],
 })
 export class FooterComponent {

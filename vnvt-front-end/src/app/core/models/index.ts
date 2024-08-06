@@ -7,3 +7,4 @@ export * from './user.model';
 export * from './cart-item.model';
 export * from './comment.model';
 export * from './payment.model';
+export * from './paging-parameters.model'

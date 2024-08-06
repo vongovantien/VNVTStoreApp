@@ -2,15 +2,13 @@
   <div class="product-page__content">
     <aside class="product-page__sidebar">
       <div class="product-page__sidebar-title">Filters</div>
-      <mat-checkbox [(ngModel)]="filters.inStock">In Stock</mat-checkbox>
-      <mat-checkbox [(ngModel)]="filters.freeShipping">Free Shipping</mat-checkbox>
       <!-- Add more filters as needed -->
-      <mat-form-field class="product-page__filter-category">
-        <mat-label>Category</mat-label>
-        <mat-select [(ngModel)]="filters.category">
+      <!-- <mat-form-field class="product-page__filter-category"> -->
+        <!-- <mat-label>Category</mat-label> -->
+        <!-- <mat-select [(ngModel)]="filters.category">
           <mat-option *ngFor="let category of categories" [value]="category">{{ category }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+        </mat-select> -->
+      <!-- </mat-form-field> -->
       <button mat-raised-button="button" (click)="clearFilters()">Clear filters</button>
     </aside>
 

@@ -1,13 +1,13 @@
 <div class="cart-product">
   <div class="cart-product__image">
-    <img [src]="product.imageUrl" [alt]="product.title">
+    <img [src]="product.productImages[0].imageUrl" [alt]="product.name">
   </div>
   <div class="cart-product__details">
-    <h2 class="cart-product__title">{{ product.title }}</h2>
+    <h2 class="cart-product__title">{{ product.name }}</h2>
     <p class="cart-product__description">{{ product.description }}</p>
     <div class="cart-product__info">
       <span class="cart-product__price">{{ product.price }}</span>
-      <span class="cart-product__quantity">Quantity: {{ product.quantity }}</span>
+      <span class="cart-product__quantity">Quantity: {{ product.stockQuantity }}</span>
     </div>
   </div>
   <div class="cart-product__actions">

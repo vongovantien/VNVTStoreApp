@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { Product } from '../models';
+import { PagingParameters, Product } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -48,8 +48,15 @@ export class ProductService {
     );
   }
 
-  getProductFilter(filters: any): Observable<Product[]> {
-    return this.http.get<any>(`${this.apiUrl}`, { params: filters }).pipe(
+  getProductFilter(pagingParams: PagingParameters): Observable<Product[]> {
+    let params = new HttpParams()
+      .set('pageNumber', pagingParams.PageNumber.toString())
+      .set('pageSize', pagingParams.PageSize.toString())
+      .set('keyword', pagingParams.Keyword || '')
+      .set('sortField', pagingParams.SortField || '')
+      .set('sortDescending', pagingParams.SortDescending.toString());
+
+    return this.http.get<any>(`${this.apiUrl}/paging`, { params }).pipe(
       map(response => response.data.items)
     );
   }

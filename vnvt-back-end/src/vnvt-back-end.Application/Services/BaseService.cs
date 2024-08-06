@@ -102,18 +102,29 @@ namespace vnvt_back_end.Application.Services
             return ApiResponseBuilder.Success(items);
         }
 
-        public async Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(PagingParameters pagingParameters, Expression<Func<TDto, bool>> filter = null, params Expression<Func<TEntity, object>>[] includes)
+        public async Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(
+      PagingParameters pagingParameters,
+      Expression<Func<TDto, bool>> filter = null,
+      params Expression<Func<TEntity, object>>[] includes)
         {
             var repository = _unitOfWork.GetRepository<TEntity>();
-            var entityFilter = filter != null ? MapFilterExpression(filter) : null;
+
+            // Convert the filter expression if provided
+            Expression<Func<TEntity, bool>> entityFilter = filter != null ? MapFilterExpression(filter) : null;
+
+            // Fetch the paged result from the repository
             var pagedResult = await repository.GetPagedAsync(pagingParameters, entityFilter, includes);
 
+            // Map the items from TEntity to TDto
             var items = _mapper.Map<IEnumerable<TDto>>(pagedResult.Items);
 
+            // Create the result with the mapped items
             var result = new PagedResult<TDto>(items, pagedResult.TotalItems, pagedResult.PageNumber, pagedResult.PageSize);
 
+            // Return a successful ApiResponse
             return ApiResponseBuilder.Success(result);
         }
+
 
         private Expression<Func<TEntity, bool>> MapFilterExpression(Expression<Func<TDto, bool>> dtoFilter)
         {

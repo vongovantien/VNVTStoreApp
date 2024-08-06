@@ -1,26 +1,17 @@
-import { Component } from '@angular/core';
-import { ProductService } from '../../core/services';
-import { Product } from '../../core/models';
 import { CommonModule } from '@angular/common';
-import { CardProductComponent } from '../../card-product/card-product.component';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { RECAPTCHA_SETTINGS, RecaptchaFormsModule, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
+import { Component } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { CardProductComponent } from '../../card-product/card-product.component';
+import { Product } from '../../core/models';
+import { ProductService } from '../../core/services';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, CardProductComponent, MatIconModule, MatFormFieldModule, MatInputModule, RecaptchaModule,
-    RecaptchaFormsModule],
-  providers: [
-    {
-      provide: RECAPTCHA_SETTINGS,
-      useValue: {
-        siteKey: '6LfMFhwqAAAAAGpVXRMYifLnW6q3Hjxh9hCxlqFr',
-      } as RecaptchaSettings,
-    },
-  ],
+  imports: [CommonModule, CardProductComponent, MatIconModule, MatFormFieldModule, MatInputModule],
+  providers: [],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss'
 })

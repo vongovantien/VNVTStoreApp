@@ -35,6 +35,13 @@ namespace vnvt_back_end.API.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("GetProductFilters")]
+        public async Task<ActionResult<ApiResponse<PagedResult<ProductDto>>>> GetProductFilter([FromQuery] PagingParameters pagingParameters, [FromQuery] int categoryId)
+        {
+            var response = await _productService.GetProductFilters(pagingParameters, categoryId);
+            return StatusCode(response.StatusCode, response);
+        }
+        [AllowAnonymous]
         public override async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetAll()
         {
             var response = await _productService.GetAllProductsAsync();

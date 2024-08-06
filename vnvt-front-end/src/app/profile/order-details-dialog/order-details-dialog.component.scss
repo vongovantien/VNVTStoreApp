@@ -1,0 +1,26 @@
+.order-details {
+
+  p {
+    margin: 0;
+    padding: 4px 0;
+  }
+
+  h3 {
+    margin-top: 16px;
+  }
+
+  table {
+    width: 100%;
+    margin-top: 16px;
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px;
+    }
+
+    .footer {
+      font-weight: bold;
+    }
+  }
+}

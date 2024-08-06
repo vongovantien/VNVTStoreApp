@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using System.Linq.Expressions;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Application.Models;
 using vnvt_back_end.Infrastructure;
@@ -21,6 +22,14 @@ namespace vnvt_back_end.Application.Services
         public async Task<ApiResponse<PagedResult<ProductDto>>> GetPagedProductsAsync(PagingParameters pagingParameters)
         {
             var pagedResult = await base.GetPagedAsync(pagingParameters, null, x => x.Category, x => x.ProductImages);
+            return pagedResult;
+        }
+
+        public async Task<ApiResponse<PagedResult<ProductDto>>> GetProductFilters(PagingParameters pagingParameters, int? categoryId)
+        {
+            Expression<Func<ProductDto, bool>> filter = x => !categoryId.HasValue || x.CategoryId == categoryId;
+
+            var pagedResult = await base.GetPagedAsync(pagingParameters, filter, x => x.Category, x => x.ProductImages);
             return pagedResult;
         }
 

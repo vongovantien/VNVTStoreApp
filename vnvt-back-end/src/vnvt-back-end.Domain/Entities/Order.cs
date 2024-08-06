@@ -32,6 +32,13 @@ public partial class Order
     [Column("updateddate", TypeName = "timestamp without time zone")]
     public DateTime? Updateddate { get; set; }
 
+    [Column("coupon_id")]
+    public int? CouponId { get; set; }
+
+    [ForeignKey("CouponId")]
+    [InverseProperty("Orders")]
+    public virtual Coupon? Coupon { get; set; }
+
     [InverseProperty("Order")]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 

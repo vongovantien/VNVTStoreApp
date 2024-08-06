@@ -1,81 +1,62 @@
 import { Injectable } from '@angular/core';
-import { map, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { map, Observable } from 'rxjs';
 import { Product } from '../models';
-import { MockDataService } from './mock-data.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  // private apiUrl = 'https://api.example.com/products'; // Placeholder for real API URL
+  private apiUrl = `${environment.apiUrl}/products`; // Thay thế bằng URL API thực tế của bạn
 
-  constructor(private mockDataService: MockDataService) { } // Inject the mock data service
+  constructor(private http: HttpClient) { }
 
   getProducts(): Observable<Product[]> {
-    return this.mockDataService.getProducts(); // Use mock data
+    return this.http.get<any>(`${this.apiUrl}`).pipe(
+      map(response => response.data.items)
+    );
   }
 
   getProductById(id: number): Observable<Product> {
-    return this.mockDataService.getProductById(id); // Use mock data
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map(response => response.data)
+    );
   }
 
   createProduct(product: Product): Observable<Product> {
-    return this.mockDataService.getProducts().pipe(map(products => {
-      products.push(product);
-      return product;
-    }));
+    return this.http.post<any>(`${this.apiUrl}`, product).pipe(
+      map(response => response.data)
+    );
   }
 
   updateProduct(id: number, product: Product): Observable<Product> {
-    return this.mockDataService.getProductById(id).pipe(map(p => {
-      p.name = product.name;
-      p.description = product.description;
-      p.price = product.price;
-      p.imageUrl = product.imageUrl;
-      return p;
-    }));
+    return this.http.put<any>(`${this.apiUrl}/${id}`, product).pipe(
+      map(response => response.data)
+    );
   }
 
   deleteProduct(id: number): Observable<void> {
-    return this.mockDataService.getProducts().pipe(map(products => {
-      const index = products.findIndex(p => p.id === id);
-      if (index !== -1) {
-        products.splice(index, 1);
-      }
-      return;
-    }));
-  }
-
-  getTrendingProducts() {
-    return this.mockDataService.getProducts();
-  }
-
-
-  getProductFilter(filters: any): Observable<Product[]> {
-    return this.getProducts().pipe(
-      map(products => {
-        let filteredProducts = products;
-
-        if (filters.category) {
-          filteredProducts = filteredProducts.filter(p => p.categoryId === filters.category);
-        }
-        // if (filters.inStock) {
-        //   filteredProducts = filteredProducts.filter(p => p.inStock);
-        // }
-        // if (filters.freeShipping) {
-        //   filteredProducts = filteredProducts.filter(p => p.freeShipping);
-        // }
-
-        return filteredProducts;
-      })
+    return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+      map(response => { })
     );
   }
+
+  getTrendingProducts(): Observable<Product[]> {
+    return this.http.get<any>(`${this.apiUrl}/trending`).pipe(
+      map(response => response.data.items)
+    );
+  }
+
+  getProductFilter(filters: any): Observable<Product[]> {
+    return this.http.get<any>(`${this.apiUrl}`, { params: filters }).pipe(
+      map(response => response.data.items)
+    );
+  }
+
   searchProducts(searchTerm: string): Observable<Product[]> {
-    const lowerCaseTerm = searchTerm.toLowerCase();
-    return this.getProducts().pipe(
-      map(products => products.filter(p =>
-        p.name.toLowerCase().includes(lowerCaseTerm)
-      ))
+    return this.http.get<any>(`${this.apiUrl}/search`, { params: { q: searchTerm } }).pipe(
+      map(response => response.data.items)
     );
   }
 }

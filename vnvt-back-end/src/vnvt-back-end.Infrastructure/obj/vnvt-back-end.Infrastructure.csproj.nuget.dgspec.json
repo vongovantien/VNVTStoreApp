@@ -285,6 +285,10 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[8.0.4, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.4.1, )"
             }
           },
           "imports": [

@@ -24,7 +24,7 @@ namespace vnvt_back_end.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<IEnumerable<TDto>>>> GetAll()
+        public virtual async Task<ActionResult<ApiResponse<IEnumerable<TDto>>>> GetAll()
         {
             var response = await _baseService.GetAllAsync();
             return StatusCode(response.StatusCode, response);
@@ -32,14 +32,14 @@ namespace vnvt_back_end.API.Controllers
 
         [HttpGet]
         [Route("paging")]
-        public async Task<ActionResult<ApiResponse<PagedResult<TDto>>>> GetPaging([FromQuery] PagingParameters pagingParameters)
+        public virtual async Task<ActionResult<ApiResponse<PagedResult<TDto>>>> GetPaging([FromQuery] PagingParameters pagingParameters)
         {
             var response = await _baseService.GetPagedAsync(pagingParameters);
             return StatusCode(response.StatusCode, response);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<TDto>>> GetById(int id)
+        public virtual async Task<ActionResult<ApiResponse<TDto>>> GetById(int id)
         {
             var response = await _baseService.GetByIdAsync(id);
             return StatusCode(response.StatusCode, response);

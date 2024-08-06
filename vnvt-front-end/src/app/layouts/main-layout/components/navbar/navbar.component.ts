@@ -11,7 +11,7 @@ import { MenuItem } from '../../../../core/models/menu-items.model';
 export const NAVBAR_ITEMS: MenuItem[] = [
   { name: 'NAVBAR.HOME', route: '/', icon: 'home' },
   { name: 'NAVBAR.PRODUCTS', route: '/products', icon: 'shopping_bag' },
-  { name: 'NAVBAR.CATEGORIES', route: '/categories', icon: 'category' },
+ // { name: 'NAVBAR.CATEGORIES', route: '/categories', icon: 'category' },
   { name: 'NAVBAR.ABOUT', route: '/about', icon: 'info' },
   {
     name: 'NAVBAR.ACCOUNT',

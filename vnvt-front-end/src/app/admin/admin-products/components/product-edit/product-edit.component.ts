@@ -12,14 +12,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './product-edit.component.scss'
 })
 export class ProductEditComponent {
-  product: Product = {
-    id: 0,
-    name: '',
-    description: '',
-    price: 0,
-    categoryId: 0,
-    imageUrl: ''
-  };
+  product!: Product
 
   constructor(
     private route: ActivatedRoute,

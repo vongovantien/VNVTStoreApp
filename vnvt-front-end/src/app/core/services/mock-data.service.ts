@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { faker } from '@faker-js/faker';
-import { Product, Category, Order, User, OrderItem } from '../models';
+import { Product, Category, Order, User, OrderItem, Payment } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,20 +11,20 @@ export class MockDataService {
 
   constructor() { }
 
-  generateFakeProducts(count: number): Product[] {
-    const products: Product[] = [];
-    for (let i = 0; i < count; i++) {
-      products.push({
-        id: faker.datatype.number(),
-        name: faker.commerce.productName(),
-        description: faker.commerce.productDescription(),
-        price: parseFloat(faker.commerce.price()),
-        imageUrl: faker.image.imageUrl(),
-        categoryId: faker.datatype.number()
-      });
-    }
-    return products;
-  }
+  // generateFakeProducts(count: number): Product[] {
+  //   const products: Product[] = [];
+  //   for (let i = 0; i < count; i++) {
+  //     products.push({
+  //       id: faker.datatype.number(),
+  //       name: faker.commerce.productName(),
+  //       description: faker.commerce.productDescription(),
+  //       price: parseFloat(faker.commerce.price()),
+  //       imageUrl: faker.image.imageUrl(),
+  //       categoryId: faker.datatype.number()
+  //     });
+  //   }
+  //   return products;
+  // }
 
   generateFakeCategories(count: number): Category[] {
     const categories: Category[] = [];
@@ -37,37 +37,43 @@ export class MockDataService {
     return categories;
   }
 
+  generateFakeOrderItems(orderId: number, count: number): OrderItem[] {
+    const orderItems: OrderItem[] = [];
+    for (let i = 0; i < count; i++) {
+      orderItems.push({
+        id: faker.datatype.number(),
+        orderId: orderId,
+        productId: faker.datatype.number(),
+        quantity: faker.datatype.number({ min: 1, max: 10 }),
+        price: parseFloat(faker.commerce.price())
+      });
+    }
+    return orderItems;
+  }
   generateFakeOrders(count: number): Order[] {
     const orders: Order[] = [];
     for (let i = 0; i < count; i++) {
+      const orderId = faker.datatype.number();
       orders.push({
-        id: faker.datatype.number(),
-        orderDate: faker.date.recent(),
-        status: faker.helpers.arrayElement(['Pending', 'Shipped', 'Delivered']),
-        items: this.generateFakeOrderItems(faker.datatype.number({ min: 1, max: 5 })),
-        totalAmount: parseFloat(faker.commerce.price())
+        id: orderId,
+        userId: faker.datatype.number(),
+        orderStatus: faker.helpers.arrayElement(['Pending', 'Shipped', 'Delivered']),
+        totalAmount: parseFloat(faker.commerce.price()),
+        items: this.generateFakeOrderItems(orderId, faker.datatype.number({ min: 1, max: 5 })),
+        payment: this.generateFakePayments(orderId)
       });
     }
     return orders;
   }
 
-  generateFakeOrderItems(count: number): OrderItem[] {
-    const orderItems: OrderItem[] = [];
-    for (let i = 0; i < count; i++) {
-      orderItems.push({
-        product: {
-          id: faker.datatype.number(),
-          name: faker.commerce.productName(),
-          description: faker.commerce.productDescription(),
-          price: parseFloat(faker.commerce.price()),
-          imageUrl: faker.image.imageUrl(),
-          categoryId: faker.datatype.number()
-        },
-        quantity: faker.datatype.number({ min: 1, max: 10 }),
-        unitPrice: parseFloat(faker.commerce.price())
-      });
-    }
-    return orderItems;
+  generateFakePayments(orderId: number): Payment {
+    return {
+      id: faker.datatype.number(),
+      orderId: orderId,
+      paymentMethod: faker.finance.transactionType(),
+      paymentStatus: faker.helpers.arrayElement(['Paid', 'Pending', 'Failed']),
+      amount: parseFloat(faker.commerce.price())
+    };
   }
 
   generateFakeUsers(count: number): User[] {
@@ -85,14 +91,14 @@ export class MockDataService {
   }
 
   // Methods to return fake data as Observables
-  getProducts(): Observable<Product[]> {
-    return of(this.generateFakeProducts(10)).pipe(delay(500));
-  }
+  // getProducts(): Observable<Product[]> {
+  //   return of(this.generateFakeProducts(10)).pipe(delay(500));
+  // }
 
-  getProductById(id: number): Observable<Product> {
-    const product = this.generateFakeProducts(1)[0];
-    return of(product).pipe(delay(500));
-  }
+  // getProductById(id: number): Observable<Product> {
+  //   const product = this.generateFakeProducts(1)[0];
+  //   return of(product).pipe(delay(500));
+  // }
 
   getCategories(): Observable<Category[]> {
     return of(this.generateFakeCategories(5)).pipe(delay(500));

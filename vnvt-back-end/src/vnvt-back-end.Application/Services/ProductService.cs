@@ -20,7 +20,13 @@ namespace vnvt_back_end.Application.Services
 
         public async Task<ApiResponse<PagedResult<ProductDto>>> GetPagedProductsAsync(PagingParameters pagingParameters)
         {
-            var pagedResult = await base.GetPagedAsync(pagingParameters);
+            var pagedResult = await base.GetPagedAsync(pagingParameters, null, x => x.Category, x => x.ProductImages);
+            return pagedResult;
+        }
+
+        public async Task<ApiResponse<ProductDto>> GetByIdAsync(int id)
+        {
+            var pagedResult = await base.GetByIdAsync(id, x => x.ProductImages, x => x.Category, x => x.ProductImages);
             return pagedResult;
         }
     }

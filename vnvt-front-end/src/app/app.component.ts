@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { ToastComponent } from './components/toast/toast.component';
+import { AppLoaderComponent } from './core/services/app-loader/app-loader.component';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -15,7 +16,8 @@ import { ToastComponent } from './components/toast/toast.component';
     TranslateModule,
     RouterModule,
     MainLayoutComponent,
-    ToastComponent
+    ToastComponent,
+    AppLoaderComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

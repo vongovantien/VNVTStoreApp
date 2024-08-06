@@ -32,11 +32,13 @@ namespace vnvt_back_end.Application.DTOs
 
         public class ProductDto : GenericDto<int>
         {
+            public string Name { get; set; }
             public string CategoryName { get; set; }
             public string Description { get; set; }
             public decimal Price { get; set; }
             public int CategoryId { get; set; }
             public int StockQuantity { get; set; }
+            public List<ProductImageDto> ProductImages { get; set; }
         }
 
         public class CategoryDto : GenericDto<int>

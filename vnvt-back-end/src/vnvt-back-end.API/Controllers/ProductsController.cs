@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Localization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using vnvt_back_end.Application.DTOs;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Application.Models;
-using vnvt_back_end.Application.Services;
 using vnvt_back_end.Infrastructure;
 using static vnvt_back_end.Application.DTOs.DTOs;
 
@@ -23,13 +21,24 @@ namespace vnvt_back_end.API.Controllers
             _productService = productService;
         }
 
-        [HttpGet]
-        [Route("GetAllProducts")]
-        public async Task<ActionResult<ApiResponse<PagedResult<ProductDto>>>> GetAllProductsAsync()
+        public override async Task<ActionResult<ApiResponse<ProductDto>>> GetById(int id)
+        {
+            var response = await _productService.GetByIdAsync(id);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [AllowAnonymous]
+        public override async Task<ActionResult<ApiResponse<PagedResult<ProductDto>>>> GetPaging([FromQuery] PagingParameters pagingParameters)
+        {
+            var response = await _productService.GetPagedProductsAsync(pagingParameters);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [AllowAnonymous]
+        public override async Task<ActionResult<ApiResponse<IEnumerable<ProductDto>>>> GetAll()
         {
             var response = await _productService.GetAllProductsAsync();
             return StatusCode(response.StatusCode, response);
         }
-
     }
 }

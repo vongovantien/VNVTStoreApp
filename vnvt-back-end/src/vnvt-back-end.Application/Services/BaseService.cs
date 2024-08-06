@@ -37,10 +37,10 @@ namespace vnvt_back_end.Application.Services
         //    return ApiResponseBuilder.Success(result);
         //}
 
-        public async Task<ApiResponse<TDto>> GetByIdAsync(int id)
+        public async Task<ApiResponse<TDto>> GetByIdAsync(int id, params Expression<Func<TEntity, object>>[] includes)
         {
             var repository = _unitOfWork.GetRepository<TEntity>();
-            var entity = await repository.GetByIdAsync(id);
+            var entity = await repository.GetByIdAsync(id, includes);
             if (entity == null)
             {
                 return ApiResponseBuilder.NotFound<TDto>();

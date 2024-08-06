@@ -25,14 +25,7 @@ import { ProductService } from '../../core/services';
   styleUrls: ['./product-detail.component.scss']
 })
 export class ProductDetailComponent implements OnInit {
-  product: Product = {
-    "id": 1,
-    "name": "Men's Winter Jacket",
-    "description": "A warm and stylish winter jacket.",
-    "price": 99.99,
-    "imageUrl": "https://via.placeholder.com/100",
-    "categoryId": 1
-  };
+  product!: Product;
   comments: Comment[] = [];
   trendingProducts: Product[] = [];
   newComment = {

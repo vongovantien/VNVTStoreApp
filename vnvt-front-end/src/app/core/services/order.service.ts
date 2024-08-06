@@ -28,8 +28,8 @@ export class OrderService {
 
   updateOrder(id: number, order: Order): Observable<Order> {
     return this.mockDataService.getOrderById(id).pipe(map(o => {
-      o.orderDate = order.orderDate;
-      o.status = order.status;
+      // o.orderDate = order.orderDate;
+      // o.status = order.status;
       o.items = order.items;
       o.totalAmount = order.totalAmount;
       return o;

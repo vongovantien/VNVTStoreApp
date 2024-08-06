@@ -11,12 +11,16 @@ public partial class ProductImage
 {
     [Key]
     [Column("id")]
-    public long Id { get; set; }
-
-    [Column("image_url")]
-    [StringLength(300)]
-    public string? ImageUrl { get; set; }
+    public int Id { get; set; }
 
     [Column("product_id")]
-    public long? ProductId { get; set; }
+    public int? ProductId { get; set; }
+
+    [Column("image_url")]
+    [StringLength(255)]
+    public string ImageUrl { get; set; } = null!;
+
+    [ForeignKey("ProductId")]
+    [InverseProperty("ProductImages")]
+    public virtual Product? Product { get; set; }
 }

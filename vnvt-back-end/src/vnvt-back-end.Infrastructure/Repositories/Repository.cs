@@ -17,9 +17,19 @@ namespace vnvt_back_end.Infrastructure.Repositories
             _dbSet = _context.Set<T>();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)
         {
-            return await _dbSet.FindAsync(id);
+            IQueryable<T> query = _dbSet.AsNoTracking();
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
@@ -33,8 +43,8 @@ namespace vnvt_back_end.Infrastructure.Repositories
                     query = query.Include(include);
                 }
             }
-
-            return await query.ToListAsync();
+            var test = await query.ToListAsync();
+            return test;
         }
 
         public async Task AddAsync(T entity)
@@ -74,17 +84,16 @@ namespace vnvt_back_end.Infrastructure.Repositories
 
             if (!string.IsNullOrEmpty(pagingParameters.Keyword))
             {
-                // Assuming T has a property called Name, adjust this if needed
-                var keywordFilter = Expression.Lambda<Func<T, bool>>(
-                    Expression.Call(
-                        Expression.Property(Expression.Parameter(typeof(T), "p"), "Name"),
-                        "Contains",
-                        Type.EmptyTypes,
-                        Expression.Constant(pagingParameters.Keyword)
-                    ),
-                    Expression.Parameter(typeof(T), "p")
-                );
-                query = query.Where(keywordFilter);
+                // Assuming T has a property called "Name"
+                var parameter = Expression.Parameter(typeof(T), "p");
+                var property = Expression.Property(parameter, "Name");
+                var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                var someValue = Expression.Constant(pagingParameters.Keyword, typeof(string));
+                var containsExpression = Expression.Call(property, containsMethod, someValue);
+
+                var lambda = Expression.Lambda<Func<T, bool>>(containsExpression, parameter);
+
+                query = query.Where(lambda);
             }
 
             if (!string.IsNullOrEmpty(pagingParameters.SortField))

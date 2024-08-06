@@ -6,3 +6,4 @@ export * from './orderItem.model';
 export * from './user.model';
 export * from './cart-item.model';
 export * from './comment.model';
+export * from './payment.model';

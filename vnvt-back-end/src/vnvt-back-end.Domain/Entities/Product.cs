@@ -38,12 +38,21 @@ public partial class Product
     [Column("updateddate", TypeName = "timestamp without time zone")]
     public DateTime? Updateddate { get; set; }
 
+    [InverseProperty("Product")]
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+
     [ForeignKey("CategoryId")]
     [InverseProperty("Products")]
     public virtual Category? Category { get; set; }
 
     [InverseProperty("Product")]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+
+    [InverseProperty("Product")]
+    public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+
+    [InverseProperty("Product")]
+    public virtual ICollection<ProductPromotion> ProductPromotions { get; set; } = new List<ProductPromotion>();
 
     [InverseProperty("Product")]
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

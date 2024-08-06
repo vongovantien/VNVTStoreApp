@@ -13,7 +13,7 @@ namespace vnvt_back_end.Application.Interfaces
     {
         Task<ApiResponse<IEnumerable<TDto>>> GetAllAsync(params Expression<Func<TEntity, object>>[] includes);
         Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(PagingParameters pagingParameters, Expression<Func<TDto, bool>> filter = null, params Expression<Func<TEntity, object>>[] includes);
-        Task<ApiResponse<TDto>> GetByIdAsync(int id);
+        Task<ApiResponse<TDto>> GetByIdAsync(int id, params Expression<Func<TEntity, object>>[] includes);
         Task<ApiResponse<TDto>> AddAsync(TDto dto);
         Task<ApiResponse<TDto>> UpdateAsync(TDto dto);
         Task<ApiResponse<bool>> DeleteAsync(int id);

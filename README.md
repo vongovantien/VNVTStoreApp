@@ -52,7 +52,7 @@ The E-Commerce Platform is a comprehensive online shopping solution built with J
 
 The platform follows a microservices architecture with a clear separation of concerns between the frontend and backend. The backend provides RESTful APIs consumed by the Angular frontend.
 
-![Architecture Diagram](architecture-diagram.jpg)
+![Architecture Diagram](diagram.png)
 
 ## Installation
 

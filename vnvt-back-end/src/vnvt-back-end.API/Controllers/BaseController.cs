@@ -57,7 +57,7 @@ namespace vnvt_back_end.API.Controllers
         {
             if (id != dto.Id)
             {
-                return BadRequest(ApiResponseBuilder.Error<TDto>("Invalid ID", 400));
+                return BadRequest(ApiResponseBuilder.BadRequest<TDto>("Invalid ID"));
             }
 
             var response = await _baseService.UpdateAsync(dto);

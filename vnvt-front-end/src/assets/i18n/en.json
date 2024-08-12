@@ -1,4 +1,13 @@
 {
+  "PRICE_ASC": "Price: Low to High",
+  "PRICE_DESC": "Price: High to Low",
+  "HIGHEST_RATED": "Highest Rated",
+  "MOST_RATED": "Most Rated",
+  "BEST_SELLING": "Best Selling",
+  "HIGHEST_DISCOUNT": "Highest Discount",
+  "DISCOUNTED_PRODUCTS": "Discounted Products",
+  "POPULAR": "Popular",
+  "BRAND": "Brand",
   "TITLE": "Welcome to My App",
   "NAVBAR": {
     "HOME": "Home",

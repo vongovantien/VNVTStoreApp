@@ -49,6 +49,9 @@ public partial class User
     [Column("role", TypeName = "character varying")]
     public string? Role { get; set; }
 
+    [Column("avatarurl", TypeName = "character varying")]
+    public string? Avatarurl { get; set; }
+
     [InverseProperty("User")]
     public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
 

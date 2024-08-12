@@ -28,7 +28,7 @@ namespace vnvt_back_end.API.Middlewares
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var response = context.Response;
             response.ContentType = "application/json";
@@ -50,13 +50,21 @@ namespace vnvt_back_end.API.Middlewares
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     responseModel.StatusCode = (int)HttpStatusCode.Unauthorized;
                     break;
+                case InvalidOperationException:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    responseModel.StatusCode = (int)HttpStatusCode.BadRequest;
+                    break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     break;
             }
 
-            var result = JsonSerializer.Serialize(responseModel);
-            return response.WriteAsync(result);
+            var json = JsonSerializer.Serialize(responseModel, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            return response.WriteAsync(json);
         }
     }
 }

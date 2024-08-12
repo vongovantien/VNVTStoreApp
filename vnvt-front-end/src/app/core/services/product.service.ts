@@ -48,15 +48,18 @@ export class ProductService {
     );
   }
 
-  getProductFilter(pagingParams: PagingParameters): Observable<Product[]> {
+  getProductFilter(pagingParams: PagingParameters, categoryId: number): Observable<Product[]> {
     let params = new HttpParams()
       .set('pageNumber', pagingParams.PageNumber.toString())
       .set('pageSize', pagingParams.PageSize.toString())
       .set('keyword', pagingParams.Keyword || '')
       .set('sortField', pagingParams.SortField || '')
       .set('sortDescending', pagingParams.SortDescending.toString());
+      if (categoryId) {
+        params = params.set('categoryId', categoryId.toString());
+      }
 
-    return this.http.get<any>(`${this.apiUrl}/paging`, { params }).pipe(
+    return this.http.get<any>(`${this.apiUrl}/get-product-filters`, { params }).pipe(
       map(response => response.data.items)
     );
   }

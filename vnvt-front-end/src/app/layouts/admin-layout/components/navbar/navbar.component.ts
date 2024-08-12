@@ -5,6 +5,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BehaviorSubject } from 'rxjs';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { UserService } from '../../../../core/services';
+import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -15,7 +17,14 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 export class NavbarComponent {
   @Output() toggle = new EventEmitter<void>();
 
+  constructor(private userService: UserService, private authService: AuthService){ }
+
   toggleSidebar() {
     this.toggle.emit();
+  }
+
+  logout(): void {
+    this.userService.clearUser();
+    this.authService.logout();
   }
 }

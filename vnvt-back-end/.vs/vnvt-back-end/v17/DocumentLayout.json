@@ -1,28 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{0629F8D9-8735-4B93-B8E1-7FBEF7173E0A}|src\\vnvt-back-end.API\\vnvt-back-end.API.csproj|d:\\repo\\vnvtstoreapp\\vnvt-back-end\\src\\vnvt-back-end.api\\controllers\\basecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0629F8D9-8735-4B93-B8E1-7FBEF7173E0A}|src\\vnvt-back-end.API\\vnvt-back-end.API.csproj|solutionrelative:src\\vnvt-back-end.api\\controllers\\basecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0629F8D9-8735-4B93-B8E1-7FBEF7173E0A}|src\\vnvt-back-end.API\\vnvt-back-end.API.csproj|d:\\repo\\vnvtstoreapp\\vnvt-back-end\\src\\vnvt-back-end.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0629F8D9-8735-4B93-B8E1-7FBEF7173E0A}|src\\vnvt-back-end.API\\vnvt-back-end.API.csproj|solutionrelative:src\\vnvt-back-end.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7B9BCFCA-6898-4A80-BD3F-9956578F99EC}|src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj|d:\\repo\\vnvtstoreapp\\vnvt-back-end\\src\\vnvt-back-end.application\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7B9BCFCA-6898-4A80-BD3F-9956578F99EC}|src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj|solutionrelative:src\\vnvt-back-end.application\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7B9BCFCA-6898-4A80-BD3F-9956578F99EC}|src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj|d:\\repo\\vnvtstoreapp\\vnvt-back-end\\src\\vnvt-back-end.application\\interfaces\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7B9BCFCA-6898-4A80-BD3F-9956578F99EC}|src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj|solutionrelative:src\\vnvt-back-end.application\\interfaces\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7B9BCFCA-6898-4A80-BD3F-9956578F99EC}|src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj|d:\\repo\\vnvtstoreapp\\vnvt-back-end\\src\\vnvt-back-end.application\\services\\baseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7B9BCFCA-6898-4A80-BD3F-9956578F99EC}|src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj|solutionrelative:src\\vnvt-back-end.application\\services\\baseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -30,47 +9,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": -1,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "BaseService.cs",
-              "DocumentMoniker": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\Services\\BaseService.cs",
-              "RelativeDocumentMoniker": "src\\vnvt-back-end.Application\\Services\\BaseService.cs",
-              "ToolTip": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\Services\\BaseService.cs",
-              "RelativeToolTip": "src\\vnvt-back-end.Application\\Services\\BaseService.cs",
-              "ViewState": "AQIAAE0AAAAAAAAAAAAkwHMAAAA8AAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-06T12:05:46.884Z",
-              "IsPinned": true
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "BaseController.cs",
-              "DocumentMoniker": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.API\\Controllers\\BaseController.cs",
-              "RelativeDocumentMoniker": "src\\vnvt-back-end.API\\Controllers\\BaseController.cs",
-              "ToolTip": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.API\\Controllers\\BaseController.cs",
-              "RelativeToolTip": "src\\vnvt-back-end.API\\Controllers\\BaseController.cs",
-              "ViewState": "AQIAAC8AAAAAAAAAAAAiwEoAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-06T15:07:22.001Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.API\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "src\\vnvt-back-end.API\\Controllers\\AuthController.cs",
-              "ToolTip": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.API\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "src\\vnvt-back-end.API\\Controllers\\AuthController.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-06T15:07:21.421Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
@@ -94,31 +34,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "IProductService.cs",
-              "DocumentMoniker": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\Interfaces\\IProductService.cs",
-              "RelativeDocumentMoniker": "src\\vnvt-back-end.Application\\Interfaces\\IProductService.cs",
-              "ToolTip": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\Interfaces\\IProductService.cs",
-              "RelativeToolTip": "src\\vnvt-back-end.Application\\Interfaces\\IProductService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAABJAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-06T12:05:39.81Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ProductService.cs",
-              "DocumentMoniker": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\Services\\ProductService.cs",
-              "RelativeDocumentMoniker": "src\\vnvt-back-end.Application\\Services\\ProductService.cs",
-              "ToolTip": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\Services\\ProductService.cs",
-              "RelativeToolTip": "src\\vnvt-back-end.Application\\Services\\ProductService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABgAAAAfAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-06T12:05:33.428Z",
-              "EditorCaption": ""
             }
           ]
         }

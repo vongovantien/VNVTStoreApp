@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CloudinaryDotNet;
+using Microsoft.EntityFrameworkCore;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Infrastructure;
 using vnvt_back_end.Infrastructure.Contexts;
@@ -21,12 +22,17 @@ namespace vnvt_back_end.Domain.Repositories
             {
                 return null;
             }
+
             return user;
         }
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+        public async Task<User> GetUserByUsernameAsync(string username)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task CreateUserAsync(User user)
@@ -44,6 +50,19 @@ namespace vnvt_back_end.Domain.Repositories
         {
             _context.Entry(user).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> CheckUserExisted(string username)
+        {
+            return await _context.Users.AnyAsync();
+        }
+        public async Task UploadAvatar(int userId, string url)
+        {
+            var user = await _context.Users.FindAsync(userId);
+           // user.AvatarUrl = url;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
         }
     }
 }

@@ -7,6 +7,9 @@ import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { AppLoaderComponent } from './core/services/app-loader/app-loader.component';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { ToastService } from './core/services';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -18,6 +21,10 @@ import { AppLoaderComponent } from './core/services/app-loader/app-loader.compon
     MainLayoutComponent,
     ToastComponent,
     AppLoaderComponent
+  ],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    ToastService,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

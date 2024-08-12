@@ -4,11 +4,14 @@ namespace vnvt_back_end.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<string> AuthenticateAsync(string username, string password);
+        Task<UserDto> AuthenticateAsync(string username, string password);
         Task RegisterAsync(string username, string email, string password);
+        Task<bool> CheckUserExisted(string username);
         Task ForgotPasswordAsync(string email);
         Task ResetPasswordAsync(string token, string newPassword);
-        Task<UserProfileDto> GetUserProfileAsync(int userId);
-        Task UpdateUserProfileAsync(int userId, UserProfileDto profile);
+        Task<UserDto> GetUserProfileAsync(int userId);
+        Task UpdateUserProfileAsync(int userId, UserDto profile);
+        Task UploadAvatar(int userId, string url);
+        //Task<string> GetRefreshTokenAsync(string token);
     }
 }

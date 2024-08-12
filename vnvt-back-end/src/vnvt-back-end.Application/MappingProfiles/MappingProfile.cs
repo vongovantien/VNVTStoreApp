@@ -13,6 +13,7 @@ namespace vnvt_back_end.Application.MappingProfiles
             CreateMap<Review, ReviewDto>().ReverseMap();
             CreateMap<Payment, PaymentDto>().ReverseMap();
             CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<Category, CategoryDto>().ReverseMap();
             CreateMap<ProductImage, ProductImageDto>();
         }
     }

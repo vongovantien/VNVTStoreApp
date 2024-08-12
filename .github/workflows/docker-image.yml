@@ -38,3 +38,10 @@ jobs:
           context: ./vnvt-back-end
           push: true
           tags: tienvo3008/vnvtstoreapp:latest
+
+      - name: Build and push frontend Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./vnvt-front-end
+          push: true
+          tags: tienvo3008/vnvtstoreapp-frontend:latest

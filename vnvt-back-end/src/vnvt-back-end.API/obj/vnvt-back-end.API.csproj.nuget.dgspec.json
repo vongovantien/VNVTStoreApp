@@ -175,6 +175,10 @@
               "target": "Package",
               "version": "[4.0.3, )"
             },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.26.2, )"
+            },
             "FluentValidation": {
               "target": "Package",
               "version": "[11.9.2, )"
@@ -182,6 +186,10 @@
             "MediatR": {
               "target": "Package",
               "version": "[12.4.0, )"
+            },
+            "Microsoft.AspNetCore.Http.Features": {
+              "target": "Package",
+              "version": "[5.0.17, )"
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",

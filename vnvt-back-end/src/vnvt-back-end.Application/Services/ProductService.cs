@@ -25,9 +25,9 @@ namespace vnvt_back_end.Application.Services
             return pagedResult;
         }
 
-        public async Task<ApiResponse<PagedResult<ProductDto>>> GetProductFilters(PagingParameters pagingParameters, int? categoryId)
+        public async Task<ApiResponse<PagedResult<ProductDto>>> GetProductFilters(ProductFilter pagingParameters)
         {
-            Expression<Func<ProductDto, bool>> filter = x => !categoryId.HasValue || x.CategoryId == categoryId;
+            Expression<Func<Product, bool>> filter = x => !pagingParameters.CategoryId.HasValue || x.CategoryId == pagingParameters.CategoryId;
 
             var pagedResult = await base.GetPagedAsync(pagingParameters, filter, x => x.Category, x => x.ProductImages);
             return pagedResult;

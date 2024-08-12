@@ -1,4 +1,14 @@
+
 {
+  "PRICE_ASC": "Giá: Thấp đến Cao",
+  "PRICE_DESC": "Giá: Cao đến Thấp",
+  "HIGHEST_RATED": "Đánh giá cao nhất",
+  "MOST_RATED": "Đánh giá nhiều nhất",
+  "BEST_SELLING": "Bán chạy nhất",
+  "HIGHEST_DISCOUNT": "Giảm giá cao nhất",
+  "DISCOUNTED_PRODUCTS": "Sản phẩm giảm giá",
+  "POPULAR": "Phổ biến",
+  "BRAND": "Thương hiệu",
   "TITLE": "Chào mừng đến với ứng dụng của tôi",
   "NAVBAR": {
     "HOME": "Trang chủ",

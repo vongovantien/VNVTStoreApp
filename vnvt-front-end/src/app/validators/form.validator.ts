@@ -3,33 +3,48 @@ import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators }
 
 @Injectable()
 export class FormValidators extends Validators {
-    public static passwordMatchValidator(form: FormGroup) {
-        const passwordControl = form.get('password');
-        const confirmPasswordControl = form.get('confirmPassword');
+  public static passwordMatchValidator(form: FormGroup) {
+    const passwordControl = form.get('password');
+    const confirmPasswordControl = form.get('confirmPassword');
 
-        if (passwordControl?.value !== null && passwordControl?.value !== confirmPasswordControl?.value) {
-            confirmPasswordControl?.setErrors({ mismatch: true });
-        } else {
-            confirmPasswordControl?.setErrors(null);
-        }
+    if (passwordControl?.value !== null && passwordControl?.value !== confirmPasswordControl?.value) {
+      confirmPasswordControl?.setErrors({ mismatch: true });
+    } else {
+      confirmPasswordControl?.setErrors(null);
     }
+  }
+  public static mustMatch(controlName: string, matchingControlName: string) {
+    return (formGroup: FormGroup) => {
+      const control = formGroup.controls[controlName];
+      const matchingControl = formGroup.controls[matchingControlName];
 
-    public static requiredControl(control: FormControl): ValidationErrors | null {
-        if (control.value !== null) {
-            return control.value.trim() === "" ? { "required": true } : null;
-        }
-        return { "required": true };
+      if (matchingControl.errors && !matchingControl.errors['mustMatch']) {
+        return;
+      }
+
+      if (control.value !== matchingControl.value) {
+        matchingControl.setErrors({ mustMatch: true });
+      } else {
+        matchingControl.setErrors(null);
+      }
+    };
+  }
+  public static requiredControl(control: FormControl): ValidationErrors | null {
+    if (control.value !== null) {
+      return control.value.trim() === "" ? { "required": true } : null;
     }
+    return { "required": true };
+  }
 
-    public static validateSpecialChar(controls: AbstractControl | FormControl | FormGroup): ValidationErrors | null {
-        return (control: AbstractControl): ValidationErrors | null => {
-            const value = control.value as string;
+  public static validateSpecialChar(controls: AbstractControl | FormControl | FormGroup): ValidationErrors | null {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value as string;
 
-            if (/[@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/\\]/.test(value)) {
-                return { hasSpecialValue: true };
-            }
+      if (/[@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/\\]/.test(value)) {
+        return { hasSpecialValue: true };
+      }
 
-            return null;
-        };
-    }
+      return null;
+    };
+  }
 }

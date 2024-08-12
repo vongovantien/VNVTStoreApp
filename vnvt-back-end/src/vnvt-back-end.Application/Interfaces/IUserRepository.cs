@@ -9,5 +9,7 @@ namespace vnvt_back_end.Application.Interfaces
         Task CreateUserAsync(User user);
         Task<User> GetUserByIdAsync(int id);
         Task UpdateUserAsync(User user);
+        Task<bool> CheckUserExisted(string username);
+        Task UploadAvatar(int userId, string url);
     }
 }

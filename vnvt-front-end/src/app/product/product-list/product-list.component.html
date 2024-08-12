@@ -3,12 +3,12 @@
     <aside class="product-page__sidebar">
       <div class="product-page__sidebar-title">Filters</div>
       <!-- Add more filters as needed -->
-      <!-- <mat-form-field class="product-page__filter-category"> -->
-        <!-- <mat-label>Category</mat-label> -->
-        <!-- <mat-select [(ngModel)]="filters.category">
-          <mat-option *ngFor="let category of categories" [value]="category">{{ category }}</mat-option>
-        </mat-select> -->
-      <!-- </mat-form-field> -->
+      <mat-form-field class="product-page__filter-category">
+        <mat-label>Category</mat-label>
+        <mat-select [(ngModel)]="categoryId" (selectionChange)="onCategoryChange()">
+          <mat-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
       <button mat-raised-button="button" (click)="clearFilters()">Clear filters</button>
     </aside>
 
@@ -16,18 +16,26 @@
       <div class="product-page__products-header">
         <div class="product-page__products-sort">
           <mat-form-field>
-            <mat-label>Sort by</mat-label>
+            <mat-label>{{ 'SORT_BY' | translate }}</mat-label>
             <mat-select [(ngModel)]="sortOption" (selectionChange)="sortProducts()">
-              <mat-option value="popular">Popular</mat-option>
-              <mat-option value="price">Price</mat-option>
-              <mat-option value="new">New</mat-option>
+              <mat-option value="priceAsc">{{ 'PRICE_ASC' | translate }}</mat-option>
+              <mat-option value="priceDesc">{{ 'PRICE_DESC' | translate }}</mat-option>
+              <mat-option value="ratingHigh">{{ 'HIGHEST_RATED' | translate }}</mat-option>
+              <mat-option value="ratingMost">{{ 'MOST_RATED' | translate }}</mat-option>
+              <mat-option value="salesMost">{{ 'BEST_SELLING' | translate }}</mat-option>
+              <mat-option value="newest">{{ 'NEWEST' | translate }}</mat-option>
+              <mat-option value="discountHigh">{{ 'HIGHEST_DISCOUNT' | translate }}</mat-option>
+              <mat-option value="discountAvailable">{{ 'DISCOUNTED_PRODUCTS' | translate }}</mat-option>
+              <mat-option value="popular">{{ 'POPULAR' | translate }}</mat-option>
+              <mat-option value="brand">{{ 'BRAND' | translate }}</mat-option>
+              <mat-option value="category">{{ 'CATEGORY' | translate }}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
         <div class="product-page__products-search">
           <mat-form-field>
             <mat-label>Search Products</mat-label>
-            <input matInput (keyup)="onSearch($event)" placeholder="Search...">
+            <input matInput [(ngModel)]="filters.Keyword" (keyup)="onSearch($event)" placeholder="Search...">
             <button type="button" mat-icon-button matSuffix (click)="clearSearch()">
               <mat-icon>clear</mat-icon>
             </button>

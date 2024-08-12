@@ -12,7 +12,7 @@
       </button>
       <mat-menu #menu="matMenu">
         <ng-container *ngFor="let subItem of item.subItems">
-          <button type="button" mat-menu-item [routerLink]="[subItem.route]" class="navbar__submenu-item">
+          <button type="button" mat-menu-item [routerLink]="[subItem.route]" class="navbar__submenu-item"   (click)="onNavbarSubItemClick(subItem)">
             <mat-icon>{{ subItem.icon }}</mat-icon>
             {{ subItem.name | translate }}
           </button>
@@ -27,6 +27,9 @@
     <mat-icon>shopping_cart</mat-icon>
     <span class="navbar__icon-badge">3</span>
   </button>
+  @if(!authService.isAuthenticated()) {
   <button type="button" mat-button routerLink="/login" class="navbar__item">{{'SIGN_IN' | translate}}</button>
   <button type="button" mat-button routerLink="/register" class="navbar__item">{{'SIGN_UP' | translate}}</button>
+  }
+
 </mat-toolbar>

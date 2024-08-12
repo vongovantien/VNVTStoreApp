@@ -1,10 +1,77 @@
-<div class="register-container">
-  <h2>Welcome Back</h2>
-  <p>Login to continue</p>
+<div class="register-card">
+  <mat-card class="register-card__content">
+    <mat-card-title>Create an Account</mat-card-title>
+    <mat-card-subtitle>Register Form</mat-card-subtitle>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <mat-form-field appearance="fill" class="register-card__form__field">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="firstName" placeholder="Enter your first name" />
+        <mat-error *ngIf="submitted && f['firstName'].errors">
+          <div *ngIf="f['firstName'].errors['required']">First Name is required</div>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="register-card__form__field">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName" placeholder="Enter your last name" />
+        <mat-error *ngIf="submitted && f['lastName'].errors">
+          <div *ngIf="f['lastName'].errors['required']">Last Name is required</div>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="register-card__form__field">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" placeholder="Enter your username" />
+        <mat-error *ngIf="submitted && f['username'].errors">
+          <div *ngIf="f['username'].errors['required']">Username is required</div>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="register-card__form__field">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" placeholder="Enter your email address" />
+        <mat-error *ngIf="submitted && f['email'].errors">
+          <div *ngIf="f['email'].errors['required']">Email is required</div>
+          <div *ngIf="f['email'].errors['email']">Email must be a valid email address</div>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field matInput class="register-card__form__field">
+        <mat-label>Password</mat-label>
+        <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password"
+          placeholder="Enter your password" />
+        <button mat-icon-button matSuffix (click)="toggleVisibility('password')"
+          [attr.aria-label]="'Toggle password visibility'">
+          <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="submitted && f['password'].errors">
+          <div *ngIf="f['password'].errors['required']">Password is required</div>
+          <div *ngIf="f['password'].errors['minlength']">Password must be at least 6 characters</div>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="register-card__form__field">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput [type]="hideConfirmPassword() ? 'password' : 'text'" formControlName="confirmPassword"
+          placeholder="Confirm your password" />
+        <button mat-icon-button matSuffix (click)="toggleVisibility('confirmPassword')"
+          [attr.aria-label]="'Toggle confirm password visibility'">
+          <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="submitted && f['confirmPassword'].errors">
+          <div *ngIf="f['confirmPassword'].errors['required']">Confirm Password is required</div>
+          <div *ngIf="f['confirmPassword'].errors['mustMatch']">Passwords must match</div>
+        </mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit" class="register-card__form__submit">Register</button>
+    </form>
+    <!--
   <div class="social-login">
     <button class="facebook">Continue with Facebook</button>
     <button class="google">Continue with Google</button>
     <button class="email">Continue with Email</button>
-  </div>
-  <p class="create-account">Or create an <a routerLink="/register">account</a></p>
+  </div> -->
+    <p class="register-card__login">Or create an <a routerLink="/register">account</a></p>
+  </mat-card>
 </div>

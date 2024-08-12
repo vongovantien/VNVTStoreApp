@@ -10,8 +10,7 @@ namespace vnvt_back_end.API.Controllers
     [Route("api/[controller]")]
     //[MiddlewareFilter(typeof(RequestLocalizationMiddleware))]
     [ApiController]
-    public class ProductsController : BaseController<ProductDto, Product
-        >
+    public class ProductsController : BaseController<ProductDto, Product>
     {
         private readonly IProductService _productService;
 
@@ -35,10 +34,10 @@ namespace vnvt_back_end.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("GetProductFilters")]
-        public async Task<ActionResult<ApiResponse<PagedResult<ProductDto>>>> GetProductFilter([FromQuery] PagingParameters pagingParameters, [FromQuery] int categoryId)
+        [HttpGet("get-product-filters")]
+        public async Task<ActionResult<ApiResponse<PagedResult<ProductDto>>>> GetProductFilter([FromQuery] ProductFilter filter)
         {
-            var response = await _productService.GetProductFilters(pagingParameters, categoryId);
+            var response = await _productService.GetProductFilters(filter);
             return StatusCode(response.StatusCode, response);
         }
         [AllowAnonymous]

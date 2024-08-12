@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,24 +14,38 @@ namespace vnvt_back_end.Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
-
-        public UserService(IUserRepository userRepository, IConfiguration configuration)
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository userRepository, IConfiguration configuration, IMapper mapper)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
-        public async Task<string> AuthenticateAsync(string username, string password)
+        public async Task<UserDto> AuthenticateAsync(string username, string password)
         {
             var user = await _userRepository.GetUserByUsernameAndPasswordAsync(username, password);
             if (user == null) return null;
 
+            var userDto = _mapper.Map<UserDto>(user);
+            userDto.Token = GenerateJwtToken(user);
+
+            return userDto;
+        }
+
+        private string GenerateJwtToken(User user)
+        {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JwtSettings:ExpirationInMinutes"])),
+                Subject = new ClaimsIdentity(new[]
+                {
+            new Claim("id", user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username)
+        }),
+                Expires = DateTime.UtcNow.AddDays(int.Parse(_configuration["JwtSettings:ExpirationInDay"])),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _configuration["JwtSettings:Issuer"],
                 Audience = _configuration["JwtSettings:Audience"]
@@ -39,6 +53,11 @@ namespace vnvt_back_end.Application.Services
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        public async Task<bool> CheckUserExisted(string username)
+        {
+            return await _userRepository.CheckUserExisted(username);
         }
 
         public async Task RegisterAsync(string username, string email, string password)
@@ -84,20 +103,15 @@ namespace vnvt_back_end.Application.Services
             //await _passwordResetTokenRepository.DeletePasswordResetTokenAsync(resetToken.Id);
         }
 
-        public async Task<UserProfileDto> GetUserProfileAsync(int userId)
+        public async Task<UserDto> GetUserProfileAsync(int userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null) return null;
 
-            return new UserProfileDto
-            {
-                Username = user.Username,
-                Email = user.Email,
-                // Map other properties
-            };
+            return _mapper.Map<UserDto>(user); ;
         }
 
-        public async Task UpdateUserProfileAsync(int userId, UserProfileDto profile)
+        public async Task UpdateUserProfileAsync(int userId, UserDto profile)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null) return;
@@ -108,6 +122,11 @@ namespace vnvt_back_end.Application.Services
             // Update other properties
 
             await _userRepository.UpdateUserAsync(user);
+        }
+
+        public async Task UploadAvatar(int userId, string url)
+        {
+            await _userRepository.UploadAvatar(userId, url);
         }
     }
 }

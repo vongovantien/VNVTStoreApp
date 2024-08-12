@@ -162,3 +162,4 @@ D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.API\bin\Debug\net8.0\BCrypt
 D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.API\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.Versioning.dll
 D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.API\bin\Debug\net8.0\Polly.dll
 D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.API\bin\Debug\net8.0\Polly.Core.dll
+D:\repo\VNVTStoreApp\vnvt-back-end\src\vnvt-back-end.API\bin\Debug\net8.0\CloudinaryDotNet.dll

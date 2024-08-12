@@ -1,11 +1,10 @@
-<!-- <div class="cart-product">
+<div class="cart-product">
   <div class="cart-product__image">
-    <img [src]="product.productImages[0].imageUrl" [alt]="product.name">
+    <img src="{{product.productImages[0].imageUrl}}" alt={{product.name}}>
   </div>
   <div class="cart-product__details">
     <h2 class="cart-product__title">{{ product.name }}</h2>
     <p class="cart-product__description">{{ product.description }}</p>
-    TEST
     <div class="cart-product__info">
       <span class="cart-product__price">{{ product.price }}</span>
       <span class="cart-product__quantity">Quantity: {{ product.stockQuantity }}</span>
@@ -16,4 +15,4 @@
       [routerLink]="['/items', product.id ]">Detail</button>
     <button type="button" mat-flat-button class="cart-product__remove-button" (click)="removeFromCart()">Remove</button>
   </div>
-</div> -->
+</div>

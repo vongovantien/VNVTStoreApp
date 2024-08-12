@@ -70,7 +70,7 @@ namespace vnvt_back_end.Infrastructure.Repositories
 
         public async Task<PagedResult<T>> GetPagedAsync(PagingParameters pagingParameters, Expression<Func<T, bool>> filter = null, params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet;
+            IQueryable<T> query = _context.Set<T>();
 
             if (filter != null)
             {

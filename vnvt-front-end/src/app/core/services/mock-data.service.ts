@@ -76,19 +76,19 @@ export class MockDataService {
     };
   }
 
-  generateFakeUsers(count: number): User[] {
-    const users: User[] = [];
-    for (let i = 0; i < count; i++) {
-      users.push({
-        id: faker.datatype.number(),
-        name: faker.person.fullName(),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-        role: faker.helpers.arrayElement(['Admin', 'Customer'])
-      });
-    }
-    return users;
-  }
+  // generateFakeUsers(count: number): User[] {
+  //   const users: User[] = [];
+  //   for (let i = 0; i < count; i++) {
+  //     users.push({
+  //       id: faker.datatype.number(),
+  //       name: faker.person.fullName(),
+  //       email: faker.internet.email(),
+  //       password: faker.internet.password(),
+  //       role: faker.helpers.arrayElement(['Admin', 'Customer'])
+  //     });
+  //   }
+  //   return users;
+  // }
 
   // Methods to return fake data as Observables
   // getProducts(): Observable<Product[]> {
@@ -118,12 +118,12 @@ export class MockDataService {
     return of(order).pipe(delay(500));
   }
 
-  getUsers(): Observable<User[]> {
-    return of(this.generateFakeUsers(10)).pipe(delay(500));
-  }
+  // getUsers(): Observable<User[]> {
+  //   return of(this.generateFakeUsers(10)).pipe(delay(500));
+  // }
 
-  getUserById(id: number): Observable<User> {
-    const user = this.generateFakeUsers(1)[0];
-    return of(user).pipe(delay(500));
-  }
+  // getUserById(id: number): Observable<User> {
+  //   const user = this.generateFakeUsers(1)[0];
+  //   return of(user).pipe(delay(500));
+  // }
 }

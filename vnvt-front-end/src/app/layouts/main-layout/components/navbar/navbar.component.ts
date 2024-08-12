@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,11 +7,12 @@ import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MenuItem } from '../../../../core/models/menu-items.model';
+import { AuthService } from '../../../../core/services/auth.service';
 
 export const NAVBAR_ITEMS: MenuItem[] = [
   { name: 'NAVBAR.HOME', route: '/', icon: 'home' },
   { name: 'NAVBAR.PRODUCTS', route: '/products', icon: 'shopping_bag' },
- // { name: 'NAVBAR.CATEGORIES', route: '/categories', icon: 'category' },
+  // { name: 'NAVBAR.CATEGORIES', route: '/categories', icon: 'category' },
   { name: 'NAVBAR.ABOUT', route: '/about', icon: 'info' },
   {
     name: 'NAVBAR.ACCOUNT',
@@ -52,12 +53,29 @@ export class NavbarComponent {
 
   navbarItems: MenuItem[] = NAVBAR_ITEMS;
 
-  constructor(private translate: TranslateService) {
+  private translate = inject(TranslateService);
+  public authService = inject(AuthService);
+
+  constructor() {
     this.translate.addLangs(['en', 'vi']);
     this.translate.setDefaultLang('en');
   }
 
+
   switchLang(lang: string) {
     this.translate.use(lang);
+  }
+
+  onNavbarItemClick(item: MenuItem): void {
+    if (item.name === 'NAVBAR.LOGOUT') {
+      this.authService.logout();
+    }
+  }
+
+  // Event handler for submenu items
+  onNavbarSubItemClick(subItem: MenuItem): void {
+    if (subItem.name === 'NAVBAR.LOGOUT') {
+      this.authService.logout();
+    }
   }
 }

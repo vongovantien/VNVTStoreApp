@@ -147,7 +147,7 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.Entity<Product>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("products_pkey");
-                
+
             entity.Property(e => e.Id).HasDefaultValueSql("nextval('products_product_id_seq'::regclass)");
             entity.Property(e => e.Createddate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.StockQuantity).HasDefaultValue(0);

@@ -1,21 +1,36 @@
 <div class="login-container">
-  <h2>Welcome Back</h2>
-  <p>Login with email</p>
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <div class="input-group">
-      <input formControlName="email" type="email" placeholder="Email" required>
-    </div>
-    <div class="input-group">
-      <input formControlName="password" type="password" placeholder="Password" required>
-    </div>
-    <div class="input-group">
-      <input formControlName="rememberMe" type="checkbox" id="remember-me">
-      <label for="remember-me">Remember me</label>
-    </div>
-    <div class="actions">
-      <button type="submit" [disabled]="loginForm.invalid">Login</button>
-      <a href="#" class="forgot-password">Forgot Password?</a>
-    </div>
-  </form>
-  <p class="create-account">Or create an <a routerLink="/register">account</a></p>
+  <mat-card class="login-card">
+    <mat-card-title>Welcome Back</mat-card-title>
+    <mat-card-subtitle>Login Form</mat-card-subtitle>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field class="input-group">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" type="text" placeholder="Username" required>
+        <mat-error *ngIf="submitted && f['username'].errors">
+          <div *ngIf="f['username'].errors['required']">Username is required</div>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="input-group">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password" [type]="hidePassword() ? 'password' : 'text'" placeholder="Password"
+          required>
+        <button mat-icon-button matSuffix (click)="toggleVisibility()" [attr.aria-label]="'Toggle password visibility'">
+          <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="submitted && f['password'].errors">
+          <div *ngIf="f['password'].errors['required']">Password is required</div>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-checkbox matInput formControlName="rememberMe" id="remember-me">Remember me</mat-checkbox>
+
+
+      <div class="actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">Login</button>
+        <a mat-button class="forgot-password" href="/forgot-password">Forgot Password?</a>
+      </div>
+    </form>
+    <p class="create-account">Or create an <a routerLink="/register">account</a></p>
+  </mat-card>
 </div>

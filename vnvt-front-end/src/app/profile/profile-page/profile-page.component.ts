@@ -1,22 +1,23 @@
-import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
-import { ControlValueAccessor, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ChangePasswordDialogComponent } from '../change-password-dialog/change-password-dialog.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTabsModule } from '@angular/material/tabs'
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
-import { Order, User } from '../../core/models';
-import { OrderService, UserService } from '../../core/services';
-import { OrderDetailsDialogComponent } from '../order-details-dialog/order-details-dialog.component';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+import { ControlValueAccessor, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { Observable } from 'rxjs';
+import { Order, User } from '../../core/models';
+import { ApiResponse } from '../../core/models/api-response.model';
+import { OrderService, ToastService, UserService } from '../../core/services';
+import { ChangePasswordDialogComponent } from '../change-password-dialog/change-password-dialog.component';
 import { ImageCropperComponent } from '../image-cropper/image-cropper.component';
+import { OrderDetailsDialogComponent } from '../order-details-dialog/order-details-dialog.component';
 @Component({
   selector: 'app-profile-page',
   standalone: true,
@@ -34,11 +35,11 @@ import { ImageCropperComponent } from '../image-cropper/image-cropper.component'
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss'
 })
-export class ProfilePageComponent implements ControlValueAccessor {
+export class ProfilePageComponent implements OnInit, ControlValueAccessor {
   profileForm: FormGroup;
   passwordForm: FormGroup;
 
-  profile: any = {};
+  profile: unknown = {};
   orders!: Order[];
   displayedColumns: string[] = ['id', 'totalAmount', 'paymentMethod', 'orderStatus', 'userId', 'actions'];
 
@@ -48,13 +49,12 @@ export class ProfilePageComponent implements ControlValueAccessor {
     new: '',
     confirm: '',
   };
-  file: string = '';
   constructor(private fb: FormBuilder, private dialog: MatDialog,
     private http: HttpClient,
-    private orderService: OrderService, private userService: UserService) {
+    private orderService: OrderService, private userService: UserService, private toastService: ToastService) {
     this.profileForm = this.fb.group({
-      firstName: [null],
-      lastName: [null],
+      firstname: [null],
+      lastname: [null],
       email: [null, [Validators.required, Validators.email]],
       phone: [null],
       address: [null],
@@ -105,8 +105,20 @@ export class ProfilePageComponent implements ControlValueAccessor {
 
   }
   onSaveChanges() {
-    console.log('Profile saved', this.user);
-    // Implement the save logic here
+    const userData: User = {
+      ...this.profileForm.value
+    };
+    console.log(userData)
+    this.userService.updateProfile(userData).subscribe(
+      (res: ApiResponse<any>) => {
+        if (res.success) {
+          this.toastService.showToast('Profile updated successfully', 'success');
+        }
+      },
+      (error) => {
+        console.error('Error loading user data', error);
+      }
+    );
   }
 
   onEditPicture() {
@@ -116,13 +128,26 @@ export class ProfilePageComponent implements ControlValueAccessor {
 
   loadProfile(): void {
     this.userService.getUserProfile().subscribe({
-      next: (data) => {
-        console.log(data)
-        this.profile = data; // Assuming the API returns { data: profile }
+      next: (res: any) => {
+        console.log(res.data)
+        this.profile = res.data;
+        this.patchValueForm(this.profile)
       },
       error: (err) => {
         console.error('Error loading profile:', err);
       },
+    });
+  }
+  patchValueForm(data: any) {
+    this.profileForm.patchValue({
+      firstname: data.firstname,
+      lastname: data.lastname,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      city: data.city,
+      country: data.country,
+      zipcode: data.zipcode,
     });
   }
 

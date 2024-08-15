@@ -1,48 +1,50 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Order } from '../models';
-import { MockDataService } from './mock-data.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  // private apiUrl = 'https://api.example.com/orders'; // Placeholder for real API URL
+  private apiUrl = `${environment.apiUrl}/orders`; // Use actual API URL from environment
 
-  constructor(private mockDataService: MockDataService) { } // Inject the mock data service
+  constructor(private http: HttpClient) { }
 
+  // Fetch all orders
   getOrders(): Observable<Order[]> {
-    return this.mockDataService.getOrders(); // Use mock data
+    return this.http.get<Order[]>(this.apiUrl).pipe(
+      map(response => response) // Adjust according to your API response structure
+    );
   }
 
+  // Fetch a single order by ID
   getOrderById(id: number): Observable<Order> {
-    return this.mockDataService.getOrderById(id); // Use mock data
+    return this.http.get<Order>(`${this.apiUrl}/${id}`).pipe(
+      map(response => response) // Adjust according to your API response structure
+    );
   }
 
-  createOrder(order: Order): Observable<Order> {
-    return this.mockDataService.getOrders().pipe(map(orders => {
-      orders.push(order);
-      return order;
-    }));
+  // Create a new order
+  createOrder(order: Order): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(this.apiUrl, order).pipe(
+      map(response => response) // Adjust according to your API response structure
+    );
   }
 
-  updateOrder(id: number, order: Order): Observable<Order> {
-    return this.mockDataService.getOrderById(id).pipe(map(o => {
-      // o.orderDate = order.orderDate;
-      // o.status = order.status;
-      o.items = order.items;
-      o.totalAmount = order.totalAmount;
-      return o;
-    }));
+  // Update an existing order by ID
+  updateOrder(id: number, order: Order): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${id}`, order).pipe(
+      map(response => response) // Adjust according to your API response structure
+    );
   }
 
-  deleteOrder(id: number): Observable<void> {
-    return this.mockDataService.getOrders().pipe(map(orders => {
-      const index = orders.findIndex(o => o.id === id);
-      if (index !== -1) {
-        orders.splice(index, 1);
-      }
-      return;
-    }));
+  // Delete an order by ID
+  deleteOrder(id: number) {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      map(response => response) // Adjust according to your API response structure
+    );
   }
 }

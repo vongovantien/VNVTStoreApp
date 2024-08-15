@@ -1,14 +1,16 @@
-import { Component } from '@angular/core';
-import { CartService } from '../../core/services/cart.service';
-import { CartItem } from '../../core/models';
-import { combineLatest, map, Observable } from 'rxjs';
-import { MatIconModule } from '@angular/material/icon';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { MetaService } from '../../core/services/meta.service';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { combineLatest, map, Observable } from 'rxjs';
+import { CartItem } from '../../core/models';
+import { AppConfirmService } from '../../core/services/app-confirm/app-confirm.service';
+import { CartService } from '../../core/services/cart.service';
+import { MetaService } from '../../core/services/meta.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cart-page',
@@ -24,28 +26,32 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class CartPageComponent {
   cartItems$: Observable<CartItem[]>;
+  totalPrice$: Observable<number>;
   couponCode: string = '';
+  subtotal$!: Observable<number>;
+  discount: number = 0; // Discount percentage
 
-  constructor(private cartService: CartService, private metaService: MetaService) {
-    this.addSampleData();
+  constructor(private cartService: CartService,
+    private metaService: MetaService,
+    private confirmService: AppConfirmService, private router: Router) {
     this.cartItems$ = this.cartService.getCartItems();
+    this.totalPrice$ = this.cartService.getTotal();
   }
-  addSampleData() {
-    const sampleItems: CartItem[] = [
-      { id: 1, name: 'Product 1', price: 100, quantity: 1, imageUrl: 'https://via.placeholder.com/100' },
-      { id: 2, name: 'Product 2', price: 200, quantity: 2, imageUrl: 'https://via.placeholder.com/100' }
-    ];
-    sampleItems.forEach(item => this.cartService.addItem(item));
-  }
+
   ngOnInit(): void {
     this.metaService.updateTitle('Your Cart - My E-Commerce App');
     this.metaService.updateFavicon('assets/icon.ico');
   }
-  applyCoupon(): void {
-    // Logic to apply coupon
-  }
+
   removeItem(item: CartItem) {
-    this.cartService.removeItem(item);
+    this.confirmService.confirm({
+      title: 'Delete Item',
+      message: `Are you sure you want to delete "${item.name}" from the cart?`
+    }).subscribe(result => {
+      if (result) {
+        this.cartService.removeFromCart(item.id);
+      }
+    });
   }
 
   updateQuantity(item: CartItem, quantity: number) {
@@ -61,6 +67,21 @@ export class CartPageComponent {
   getTax(): Observable<number> {
     return this.getSubtotal().pipe(
       map(subtotal => subtotal * 0.1) // Example tax rate of 10%
+    );
+  }
+
+  applyCoupon() {
+    // Dummy discount application for demonstration; replace with actual logic
+    if (this.couponCode === 'DISCOUNT10') {
+      this.discount = 10; // 10% discount
+    } else {
+      this.discount = 0;
+    }
+  }
+
+  getDiscountedTotal(): Observable<number> {
+    return this.totalPrice$.pipe(
+      map(total => total - (total * (this.discount / 100)))
     );
   }
 
@@ -80,6 +101,16 @@ export class CartPageComponent {
 
 
   proceedToCheckout(): void {
-    // Logic to proceed to checkout
+    this.router.navigate(['/checkout']);
+  }
+
+  increaseQuantity(item: CartItem) {
+    this.cartService.updateQuantity(item, item.quantity + 1);
+  }
+
+  decreaseQuantity(item: CartItem) {
+    if (item.quantity > 1) {
+      this.cartService.updateQuantity(item, item.quantity - 1);
+    }
   }
 }

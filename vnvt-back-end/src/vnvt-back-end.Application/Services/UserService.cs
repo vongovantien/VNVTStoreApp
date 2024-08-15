@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Infrastructure;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static vnvt_back_end.Application.DTOs.DTOs;
 
 namespace vnvt_back_end.Application.Services
@@ -103,6 +104,14 @@ namespace vnvt_back_end.Application.Services
             //await _passwordResetTokenRepository.DeletePasswordResetTokenAsync(resetToken.Id);
         }
 
+        public async Task Logout(int userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return;
+
+            user.Lastlogindate = DateTime.Now;
+            await _userRepository.UpdateUserAsync(user);
+        }
         public async Task<UserDto> GetUserProfileAsync(int userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
@@ -116,14 +125,15 @@ namespace vnvt_back_end.Application.Services
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null) return;
 
-            user.Username = profile.Username;
             user.Email = profile.Email;
-            //user.FullName = profile.FullName;
-            // Update other properties
+            user.Firstname = profile.Firstname;
+            user.Lastname = profile.Lastname;
+            user.Lastname = profile.Lastname;
+            user.Updateddate = DateTime.Now;
 
             await _userRepository.UpdateUserAsync(user);
         }
-
+         
         public async Task UploadAvatar(int userId, string url)
         {
             await _userRepository.UploadAvatar(userId, url);

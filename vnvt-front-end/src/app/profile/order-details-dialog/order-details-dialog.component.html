@@ -5,11 +5,11 @@
     <p><strong>User ID:</strong> {{ order.userId }}</p>
     <p><strong>Status:</strong> {{ order.orderStatus }}</p>
     <p><strong>Total Amount:</strong> {{ order.totalAmount | currency }}</p>
-    <p><strong>Payment Method:</strong> {{ order.payment.paymentMethod }}</p>
+    <!-- <p><strong>Payment Method:</strong> {{ order.payment.paymentMethod }}</p>
     <p><strong>Payment Status:</strong> {{ order.payment.paymentStatus }}</p>
-    <p><strong>Amount:</strong> {{ order.payment.amount | currency }}</p>
+    <p><strong>Amount:</strong> {{ order.payment.amount | currency }}</p> -->
     <h3>Items</h3>
-    <table mat-table [dataSource]="order.items" class="mat-elevation-z8">
+    <table mat-table [dataSource]="order.orderItems" class="mat-elevation-z8">
 
       <!-- Product ID Column -->
       <ng-container matColumnDef="productId">

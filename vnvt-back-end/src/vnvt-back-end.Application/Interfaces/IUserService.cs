@@ -12,6 +12,7 @@ namespace vnvt_back_end.Application.Interfaces
         Task<UserDto> GetUserProfileAsync(int userId);
         Task UpdateUserProfileAsync(int userId, UserDto profile);
         Task UploadAvatar(int userId, string url);
+        Task Logout(int userId);
         //Task<string> GetRefreshTokenAsync(string token);
     }
 }

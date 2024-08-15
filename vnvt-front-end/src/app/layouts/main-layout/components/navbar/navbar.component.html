@@ -1,35 +1,78 @@
-<mat-toolbar color="primary" class="navbar  navbar--sticky">
-  <ng-container *ngFor="let item of navbarItems">
-    <ng-container *ngIf="!item.subItems">
-      <button type="button" mat-button [routerLink]="[item.route]" class="navbar__item">
-        <mat-icon>{{ item.icon }}</mat-icon>
-        {{ item.name | translate }}
-      </button>
-    </ng-container>
-    <ng-container *ngIf="item.subItems">
-      <button type="button" mat-icon-button [matMenuTriggerFor]="menu" class="navbar__item">
-        <mat-icon>{{ item.icon }}</mat-icon>
-      </button>
-      <mat-menu #menu="matMenu">
-        <ng-container *ngFor="let subItem of item.subItems">
-          <button type="button" mat-menu-item [routerLink]="[subItem.route]" class="navbar__submenu-item"   (click)="onNavbarSubItemClick(subItem)">
-            <mat-icon>{{ subItem.icon }}</mat-icon>
-            {{ subItem.name | translate }}
-          </button>
-        </ng-container>
-      </mat-menu>
-    </ng-container>
-  </ng-container>
-  <span class="navbar__spacer"></span>
-  <button type="button" mat-button (click)="switchLang('en')">EN</button>
-  <button type="button" mat-button (click)="switchLang('vi')">VI</button>
-  <button type="button" mat-icon-button routerLink="/cart" class="navbar__icon">
-    <mat-icon>shopping_cart</mat-icon>
-    <span class="navbar__icon-badge">3</span>
+<mat-toolbar color="primary" class="navbar navbar--sticky">
+  <!-- Menu Button for Mobile View -->
+  <button *ngIf="isMobileView" mat-icon-button [matMenuTriggerFor]="menu" class="navbar__toolbar--menu">
+    <mat-icon>menu</mat-icon>
   </button>
-  @if(!authService.isAuthenticated()) {
-  <button type="button" mat-button routerLink="/login" class="navbar__item">{{'SIGN_IN' | translate}}</button>
-  <button type="button" mat-button routerLink="/register" class="navbar__item">{{'SIGN_UP' | translate}}</button>
-  }
+
+  <!-- Mobile Menu -->
+  <mat-menu #menu="matMenu">
+    <ng-container *ngFor="let item of navbarItems">
+      <ng-container *ngIf="!item.subItems">
+        <button mat-menu-item [routerLink]="[item.route]">
+          <mat-icon>{{ item.icon }}</mat-icon>
+          {{ item.name | translate }}
+        </button>
+      </ng-container>
+      <ng-container *ngIf="item.subItems">
+        <button mat-menu-item [matMenuTriggerFor]="subMenu">
+          <mat-icon>{{ item.icon }}</mat-icon>
+          {{ item.name | translate }}
+        </button>
+        <mat-menu #subMenu="matMenu">
+          <ng-container *ngFor="let subItem of item.subItems">
+            <button mat-menu-item [routerLink]="[subItem.route]">
+              <mat-icon>{{ subItem.icon }}</mat-icon>
+              {{ subItem.name | translate }}
+            </button>
+          </ng-container>
+        </mat-menu>
+      </ng-container>
+    </ng-container>
+  </mat-menu>
+
+  <!-- Main Menu for Desktop View -->
+  <ng-container *ngIf="!isMobileView">
+    <button *ngFor="let item of navbarItems" mat-button [routerLink]="[item.route]" class="navbar__item">
+      <mat-icon>{{ item.icon }}</mat-icon>
+      {{ item.name | translate }}
+    </button>
+  </ng-container>
+
+
+    <!-- Language Switch -->
+    <button mat-button (click)="switchLang('en')">EN</button>
+    <button mat-button (click)="switchLang('vi')">VI</button>
+
+
+    <!-- Cart Button -->
+    <button mat-icon-button routerLink="/cart">
+      <mat-icon>shopping_cart</mat-icon>
+      <span class="navbar__icon-badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+    </button>
+
+    <!-- Authentication Buttons -->
+    <ng-container *ngIf="!authService.isAuthenticated(); else loggedInMenu">
+      <button mat-button routerLink="/login">{{ 'SIGN_IN' | translate }}</button>
+      <button mat-button routerLink="/register">{{ 'SIGN_UP' | translate }}</button>
+    </ng-container>
+    <ng-template #loggedInMenu>
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item routerLink="/profile">
+          <mat-icon>person</mat-icon>
+          {{ 'NAVBAR.PROFILE' | translate }}
+        </button>
+        <button mat-menu-item routerLink="/orders">
+          <mat-icon>list_alt</mat-icon>
+          {{ 'NAVBAR.ORDERS' | translate }}
+        </button>
+        <button mat-menu-item (click)="onLogout()">
+          <mat-icon>logout</mat-icon>
+          {{ 'NAVBAR.LOGOUT' | translate }}
+        </button>
+      </mat-menu>
+    </ng-template>
 
 </mat-toolbar>

@@ -1,3 +1,5 @@
+<!-- <app-app-loader *ngIf="isLoading"></app-app-loader> -->
+
 <div class="product-page">
   <div class="product-page__content">
     <aside class="product-page__sidebar">
@@ -46,11 +48,22 @@
           Showing {{ products.length }} Products
         </div>
       </div>
-      <div class="product-page__products-list">
-        <div *ngFor="let product of products" class="product-page__products-item">
-          <app-card-product [product]="product"></app-card-product>
+      <ng-container *ngIf="!isLoading; else skeleton">
+        <div class="product-page__products-list">
+          <div *ngFor="let product of products" class="product-page__products-item">
+            <app-card-product [product]="product"></app-card-product>
+          </div>
         </div>
-      </div>
+      </ng-container>
+      <ng-template #skeleton>
+        <ngx-skeleton-loader count="20" appearance="line" animation="pulse" class="product-page__products-list"
+          style="display:flex; flex-wrap: wrap; justify-content: space-between" [theme]="
+          {   height: '300px',
+             width: '23%',
+             'box-sizing': 'border-box',
+             display: 'flex'
+             }" />
+      </ng-template>
       <button type="button" mat-button class="product-page__load-more" (click)="loadMore()">Load more products</button>
     </main>
   </div>

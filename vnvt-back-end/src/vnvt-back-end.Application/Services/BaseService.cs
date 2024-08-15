@@ -50,7 +50,7 @@ namespace vnvt_back_end.Application.Services
             return ApiResponseBuilder.Success(dto);
         }
 
-        public async Task<ApiResponse<TDto>> AddAsync(TDto dto)
+        public virtual async Task<ApiResponse<TDto>> AddAsync(TDto dto)
         {
             var repository = _unitOfWork.GetRepository<TEntity>();
             var entity = _mapper.Map<TEntity>(dto);
@@ -97,7 +97,7 @@ namespace vnvt_back_end.Application.Services
         public async Task<ApiResponse<IEnumerable<TDto>>> GetAllAsync(params Expression<Func<TEntity, object>>[] includes)
         {
             var repository = _unitOfWork.GetRepository<TEntity>();
-            var entities = await repository.GetAllAsync(includes);
+            var entities = await repository.GetAllAsync(null, includes);
             var items = _mapper.Map<IEnumerable<TDto>>(entities);
             return ApiResponseBuilder.Success(items);
         }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using vnvt_back_end.Application.Interfaces;
 using vnvt_back_end.Application.Models;
 using vnvt_back_end.Application.Utils;
+using static vnvt_back_end.Application.DTOs.DTOs;
 
 namespace vnvt_back_end.API.Controllers
 {
@@ -48,6 +49,10 @@ namespace vnvt_back_end.API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<TDto>>> Create(TDto dto)
         {
+            if (dto == null || !ModelState.IsValid)
+            {
+                return BadRequest(ApiResponseBuilder.BadRequest<TDto>("Invalid order data."));
+            }
             var response = await _baseService.AddAsync(dto);
             return StatusCode(response.StatusCode, response);
         }

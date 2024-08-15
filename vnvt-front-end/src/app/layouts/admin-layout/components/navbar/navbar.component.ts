@@ -17,14 +17,14 @@ import { AuthService } from '../../../../core/services/auth.service';
 export class NavbarComponent {
   @Output() toggle = new EventEmitter<void>();
 
-  constructor(private userService: UserService, private authService: AuthService){ }
+  constructor(private userService: UserService, private authService: AuthService) { }
 
   toggleSidebar() {
     this.toggle.emit();
   }
 
   logout(): void {
-    this.userService.clearUser();
     this.authService.logout();
+    this.userService.clearUser();
   }
 }

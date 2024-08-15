@@ -35,6 +35,56 @@ public partial class Order
     [Column("coupon_id")]
     public int? CouponId { get; set; }
 
+    [Column("address")]
+    [StringLength(100)]
+    public string? Address { get; set; }
+
+    [Column("email")]
+    [StringLength(100)]
+    public string? Email { get; set; }
+
+    [Column("last_name")]
+    [StringLength(100)]
+    public string? LastName { get; set; }
+
+    [Column("note")]
+    [StringLength(100)]
+    public string? Note { get; set; }
+
+    [Column("order_date", TypeName = "timestamp without time zone")]
+    public DateTime? OrderDate { get; set; }
+
+    [Column("payment_method")]
+    [StringLength(255)]
+    public string? PaymentMethod { get; set; }
+
+    [Column("shipping_address")]
+    [StringLength(255)]
+    public string? ShippingAddress { get; set; }
+
+    [Column("shipping_date", TypeName = "timestamp without time zone")]
+    public DateTime? ShippingDate { get; set; }
+
+    [Column("shipping_method")]
+    [StringLength(255)]
+    public string? ShippingMethod { get; set; }
+
+    [Column("status")]
+    [StringLength(255)]
+    public string? Status { get; set; }
+
+    [Column("first_name", TypeName = "character varying")]
+    public string? FirstName { get; set; }
+
+    [Column("city", TypeName = "character varying")]
+    public string? City { get; set; }
+
+    [Column("country", TypeName = "character varying")]
+    public string? Country { get; set; }
+
+    [Column("zipcode", TypeName = "character varying")]
+    public string? Zipcode { get; set; }
+
     [ForeignKey("CouponId")]
     [InverseProperty("Orders")]
     public virtual Coupon? Coupon { get; set; }

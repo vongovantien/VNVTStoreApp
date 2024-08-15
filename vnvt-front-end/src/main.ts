@@ -13,6 +13,7 @@ import { routes } from './app/app.routes';
 import { ToastService } from './app/core/services';
 import { ErrorInterceptor } from './app/interceptors/error.interceptor';
 import { TokenInterceptor } from './app/interceptors/token.interceptor';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -41,7 +42,7 @@ bootstrapApplication(AppComponent, {
           deps: [HttpClient]
         }
       })
-    ),
+    ), provideAnimationsAsync(),
 
   ]
 }).catch(err => console.error(err));

@@ -11,6 +11,7 @@ namespace vnvt_back_end.Application.Interfaces
         IRepository<Address> AddressRepository { get; }
         IRepository<Category> CategoryRepository { get; }
         IRepository<User> UserRepository { get; }
+        IRepository<OrderItem> OrderItemRepository { get; }
         IRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
         Task<int> CommitAsync();
     }

@@ -7,6 +7,13 @@ export interface Order {
   userId: number;
   orderStatus: string;
   totalAmount: number;
-  items: OrderItem[];
-  payment: Payment;
+  firstName: string;
+  lastName: string;
+  address: string;
+  apartment: string;
+  city: string;
+  country: string;
+  zipcode: string;
+  shippingMethod: string;
+  orderItems: OrderItem[];
 }

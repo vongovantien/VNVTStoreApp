@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("vnvt-back-end.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4b87d1cff18728e9ece3ba57467ca4e999bf8b8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+371b8871cecbdb159b42e4e71a8db8b3b5a9d7e2")]
 [assembly: System.Reflection.AssemblyProductAttribute("vnvt-back-end.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("vnvt-back-end.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -12,7 +12,7 @@ import { Product } from '../../../../core/models';
   templateUrl: './product-create.component.html',
   styleUrl: './product-create.component.scss'
 })
-export class ProductCreateComponent {
+export class ProductCreateComponent implements OnInit {
   productForm!: FormGroup;
 
   constructor(

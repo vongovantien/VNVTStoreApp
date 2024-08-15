@@ -107,6 +107,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
     padding: 20px;
     gap: 20px;
 
@@ -206,7 +207,7 @@
         display: flex;
         align-items: center;
         margin-bottom: 20px;
-        width: 600px;
+        width: 80%;
         background-color: #f9f9f9;
         border-radius: 10px;
         padding: 20px;

@@ -3,10 +3,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #34495e;
-    /* Custom background color */
-    color: white;
-    /* Custom text color */
+    background-color: #34495e; /* Custom background color */
+    color: white; /* Custom text color */
     padding: 0 16px;
 
     &--title {
@@ -36,6 +34,61 @@
 
       &-text {
         margin-left: 8px;
+      }
+    }
+  }
+
+  /* Media queries for responsiveness */
+  @media (max-width: 768px) {
+    &__toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 8px;
+
+      &--title {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+      }
+
+      &--spacer {
+        display: none;
+      }
+
+      &--button {
+        margin-bottom: 8px;
+      }
+
+      &--user-menu {
+        margin-top: 8px;
+
+        &-text {
+          display: none; /* Hide text on smaller screens to save space */
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    &__toolbar {
+      &--title {
+        font-size: 1rem;
+      }
+
+      &--button {
+        margin-bottom: 4px;
+      }
+
+      &--user-menu {
+        width: 100%;
+        justify-content: flex-start;
+
+        &-icon {
+          margin-right: 4px;
+        }
+
+        &-text {
+          display: none; /* Ensure text remains hidden on very small screens */
+        }
       }
     }
   }

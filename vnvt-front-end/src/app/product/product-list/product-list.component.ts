@@ -16,6 +16,8 @@ import { CategoryService, ToastService } from '../../core/services';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ErrorInterceptor } from '../../interceptors/error.interceptor';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { AppLoaderComponent } from '../../core/services/app-loader/app-loader.component';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'app-product-list',
@@ -31,6 +33,8 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
     MatButtonModule,
     CardProductComponent,
     TranslateModule,
+    AppLoaderComponent,
+    NgxSkeletonLoaderModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
@@ -40,6 +44,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
   styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit {
+  isLoading: Boolean = false;
   products: Product[] = [];
   categories: Category[] = []; // Example categories
   categoryId!: number;
@@ -70,7 +75,7 @@ export class ProductListComponent implements OnInit {
         return this.productService.getProductFilter(this.filters, this.categoryId);
       })
     ).subscribe((data: any) => {
-      this.products = data;
+      this.products = [this.products, ...data];
     });
 
     this.loadCategories();
@@ -86,10 +91,20 @@ export class ProductListComponent implements OnInit {
 
 
   loadProducts() {
-    this.productService.getProductFilter(this.filters, this.categoryId).subscribe(products => {
-      this.products = products;
-    });
+    this.isLoading = true;
+    this.productService.getProductFilter(this.filters, this.categoryId)
+      .subscribe(
+        (products: Product[]) => {
+          this.products = products;
+          this.isLoading = false
+        },
+        (error: any) => {
+          this.isLoading = false
+          console.error('Error loading user data', error);
+        }
+      )
   }
+
 
   onSearch(event: any): void {
     const searchTerm = event.target.value;

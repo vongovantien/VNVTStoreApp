@@ -5,45 +5,65 @@
   </div>
   <div class="cart__content">
     <div class="cart__items">
-      <div *ngFor="let item of cartItems$ | async" class="cart__item">
-        <div class="cart__item__details">
-          <img [src]="item.imageUrl" alt="{{ item.name }}" class="cart__item__image">
-          <div class="cart__item__info">
-            <div class="cart__item__name">{{ item.name }}</div>
-            <!-- <div class="cart__item__size">Size: {{ item.size }}</div> -->
-            <div class="cart__item__quantity">Quantity: {{ item.quantity }}</div>
-            <div class="cart__item__price">${{ item.price }}</div>
+      <ng-container *ngIf="(cartItems$ | async)?.length; else emptyCart">
+        <div *ngFor="let item of cartItems$ | async" class="cart__item">
+          <div class="cart__item__details">
+            <div class="cart__item__image">
+              <img [src]="item.productImages[0].imageUrl" alt="{{ item.productImages[0].id }}">
+            </div>
+
+            <div class="cart__item__info">
+              <div class="cart__item__name">{{ item.name }}</div>
+              <!-- <div class="cart__item__size">Size: {{ item.size }}</div> -->
+              <div class="cart__item__quantity">
+                <button (click)="decreaseQuantity(item)" class="quantity__button">-</button>
+                <span>{{ item.quantity }}</span>
+                <button (click)="increaseQuantity(item)" class="quantity__button">+</button>
+              </div>
+              <div class="cart__item__price">${{ item.price }}</div>
+            </div>
           </div>
+          <button mat-button class="cart__item__remove" (click)="removeItem(item)">Remove</button>
         </div>
-        <button mat-button class="cart__item__remove" (click)="removeItem(item)">Remove</button>
-      </div>
+      </ng-container>
+      <ng-template #emptyCart>
+        <div *ngIf="!(cartItems$ | async)?.length" class="cart__empty">
+          <div class="cart__empty__message">Your cart is empty.</div>
+          <a class="cart__empty__link" routerLink="['/products']">Continue Shopping</a>
+        </div>
+      </ng-template>
     </div>
     <div class="cart__summary">
       <h2 class="cart__summary__title">Order Summary</h2>
       <mat-form-field appearance="outline" class="cart__coupon">
         <mat-label>Enter coupon code here</mat-label>
         <input matInput [(ngModel)]="couponCode">
-        <button mat-icon-button matSuffix (click)="applyCoupon()">
+        <button type="button" mat-icon-button matSuffix (click)="applyCoupon()">
           <mat-icon>check</mat-icon>
         </button>
       </mat-form-field>
       <div class="cart__summary__details">
         <div class="cart__summary__line">
-          <span>Subtotal</span>
-          <span>${{ getSubtotal() }}</span>
+          <b>Subtotal: </b>
+          <span>{{ (subtotal$ | async) | number:'1.2-2' }}</span>
         </div>
         <div class="cart__summary__line">
-          <span>Shipping</span>
+          <b>Shipping</b>
           <span>Calculated at the next step</span>
         </div>
+        <div class="cart__summary__line">
+          <b>Discount: </b>
+          <span>{{ discount }}%</span>
+        </div>
         <div class="cart__summary__line cart__summary__total">
-          <span>Total</span>
-          <span>${{ getSubtotal() }}</span>
+          <b>Total: </b>
+          <span>{{ (getDiscountedTotal() | async) | number:'1.2-2' }}</span>
         </div>
       </div>
       <button mat-raised-button color="primary" class="cart__checkout" (click)="proceedToCheckout()">Continue to
         checkout</button>
     </div>
+
   </div>
   <div class="cart__information">
     <h2 class="cart__information__title">Order Information</h2>

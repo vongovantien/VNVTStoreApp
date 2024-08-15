@@ -50,21 +50,21 @@ export class MockDataService {
     }
     return orderItems;
   }
-  generateFakeOrders(count: number): Order[] {
-    const orders: Order[] = [];
-    for (let i = 0; i < count; i++) {
-      const orderId = faker.datatype.number();
-      orders.push({
-        id: orderId,
-        userId: faker.datatype.number(),
-        orderStatus: faker.helpers.arrayElement(['Pending', 'Shipped', 'Delivered']),
-        totalAmount: parseFloat(faker.commerce.price()),
-        items: this.generateFakeOrderItems(orderId, faker.datatype.number({ min: 1, max: 5 })),
-        payment: this.generateFakePayments(orderId)
-      });
-    }
-    return orders;
-  }
+  // generateFakeOrders(count: number): Order[] {
+  //   const orders: Order[] = [];
+  //   for (let i = 0; i < count; i++) {
+  //     const orderId = faker.datatype.number();
+  //     orders.push({
+  //       id: orderId,
+  //       userId: faker.datatype.number(),
+  //       orderStatus: faker.helpers.arrayElement(['Pending', 'Shipped', 'Delivered']),
+  //       totalAmount: parseFloat(faker.commerce.price()),
+  //       items: this.generateFakeOrderItems(orderId, faker.datatype.number({ min: 1, max: 5 })),
+  //       payment: this.generateFakePayments(orderId)
+  //     });
+  //   }
+  //   return orders;
+  // }
 
   generateFakePayments(orderId: number): Payment {
     return {
@@ -109,14 +109,14 @@ export class MockDataService {
     return of(category).pipe(delay(500));
   }
 
-  getOrders(): Observable<Order[]> {
-    return of(this.generateFakeOrders(10)).pipe(delay(500));
-  }
+  // getOrders(): Observable<Order[]> {
+  //   return of(this.generateFakeOrders(10)).pipe(delay(500));
+  // }
 
-  getOrderById(id: number): Observable<Order> {
-    const order = this.generateFakeOrders(1)[0];
-    return of(order).pipe(delay(500));
-  }
+  // getOrderById(id: number): Observable<Order> {
+  //   const order = this.generateFakeOrders(1)[0];
+  //   return of(order).pipe(delay(500));
+  // }
 
   // getUsers(): Observable<User[]> {
   //   return of(this.generateFakeUsers(10)).pipe(delay(500));

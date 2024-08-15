@@ -4,12 +4,13 @@
   align-items: center;
   height: 100vh;
   background-color: #f5f5f5;
+  padding: 20px;
 
   .login-card {
     max-width: 500px;
     width: 100%;
     padding: 2rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
 
   .login-form {
@@ -25,8 +26,19 @@
     .actions {
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
       align-items: center;
       margin-top: 1rem;
+
+      @media (max-width: 400px) {
+        justify-content: center;
+      }
+
+      &__login {
+        @media (max-width: 400px) {
+          width: 100%;
+        }
+      }
 
       .forgot-password {
         color: #1976d2;

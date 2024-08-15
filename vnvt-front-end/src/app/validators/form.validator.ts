@@ -36,7 +36,7 @@ export class FormValidators extends Validators {
     return { "required": true };
   }
 
-  public static validateSpecialChar(controls: AbstractControl | FormControl | FormGroup): ValidationErrors | null {
+  public static validateSpecialChar(){
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value as string;
 

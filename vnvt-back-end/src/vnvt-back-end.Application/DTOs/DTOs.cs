@@ -30,7 +30,7 @@ namespace vnvt_back_end.Application.DTOs
         {
             public int Id { get; set; }
             public DateTime CreatedDate { get; set; }
-            public DateTime UpdatedDate { get; set; }
+            public DateTime UpdatedDate { get; set; } = DateTime.Now;
         }
         public class ProductImageDto : GenericDto<int>
         {
@@ -65,9 +65,9 @@ namespace vnvt_back_end.Application.DTOs
 
         public class UserDto : GenericDto<int>
         {
-            public string Username { get; set; }
-            public string Email { get; set; }
-            public string PasswordHash { get; set; }
+            public string? Username { get; set; }
+            public string? Email { get; set; }
+            public string? PasswordHash { get; set; }
             public string? Lastname { get; set; }
             public string? Firstname { get; set; }
             public DateTime? Lastlogindate { get; set; }
@@ -106,8 +106,17 @@ namespace vnvt_back_end.Application.DTOs
         public class OrderDto : GenericDto<int>
         {
             public int UserId { get; set; }
-            public string OrderStatus { get; set; }
+            public string? OrderStatus { get; set; }
             public decimal TotalAmount { get; set; }
+            public string? FirstName { get; set; }
+            public string? LastName { get; set; }
+            public string? Address { get; set; }
+            public string? Apartment { get; set; }
+            public string? City { get; set; }
+            public string? Country { get; set; }
+            public string? Zipcode { get; set; }
+            public string? ShippingMethod { get; set; }
+            public OrderItemDto[]? OrderItems { get; set; }
         }
 
         public class AuthenticateRequest
@@ -122,5 +131,18 @@ namespace vnvt_back_end.Application.DTOs
             public string Token { get; set; }
         }
 
+        public class ProductSalesData
+        {
+            public int ProductId { get; set; }
+            public string ProductName { get; set; }
+            public string CategoryName { get; set; }
+            public decimal UnitPrice { get; set; }
+            public int QuantitySold { get; set; }
+            public decimal TotalSales => UnitPrice * QuantitySold;
+            public decimal Discount { get; set; }
+            public decimal NetSales => TotalSales - Discount;
+            public decimal CostOfGoodsSold { get; set; }
+            public decimal ProfitMargin => NetSales - CostOfGoodsSold;
+        }
     }
 }

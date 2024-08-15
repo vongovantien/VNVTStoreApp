@@ -1,10 +1,9 @@
 // src/app/profile/change-password-dialog/change-password-dialog.component.ts
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldControl, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 @Component({
   selector: 'app-change-password-dialog',

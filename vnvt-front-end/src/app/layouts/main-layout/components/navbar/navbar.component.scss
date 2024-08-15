@@ -1,11 +1,13 @@
 .navbar {
   &--sticky {
-    position: -webkit-sticky;
-    /* For Safari */
+    align-items: center;
     position: sticky;
     top: 0;
-    z-index: 1000;
-    /* Ensure it stays above other content */
+    z-index: 1000; // Ensure it stays above other content
+  }
+
+  &__toolbar--menu {
+    display: none; // Hide menu button by default
   }
 
   &__item {
@@ -19,16 +21,38 @@
   &__submenu-item {
     min-width: 150px;
   }
-}
 
-.navbar__icon-badge {
-  background-color: red;
-  color: white;
-  border-radius: 50%;
-  padding: 2px 5px;
-  font-size: 0.75rem;
-  position: relative;
-  top: -20px;
-  z-index: 999;
-  right: 10px;
+  &__icon-badge {
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 0.75rem;
+    position: relative;
+    top: -20px;
+    right: 10px;
+    z-index: 999;
+  }
+
+  @media (max-width: 600px) {
+    .navbar__toolbar--menu {
+      display: block; // Show menu button on small screens
+    }
+
+    .navbar__item {
+      display: none; // Hide other nav items on small screens
+    }
+
+    .navbar__spacer {
+      display: none; // Hide spacer on small screens
+    }
+  }
+
+  .navbar__menu {
+    display: none; // Hidden by default
+  }
+
+  .navbar__menu.open {
+    display: block; // Show menu when toggled
+  }
 }

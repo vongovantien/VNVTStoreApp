@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { AppLoaderComponent } from '../../core/services/app-loader/app-loader.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -15,7 +16,10 @@ import { FooterComponent } from './components/footer/footer.component';
     RouterModule,
     NavbarComponent,
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    AppLoaderComponent
   ]
 })
-export class MainLayoutComponent { }
+export class MainLayoutComponent {
+  isLoading = false;
+}

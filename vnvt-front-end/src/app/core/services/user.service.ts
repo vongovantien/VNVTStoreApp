@@ -32,7 +32,7 @@ export class UserService {
   }
 
   // Clear user data from service and localStorage
-  clearUser(): void {
+  clearUser() {
     localStorage.removeItem('user');
     this.userSubject.next(null);
   }
@@ -46,5 +46,9 @@ export class UserService {
 
   getUserProfile(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/profile`);
+  }
+  updateProfile(user: any): Observable<any> {
+    console.log(user)
+    return this.http.put<any>(`${this.apiUrl}/profile`, user);
   }
 }

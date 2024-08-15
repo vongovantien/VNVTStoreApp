@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -11,7 +12,6 @@ import { RouterModule } from '@angular/router';
 import { Product } from '../../core/models';
 import { ProductService } from '../../core/services';
 import { ProductCreateComponent } from './components/product-create/product-create.component';
-import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-admin-products',

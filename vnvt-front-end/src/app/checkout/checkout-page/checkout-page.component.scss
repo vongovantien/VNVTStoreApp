@@ -1,0 +1,122 @@
+.checkout {
+  padding: 2rem;
+
+  &__container {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem; // Added gap for spacing between the form and summary
+  }
+
+  &__form {
+    flex: 1;
+    max-width: 800px;
+    border-radius: 8px;
+
+    &-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    &-field {
+      width: 100%;
+      margin-bottom: 1rem;
+
+      &--half {
+        width: 48%;
+      }
+
+      &--third {
+        width: 32%;
+      }
+    }
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  &__subtitle {
+    margin: 1.5rem 0;
+    font-weight: bold;
+  }
+
+  &__button {
+    margin-top: 2rem;
+    width: 100%;
+  }
+
+  &__summary {
+    width: 40%;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: sticky; // Makes summary stick to the side
+    top: 0; // Keeps summary visible on scroll
+    align-self: flex-start; // Aligns summary to start of the container
+  }
+
+  &__summary-title {
+    margin-bottom: 1rem;
+    font-weight: bold;
+  }
+
+  &__cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+
+    &-image {
+      width: 80px;
+      height: 80px;
+      margin-right: 1rem;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    &-details {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    &-name {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    &-quantity,
+    &-price {
+      margin-bottom: 0.5rem;
+    }
+
+    &-remove {
+      background: none;
+      border: none;
+      color: #ff0000;
+      cursor: pointer;
+      padding: 0;
+      text-align: left;
+      padding: 10px 15px;
+    }
+  }
+
+  &__summary-details {
+    margin-top: 2rem;
+
+    &-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+
+      &--total {
+        font-weight: bold;
+      }
+    }
+  }
+}

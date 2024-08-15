@@ -14,6 +14,7 @@ namespace vnvt_back_end.Infrastructure
         private IRepository<Address> _addressRepository;
         private IRepository<User> _userRepository;
         private IRepository<Category> _categoryRepository;
+        private IRepository<OrderItem> _orderItemRepository;
         private readonly Dictionary<Type, object> _repositories = new();
 
         public UnitOfWork(ApplicationDbContext context)
@@ -24,8 +25,10 @@ namespace vnvt_back_end.Infrastructure
 
         public IRepository<Product> ProductRepository =>
             _productRepository ??= new Repository<Product>(_context);
+        public IRepository<OrderItem> OrderItemRepository =>
+            _orderItemRepository ??= new Repository<OrderItem>(_context);
         public IRepository<Category> CategoryRepository =>
-    _categoryRepository ??= new Repository<Category>(_context);
+            _categoryRepository ??= new Repository<Category>(_context);
 
         public IRepository<Order> OrderRepository =>
             _orderRepository ??= new Repository<Order>(_context);

@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, map, Observable, of, throwError } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { TokenInterceptor } from './../../interceptors/token.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +27,9 @@ export class AuthService {
   register(user: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/register`, user);
   }
+  forgotPassword(){
+    return this.http.post<any>(`${this.apiUrl}/forgot-password`, {});
+  }
 
   isTokenExpired(): boolean {
     const token = this.getToken();
@@ -49,7 +51,12 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     sessionStorage.removeItem(this.tokenKey);
-    this.router.navigate(['/login']); // Redirect to login page or other actions
+    this.router.navigate(['/']);
+    this.handleLogout();
+  }
+
+  handleLogout() {
+    return this.http.post<any>(`${this.apiUrl}/logout`, null);
   }
 
   getToken(): string | null {

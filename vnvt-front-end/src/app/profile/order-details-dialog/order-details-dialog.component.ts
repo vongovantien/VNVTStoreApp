@@ -28,7 +28,6 @@ export class OrderDetailsDialogComponent {
   }
 
   getTotalCost(): number {
-    console.log(this.order.items)
-    return this.order.items.reduce((acc: any, item: any) => acc + item.quantity * item.price, 0);
+    return this.order.orderItems.reduce((acc: any, item: any) => acc + item.quantity * item.price, 0);
   }
 }

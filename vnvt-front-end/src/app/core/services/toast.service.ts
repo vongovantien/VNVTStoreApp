@@ -14,7 +14,7 @@ export class ToastService {
   private toastSubject = new BehaviorSubject<Toast[]>([]);
   toasts$ = this.toastSubject.asObservable();
 
-  showToast(message: string, type: 'success' | 'error' | 'info' | 'warning', duration: number = 3000) {
+  showToast(message: string, type: 'success' | 'error' | 'info' | 'warning', duration = 3000) {
     const toast: Toast = { message, type, duration };
     this.toastSubject.next([...this.toastSubject.getValue(), toast]);
     setTimeout(() => this.removeToast(toast), duration);

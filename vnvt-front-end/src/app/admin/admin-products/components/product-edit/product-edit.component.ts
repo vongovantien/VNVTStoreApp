@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../../../core/services';
 import { Product } from '../../../../core/models';
@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './product-edit.component.html',
   styleUrl: './product-edit.component.scss'
 })
-export class ProductEditComponent {
+export class ProductEditComponent implements OnInit {
   product!: Product
 
   constructor(

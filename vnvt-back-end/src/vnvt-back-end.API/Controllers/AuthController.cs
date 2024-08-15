@@ -60,13 +60,13 @@ namespace vnvt_back_end.API.Controllers
             return Ok(ApiResponseBuilder.Success<string>(null, "Password has been reset."));
         }
 
-        //[HttpPost("refresh-token")]
-        //public IActionResult RefreshToken()
-        //{
-        //    // Validate the refresh token and generate a new JWT token
-        //    var token = _userService.GetRefreshTokenAsync();
-        //    return Ok(ApiResponseBuilder.Success<string>(token, null));
-        //}
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var userId = User.FindFirst("id")?.Value;
+            await _userService.Logout(int.Parse(userId));
+            return Ok(ApiResponseBuilder.Success<string>(null, "Logout successfully"));
+        }
     }
 
     public class RegisterRequest

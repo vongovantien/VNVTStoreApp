@@ -20,7 +20,7 @@
 
 ## Project Overview
 
-The E-Commerce Platform is a comprehensive online shopping solution built with Java Spring Boot for the backend and Angular for the frontend. This project aims to provide a scalable, secure, and user-friendly platform for online retailers to manage their products, orders, and customers.
+The E-Commerce Platform is a comprehensive online shopping solution built with .NET 8 for the backend and Angular for the frontend. This project aims to provide a scalable, secure, and user-friendly platform for online retailers to manage their products, orders, and customers.
 
 ## Features
 
@@ -58,7 +58,7 @@ The platform follows a microservices architecture with a clear separation of con
 
 ### Prerequisites
 
-- Java 11+
+- .NET 8.0
 - Node.js 14+
 - Angular CLI
 - Docker
@@ -67,7 +67,7 @@ The platform follows a microservices architecture with a clear separation of con
 
 1. Clone the repository:
    \`\`\`bash
-   git clone https://github.com/hpham16/ShopApp-Angular-Java.git
+   git clone https://github.com/vongovantien/VNVTStoreApp.git
    \`\`\`
 2. Navigate to the project directory
    \`\`\`bash
@@ -90,7 +90,7 @@ The platform follows a microservices architecture with a clear separation of con
 
 1. Clone the repository:
    \`\`\`bash
-   git clone https://github.com/hpham16/ShopApp-Angular-Java.git
+   git clone https://github.com/vongovantien/VNVTStoreApp.git
    \`\`\`
 2. Navigate to the frontend directory:
    \`\`\`bash

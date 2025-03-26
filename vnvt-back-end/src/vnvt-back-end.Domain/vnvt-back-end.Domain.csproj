@@ -22,4 +22,8 @@
     <Folder Include="Entities\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\vnvt-back-end.Core\vnvt-back-end.Core.csproj" />
+  </ItemGroup>
+
 </Project>

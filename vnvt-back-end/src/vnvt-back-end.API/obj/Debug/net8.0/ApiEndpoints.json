@@ -1,0 +1,1143 @@
+[
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.AuthController",
+    "Method": "ForgotPassword",
+    "RelativePath": "api/auth/forgot-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "vnvt_back_end.API.Controllers.ForgotPasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "vnvt_back_end.API.Controllers.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.AuthController",
+    "Method": "Logout",
+    "RelativePath": "api/auth/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.AuthController",
+    "Method": "Register",
+    "RelativePath": "api/auth/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "vnvt_back_end.API.Controllers.RegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.AuthController",
+    "Method": "ResetPassword",
+    "RelativePath": "api/auth/reset-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "vnvt_back_end.API.Controllers.ResetPasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.CategoriesController",
+    "Method": "GetAll",
+    "RelativePath": "api/categories",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Category, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Create",
+    "RelativePath": "api/categories",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Category, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetById",
+    "RelativePath": "api/categories/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Category, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Update",
+    "RelativePath": "api/categories/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Category, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Delete",
+    "RelativePath": "api/categories/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Category, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetPaging",
+    "RelativePath": "api/categories/paging",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortField",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDescending",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.Models.PagedResult\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BCategoryDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Order, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetAll",
+    "RelativePath": "api/orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Order, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Create",
+    "RelativePath": "api/orders",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Order, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetById",
+    "RelativePath": "api/orders/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Order, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Update",
+    "RelativePath": "api/orders/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Order, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Delete",
+    "RelativePath": "api/orders/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Order, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetPaging",
+    "RelativePath": "api/orders/paging",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortField",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDescending",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.Models.PagedResult\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BOrderDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Payment, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetAll",
+    "RelativePath": "api/payments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Payment, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Create",
+    "RelativePath": "api/payments",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Payment, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetById",
+    "RelativePath": "api/payments/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Payment, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Update",
+    "RelativePath": "api/payments/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Payment, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Delete",
+    "RelativePath": "api/payments/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Payment, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetPaging",
+    "RelativePath": "api/payments/paging",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortField",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDescending",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.Models.PagedResult\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BPaymentDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "GetAll",
+    "RelativePath": "api/products",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Product, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Create",
+    "RelativePath": "api/products",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BProductDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "GetById",
+    "RelativePath": "api/products/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Product, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Update",
+    "RelativePath": "api/products/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BProductDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Product, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Delete",
+    "RelativePath": "api/products/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "GetFrequentlyBoughtTogether",
+    "RelativePath": "api/products/{productId}/frequently-bought-together",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "GetProductFilter",
+    "RelativePath": "api/products/get-product-filters",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "CategoryId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortField",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDescending",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.Models.PagedResult\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "ImportProducts",
+    "RelativePath": "api/products/import",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "GetPaging",
+    "RelativePath": "api/products/paging",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortField",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDescending",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.Models.PagedResult\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BProductDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "GenerateReport",
+    "RelativePath": "api/products/sales-report",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "StartDate",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "EndDate",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "ProductId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Category",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Customer",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.ProductsController",
+    "Method": "GetTodaysRecommendations",
+    "RelativePath": "api/products/todays-recommendations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Review, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetAll",
+    "RelativePath": "api/reviews",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Review, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Create",
+    "RelativePath": "api/reviews",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Review, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetById",
+    "RelativePath": "api/reviews/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Review, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Update",
+    "RelativePath": "api/reviews/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Review, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "Delete",
+    "RelativePath": "api/reviews/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.BaseController\u00602[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[vnvt_back_end.Infrastructure.Review, vnvt-back-end.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+    "Method": "GetPaging",
+    "RelativePath": "api/reviews/paging",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortField",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDescending",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "vnvt_back_end.Application.Models.ApiResponse\u00601[[vnvt_back_end.Application.Models.PagedResult\u00601[[vnvt_back_end.Application.DTOs.DTOs\u002BReviewDto, vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], vnvt-back-end.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.UsersController",
+    "Method": "GetProfile",
+    "RelativePath": "api/users/profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.UsersController",
+    "Method": "UpdateProfile",
+    "RelativePath": "api/users/profile",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "profile",
+        "Type": "vnvt_back_end.Application.DTOs.DTOs\u002BUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.API.Controllers.UsersController",
+    "Method": "UploadAvatar",
+    "RelativePath": "api/users/upload-avatar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "avatar",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "vnvt_back_end.Controllers.WeatherForecastController",
+    "Method": "Get",
+    "RelativePath": "weatherforecast",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[vnvt_back_end.WeatherForecast, vnvt-back-end.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "EndpointName": "GetWeatherForecast"
+  }
+]

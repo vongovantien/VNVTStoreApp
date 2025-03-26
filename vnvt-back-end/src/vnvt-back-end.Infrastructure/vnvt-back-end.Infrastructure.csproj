@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\vnvt-back-end.Application\vnvt-back-end.Application.csproj" />
+    <ProjectReference Include="..\vnvt-back-end.Core\vnvt-back-end.Core.csproj" />
     <ProjectReference Include="..\vnvt-back-end.Domain\vnvt-back-end.Domain.csproj" />
   </ItemGroup>
 

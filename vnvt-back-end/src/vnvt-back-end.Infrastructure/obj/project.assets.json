@@ -2729,8 +2729,6 @@
           "MediatR": "12.4.0",
           "Microsoft.AspNetCore.Http.Features": "5.0.17",
           "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
           "System.IdentityModel.Tokens.Jwt": "7.1.2",
           "vnvt-back-end.Domain": "1.0.0"
         },
@@ -2741,6 +2739,16 @@
           "bin/placeholder/vnvt-back-end.Application.dll": {}
         }
       },
+      "vnvt-back-end.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/vnvt-back-end.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/vnvt-back-end.Core.dll": {}
+        }
+      },
       "vnvt-back-end.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -2748,7 +2756,8 @@
           "Microsoft.EntityFrameworkCore": "8.0.0",
           "Microsoft.Extensions.Configuration": "8.0.0",
           "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0"
+          "Microsoft.Extensions.Logging": "8.0.0",
+          "vnvt-back-end.Core": "1.0.0"
         },
         "compile": {
           "bin/placeholder/vnvt-back-end.Domain.dll": {}
@@ -8033,6 +8042,11 @@
       "path": "../vnvt-back-end.Application/vnvt-back-end.Application.csproj",
       "msbuildProject": "../vnvt-back-end.Application/vnvt-back-end.Application.csproj"
     },
+    "vnvt-back-end.Core/1.0.0": {
+      "type": "project",
+      "path": "../vnvt-back-end.Core/vnvt-back-end.Core.csproj",
+      "msbuildProject": "../vnvt-back-end.Core/vnvt-back-end.Core.csproj"
+    },
     "vnvt-back-end.Domain/1.0.0": {
       "type": "project",
       "path": "../vnvt-back-end.Domain/vnvt-back-end.Domain.csproj",
@@ -8052,11 +8066,13 @@
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 8.0.4",
       "Polly >= 8.4.1",
       "vnvt-back-end.Application >= 1.0.0",
+      "vnvt-back-end.Core >= 1.0.0",
       "vnvt-back-end.Domain >= 1.0.0"
     ]
   },
   "packageFolders": {
     "C:\\Users\\vongo\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
@@ -8069,10 +8085,12 @@
       "outputPath": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
         "C:\\Users\\vongo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -8080,7 +8098,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -8089,6 +8106,9 @@
           "projectReferences": {
             "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj": {
               "projectPath": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Application\\vnvt-back-end.Application.csproj"
+            },
+            "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Core\\vnvt-back-end.Core.csproj": {
+              "projectPath": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Core\\vnvt-back-end.Core.csproj"
             },
             "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Domain\\vnvt-back-end.Domain.csproj": {
               "projectPath": "D:\\repo\\VNVTStoreApp\\vnvt-back-end\\src\\vnvt-back-end.Domain\\vnvt-back-end.Domain.csproj"
@@ -8105,7 +8125,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -8172,7 +8193,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

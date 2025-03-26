@@ -1,0 +1,90 @@
+﻿# Ignore Visual Studio for Mac / JetBrains Rider project files
+.vscode/
+.idea/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.swp
+*.sublime-workspace
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Dd]ist/
+[Dd]istros/
+[Dd]eploy/
+[Dd]ebug-windows/
+[Dd]ebug-linux/
+[Dd]ebug-osx/
+[Dd]ebug-netcoreapp3.1/
+[Dd]ebug-netcoreapp3.0/
+[Dd]ebug-net5.0/
+[Dd]ebug-net6.0/
+[Dd]ebug-net7.0/
+[Dd]ebug-net8.0/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# User-specific files (Windows)
+*.vspscc
+*_i.c
+*_p.c
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows Installer (Windows Store Apps)
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+
+# Windows package directories
+AppPackages/
+build/
+
+# ASP.NET Scaffolding
+Scaffolding/
+
+# Microsoft Azure Web App publish folder
+PublishProfiles/
+
+# Rider
+.idea/
+
+# npm packages
+node_modules/
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# WCF service hosting
+*.pdb
+*.dll
+*.exe
+
+# Ignore build directories
+bin/
+obj/
+
+# Ignore Visual Studio specific files
+.vs/

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using VNVTStore.Infrastructure;
+using VNVTStore.Domain.Entities;
+
+using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.Infrastructure.Persistence;
 
-public partial class ApplicationDbContext : DbContext
+public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 {
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
@@ -38,7 +41,10 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<TblReview> TblReviews { get; set; }
 
+    public virtual DbSet<TblQuote> TblQuotes { get; set; }
+
     public virtual DbSet<TblUser> TblUsers { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -375,6 +381,36 @@ public partial class ApplicationDbContext : DbContext
                 .HasConstraintName("TblReview_UserCode_fkey");
         });
 
+        modelBuilder.Entity<TblQuote>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblQuote_pkey");
+
+            entity.ToTable("TblQuote");
+
+            entity.Property(e => e.Code)
+                .HasMaxLength(10)
+                .HasDefaultValueSql("('QT'::text || lpad((nextval('quote_code_seq'::regclass))::text, 6, '0'::text))");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValueSql("'pending'::character varying");
+            entity.Property(e => e.Quantity).HasDefaultValue(1);
+            entity.Property(e => e.UserCode).HasMaxLength(10);
+            entity.Property(e => e.ProductCode).HasMaxLength(10);
+            entity.Property(e => e.QuotedPrice).HasPrecision(15, 2);
+
+            entity.HasOne(d => d.UserCodeNavigation).WithMany(p => p.TblQuotes)
+                .HasForeignKey(d => d.UserCode)
+                .HasConstraintName("TblQuote_UserCode_fkey");
+
+            entity.HasOne(d => d.ProductCodeNavigation).WithMany(p => p.TblQuotes)
+                .HasForeignKey(d => d.ProductCode)
+                .HasConstraintName("TblQuote_ProductCode_fkey");
+        });
+
+
         modelBuilder.Entity<TblUser>(entity =>
         {
             entity.HasKey(e => e.Code).HasName("TblUser_pkey");
@@ -416,7 +452,9 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.HasSequence("productpromotion_code_seq");
         modelBuilder.HasSequence("promotion_code_seq");
         modelBuilder.HasSequence("review_code_seq");
+        modelBuilder.HasSequence("quote_code_seq");
         modelBuilder.HasSequence("user_code_seq");
+
 
         OnModelCreatingPartial(modelBuilder);
     }

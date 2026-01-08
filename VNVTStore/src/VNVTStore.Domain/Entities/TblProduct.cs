@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VNVTStore.Infrastructure;
+namespace VNVTStore.Domain.Entities;
 
 public partial class TblProduct
 {
@@ -40,4 +40,7 @@ public partial class TblProduct
     public virtual ICollection<TblProductImage> TblProductImages { get; set; } = new List<TblProductImage>();
 
     public virtual ICollection<TblProductPromotion> TblProductPromotions { get; set; } = new List<TblProductPromotion>();
+
+    public virtual ICollection<TblQuote> TblQuotes { get; set; } = new List<TblQuote>();
+
 }

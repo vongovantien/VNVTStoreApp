@@ -2,11 +2,13 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
+using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Entities; 
 using VNVTStore.Application.Products.Commands;
 using VNVTStore.Application.Products.Queries;
 using VNVTStore.Domain.Interfaces;
-using VNVTStore.Infrastructure;
+
 
 namespace VNVTStore.Application.Products.Handlers;
 

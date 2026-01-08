@@ -3,7 +3,8 @@
  * Provides data fetching and mutations for product operations
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+
 import { productService, categoryService, type CreateProductDto, type UpdateProductDto } from '@/services/productService';
 
 // ============ Query Keys ============
@@ -26,15 +27,12 @@ export function useCategories() {
         queryKey: productKeys.categories,
         queryFn: () => categoryService.getAllCategories(),
         select: (response) => {
-            // Extract categories from PagedResult or direct array depending on API
-            // Based on service implementation, response.data might be PagedResult
-            // Let's assume PagedResult<CategoryDto> based on POST /categories/search
-            const data = response.data as any;
-            if (response.success && data) {
-                return Array.isArray(data) ? data : (data.items || []);
+            if (response.success && response.data) {
+                return response.data.items || [];
             }
             return [];
         }
+
     });
 }
 
@@ -55,7 +53,9 @@ export function useProducts(params: {
         queryKey: productKeys.list(searchParams),
         queryFn: () => productService.searchProducts(searchParams),
         enabled,
+        placeholderData: keepPreviousData,
         select: (response) => {
+
             if (response.success && response.data) {
                 return {
                     products: response.data.items,

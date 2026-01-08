@@ -6,6 +6,7 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Products.Commands;
 using VNVTStore.Application.Products.Queries;
+using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.API.Controllers.v1;
 

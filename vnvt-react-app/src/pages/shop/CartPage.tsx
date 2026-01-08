@@ -8,10 +8,18 @@ import { formatCurrency } from '@/utils/format';
 
 export const CartPage = () => {
   const { t } = useTranslation();
-  const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotal, clearCart, isLoading } = useCartStore();
   const total = getTotal();
   const shippingFee = total >= 500000 ? 0 : 30000;
   const grandTotal = total + shippingFee;
+
+  if (isLoading && items.length === 0) {
+    return (
+        <div className="min-h-screen bg-secondary flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

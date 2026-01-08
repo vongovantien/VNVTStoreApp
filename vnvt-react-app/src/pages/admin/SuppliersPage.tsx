@@ -4,29 +4,10 @@ import { Plus, Edit2, Trash2, Building2, Phone, Mail, Loader2, AlertCircle, Sear
 import { Button, Badge, Modal, Input, ConfirmDialog, Pagination } from '@/components/ui';
 import { useToast } from '@/store';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/services/api';
+import { supplierService, type SupplierDto } from '@/services';
 
-interface Supplier {
-  code: string;
-  name: string;
-  contactPerson?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  taxCode?: string;
-  bankAccount?: string;
-  bankName?: string;
-  notes?: string;
-  isActive: boolean;
-  createdAt?: string;
-}
+type Supplier = SupplierDto; // Alias for backward compatibility locally
 
-const supplierService = {
-  getAll: () => api.get<Supplier[]>('/suppliers'),
-  create: (data: Partial<Supplier>) => api.post<Supplier>('/suppliers', data),
-  update: (code: string, data: Partial<Supplier>) => api.put<Supplier>(`/suppliers/${code}`, data),
-  delete: (code: string) => api.delete(`/suppliers/${code}`),
-};
 
 export const SuppliersPage = () => {
   const { t } = useTranslation();
@@ -41,7 +22,7 @@ export const SuppliersPage = () => {
   // Fetch suppliers
   const { data: suppliersData, isLoading, isError, isFetching } = useQuery({
     queryKey: ['suppliers'],
-    queryFn: () => supplierService.getAll(),
+    queryFn: () => supplierService.getAllSuppliers(),
     select: (response) => response.data || [],
   });
 
@@ -82,7 +63,7 @@ export const SuppliersPage = () => {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: Partial<Supplier>) => supplierService.create(data),
+    mutationFn: (data: Partial<Supplier>) => supplierService.createSupplier(data as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Tạo nhà cung cấp thành công!');
@@ -94,7 +75,7 @@ export const SuppliersPage = () => {
 
   const updateMutation = useMutation({
     mutationFn: (data: { code: string; payload: Partial<Supplier> }) =>
-      supplierService.update(data.code, data.payload),
+      supplierService.updateSupplier(data.code, data.payload as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Cập nhật nhà cung cấp thành công!');
@@ -106,7 +87,7 @@ export const SuppliersPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (code: string) => supplierService.delete(code),
+    mutationFn: (code: string) => supplierService.deleteSupplier(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Xóa nhà cung cấp thành công!');
@@ -273,7 +254,7 @@ export const SuppliersPage = () => {
                       )}
                     </td>
                     <td className="px-4 py-4 text-center">
-                      <Badge color={supplier.isActive ? 'success' : 'gray'} size="sm" variant="outline">
+                      <Badge color={supplier.isActive ? 'success' : 'secondary'} size="sm" variant="outline">
                         {supplier.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </td>

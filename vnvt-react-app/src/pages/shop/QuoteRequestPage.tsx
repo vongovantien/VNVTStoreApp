@@ -1,17 +1,40 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Phone, Mail, User, Send, Check } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
-import { mockProducts } from '@/data/mockData';
+import { productService, quoteService } from '@/services';
+import type { Product } from '@/types';
 
 export const QuoteRequestPage = () => {
   const { t } = useTranslation();
   const { productId } = useParams<{ productId: string }>();
+
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const product = useMemo(() => mockProducts.find((p) => p.id === productId), [productId]);
+  // Fetch product
+  useEffect(() => {
+    const fetchProduct = async () => {
+        if (!productId) return;
+        try {
+            const res = await productService.getProductByCode(productId);
+            if (res.success && res.data) {
+                setProduct(res.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch product', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchProduct();
+  }, [productId]);
+
 
   const [formData, setFormData] = useState({
     name: '',
@@ -28,12 +51,35 @@ export const QuoteRequestPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!product || !productId) return;
+
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+        const res = await quoteService.createQuote({
+            productId: productId,
+            productName: product.name,
+            productImage: product.image,
+            customerName: formData.name,
+            customerEmail: formData.email,
+            customerPhone: formData.phone,
+            company: formData.company,
+            quantity: parseInt(formData.quantity) || 1,
+            note: formData.note
+        });
+
+        if (res.success) {
+            setIsSubmitted(true);
+        }
+    } catch (error) {
+        console.error('Submit quote failed', error);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
+
+  if (loading) {
+      return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   if (!product) {
     return (

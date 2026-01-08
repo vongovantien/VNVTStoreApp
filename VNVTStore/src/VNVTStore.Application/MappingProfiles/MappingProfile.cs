@@ -68,5 +68,10 @@ public class MappingProfile : Profile
 
         // Supplier mappings
         CreateMap<TblSupplier, SupplierDto>().ReverseMap();
+
+        // Quote mappings
+        CreateMap<TblQuote, QuoteDto>()
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductCodeNavigation != null ? src.ProductCodeNavigation.Name : null))
+            .ReverseMap();
     }
 }

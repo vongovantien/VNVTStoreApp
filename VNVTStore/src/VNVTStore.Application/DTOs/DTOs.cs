@@ -226,3 +226,39 @@ public class PagedResult<T>
     public static PagedResult<T> Empty(int pageNumber = 1, int pageSize = 10) =>
         new(Enumerable.Empty<T>(), 0, pageNumber, pageSize);
 }
+
+// ==================== SUPPLIER DTO ====================
+public class SupplierDto
+{
+    public string Code { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string? ContactPerson { get; set; }
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+    public string? Address { get; set; }
+    public string? TaxCode { get; set; }
+    public string? BankAccount { get; set; }
+    public string? BankName { get; set; }
+    public string? Notes { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime? CreatedAt { get; set; }
+}
+
+// ==================== QUOTE DTO ====================
+public class QuoteDto : IBaseDto
+{
+    public string Code { get; set; } = null!;
+    public string UserCode { get; set; } = null!;
+    public string? UserName { get; set; }
+    public string ProductCode { get; set; } = null!;
+    public string? ProductName { get; set; }
+    public string? ProductImage { get; set; }
+    public int Quantity { get; set; }
+    public string? Note { get; set; }
+    public decimal? QuotedPrice { get; set; }
+    public string? AdminNote { get; set; }
+    public string Status { get; set; } = null!;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+

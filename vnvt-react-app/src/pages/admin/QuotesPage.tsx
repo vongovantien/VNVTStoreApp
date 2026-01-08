@@ -1,43 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, FileText, Check, X, MessageSquare, DollarSign, Eye } from 'lucide-react';
+import { Search, Check, X, MessageSquare, DollarSign, Eye } from 'lucide-react';
 import { Button, Badge, Modal, Input } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { quoteService } from '@/services/quoteService';
+import type { QuoteRequest } from '@/types';
 
-// Mock quote requests
-const mockQuotes = [
-  {
-    id: 'quote-1',
-    productName: 'Điều hòa Daikin Inverter 1.5HP',
-    productImage: 'https://images.unsplash.com/photo-1631545806609-279fe8e56c10?w=100',
-    customer: { name: 'Công ty ABC', email: 'contact@abc.com', phone: '0901234567' },
-    quantity: 10,
-    note: 'Cần báo giá cho dự án văn phòng mới',
-    status: 'pending' as const,
-    createdAt: '2024-01-26T10:00:00Z',
-  },
-  {
-    id: 'quote-2',
-    productName: 'Robot hút bụi lau nhà Ecovacs T20',
-    productImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100',
-    customer: { name: 'Nguyễn Văn B', email: 'nguyenvanb@email.com', phone: '0912345678' },
-    quantity: 2,
-    note: '',
-    status: 'quoted' as const,
-    quotedPrice: 35000000,
-    createdAt: '2024-01-25T14:00:00Z',
-  },
-];
+import { useToast } from '@/store/toastStore';
 
 export const QuotesPage = () => {
   const { t } = useTranslation();
+  const { success, error } = useToast();
+
+  const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedQuote, setSelectedQuote] = useState<typeof mockQuotes[0] | null>(null);
+  const [selectedQuote, setSelectedQuote] = useState<QuoteRequest | null>(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quotePrice, setQuotePrice] = useState('');
 
-  const quotes = mockQuotes.filter((quote) => {
+  // Fetch quotes
+  useEffect(() => {
+    fetchQuotes();
+  }, []);
+
+  const fetchQuotes = async () => {
+    try {
+        const res = await quoteService.getQuotes();
+        if (res.success && res.data) {
+            setQuotes(res.data);
+        }
+    } catch (error) {
+        console.error('Failed to fetch quotes', error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const filteredQuotes = quotes.filter((quote) => {
     const matchesSearch =
       quote.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       quote.customer.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -45,10 +46,34 @@ export const QuotesPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleQuote = (quote: typeof mockQuotes[0]) => {
+  const handleQuote = (quote: QuoteRequest) => {
     setSelectedQuote(quote);
     setShowQuoteModal(true);
+    setQuotePrice(quote.quotedPrice ? quote.quotedPrice.toString() : '');
   };
+
+  const handleSubmitQuote = async () => {
+      if (!selectedQuote || !quotePrice) return;
+
+      try {
+          const res = await quoteService.updateQuote(selectedQuote.id, {
+              status: 'quoted',
+              quotedPrice: parseFloat(quotePrice)
+          });
+          
+          if (res.success) {
+              success('Báo giá thành công');
+              setShowQuoteModal(false);
+              setQuotePrice('');
+              fetchQuotes(); // Refresh
+          }
+      } catch (err) {
+          error('Lỗi khi cập nhật báo giá');
+      }
+
+  };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">
@@ -56,7 +81,7 @@ export const QuotesPage = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold">{t('admin.quotes')}</h1>
         <div className="flex items-center gap-2">
-          <Badge color="warning">{mockQuotes.filter((q) => q.status === 'pending').length} chờ xử lý</Badge>
+          <Badge color="warning">{quotes.filter((q) => q.status === 'pending').length} chờ xử lý</Badge>
         </div>
       </div>
 
@@ -89,7 +114,7 @@ export const QuotesPage = () => {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {quotes.map((quote) => (
+        {filteredQuotes.map((quote) => (
           <div key={quote.id} className="bg-primary rounded-xl p-5">
             {/* Status */}
             <div className="flex items-center justify-between mb-4">
@@ -200,11 +225,7 @@ export const QuotesPage = () => {
               Hủy
             </Button>
             <Button
-              onClick={() => {
-                // Handle submit
-                setShowQuoteModal(false);
-                setQuotePrice('');
-              }}
+              onClick={handleSubmitQuote}
             >
               Gửi báo giá
             </Button>

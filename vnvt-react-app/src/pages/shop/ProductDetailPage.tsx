@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, memo } from 'react';
+import { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -22,8 +22,8 @@ import { Button, Badge } from '@/components/ui';
 import { ProductCard } from '@/components/common/ProductCard';
 import { useCartStore, useWishlistStore, useCompareStore } from '@/store';
 import { useProduct, useProducts } from '@/hooks';
-import { mockReviews } from '@/data/mockData';
 import { formatCurrency } from '@/utils/format';
+import { reviewService, type ReviewDto } from '@/services';
 
 // ============ Image Gallery Component ============
 interface ImageGalleryProps {
@@ -76,6 +76,7 @@ export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
+  const [reviews, setReviews] = useState<ReviewDto[]>([]);
 
   // Store actions
   const addToCart = useCartStore((state) => state.addItem);
@@ -84,6 +85,17 @@ export const ProductDetailPage = () => {
 
   // Fetch product from API
   const { data: product, isLoading, isError, error } = useProduct(id || '');
+
+  // Fetch Reviews
+  useEffect(() => {
+      if (id) {
+          reviewService.getProductReviews(id).then(res => {
+              if (res.success && res.data) {
+                  setReviews(res.data);
+              }
+          });
+      }
+  }, [id]);
 
   // Fetch related products (same category)
   const { data: relatedData } = useProducts({
@@ -96,8 +108,6 @@ export const ProductDetailPage = () => {
     () => (relatedData?.products || []).filter((p) => p.id !== id).slice(0, 4),
     [relatedData?.products, id]
   );
-
-  const productReviews = useMemo(() => mockReviews.filter((r) => r.productId === id), [id]);
 
   // Derived states
   const isWishlisted = product ? isInWishlist(product.id) : false;
@@ -348,10 +358,6 @@ export const ProductDetailPage = () => {
           {activeTab === 'description' && (
             <div className="prose max-w-none">
               <p className="text-secondary leading-relaxed">{product.description}</p>
-              <p className="text-secondary leading-relaxed mt-4">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-              </p>
             </div>
           )}
 
@@ -361,7 +367,7 @@ export const ProductDetailPage = () => {
                 ([key, value]) => (
                   <div key={key} className="flex border-b py-2">
                     <span className="w-1/3 font-medium text-secondary">{key.replace(/_/g, ' ')}</span>
-                    <span className="flex-1 text-primary">{value}</span>
+                    <span className="flex-1 text-primary">{value as string}</span>
                   </div>
                 )
               )}
@@ -370,15 +376,15 @@ export const ProductDetailPage = () => {
 
           {activeTab === 'reviews' && (
             <div className="space-y-6">
-              {productReviews.length > 0 ? (
-                productReviews.map((review) => (
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
                   <div key={review.id} className="border-b pb-6 last:border-0">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-purple-500 flex items-center justify-center text-white font-bold">
-                        {review.userName.charAt(0)}
+                        {review.userName?.charAt(0) || 'U'}
                       </div>
                       <div>
-                        <p className="font-medium">{review.userName}</p>
+                        <p className="font-medium">{review.userName || 'Người dùng ẩn danh'}</p>
                         <div className="flex gap-1">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star
@@ -390,7 +396,7 @@ export const ProductDetailPage = () => {
                         </div>
                       </div>
                     </div>
-                    <p className="text-secondary">{review.content}</p>
+                    <p className="text-secondary">{review.comment}</p>
                   </div>
                 ))
               ) : (

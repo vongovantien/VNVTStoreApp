@@ -7,7 +7,8 @@ using VNVTStore.Application.Categories.Commands;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Domain.Interfaces;
-using VNVTStore.Infrastructure;
+using VNVTStore.Domain.Entities; 
+
 
 namespace VNVTStore.Application.Categories.Handlers;
 

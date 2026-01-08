@@ -5,55 +5,131 @@ import type { Product, CartItem, User } from '@/types';
 // ============ Cart Store ============
 interface CartState {
     items: CartItem[];
-    addItem: (product: Product, quantity?: number) => void;
-    removeItem: (productId: string) => void;
-    updateQuantity: (productId: string, quantity: number) => void;
-    clearCart: () => void;
+    isLoading: boolean;
+    addItem: (product: Product, quantity?: number) => Promise<void>;
+    removeItem: (productId: string) => Promise<void>;
+    updateQuantity: (productId: string, quantity: number) => Promise<void>;
+    clearCart: () => Promise<void>;
     getTotal: () => number;
     getItemCount: () => number;
+    fetchCart: () => Promise<void>;
 }
+
+import { cartService } from '@/services';
 
 export const useCartStore = create<CartState>()(
     persist(
         (set, get) => ({
             items: [],
-            addItem: (product, quantity = 1) => {
-                // Only add products with fixed price
-                if (product.price <= 0) return;
+            isLoading: false,
+            fetchCart: async () => {
+                const { isAuthenticated } = useAuthStore.getState();
+                if (!isAuthenticated) return;
 
-                set((state) => {
-                    const existingItem = state.items.find((item) => item.product.id === product.id);
-                    if (existingItem) {
-                        return {
-                            items: state.items.map((item) =>
-                                item.product.id === product.id
-                                    ? { ...item, quantity: item.quantity + quantity }
-                                    : item
-                            ),
-                        };
+                set({ isLoading: true });
+                try {
+                    const res = await cartService.getMyCart();
+                    if (res.success && res.data) {
+                        set({ items: cartService.mapToFrontend(res.data) });
                     }
-                    return {
-                        items: [...state.items, { id: product.id, product, quantity }],
-                    };
-                });
+                } catch (error) {
+                    console.error('Failed to fetch cart', error);
+                } finally {
+                    set({ isLoading: false });
+                }
             },
-            removeItem: (productId) => {
-                set((state) => ({
-                    items: state.items.filter((item) => item.product.id !== productId),
-                }));
+            addItem: async (product, quantity = 1) => {
+                const { isAuthenticated } = useAuthStore.getState();
+
+                // Optimistic Update for Guests
+                if (!isAuthenticated) {
+                    if (product.price <= 0) return;
+                    set((state) => {
+                        const existingItem = state.items.find((item) => item.product.id === product.id);
+                        if (existingItem) {
+                            return {
+                                items: state.items.map((item) =>
+                                    item.product.id === product.id
+                                        ? { ...item, quantity: item.quantity + quantity }
+                                        : item
+                                ),
+                            };
+                        }
+                        return {
+                            items: [...state.items, { id: product.id, product, quantity }],
+                        };
+                    });
+                    return;
+                }
+
+                // API Call for Users
+                set({ isLoading: true });
+                try {
+                    const res = await cartService.addToCart({ productCode: product.id, quantity });
+                    if (res.success && res.data) {
+                        set({ items: cartService.mapToFrontend(res.data) });
+                        // Also show toast? (Handled by UI)
+                    }
+                } catch (error) {
+                    console.error('Add to cart failed', error);
+                } finally {
+                    set({ isLoading: false });
+                }
             },
-            updateQuantity: (productId, quantity) => {
+            removeItem: async (productId) => {
+                const { isAuthenticated } = useAuthStore.getState();
+                if (!isAuthenticated) {
+                    set((state) => ({
+                        items: state.items.filter((item) => item.product.id !== productId),
+                    }));
+                    return;
+                }
+
+                set({ isLoading: true });
+                try {
+                    const res = await cartService.removeFromCart(productId);
+                    if (res.success && res.data) {
+                        set({ items: cartService.mapToFrontend(res.data) });
+                    }
+                } finally {
+                    set({ isLoading: false });
+                }
+            },
+            updateQuantity: async (productId, quantity) => {
                 if (quantity <= 0) {
                     get().removeItem(productId);
                     return;
                 }
-                set((state) => ({
-                    items: state.items.map((item) =>
-                        item.product.id === productId ? { ...item, quantity } : item
-                    ),
-                }));
+
+                const { isAuthenticated } = useAuthStore.getState();
+                if (!isAuthenticated) {
+                    set((state) => ({
+                        items: state.items.map((item) =>
+                            item.product.id === productId ? { ...item, quantity } : item
+                        ),
+                    }));
+                    return;
+                }
+
+                // Debounce could be added here or in UI
+                try {
+                    const res = await cartService.updateCartItem({ productCode: productId, quantity });
+                    if (res.success && res.data) {
+                        // Don't replace *all* items instantly to avoid UI jump if not needed, 
+                        // but correct way is to trust server.
+                        set({ items: cartService.mapToFrontend(res.data) });
+                    }
+                } catch (error) {
+                    console.error('Update quantity failed', error);
+                }
             },
-            clearCart: () => set({ items: [] }),
+            clearCart: async () => {
+                const { isAuthenticated } = useAuthStore.getState();
+                if (isAuthenticated) {
+                    await cartService.clearCart();
+                }
+                set({ items: [] });
+            },
             getTotal: () => {
                 return get().items.reduce(
                     (total, item) => total + item.product.price * item.quantity,
@@ -67,6 +143,7 @@ export const useCartStore = create<CartState>()(
         {
             name: 'vnvt-cart',
             storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({ items: state.items }), // Don't persist isLoading
         }
     )
 );

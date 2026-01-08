@@ -66,6 +66,9 @@ public class Error
     public static Error Validation(string message) => 
         new("Validation", message);
     
+    public static Error Validation(string entityName, string message) => 
+        new("Validation", $"{entityName}: {message}");
+    
     public static Error Conflict(string message) => 
         new("Conflict", message);
     

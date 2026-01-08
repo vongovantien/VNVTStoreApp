@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace VNVTStore.Infrastructure;
+namespace VNVTStore.Domain.Entities;
 
 public partial class TblSupplier
 {

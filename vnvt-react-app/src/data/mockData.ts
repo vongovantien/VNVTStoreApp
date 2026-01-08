@@ -395,14 +395,14 @@ export const mockUsers: User[] = [
     {
         id: 'user-1',
         email: 'admin@vnvt.store',
-        name: 'Admin',
+        fullName: 'Admin',
         role: 'admin',
         createdAt: '2024-01-01T00:00:00Z',
     },
     {
         id: 'user-2',
         email: 'customer@example.com',
-        name: 'Khách hàng demo',
+        fullName: 'Khách hàng demo',
         phone: '0901234567',
         role: 'customer',
         createdAt: '2024-01-15T10:00:00Z',

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VNVTStore.Infrastructure;
+namespace VNVTStore.Domain.Entities;
 
 public partial class TblUser
 {
@@ -38,4 +38,7 @@ public partial class TblUser
     public virtual ICollection<TblOrder> TblOrders { get; set; } = new List<TblOrder>();
 
     public virtual ICollection<TblReview> TblReviews { get; set; } = new List<TblReview>();
+
+    public virtual ICollection<TblQuote> TblQuotes { get; set; } = new List<TblQuote>();
+
 }

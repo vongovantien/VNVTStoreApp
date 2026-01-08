@@ -202,14 +202,17 @@ export interface CategoryDto {
     code: string;
     name: string;
     description?: string;
+    imageUrl?: string;
 }
 
+
 export const categoryService = {
-    getAllCategories: async (): Promise<ApiResponse<CategoryDto[]>> => {
-        const response = await apiClient.post<CategoryDto[]>('/categories/search', {
+    getAllCategories: async (): Promise<ApiResponse<PagedResult<CategoryDto>>> => {
+        const response = await apiClient.post<PagedResult<CategoryDto>>('/categories/search', {
             pageIndex: 1,
             pageSize: 100
         });
+
         // Map search result to simple array if needed, but assuming API matches
         return response;
     }

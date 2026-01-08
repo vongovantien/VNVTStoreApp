@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
@@ -10,9 +11,10 @@ import {
   ArrowUpRight,
   FileText,
 } from 'lucide-react';
-import { mockDashboardStats, mockOrders } from '@/data/mockData';
+import { mockOrders } from '@/data/mockData';
 import { RevenueChart } from './components/RevenueChart';
 import { formatCurrency, getStatusColor } from '@/utils/format';
+import { dashboardService } from '@/services';
 
 // ============ Stat Card Component ============
 interface StatCardProps {
@@ -50,7 +52,24 @@ const StatCard = ({ title, value, change, icon: Icon, color }: StatCardProps) =>
 // ============ Dashboard Page ============
 export const DashboardPage = () => {
   const { t } = useTranslation();
-  const stats = mockDashboardStats;
+  const [stats, setStats] = useState<any>({
+    totalRevenue: 0,
+    revenueChange: 0,
+    totalOrders: 0,
+    ordersChange: 0,
+    totalCustomers: 0,
+    customersChange: 0,
+    totalProducts: 0,
+    pendingQuotes: 0
+  });
+
+  useEffect(() => {
+     dashboardService.getStats().then(res => {
+         if(res.success && res.data) {
+             setStats(res.data);
+         }
+     });
+  }, []);
 
   return (
     <div className="space-y-6">

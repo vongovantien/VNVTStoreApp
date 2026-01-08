@@ -1,4 +1,5 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect } from 'react';
+
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -13,74 +14,19 @@ import {
 } from 'lucide-react';
 import { ProductCard } from '@/components/common/ProductCard';
 import { Button } from '@/components/ui';
-import { useProducts } from '@/hooks';
-import { mockCategories } from '@/data/mockData';
+import { useProducts, useCategories } from '@/hooks/useProducts';
+
+import { HOME_BANNERS, BRAND_PARTNERS, FLASH_SALE_TIMES } from '@/data/homeData';
 import { formatCurrency } from '@/utils/format';
 
-// ============ Hero Banner Data ============
-const banners = [
-  {
-    id: 1,
-    title: 'Đồ gia dụng cao cấp',
-    subtitle: 'Chất lượng tạo nên sự khác biệt',
-    description: 'Giảm đến 50% cho đơn hàng đầu tiên',
-    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200',
-    cta: 'Mua ngay',
-    link: '/products',
-  },
-  {
-    id: 2,
-    title: 'Bộ sưu tập mới',
-    subtitle: 'Xu hướng 2024',
-    description: 'Thiết kế hiện đại - Chất liệu bền đẹp',
-    image: 'https://images.unsplash.com/photo-1583845112203-29329902332e?w=1200',
-    cta: 'Khám phá',
-    link: '/products?new=true',
-  },
-  {
-    id: 3,
-    title: 'Flash Sale cuối tuần',
-    subtitle: 'Chỉ còn 2 ngày',
-    description: 'Giảm sốc đến 70% - Số lượng có hạn',
-    image: 'https://images.unsplash.com/photo-1556909172-8c2f041fca1e?w=1200',
-    cta: 'Xem ngay',
-    link: '/promotions',
-  },
-];
 
-// ============ Section Header Component ============
-interface SectionHeaderProps {
-  title: string;
-  icon?: React.ReactNode;
-  viewAllLink?: string;
-  extra?: React.ReactNode;
-}
+// ============ Component ============
 
-const SectionHeader = memo(({ title, icon, viewAllLink, extra }: SectionHeaderProps) => {
-  const { t } = useTranslation();
 
-  return (
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="flex items-center gap-2 text-xl md:text-2xl font-bold text-primary">
-        {icon}
-        {title}
-      </h2>
-      <div className="flex items-center gap-4">
-        {extra}
-        {viewAllLink && (
-          <Link
-            to={viewAllLink}
-            className="flex items-center gap-1 text-primary font-semibold hover:gap-2 transition-all"
-          >
-            {t('common.viewAll')} <ChevronRight size={18} />
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-});
 
-SectionHeader.displayName = 'SectionHeader';
+import { SectionHeader } from '@/components/common/SectionHeader';
+
+// ============ Component ============
 
 // ============ Home Page Component ============
 export const HomePage = () => {
@@ -93,7 +39,12 @@ export const HomePage = () => {
     pageSize: 20,
   });
 
+  // Fetch categories from API
+  const { data: categories = [], isLoading: loadingCategories } = useCategories();
+
+
   const products = productsData?.products || [];
+
   const featuredProducts = products.slice(0, 8);
   const newProducts = products.slice(0, 4);
   const saleProducts = products.filter((p) => p.price > 0).slice(0, 4);
@@ -101,7 +52,8 @@ export const HomePage = () => {
   // Auto slide
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % banners.length);
+      setCurrentSlide((prev) => (prev + 1) % HOME_BANNERS.length);
+
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -110,7 +62,8 @@ export const HomePage = () => {
     <div className="min-h-screen">
       {/* Hero Banner Slider */}
       <section className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
-        {banners.map((banner, index) => (
+        {HOME_BANNERS.map((banner, index) => (
+
           <motion.div
             key={banner.id}
             className={`absolute inset-0 ${index === currentSlide ? 'z-10' : 'z-0'}`}
@@ -174,7 +127,8 @@ export const HomePage = () => {
 
         {/* Dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-          {banners.map((_, index) => (
+          {HOME_BANNERS.map((_, index) => (
+
             <button
               key={index}
               className={`w-3 h-3 rounded-full border-2 border-white transition-all ${index === currentSlide ? 'bg-white scale-110' : 'bg-transparent'
@@ -192,39 +146,43 @@ export const HomePage = () => {
             title={t('home.categories')}
             icon={<span className="text-2xl">🏷️</span>}
             viewAllLink="/products"
+
           />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {mockCategories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  to={`/products?category=${category.slug}`}
-                  className="flex flex-col items-center p-4 bg-primary rounded-xl hover:-translate-y-1 hover:shadow-xl transition-all group"
-                >
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden mb-3 bg-secondary">
-                    {category.image && (
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                        loading="lazy"
-                      />
-                    )}
-                  </div>
-                  <h3 className="text-sm font-semibold text-center text-primary">
-                    {category.name}
-                  </h3>
-                  <span className="text-xs text-tertiary">{category.productCount} SP</span>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {loadingCategories ? (
+             Array.from({ length: 6 }).map((_, idx) => (
+                <div key={idx} className="bg-primary rounded-xl p-4 flex flex-col items-center justify-center gap-3 animate-pulse">
+                    <div className="w-24 h-24 bg-secondary/50 rounded-full" />
+                    <div className="h-4 w-20 bg-secondary/50 rounded" />
+                </div>
+             ))
+          ) : (
+            categories.slice(0, 6).map((cat) => (
+            <Link
+              key={cat.code}
+              to={`/products?category=${cat.code}`}
+              className="group bg-primary rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-lg transition-all border border-transparent hover:border-primary"
+            >
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-secondary/20 group-hover:scale-110 transition-transform">
+                <img
+                  src={cat.imageUrl || 'https://via.placeholder.com/150'}
+                  alt={cat.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-color-primary group-hover:text-primary transition-colors">
+                  {cat.name}
+                </h3>
+              </div>
+            </Link>
+          )))}
+        </div>
+
         </div>
       </section>
 
@@ -236,7 +194,7 @@ export const HomePage = () => {
               <Zap className="text-yellow-400 animate-pulse" size={28} />
               <h2 className="text-xl md:text-2xl font-bold">{t('home.flashSale')}</h2>
               <div className="flex gap-1">
-                {['02', '15', '30'].map((num, i) => (
+                {FLASH_SALE_TIMES.map((num, i) => (
                   <span key={i} className="flex items-center">
                     <span className="px-2 py-1 bg-error rounded font-bold">{num}</span>
                     {i < 2 && <span className="mx-1">:</span>}
@@ -386,8 +344,9 @@ export const HomePage = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-xl font-bold text-center mb-8">{t('home.brands')}</h2>
           <div className="flex flex-wrap justify-center gap-4">
-            {['Apple', 'Samsung', 'Sony', 'LG', 'Panasonic', 'Philips', 'Xiaomi', 'Electrolux'].map(
+            {BRAND_PARTNERS.map(
               (brand) => (
+
                 <div
                   key={brand}
                   className="px-6 py-3 bg-primary rounded-lg font-semibold text-secondary hover:bg-primary hover:text-white transition-colors cursor-pointer"

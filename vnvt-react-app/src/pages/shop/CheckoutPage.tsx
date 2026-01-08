@@ -1,17 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText } from 'lucide-react';
 import { Button, Input, Select } from '@/components/ui';
-import { useCartStore } from '@/store';
+import { useCartStore, useAuthStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
+import { orderService, type CreateOrderRequest } from '@/services/orderService';
+import { PaymentMethod } from '@/constants';
 
 export const CheckoutPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { items, getTotal, clearCart } = useCartStore();
+  const { items, getTotal, clearCart, fetchCart } = useCartStore();
+  const { user } = useAuthStore();
+  
   const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentMethod, setPaymentMethod] = useState<string>(PaymentMethod.COD);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const subtotal = getTotal();
@@ -19,9 +23,9 @@ export const CheckoutPage = () => {
   const total = subtotal + shippingFee;
 
   const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
+    fullName: user?.fullName || '',
+    phone: user?.phoneNumber || '',
+    email: user?.email || '',
     address: '',
     city: '',
     district: '',
@@ -29,18 +33,45 @@ export const CheckoutPage = () => {
     note: '',
   });
 
+  // Pre-fill if user has address (Logic omitted for brevity, could use userService.getMyAddresses())
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
     setIsProcessing(true);
-    // Simulate order processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    clearCart();
-    navigate('/account/orders?success=true');
+    try {
+        const orderData: CreateOrderRequest = {
+            fullName: formData.fullName,
+            phone: formData.phone,
+            address: formData.address, // Should ideally include city/district/ward
+            city: formData.city,
+            district: formData.district,
+            ward: formData.ward,
+            note: formData.note,
+            paymentMethod: paymentMethod
+        };
+
+        const res = await orderService.createOrder(orderData);
+        if (res.success) {
+            // Cart is cleared on backend, sync frontend
+            await fetchCart();
+            // Redirect to Orders page or separate Success page
+            navigate('/account/orders?success=true');
+        } else {
+            alert('Failed to place order: ' + (res.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Order failed', error);
+        alert('An error occurred');
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
+  // Re-fetch cart if empty? No, handled by App/ShopLayout.
+  
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
@@ -190,11 +221,11 @@ export const CheckoutPage = () => {
 
                 <div className="space-y-4">
                   {[
-                    { value: 'cod', label: 'Thanh toán khi nhận hàng (COD)', icon: '💵' },
-                    { value: 'zalopay', label: 'ZaloPay', icon: '💳' },
-                    { value: 'momo', label: 'Ví MoMo', icon: '📱' },
-                    { value: 'vnpay', label: 'VNPAY QR', icon: '🏦' },
-                    { value: 'bank', label: 'Chuyển khoản ngân hàng', icon: '🏛️' },
+                    { value: PaymentMethod.COD, label: 'Thanh toán khi nhận hàng (COD)', icon: '💵' },
+                    { value: 'ZALOPAY', label: 'ZaloPay', icon: '💳' }, // Use Constants if available
+                    { value: 'MOMO', label: 'Ví MoMo', icon: '📱' },
+                    { value: 'VNPAY', label: 'VNPAY QR', icon: '🏦' },
+                    { value: 'BANK', label: 'Chuyển khoản ngân hàng', icon: '🏛️' },
                   ].map((method) => (
                     <label
                       key={method.value}
@@ -243,7 +274,7 @@ export const CheckoutPage = () => {
                 {/* Payment Summary */}
                 <div className="mb-6 p-4 bg-secondary rounded-lg">
                   <h3 className="font-semibold mb-2">{t('checkout.paymentMethod')}</h3>
-                  <p className="capitalize">{paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : paymentMethod}</p>
+                  <p className="capitalize">{paymentMethod}</p>
                 </div>
 
                 {/* Order Items */}
@@ -268,7 +299,7 @@ export const CheckoutPage = () => {
                   <Button variant="outline" onClick={() => setStep(2)}>
                     {t('common.back')}
                   </Button>
-                  <Button size="lg" onClick={handleSubmit} loading={isProcessing}>
+                  <Button size="lg" onClick={handleSubmit} isLoading={isProcessing}>
                     {t('checkout.placeOrder')}
                   </Button>
                 </div>

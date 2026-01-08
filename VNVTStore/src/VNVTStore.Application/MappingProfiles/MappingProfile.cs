@@ -1,6 +1,7 @@
 using AutoMapper;
 using VNVTStore.Application.DTOs;
-using VNVTStore.Infrastructure;
+
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.Application.MappingProfiles;
 
@@ -64,5 +65,8 @@ public class MappingProfile : Profile
 
         // Payment mappings
         CreateMap<TblPayment, PaymentDto>().ReverseMap();
+
+        // Supplier mappings
+        CreateMap<TblSupplier, SupplierDto>().ReverseMap();
     }
 }

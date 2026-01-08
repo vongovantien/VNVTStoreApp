@@ -44,10 +44,11 @@ export interface CartItem {
 export interface User {
     id: string;
     email: string;
-    name: string;
+    fullName: string; // Changed from name to match API
+    username?: string;
     phone?: string;
     avatar?: string;
-    role: 'customer' | 'admin' | 'staff';
+    role: 'customer' | 'admin' | 'staff' | string;
     addresses?: Address[];
     createdAt: string;
 }
@@ -124,7 +125,9 @@ export interface QuoteRequest {
         name: string;
         email: string;
         phone: string;
+        company?: string;
     };
+
     quantity: number;
     note?: string;
     status: QuoteStatus;

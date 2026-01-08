@@ -1,73 +1,67 @@
-# React + TypeScript + Vite
+# VNVTStore Frontend (React App)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The modern React-based user interface for the VNVTStore E-Commerce platform.
 
-Currently, two official plugins are available:
+## 🛠️ Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 18**: UI Framework
+- **TypeScript**: Static typing for reliability
+- **Vite**: Ultra-fast build tool and dev server
+- **Tailwind CSS**: Modern utility-first styling
+- **Lucide React**: Beautiful icons
+- **Axios**: API communication with automated request interceptors
+- **Zustand**: Lightweight state management (Cart, Auth)
+- **i18next**: Multi-language support (English/Vietnamese)
 
-## React Compiler
+## 📁 Folder Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `/src/components`: Reusable UI components (Common, Layouts, Shop)
+- `/src/pages`: Main application pages (Home, Product, Cart, Account, etc.)
+- `/src/services`: API client and data fetching services
+- `/src/stores`: Global state management
+- `/src/hooks`: Custom React hooks
+- `/src/types`: TypeScript interfaces and types
+- `/src/utils`: Helper functions and formatting utilities
+- `/src/locales`: Translation files
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Configure Environment**:
+   Create a `.env` file in the root (optional, default is http://localhost:5176):
+   ```
+   VITE_API_URL=http://localhost:5176/api/v1
+   ```
+3. **Run in development**:
+   ```bash
+   npm run dev
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📜 Key Features Implemented
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 🛒 Shopping Experience
+- Product listing with categories
+- Dynamic product detail pages
+- Side-nav cart and full cart management
+- Multi-step checkout process
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 👤 User Account
+- Modern Profile Management
+- Multiple Address management
+- Order tracking and history
+- **Quote Requests dashboard**
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 🎨 Design System
+- Modern dark/light-friendly design
+- Glassmorphism effects
+- Responsive layout (Mobile/Tablet/Desktop)
+- Smooth micro-animations
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🧪 Testing
+Run unit tests with Vitest:
+```bash
+npm run test
 ```

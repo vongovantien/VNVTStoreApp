@@ -189,6 +189,13 @@ dotnet run --project src/VNVTStore.API
 | POST | `/api/v1/orders` | Tạo đơn hàng mới | ✅ |
 | PUT | `/api/v1/orders/{id}/status` | Cập nhật trạng thái | Admin |
 
+### Quotes
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/v1/quotes` | Lấy danh sách yêu cầu báo giá của tôi | ✅ |
+| POST | `/api/v1/quotes` | Tạo yêu cầu báo giá mới | ✅ |
+
 ### Cart
 
 | Method | Endpoint | Description | Auth |

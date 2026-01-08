@@ -1,133 +1,54 @@
-# E-Commerce Platform
+# VNVTStore - Modern E-Commerce Platform
 
-## Table of Contents
+VNVTStore is a full-stack e-commerce solution built with modern technologies, following Clean Architecture principles on the backend and a component-driven approach on the frontend.
 
-- [E-Commerce Platform](#e-commerce-platform)
-  - [Table of Contents](#table-of-contents)
-  - [Project Overview](#project-overview)
-  - [Features](#features)
-  - [Technologies Used](#technologies-used)
-    - [Other Tools and Technologies](#other-tools-and-technologies)
-  - [Architecture](#architecture)
-  - [Installation](#installation)
-    - [Prerequisites](#prerequisites)
-    - [Backend Setup](#backend-setup)
-    - [Frontend Setup](#frontend-setup)
-  - [Usage](#usage)
-  - [Contributing](#contributing)
-  - [License](#license)
-  - [Contact](#contact)
+## 🏗️ Project Structure
 
-## Project Overview
+This repository contains:
+- **/VNVTStore**: .NET 8 Web API (Backend)
+- **/vnvt-react-app**: React 18 + Vite + TypeScript (Frontend)
 
-The E-Commerce Platform is a comprehensive online shopping solution built with .NET 8 for the backend and Angular for the frontend. This project aims to provide a scalable, secure, and user-friendly platform for online retailers to manage their products, orders, and customers.
-
-## Features
-
-- User authentication and authorization
-- Product management (CRUD operations)
-- Shopping cart functionality
-- Order processing and management
-- Customer profile management
-- Payment gateway integration
-- Responsive design for mobile and desktop
-
-## Technologies Used
-
-- **.NET Framework/Core**
-- **Entity Framework**
-- **SQL Server**
-- **ASP.NET MVC/Web API**
-- **Bootstrap/CSS**
-- **JavaScript/TypeScript**
-
-### Other Tools and Technologies
-
-- Docker
-- Jenkins (CI/CD)
-- AWS (Hosting and Deployment)
-- Swagger (API Documentation)
-
-## Architecture
-
-The platform follows a microservices architecture with a clear separation of concerns between the frontend and backend. The backend provides RESTful APIs consumed by the Angular frontend.
-
-![Architecture Diagram](diagram.png)
-
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Node.js 18+](https://nodejs.org/)
+- [PostgreSQL](https://www.postgresql.org/)
 
-- .NET 8.0
-- Node.js 14+
-- Angular CLI
-- Docker
+### 1. Backend Setup
+```bash
+cd VNVTStore
+# Update connection string in src/VNVTStore.API/appsettings.Development.json
+dotnet build
+dotnet run --project src/VNVTStore.API
+```
+Backend will be available at `http://localhost:5176` (or as configured in `launchSettings.json`).
 
-### Backend Setup
+### 2. Frontend Setup
+```bash
+cd vnvt-react-app
+npm install
+npm run dev
+```
+Frontend will be available at `http://localhost:5173`.
 
-1. Clone the repository:
-   \`\`\`bash
-   git clone https://github.com/vongovantien/VNVTStoreApp.git
-   \`\`\`
-2. Navigate to the project directory
-   \`\`\`bash
-   cd VNVTStoreApp
-   \`\`\`
-3. Restore the dependencies:
-   \`\`\`bash
-   dotnet restore
-   \`\`\`
-4. Run the application:
-   Update the database connection string in appsettings.json
+## 📜 Features
 
-   Apply the migrations to your database
+- **Authentication**: JWT-based secure login and registration.
+- **Product Catalog**: Dynamic product listing with category filtering and search.
+- **Shopping Cart**: Real-time cart management synced with the backend.
+- **Checkout Process**: Multi-step checkout with address management and order summary.
+- **User Dashboard**: Manage profile, addresses, orders, and **Quote Requests**.
+- **Admin Panel**: Manage products, categories, orders, and system statistics.
+- **Quote System**: Request specialized price quotes for products directly from the platform.
 
-   dotnet ef database update
+## 🛠️ Technology Stack
 
-   dotnet run
+| Part | Technologies |
+|------|--------------|
+| **Backend** | .NET 8, EF Core, PostgreSQL, MediatR, AutoMapper, FluentValidation |
+| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Lucide React, Axios |
+| **Patterns** | Clean Architecture, CQRS, Repository, Unit of Work |
 
-### Frontend Setup
-
-1. Clone the repository:
-   \`\`\`bash
-   git clone https://github.com/vongovantien/VNVTStoreApp.git
-   \`\`\`
-2. Navigate to the frontend directory:
-   \`\`\`bash
-   cd ShopApp
-   \`\`\`
-3. Install dependencies:
-   \`\`\`bash
-   npm install
-   \`\`\`
-4. Run the application:
-   \`\`\`bash
-   ng serve
-   \`\`\`
-
-## Usage
-
-Open your browser and navigate to http://localhost:5000
-Use the application interface to manage inventory, process sales, and manage customers.
-
-## Contributing
-
-We welcome contributions from the community. Please follow these steps to contribute:
-
-1. Fork the repository.
-2. Create a new branch (\`git checkout -b feature-branch\`).
-3. Make your changes.
-4. Commit your changes (\`git commit -m 'Add new feature'\`).
-5. Push to the branch (\`git push origin feature-branch\`).
-6. Open a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For any inquiries or feedback, please contact us at:
-
-- Email:vongovantien@gmail.com
-- GitHub:
+---
+Managed by [vongovantien](https://github.com/vongovantien).

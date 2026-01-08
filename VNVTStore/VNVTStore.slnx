@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VNVTStore.API/VNVTStore.API.csproj" />
+    <Project Path="src/VNVTStore.Application/VNVTStore.Application.csproj" />
+    <Project Path="src/VNVTStore.Domain/VNVTStore.Domain.csproj" />
+    <Project Path="src/VNVTStore.Infrastructure/VNVTStore.Infrastructure.csproj" />
+  </Folder>
+</Solution>

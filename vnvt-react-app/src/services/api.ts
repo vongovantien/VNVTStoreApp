@@ -1,0 +1,150 @@
+/**
+ * API Configuration and Axios Instance
+ * Base configuration for calling VNVTStore API
+ */
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+
+// ============ Types ============
+export interface ApiResponse<T> {
+  success: boolean;
+  status: number;
+  message: string;
+  data: T | null;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalItems: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface SearchingDTO {
+  field: string;
+  operator?: string; // eq, ne, contains, gt, lt, gte, lte
+  value: string;
+}
+
+export interface SortDTO {
+  sortBy: string;
+  sortDescending: boolean;
+}
+
+export interface RequestDTO<T = undefined> {
+  pageIndex?: number;
+  pageSize?: number;
+  searching?: SearchingDTO[];
+  sortDTO?: SortDTO;
+  postObject?: T;
+}
+
+// ============ API Client ============
+class ApiClient {
+  private baseURL: string;
+
+  constructor(baseURL: string) {
+    this.baseURL = baseURL;
+  }
+
+  private getAuthHeaders(): Record<string, string> {
+    const stored = localStorage.getItem('vnvt-auth');
+    if (stored) {
+      try {
+        const { state } = JSON.parse(stored);
+        if (state?.token) {
+          return { Authorization: `Bearer ${state.token}` };
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    return {};
+  }
+
+  async request<T>(
+    method: string,
+    endpoint: string,
+    data?: unknown,
+    options?: RequestInit
+  ): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept-Language': localStorage.getItem('language') || 'vi',
+      ...this.getAuthHeaders(),
+      ...(options?.headers as Record<string, string>),
+    };
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
+        ...options,
+      });
+
+      // Handle empty responses (204 No Content or empty body)
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
+      
+      if (response.status === 204 || contentLength === '0' || !contentType?.includes('application/json')) {
+        // Return success for 2xx status codes, failure otherwise
+        return {
+          success: response.ok,
+          status: response.status,
+          message: response.ok ? 'Success' : 'Error',
+          data: null,
+        };
+      }
+
+      const result = await response.json();
+
+      // Normalize backend Result<T> to frontend ApiResponse<T>
+      if (result && typeof result === 'object') {
+        // Backend returns: { value: T, isSuccess: boolean, isFailure: boolean, error: Error }
+        if ('value' in result && 'isSuccess' in result) {
+          return {
+            success: result.isSuccess,
+            status: response.status,
+            message: result.error ? result.error.message : (result.isSuccess ? 'Success' : 'Error'),
+            data: result.value
+          };
+        }
+      }
+
+      return result as ApiResponse<T>;
+    } catch (error) {
+      console.error('API Error:', error);
+      return {
+        success: false,
+        status: 500,
+        message: error instanceof Error ? error.message : 'Network error',
+        data: null,
+      };
+    }
+  }
+
+  get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>('GET', endpoint, undefined, options);
+  }
+
+  post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>('POST', endpoint, data, options);
+  }
+
+  put<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>('PUT', endpoint, data, options);
+  }
+
+  delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>('DELETE', endpoint, undefined, options);
+  }
+}
+
+export const apiClient = new ApiClient(API_BASE_URL);
+export default apiClient;

@@ -1,40 +1,46 @@
-import { apiClient, type ApiResponse } from './api';
+/**
+ * User Service
+ * Uses only baseService CRUD methods
+ */
 
-// ============ API DTOs ============
-export interface AddressDto {
-    id: string; // or code
-    userCode?: string;
-    fullName: string;
-    phone: string;
-    category: string; // Home/Work
-    street: string;
-    ward: string;
-    district: string;
-    city: string;
-    isDefault: boolean;
-}
+import { createCrudService, API_ENDPOINTS } from './baseService';
 
+// ============ User Types ============
 export interface UserProfileDto {
     code: string;
     username: string;
     email: string;
     fullName: string;
     phoneNumber: string;
-    avatar: string;
+    avatar?: string;
     role: string;
     createdAt: string;
 }
 
 export interface UpdateProfileRequest {
-    fullName: string;
-    phoneNumber: string;
-    email: string; // Email update might require verification, but let's include it
+    fullName?: string;
+    phoneNumber?: string;
+    email?: string;
 }
 
 export interface ChangePasswordRequest {
     currentPassword: string;
     newPassword: string;
     confirmNewPassword: string;
+}
+
+// ============ Address Types ============
+export interface AddressDto {
+    code: string;
+    userCode?: string;
+    fullName: string;
+    phone: string;
+    category: string;
+    street: string;
+    ward: string;
+    district: string;
+    city: string;
+    isDefault: boolean;
 }
 
 export interface CreateAddressRequest {
@@ -48,45 +54,17 @@ export interface CreateAddressRequest {
     isDefault: boolean;
 }
 
-export interface UpdateAddressRequest extends CreateAddressRequest {
-    id: string;
-}
+export interface UpdateAddressRequest extends Partial<CreateAddressRequest> { }
 
-// ============ Service ============
-export const userService = {
-    // Profile
-    async getProfile(): Promise<ApiResponse<UserProfileDto>> {
-        return apiClient.get<UserProfileDto>('/users/profile');
-    },
+// ============ Services ============
+export const userService = createCrudService<UserProfileDto, UpdateProfileRequest, UpdateProfileRequest>({
+    endpoint: API_ENDPOINTS.USERS.BASE,
+    resourceName: 'User'
+});
 
-    async updateProfile(data: UpdateProfileRequest): Promise<ApiResponse<UserProfileDto>> {
-        return apiClient.put<UserProfileDto>('/users/profile', data);
-    },
-
-    async changePassword(data: ChangePasswordRequest): Promise<ApiResponse<boolean>> {
-        return apiClient.put<boolean>('/users/change-password', data);
-    },
-
-    // Addresses
-    async getMyAddresses(): Promise<ApiResponse<AddressDto[]>> {
-        return apiClient.get<AddressDto[]>('/addresses');
-    },
-
-    async createAddress(data: CreateAddressRequest): Promise<ApiResponse<string>> {
-        return apiClient.post<string>('/addresses', data);
-    },
-
-    async updateAddress(id: string, data: UpdateAddressRequest): Promise<ApiResponse<boolean>> {
-        return apiClient.put<boolean>(`/addresses/${id}`, data);
-    },
-
-    async deleteAddress(id: string): Promise<ApiResponse<boolean>> {
-        return apiClient.delete<boolean>(`/addresses/${id}`);
-    },
-
-    async setDefaultAddress(id: string): Promise<ApiResponse<boolean>> {
-        return apiClient.put<boolean>(`/addresses/${id}/set-default`);
-    }
-};
+export const addressService = createCrudService<AddressDto, CreateAddressRequest, UpdateAddressRequest>({
+    endpoint: API_ENDPOINTS.ADDRESSES.BASE,
+    resourceName: 'Address'
+});
 
 export default userService;

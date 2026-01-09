@@ -12,11 +12,13 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -27,12 +29,12 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred");
-            await HandleExceptionAsync(context, ex);
+            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
+            await HandleExceptionAsync(context, ex, _env);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception, IHostEnvironment env)
     {
         var response = context.Response;
         response.ContentType = "application/json";
@@ -61,7 +63,9 @@ public class ExceptionHandlingMiddleware
             ),
             _ => (
                 HttpStatusCode.InternalServerError,
-                "An internal server error occurred"
+                env.IsDevelopment() 
+                    ? $"{exception.Message} | Inner: {exception.InnerException?.Message}" 
+                    : "An internal server error occurred"
             )
         };
 

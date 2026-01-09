@@ -26,7 +26,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, ConfirmDialog } from '@/components/ui';
 import { ToastContainer } from '@/components/ui/Toast';
 import { useUIStore, useAuthStore } from '@/store';
 
@@ -49,6 +49,7 @@ export const AdminLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { theme, toggleTheme } = useUIStore();
   const { logout, user, isAuthenticated } = useAuthStore();
   const location = useLocation();
@@ -58,6 +59,11 @@ export const AdminLayout = () => {
   }
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
     logout();
     navigate('/login');
   };
@@ -273,7 +279,7 @@ export const AdminLayout = () => {
 
               {/* User menu */}
               <div className="relative ml-4 pl-4 border-l">
-                <button 
+                <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                 >
@@ -342,6 +348,15 @@ export const AdminLayout = () => {
         </main>
       </div>
       <ToastContainer />
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title={t('messages.logoutConfirmTitle')}
+        message={t('messages.logoutConfirmMessage')}
+        confirmText={t('common.logout')}
+        variant="danger"
+      />
     </div>
   );
 };

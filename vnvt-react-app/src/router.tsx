@@ -24,6 +24,12 @@ const ComparePage = lazy(() => import('@/pages/shop/ComparePage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const AccountPage = lazy(() => import('@/pages/shop/AccountPage'));
+const PromotionsPage = lazy(() => import('@/pages/shop/PromotionsPage'));
+const NewsPage = lazy(() => import('@/pages/shop/NewsPage'));
+const ContactPage = lazy(() => import('@/pages/shop/ContactPage'));
+const AboutPage = lazy(() => import('@/pages/shop/AboutPage'));
+const SupportPage = lazy(() => import('@/pages/shop/SupportPage'));
+const TrackingPage = lazy(() => import('@/pages/shop/TrackingPage'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/DashboardPage'));
@@ -106,6 +112,30 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageLoader />}>
             <ComparePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'promotions',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PromotionsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'news',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <NewsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'contact',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <ContactPage />
           </Suspense>
         ),
       },

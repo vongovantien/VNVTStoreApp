@@ -55,3 +55,6 @@ export const PageSize = {
     LARGE: 20,
     XLARGE: 50
 };
+
+export { API_ENDPOINTS } from './endpoints';
+

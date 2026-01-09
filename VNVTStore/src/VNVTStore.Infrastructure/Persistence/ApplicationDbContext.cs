@@ -289,6 +289,10 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.CategoryCode)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("TblProduct_CategoryCode_fkey");
+
+            entity.HasOne(d => d.SupplierCodeNavigation).WithMany()
+                .HasForeignKey(d => d.SupplierCode)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<TblProductImage>(entity =>
@@ -379,6 +383,24 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("TblReview_UserCode_fkey");
+        });
+
+        modelBuilder.Entity<TblSupplier>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblSupplier_pkey");
+
+            entity.ToTable("TblSupplier");
+
+            entity.Property(e => e.Code).HasColumnType("character varying");
+            entity.Property(e => e.Address).HasColumnType("character varying");
+            entity.Property(e => e.BankAccount).HasColumnType("character varying");
+            entity.Property(e => e.BankName).HasColumnType("character varying");
+            entity.Property(e => e.ContactPerson).HasColumnType("character varying");
+            entity.Property(e => e.Email).HasColumnType("character varying");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Name).HasColumnType("character varying");
+            entity.Property(e => e.Phone).HasColumnType("character varying");
+            entity.Property(e => e.TaxCode).HasColumnType("character varying");
         });
 
         modelBuilder.Entity<TblQuote>(entity =>

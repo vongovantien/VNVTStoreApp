@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
-import { useAuthStore } from '@/store';
+import { useAuthStore, useToast } from '@/store';
 import { authService } from '@/services/authService';
 
 export const LoginPage = () => {
@@ -12,6 +12,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuthStore();
+  const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +49,15 @@ export const LoginPage = () => {
           token
         );
 
+        toast.success(t('messages.loginSuccess'));
         // Redirect to admin if admin role, otherwise to original destination
         navigate(user.role === 'admin' ? '/admin' : from, { replace: true });
       } else {
+        toast.error(response.message || t('messages.loginError'));
         setError(response.message || 'Tên đăng nhập hoặc mật khẩu không đúng');
       }
     } catch (err) {
+      toast.error(t('messages.error'));
       setError('Có lỗi xảy ra. Vui lòng thử lại.');
       console.error('Login error:', err);
     } finally {

@@ -1,6 +1,11 @@
-import { apiClient, type ApiResponse, type PagedResult } from './api';
+/**
+ * Order Service
+ * Uses only baseService CRUD methods
+ */
 
-// ============ API DTOs ============
+import { createCrudService, API_ENDPOINTS } from './baseService';
+
+// ============ Types ============
 export interface OrderItemDto {
     productCode: string;
     productName: string;
@@ -11,7 +16,7 @@ export interface OrderItemDto {
 
 export interface OrderDto {
     code: string;
-    userCode: string; // "CreatedBy"
+    userCode: string;
     status: string;
     totalAmount: number;
     finalAmount: number;
@@ -22,7 +27,6 @@ export interface OrderDto {
     note?: string;
     paymentMethod?: string;
     paymentStatus?: string;
-    // Address info might be separate or embedded depending on backend
     shippingName?: string;
     shippingPhone?: string;
     shippingAddress?: string;
@@ -39,46 +43,15 @@ export interface CreateOrderRequest {
     paymentMethod: string;
 }
 
-export interface CancelOrderRequest {
-    reason: string;
-}
-
-export interface OrderFilterRequest {
-    pageIndex: number;
-    pageSize: number;
+export interface UpdateOrderRequest {
     status?: string;
+    note?: string;
 }
 
 // ============ Service ============
-export const orderService = {
-    async createOrder(data: CreateOrderRequest): Promise<ApiResponse<string>> { // Returns OrderCode
-        return apiClient.post<string>('/orders', data);
-    },
-
-    async getMyOrders(filter: OrderFilterRequest): Promise<ApiResponse<PagedResult<OrderDto>>> {
-        // Backend `GetMyOrdersQuery` takes Status filter? 
-        // Assuming PagedResult from typical query pattern or simple list.
-        // If backend returns List<OrderDto>, we wrap it?
-        // Let's assume backend matches standard pattern.
-        // Backend Controller: `[HttpGet] GetMyOrders([FromQuery] string? status)`
-        // And it likely returns List or Paged. 
-        // Handlers `GetMyOrdersQuery` returns `Result<List<OrderDto>>` based on code reading earlier.
-        // So it's not paged in backend yet?
-        // Wait, earlier I saw `PagedResult` references.
-        // Let's check `OrderHandlers` if possible. But for now assuming List.
-        const query = new URLSearchParams();
-        if (filter.status) query.append('status', filter.status);
-
-        return apiClient.get<PagedResult<OrderDto>>(`/orders/my-orders?${query.toString()}`);
-    },
-
-    async getOrderById(orderCode: string): Promise<ApiResponse<OrderDto>> {
-        return apiClient.get<OrderDto>(`/orders/${orderCode}`);
-    },
-
-    async cancelOrder(orderCode: string, reason: string): Promise<ApiResponse<boolean>> {
-        return apiClient.put<boolean>(`/orders/${orderCode}/cancel`, { reason });
-    }
-};
+export const orderService = createCrudService<OrderDto, CreateOrderRequest, UpdateOrderRequest>({
+    endpoint: API_ENDPOINTS.ORDERS.BASE,
+    resourceName: 'Order'
+});
 
 export default orderService;

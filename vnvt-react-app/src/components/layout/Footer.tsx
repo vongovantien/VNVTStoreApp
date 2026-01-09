@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,23 +15,62 @@ import {
   HeadphonesIcon,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { Button, Input } from '@/components/ui';
-import { mockCategories } from '@/data/mockData';
+import { useToast } from '@/store';
 
 export const Footer = memo(() => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const [email, setEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const features = [
-    { icon: Truck, title: 'Miễn phí vận chuyển', desc: 'Đơn hàng từ 500.000đ' },
-    { icon: Shield, title: 'Bảo hành chính hãng', desc: 'Cam kết 100% chính hãng' },
-    { icon: CreditCard, title: 'Thanh toán an toàn', desc: 'Đa dạng phương thức' },
-    { icon: HeadphonesIcon, title: 'Hỗ trợ 24/7', desc: 'Tư vấn nhiệt tình' },
+    { icon: Truck, title: t('footer.features.shipping'), desc: t('footer.features.shippingDesc') },
+    { icon: Shield, title: t('footer.features.warranty'), desc: t('footer.features.warrantyDesc') },
+    { icon: CreditCard, title: t('footer.features.returns'), desc: t('footer.features.returnsDesc') },
+    { icon: HeadphonesIcon, title: t('footer.features.support'), desc: t('footer.features.supportDesc') },
   ];
+
+  const aboutLinks = [
+    { label: t('nav.about') || 'Giới thiệu', path: '/about' },
+    { label: t('nav.news') || 'Tin tức', path: '/news' },
+    { label: t('nav.promotions') || 'Khuyến mãi', path: '/promotions' },
+    { label: t('nav.contact') || 'Liên hệ', path: '/contact' },
+  ];
+
+  const supportLinks = [
+    { label: t('nav.tracking') || 'Tra cứu đơn hàng', path: '/tracking' },
+    { label: t('nav.support') || 'Hỗ trợ', path: '/support' },
+    { label: t('nav.products') || 'Sản phẩm', path: '/products' },
+    { label: 'FAQ', path: '/support' },
+  ];
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast.error(t('messages.enterEmail') || 'Vui lòng nhập email');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error(t('messages.invalidEmail') || 'Email không hợp lệ');
+      return;
+    }
+
+    setIsSubscribing(true);
+    // Simulate API call
+    setTimeout(() => {
+      toast.success(t('messages.subscribeSuccess') || 'Đăng ký nhận tin thành công!');
+      setEmail('');
+      setIsSubscribing(false);
+    }, 1000);
+  };
 
   return (
     <footer className="mt-auto">
       {/* Features */}
-      <div className="bg-gradient-to-r from-primary to-purple-500 py-8">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 py-8">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
@@ -63,20 +102,20 @@ export const Footer = memo(() => {
                 </span>
               </Link>
               <p className="text-sm text-gray-400 mb-6 max-w-sm">
-                Cửa hàng đồ gia dụng cao cấp - Mang đến cuộc sống tiện nghi và hiện đại cho gia đình bạn.
+                {t('footer.aboutDesc')}
               </p>
-              
+
               <div className="space-y-2 mb-6">
                 <div className="flex items-center gap-2 text-sm">
-                  <MapPin size={16} className="text-primary" />
+                  <MapPin size={16} className="text-indigo-400" />
                   <span>123 Nguyễn Huệ, Q.1, TP.HCM</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Phone size={16} className="text-primary" />
+                  <Phone size={16} className="text-indigo-400" />
                   <span>1900 123 456</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail size={16} className="text-primary" />
+                  <Mail size={16} className="text-indigo-400" />
                   <span>contact@vnvtstore.com</span>
                 </div>
               </div>
@@ -109,13 +148,13 @@ export const Footer = memo(() => {
             <div>
               <h3 className="text-white font-semibold mb-4 relative inline-block">
                 {t('footer.about')}
-                <span className="absolute -bottom-1 left-0 w-10 h-0.5 bg-gradient-to-r from-primary to-purple-500" />
+                <span className="absolute -bottom-1 left-0 w-10 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500" />
               </h3>
               <ul className="space-y-2">
-                {['Giới thiệu', 'Tin tức', 'Tuyển dụng', 'Cửa hàng', 'Liên hệ'].map((link) => (
-                  <li key={link}>
-                    <Link to="#" className="text-sm text-gray-400 hover:text-white hover:pl-2 transition-all">
-                      {link}
+                {aboutLinks.map((link) => (
+                  <li key={link.path}>
+                    <Link to={link.path} className="text-sm text-gray-400 hover:text-white hover:pl-2 transition-all">
+                      {link.label}
                     </Link>
                   </li>
                 ))}
@@ -126,13 +165,13 @@ export const Footer = memo(() => {
             <div>
               <h3 className="text-white font-semibold mb-4 relative inline-block">
                 {t('footer.support')}
-                <span className="absolute -bottom-1 left-0 w-10 h-0.5 bg-gradient-to-r from-primary to-purple-500" />
+                <span className="absolute -bottom-1 left-0 w-10 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500" />
               </h3>
               <ul className="space-y-2">
-                {['Hướng dẫn mua hàng', 'Hướng dẫn thanh toán', 'Vận chuyển', 'Đổi trả', 'Bảo hành', 'FAQ'].map((link) => (
-                  <li key={link}>
-                    <Link to="#" className="text-sm text-gray-400 hover:text-white hover:pl-2 transition-all">
-                      {link}
+                {supportLinks.map((link, index) => (
+                  <li key={index}>
+                    <Link to={link.path} className="text-sm text-gray-400 hover:text-white hover:pl-2 transition-all">
+                      {link.label}
                     </Link>
                   </li>
                 ))}
@@ -143,21 +182,27 @@ export const Footer = memo(() => {
             <div>
               <h3 className="text-white font-semibold mb-4 relative inline-block">
                 {t('footer.newsletter')}
-                <span className="absolute -bottom-1 left-0 w-10 h-0.5 bg-gradient-to-r from-primary to-purple-500" />
+                <span className="absolute -bottom-1 left-0 w-10 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500" />
               </h3>
               <p className="text-sm text-gray-400 mb-4">
                 {t('footer.newsletterDesc')}
               </p>
-              <div className="flex gap-2">
+              <form onSubmit={handleSubscribe} className="flex gap-2">
                 <input
                   type="email"
-                  placeholder="Email của bạn..."
-                  className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-primary"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('footer.emailPlaceholder')}
+                  className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
                 />
-                <button className="w-11 h-11 bg-gradient-to-r from-primary to-purple-500 rounded-lg flex items-center justify-center hover:shadow-lg hover:shadow-primary/25 transition-all">
+                <button
+                  type="submit"
+                  disabled={isSubscribing}
+                  className="w-11 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center hover:shadow-lg hover:shadow-indigo-500/25 transition-all disabled:opacity-50"
+                >
                   <Send size={18} className="text-white" />
                 </button>
-              </div>
+              </form>
 
               {/* Payment Methods */}
               <div className="mt-6">
@@ -180,11 +225,11 @@ export const Footer = memo(() => {
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500">{t('footer.copyright')}</p>
           <div className="flex gap-4">
-            <Link to="/terms" className="text-sm text-gray-500 hover:text-white transition-colors">
-              Điều khoản
+            <Link to="/about" className="text-sm text-gray-500 hover:text-white transition-colors">
+              {t('nav.about') || 'Về chúng tôi'}
             </Link>
-            <Link to="/privacy" className="text-sm text-gray-500 hover:text-white transition-colors">
-              Bảo mật
+            <Link to="/support" className="text-sm text-gray-500 hover:text-white transition-colors">
+              {t('nav.support') || 'Hỗ trợ'}
             </Link>
           </div>
         </div>

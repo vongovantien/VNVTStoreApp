@@ -16,8 +16,8 @@ export const CustomersPage = () => {
     { id: 'user-3', email: 'nguyenvana@email.com', name: 'Nguyễn Văn A', phone: '0901234567', role: 'customer' as const, createdAt: '2024-01-15', orders: 12, totalSpent: 85000000 },
     { id: 'user-4', email: 'tranthib@email.com', name: 'Trần Thị B', phone: '0912345678', role: 'customer' as const, createdAt: '2024-01-20', orders: 3, totalSpent: 15000000 },
   ].filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchQuery.toLowerCase())
+    c.name.toLowerCase().includes(searchQuery?.toLowerCase() ?? '') ||
+    c.email.toLowerCase().includes(searchQuery?.toLowerCase() ?? '')
   );
 
   return (

@@ -1,7 +1,13 @@
-import { apiClient, type ApiResponse } from './api';
+/**
+ * Payment Service
+ * Uses only baseService CRUD methods
+ */
 
+import { createCrudService, API_ENDPOINTS } from './baseService';
+
+// ============ Types ============
 export interface PaymentDto {
-    id: string;
+    code: string;
     orderCode: string;
     method: string;
     status: string;
@@ -10,26 +16,21 @@ export interface PaymentDto {
     transactionId?: string;
 }
 
-export interface ProcessPaymentRequest {
+export interface CreatePaymentRequest {
     orderCode: string;
     method: string;
     amount: number;
 }
 
-export const paymentService = {
-    async processPayment(data: ProcessPaymentRequest): Promise<ApiResponse<boolean>> {
-        return apiClient.post<boolean>('/payments/process', data);
-    },
+export interface UpdatePaymentRequest {
+    status?: string;
+    transactionId?: string;
+}
 
-    async getPaymentByOrder(orderCode: string): Promise<ApiResponse<PaymentDto>> {
-        return apiClient.get<PaymentDto>(`/payments/order/${orderCode}`);
-    },
-
-    // For VNPAY/Momo, likely need detailed initiate payment response (URL)
-    async initiatePayment(orderCode: string, method: string): Promise<ApiResponse<string>> {
-        // Assuming backend returns a payment URL for redirect
-        return apiClient.post<string>('/payments/initiate', { orderCode, method });
-    }
-};
+// ============ Service ============
+export const paymentService = createCrudService<PaymentDto, CreatePaymentRequest, UpdatePaymentRequest>({
+    endpoint: API_ENDPOINTS.PAYMENTS.BASE,
+    resourceName: 'Payment'
+});
 
 export default paymentService;

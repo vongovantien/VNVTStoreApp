@@ -4,6 +4,12 @@
  */
 
 export const API_ENDPOINTS = {
+    // Banners
+    BANNERS: {
+        BASE: '/banner',
+        BY_CODE: (code: string) => `/banner/${code}`,
+    },
+
     // Auth
     AUTH: {
         LOGIN: '/auth/login',

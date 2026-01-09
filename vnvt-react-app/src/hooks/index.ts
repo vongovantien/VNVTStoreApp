@@ -12,6 +12,9 @@ export {
     productKeys,
 } from './useProducts';
 
+// Re-export order hooks
+export { useOrders, useAdminOrders, useUpdateOrderStatus } from './useOrders';
+
 
 /**
  * Hook for debounced value

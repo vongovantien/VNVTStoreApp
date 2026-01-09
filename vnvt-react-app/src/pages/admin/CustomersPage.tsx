@@ -1,23 +1,33 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, User, Mail, Phone, ShoppingBag, Eye } from 'lucide-react';
+import { Search, User, Mail, Phone, ShoppingBag, Eye } from 'lucide-react';
 import { Button, Badge, Modal } from '@/components/ui';
-import { mockUsers, mockOrders } from '@/data/mockData';
 import { formatCurrency, formatDate } from '@/utils/format';
+
+interface Customer {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  role: 'customer';
+  createdAt: string;
+  orders: number;
+  totalSpent: number;
+}
 
 export const CustomersPage = () => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState<typeof mockUsers[0] | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   // Mock customers with additional data
   const customers = [
-    { ...mockUsers[1], orders: 5, totalSpent: 25000000 },
+    { id: 'user-2', email: 'customer@email.com', name: 'Khách Hàng Demo', phone: '0909123456', role: 'customer' as const, createdAt: '2024-01-10', orders: 5, totalSpent: 25000000 },
     { id: 'user-3', email: 'nguyenvana@email.com', name: 'Nguyễn Văn A', phone: '0901234567', role: 'customer' as const, createdAt: '2024-01-15', orders: 12, totalSpent: 85000000 },
     { id: 'user-4', email: 'tranthib@email.com', name: 'Trần Thị B', phone: '0912345678', role: 'customer' as const, createdAt: '2024-01-20', orders: 3, totalSpent: 15000000 },
   ].filter((c) =>
-    c.name.toLowerCase().includes(searchQuery?.toLowerCase() ?? '') ||
-    c.email.toLowerCase().includes(searchQuery?.toLowerCase() ?? '')
+    (c.name?.toLowerCase() || '').includes(searchQuery?.toLowerCase() || '') ||
+    (c.email?.toLowerCase() || '').includes(searchQuery?.toLowerCase() || '')
   );
 
   return (
@@ -115,7 +125,7 @@ export const CustomersPage = () => {
       <Modal
         isOpen={!!selectedCustomer}
         onClose={() => setSelectedCustomer(null)}
-        title="Chi tiết khách hàng"
+        title={t('admin.actions.view') + ' ' + t('admin.columns.customer')}
         size="md"
       >
         {selectedCustomer && (
@@ -133,16 +143,16 @@ export const CustomersPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-secondary rounded-lg p-4 text-center">
                 <p className="text-2xl font-bold">{selectedCustomer.orders}</p>
-                <p className="text-sm text-secondary">Đơn hàng</p>
+                <p className="text-sm text-secondary">{t('admin.orders')}</p>
               </div>
               <div className="bg-secondary rounded-lg p-4 text-center">
                 <p className="text-xl font-bold text-success">{formatCurrency(selectedCustomer.totalSpent)}</p>
-                <p className="text-sm text-secondary">Tổng chi tiêu</p>
+                <p className="text-sm text-secondary">{t('admin.columns.totalSpent')}</p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-semibold">Thông tin liên hệ</h3>
+              <h3 className="font-semibold">{t('admin.columns.contact')}</h3>
               <div className="space-y-2 text-secondary">
                 <p className="flex items-center gap-2">
                   <Mail size={16} />
@@ -159,10 +169,10 @@ export const CustomersPage = () => {
 
             <div className="flex gap-3">
               <Button fullWidth variant="outline">
-                Xem đơn hàng
+                {t('admin.actions.view') + ' ' + t('admin.orders')}
               </Button>
               <Button fullWidth>
-                Gửi email
+                Email
               </Button>
             </div>
           </div>

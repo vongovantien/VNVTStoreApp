@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText } from 'lucide-react';
-import { Button, Input, Select } from '@/components/ui';
+import { Button, Input, Select, Modal } from '@/components/ui';
 import { useCartStore, useAuthStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
 import { orderService, type CreateOrderRequest } from '@/services/orderService';
@@ -12,7 +12,16 @@ export const CheckoutPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { items, getTotal, clearCart, fetchCart } = useCartStore();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+        setShowLoginModal(true);
+    } else {
+        setShowLoginModal(false);
+    }
+  }, [isAuthenticated]);
   
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<string>(PaymentMethod.COD);
@@ -352,6 +361,42 @@ export const CheckoutPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Login Required Modal */}
+      <Modal
+        isOpen={showLoginModal}
+        onClose={() => {}} // Block closing by clicking outside? Modal 'closeOnOverlayClick' defaults true.
+        // If mandatory, we should disable closing.
+        // CheckoutPage usually implies Intent to Checkout. If they cancel, they go back to Cart?
+        title={t('checkout.loginRequired') || 'Đăng nhập để thanh toán'}
+        showCloseButton={false}
+        closeOnOverlayClick={false}
+        closeOnEsc={false}
+        footer={
+            <div className="flex gap-4 w-full justify-end">
+                <Link to="/cart">
+                    <Button variant="ghost">{t('common.back')}</Button>
+                </Link>
+                <Link to="/register" state={{ from: '/checkout' }}>
+                    <Button variant="outline">{t('auth.register')}</Button>
+                </Link>
+                <Link to="/auth/login" state={{ from: '/checkout' }}> 
+                    <Button>{t('auth.login')}</Button>
+                </Link>
+            </div>
+        }
+      >
+        <div className="text-secondary">
+            <p className="mb-4">
+                {t('checkout.loginMessage') || 'Vui lòng đăng nhập hoặc đăng ký tài khoản để tiếp tục thanh toán.'}
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-tertiary">
+                <li>Tra cứu đơn hàng dễ dàng</li>
+                <li>Tích điểm thành viên</li>
+                <li>Lưu địa chỉ giao hàng</li>
+            </ul>
+        </div>
+      </Modal>
     </div>
   );
 };

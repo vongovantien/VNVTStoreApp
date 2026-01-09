@@ -1,4 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDropzone } from 'react-dropzone';
@@ -29,6 +30,7 @@ interface ProductFormProps {
 }
 
 export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: ProductFormProps) => {
+  const { t } = useTranslation();
   const {
     register,
     control,
@@ -80,7 +82,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column: Image Upload */}
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-secondary">Ảnh sản phẩm</label>
+          <label className="block text-sm font-medium text-secondary">{t('admin.columns.image')}</label>
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors h-64 ${isDragActive ? 'border-primary bg-primary/5' : 'border-tertiary hover:border-primary'
@@ -110,7 +112,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
               <>
                 <Upload size={48} className="text-tertiary mb-4" />
                 <p className="text-center text-sm text-secondary">
-                  Kéo thả ảnh vào đây, hoặc click để chọn
+                  {t('messages.dragDropImage') || 'Kéo thả ảnh vào đây, hoặc click để chọn'}
                 </p>
                 <p className="text-xs text-tertiary mt-2">PNG, JPG, WEBP (Tối đa 5MB)</p>
               </>
@@ -122,10 +124,10 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         {/* Right Column: Basic Info */}
         <div className="space-y-4">
           <Input
-            label="Tên sản phẩm"
+            label={t('admin.columns.name')}
             {...register('name')}
             error={errors.name?.message}
-            placeholder="Nhập tên sản phẩm"
+            placeholder={t('admin.columns.name')}
           />
 
           <Controller
@@ -133,25 +135,25 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
             control={control}
             render={({ field }) => (
               <Select
-                label="Danh mục"
+                label={t('admin.columns.category')}
                 options={categoryOptions}
                 value={field.value}
                 onChange={field.onChange}
                 error={errors.categoryId?.message}
-                placeholder="Chọn danh mục"
+                placeholder={t('admin.columns.category')}
               />
             )}
           />
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Thương hiệu"
+              label={t('admin.columns.brand')}
               {...register('brand')}
               error={errors.brand?.message}
-              placeholder="Samsung, LG..."
+              placeholder={t('admin.columns.brand')}
             />
             <Input
-              label="Tồn kho"
+              label={t('admin.columns.stock')}
               type="number"
               {...register('stock', { valueAsNumber: true })}
               error={errors.stock?.message}
@@ -160,13 +162,13 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Giá bán"
+              label={t('admin.columns.price')}
               type="number"
               {...register('price', { valueAsNumber: true })}
               error={errors.price?.message}
             />
             <Input
-              label="Giá gốc"
+              label={t('admin.columns.originalPrice')}
               type="number"
               {...register('originalPrice', { valueAsNumber: true })}
               error={errors.originalPrice?.message}
@@ -176,20 +178,20 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-secondary">Mô tả chi tiết</label>
+        <label className="block text-sm font-medium text-secondary">{t('admin.columns.description')}</label>
         <textarea
           className="w-full min-h-[120px] px-3 py-2 border rounded-lg focus:outline-none focus:border-primary bg-transparent"
-          placeholder="Mô tả đặc điểm nổi bật của sản phẩm..."
+          placeholder={t('admin.columns.description')}
           {...register('description')}
         />
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Hủy bỏ
+          {t('common.cancel')}
         </Button>
         <Button type="submit" isLoading={isLoading}>
-          {initialData ? 'Cập nhật' : 'Thêm mới'}
+          {initialData ? t('common.update') : t('common.create')}
         </Button>
       </div>
     </form>

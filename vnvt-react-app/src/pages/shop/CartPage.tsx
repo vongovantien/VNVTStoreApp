@@ -97,14 +97,14 @@ export const CartPage = () => {
                 <div className="md:col-span-2 flex justify-center">
                   <div className="flex items-center border rounded-lg">
                     <button
-                      onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
+                      onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                       className="p-2 hover:bg-secondary transition-colors"
                     >
                       <Minus size={16} />
                     </button>
                     <span className="w-12 text-center font-medium">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       className="p-2 hover:bg-secondary transition-colors"
                     >
                       <Plus size={16} />
@@ -118,7 +118,7 @@ export const CartPage = () => {
                     {formatCurrency(item.product.price * item.quantity)}
                   </span>
                   <button
-                    onClick={() => removeItem(item.product.id)}
+                    onClick={() => removeItem(item.id)}
                     className="p-2 text-tertiary hover:text-error transition-colors"
                   >
                     <X size={18} />

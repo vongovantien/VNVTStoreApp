@@ -9,6 +9,8 @@ export interface CartItemDto {
     productImage: string;
     price: number;
     quantity: number;
+    size?: string;
+    color?: string;
 }
 
 export interface CartDto {
@@ -21,10 +23,12 @@ export interface CartDto {
 export interface AddToCartRequest {
     productCode: string;
     quantity: number;
+    size?: string;
+    color?: string;
 }
 
 export interface UpdateCartItemRequest {
-    productCode: string;
+    itemCode: string;
     quantity: number;
 }
 
@@ -35,6 +39,8 @@ function mapCartDtoToCartItems(dto: CartDto): CartItem[] {
     return dto.cartItems.map(item => ({
         id: item.code, // Unique ID for cart item
         quantity: item.quantity,
+        size: item.size,
+        color: item.color,
         product: {
             id: item.productCode,
             name: item.productName,
@@ -63,17 +69,11 @@ export const cartService = {
     },
 
     async updateCartItem(data: UpdateCartItemRequest): Promise<ApiResponse<CartDto>> {
-        return apiClient.put<CartDto>('/carts/items', data);
+        return apiClient.put<CartDto>(`/carts/items/${data.itemCode}`, { quantity: data.quantity });
     },
 
-    async removeFromCart(productCode: string): Promise<ApiResponse<CartDto>> {
-        // API might expect DELETE with body or query param? 
-        // Usually DELETE /carts/items/{productCode} or similar.
-        // Checked Backend: `RemoveFromCartCommand` -> DELETE with body? 
-        // Or DELETE /api/v1/carts/items/{productCode}?
-        // Let's assume endpoint matches controller.
-        // Backend Controller `Delete` -> `[HttpDelete("items/{productCode}")]`
-        return apiClient.delete<CartDto>(`/carts/items/${productCode}`);
+    async removeFromCart(itemCode: string): Promise<ApiResponse<CartDto>> {
+        return apiClient.delete<CartDto>(`/carts/items/${itemCode}`);
     },
 
     async clearCart(): Promise<ApiResponse<boolean>> {

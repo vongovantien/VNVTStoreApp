@@ -6,9 +6,9 @@ import type { Product, CartItem, User } from '@/types';
 interface CartState {
     items: CartItem[];
     isLoading: boolean;
-    addItem: (product: Product, quantity?: number) => Promise<void>;
-    removeItem: (productId: string) => Promise<void>;
-    updateQuantity: (productId: string, quantity: number) => Promise<void>;
+    addItem: (product: Product, quantity?: number, options?: { size?: string; color?: string }) => Promise<void>;
+    removeItem: (itemId: string) => Promise<void>;
+    updateQuantity: (itemId: string, quantity: number) => Promise<void>;
     clearCart: () => Promise<void>;
     getTotal: () => number;
     getItemCount: () => number;
@@ -38,25 +38,41 @@ export const useCartStore = create<CartState>()(
                     set({ isLoading: false });
                 }
             },
-            addItem: async (product, quantity = 1) => {
+            addItem: async (product, quantity = 1, options) => {
                 const { isAuthenticated } = useAuthStore.getState();
 
                 // Optimistic Update for Guests
                 if (!isAuthenticated) {
                     if (product.price <= 0) return;
                     set((state) => {
-                        const existingItem = state.items.find((item) => item.product.id === product.id);
+                        // Find item matching product ID AND options
+                        const existingItem = state.items.find((item) =>
+                            item.product.id === product.id &&
+                            item.size === options?.size &&
+                            item.color === options?.color
+                        );
+
                         if (existingItem) {
                             return {
                                 items: state.items.map((item) =>
-                                    item.product.id === product.id
+                                    item.id === existingItem.id
                                         ? { ...item, quantity: item.quantity + quantity }
                                         : item
                                 ),
                             };
                         }
+
+                        // Create unique ID for guest item
+                        const newItemId = `guest_${product.id}_${options?.size || ''}_${options?.color || ''}_${Date.now()}`;
+
                         return {
-                            items: [...state.items, { id: product.id, product, quantity }],
+                            items: [...state.items, {
+                                id: newItemId,
+                                product,
+                                quantity,
+                                size: options?.size,
+                                color: options?.color
+                            }],
                         };
                     });
                     return;
@@ -65,10 +81,14 @@ export const useCartStore = create<CartState>()(
                 // API Call for Users
                 set({ isLoading: true });
                 try {
-                    const res = await cartService.addToCart({ productCode: product.id, quantity });
+                    const res = await cartService.addToCart({
+                        productCode: product.id,
+                        quantity,
+                        size: options?.size,
+                        color: options?.color
+                    });
                     if (res.success && res.data) {
                         set({ items: cartService.mapToFrontend(res.data) });
-                        // Also show toast? (Handled by UI)
                     }
                 } catch (error) {
                     console.error('Add to cart failed', error);
@@ -76,18 +96,18 @@ export const useCartStore = create<CartState>()(
                     set({ isLoading: false });
                 }
             },
-            removeItem: async (productId) => {
+            removeItem: async (itemId) => {
                 const { isAuthenticated } = useAuthStore.getState();
                 if (!isAuthenticated) {
                     set((state) => ({
-                        items: state.items.filter((item) => item.product.id !== productId),
+                        items: state.items.filter((item) => item.id !== itemId),
                     }));
                     return;
                 }
 
                 set({ isLoading: true });
                 try {
-                    const res = await cartService.removeFromCart(productId);
+                    const res = await cartService.removeFromCart(itemId);
                     if (res.success && res.data) {
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
@@ -95,9 +115,9 @@ export const useCartStore = create<CartState>()(
                     set({ isLoading: false });
                 }
             },
-            updateQuantity: async (productId, quantity) => {
+            updateQuantity: async (itemId, quantity) => {
                 if (quantity <= 0) {
-                    get().removeItem(productId);
+                    get().removeItem(itemId);
                     return;
                 }
 
@@ -105,18 +125,15 @@ export const useCartStore = create<CartState>()(
                 if (!isAuthenticated) {
                     set((state) => ({
                         items: state.items.map((item) =>
-                            item.product.id === productId ? { ...item, quantity } : item
+                            item.id === itemId ? { ...item, quantity } : item
                         ),
                     }));
                     return;
                 }
 
-                // Debounce could be added here or in UI
                 try {
-                    const res = await cartService.updateCartItem({ productCode: productId, quantity });
+                    const res = await cartService.updateCartItem({ itemCode: itemId, quantity });
                     if (res.success && res.data) {
-                        // Don't replace *all* items instantly to avoid UI jump if not needed, 
-                        // but correct way is to trust server.
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
                 } catch (error) {
@@ -153,7 +170,7 @@ interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
     token: string | null;
-    login: (user: User, token?: string) => void;
+    login: (user: User, token?: string) => Promise<void>;
     logout: () => void;
     updateUser: (userData: Partial<User>) => void;
 }
@@ -164,7 +181,32 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             token: null,
-            login: (user, token) => set({ user, isAuthenticated: true, token: token || null }),
+            login: async (user, token) => {
+                set({ user, isAuthenticated: true, token: token || null });
+
+                // Sync local cart items to backend
+                const { items, fetchCart } = useCartStore.getState();
+                if (items.length > 0) {
+                    // Filter items that are "guest" (id starts with guest_) or just sync all?
+                    // User might have backend items too if he logged in before on another device.
+                    // Ideally we add local items to backend.
+                    // We can loop and add.
+                    for (const item of items) {
+                        try {
+                            await cartService.addToCart({
+                                productCode: item.product.id,
+                                quantity: item.quantity,
+                                size: item.size,
+                                color: item.color
+                            });
+                        } catch (err) {
+                            console.error('Failed to sync item', item);
+                        }
+                    }
+                }
+                // Fetch latest cart from backend (merges backend state)
+                await fetchCart();
+            },
             logout: () => set({ user: null, isAuthenticated: false, token: null }),
             updateUser: (userData) => {
                 const currentUser = get().user;

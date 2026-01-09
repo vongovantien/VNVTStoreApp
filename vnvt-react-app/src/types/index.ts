@@ -41,6 +41,8 @@ export interface CartItem {
     id: string;
     product: Product;
     quantity: number;
+    color?: string;
+    size?: string;
 }
 
 // ============ User Types ============

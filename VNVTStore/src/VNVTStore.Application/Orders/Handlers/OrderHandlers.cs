@@ -22,6 +22,7 @@ public class OrderHandlers :
     private readonly IRepository<TblOrder> _orderRepository;
     private readonly ICartService _cartService;
     private readonly IRepository<TblProduct> _productRepository;
+    private readonly IRepository<TblAddress> _addressRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -29,12 +30,14 @@ public class OrderHandlers :
         IRepository<TblOrder> orderRepository,
         ICartService cartService,
         IRepository<TblProduct> productRepository,
+        IRepository<TblAddress> addressRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _orderRepository = orderRepository;
         _cartService = cartService;
         _productRepository = productRepository;
+        _addressRepository = addressRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -80,6 +83,45 @@ public class OrderHandlers :
         decimal shippingFee = totalAmount >= 1000000 ? 0 : 30000;
         decimal finalAmount = totalAmount + shippingFee; // - Discount (handled if Coupon logic is added)
 
+        // Create Address if needed
+        string addressCode = request.Dto.AddressCode;
+        if (string.IsNullOrEmpty(addressCode))
+        {
+             if (!string.IsNullOrEmpty(request.Dto.Address))
+             {
+                 // Append Receiver Info and Note to AddressLine (Hack due to schema limitation)
+                 var receiverInfo = $"Receiver: {request.Dto.FullName}, Phone: {request.Dto.Phone}";
+                 var addressParts = new List<string> 
+                 { 
+                     request.Dto.Address, 
+                     request.Dto.Ward, 
+                     request.Dto.District 
+                 };
+                 var baseAddress = string.Join(", ", addressParts.Where(s => !string.IsNullOrEmpty(s)));
+                 var fullAddressLine = $"{baseAddress} | {receiverInfo}";
+                 if (!string.IsNullOrEmpty(request.Dto.Note))
+                 {
+                     fullAddressLine += $" | Note: {request.Dto.Note}";
+                 }
+
+                 var newAddress = new TblAddress
+                 {
+                     Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                     UserCode = request.UserCode,
+                     AddressLine = fullAddressLine.Length > 255 ? fullAddressLine.Substring(0, 255) : fullAddressLine,
+                     City = request.Dto.City,
+                     CreatedAt = DateTime.UtcNow,
+                     IsDefault = false
+                 };
+                 await _addressRepository.AddAsync(newAddress, cancellationToken);
+                 addressCode = newAddress.Code;
+             }
+             else
+             {
+                  return Result.Failure<OrderDto>(Error.Validation("Address is required"));
+             }
+        }
+
         // 4. Create Order
         var order = new TblOrder
         {
@@ -90,7 +132,7 @@ public class OrderHandlers :
             TotalAmount = totalAmount,
             ShippingFee = shippingFee,
             FinalAmount = finalAmount,
-            AddressCode = request.Dto.AddressCode,
+            AddressCode = addressCode,
             CouponCode = request.Dto.CouponCode, // Store coupon code if provided
             TblOrderItems = orderItems
         };

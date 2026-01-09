@@ -4,15 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, Check } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
-import { useAuthStore } from '@/store';
+import { useAuthStore, useToast } from '@/store';
+import { authService } from '@/services';
 
 export const RegisterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    username: '',
     name: '',
     email: '',
     phone: '',
@@ -24,24 +27,40 @@ export const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert(t('register.passwordMismatch'));
+      toast.error(t('register.passwordMismatch') || 'Mật khẩu xác nhận không khớp');
       return;
     }
     
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    login({
-      id: 'user-new',
-      email: formData.email,
-      name: formData.name,
-      phone: formData.phone,
-      role: 'customer',
-      createdAt: new Date().toISOString(),
-    });
-    
-    setIsLoading(false);
-    navigate('/');
+    try {
+      // Call backend API
+      const response = await authService.register({
+        username: formData.username || formData.email.split('@')[0], // Use email prefix as username if not provided
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.name,
+      });
+
+      if (response.success && response.data) {
+        toast.success(t('messages.registerSuccess') || 'Đăng ký thành công!');
+        // Auto-login after registration
+        login({
+          id: response.data.code,
+          email: response.data.email,
+          fullName: response.data.fullName || response.data.username,
+          phone: formData.phone,
+          role: (response.data.role as 'customer' | 'admin') || 'customer',
+          createdAt: new Date().toISOString(),
+        });
+        navigate('/');
+      } else {
+        toast.error(response.message || 'Đăng ký thất bại');
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -155,7 +174,7 @@ export const RegisterPage = () => {
               type="submit"
               fullWidth
               size="lg"
-              loading={isLoading}
+              isLoading={isLoading}
               rightIcon={<ArrowRight size={20} />}
             >
               {t('register.submit')}

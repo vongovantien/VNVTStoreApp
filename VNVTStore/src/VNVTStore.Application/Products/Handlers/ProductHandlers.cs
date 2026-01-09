@@ -10,6 +10,7 @@ using VNVTStore.Domain.Interfaces;
 namespace VNVTStore.Application.Products.Handlers;
 
 public class ProductHandlers : BaseHandler<TblProduct>,
+    IRequestHandler<GetProductsQuery, Result<PagedResult<ProductDto>>>,
     IRequestHandler<GetPagedQuery<ProductDto>, Result<PagedResult<ProductDto>>>,
     IRequestHandler<GetByCodeQuery<ProductDto>, Result<ProductDto>>,
     IRequestHandler<CreateCommand<CreateProductDto, ProductDto>, Result<ProductDto>>,
@@ -50,6 +51,12 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 }
                 return q.OrderByDescending(p => p.CreatedAt);
             });
+    }
+
+    // Explicit handler for GetProductsQuery - delegates to the generic handler
+    public Task<Result<PagedResult<ProductDto>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
+    {
+        return Handle((GetPagedQuery<ProductDto>)request, cancellationToken);
     }
 
     public async Task<Result<ProductDto>> Handle(GetByCodeQuery<ProductDto> request, CancellationToken cancellationToken)

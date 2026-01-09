@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Folder, Loader2, AlertCircle, Search } from 'lucide-react';
-import { Button, Badge, Modal, Input, ConfirmDialog, Pagination } from '@/components/ui';
+import { Plus, Edit2, Trash2, Folder, Loader2, AlertCircle, Search, RefreshCw, ArrowUpDown } from 'lucide-react';
+import { Button, Badge, Modal, Input, ConfirmDialog, Pagination, Select } from '@/components/ui';
 import { useToast } from '@/store';
 import { useCategories } from '@/hooks';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -52,6 +52,7 @@ export const CategoriesPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    parentCode: '',
   });
 
   // Mutations
@@ -70,7 +71,7 @@ export const CategoriesPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: { code: string; data: { name: string; description?: string } }) =>
+    mutationFn: (data: { code: string; data: { name: string; description?: string; parentCode?: string } }) =>
       categoryService.update(data.code, data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -97,7 +98,7 @@ export const CategoriesPage = () => {
   });
 
   const resetForm = () => {
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '', description: '', parentCode: '' });
   };
 
   const openCreateModal = () => {
@@ -111,6 +112,7 @@ export const CategoriesPage = () => {
     setFormData({
       name: category.name,
       description: category.description || '',
+      parentCode: category.parentCode || '',
     });
     setIsFormOpen(true);
   };
@@ -122,12 +124,13 @@ export const CategoriesPage = () => {
     if (editingCategory) {
       updateMutation.mutate({
         code: editingCategory.code,
-        data: { name: formData.name, description: formData.description },
+        data: { name: formData.name, description: formData.description, parentCode: formData.parentCode || undefined },
       });
     } else {
       createMutation.mutate({
         name: formData.name,
         description: formData.description,
+        parentCode: formData.parentCode || undefined,
       });
     }
   }, [formData, editingCategory, createMutation, updateMutation]);
@@ -141,14 +144,29 @@ export const CategoriesPage = () => {
   const showError = isError && !isLoading;
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
+  // Sort handler
+  const handleRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['categories'] });
+  }, [queryClient]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold">{t('admin.categories')}</h1>
-        <Button leftIcon={<Plus size={20} />} onClick={openCreateModal}>
-          {t('messages.addCategory')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            leftIcon={<RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />}
+          >
+            {t('common.refresh') || 'Làm mới'}
+          </Button>
+          <Button leftIcon={<Plus size={20} />} onClick={openCreateModal}>
+            {t('messages.addCategory')}
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -189,10 +207,10 @@ export const CategoriesPage = () => {
           <table className="w-full min-w-[600px]">
             <thead className="bg-secondary border-b">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('messages.name')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('messages.description')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('messages.status')}</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">{t('messages.actions')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.name')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.description')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.status')}</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -222,7 +240,7 @@ export const CategoriesPage = () => {
                     </td>
                     <td className="px-4 py-4 text-center">
                       <Badge color={category.isActive !== false ? 'success' : 'secondary'} size="sm" variant="outline">
-                        {category.isActive !== false ? 'Active' : 'Inactive'}
+                        {category.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
                       </Badge>
                     </td>
                     <td className="px-4 py-4 text-right">
@@ -282,6 +300,17 @@ export const CategoriesPage = () => {
             placeholder={t('messages.enterDescription')}
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          />
+          <Select
+            label={t('messages.parentCategory') || 'Danh mục cha'}
+            options={[
+              { value: '', label: t('messages.none') || 'Không có' },
+              ...categories
+                .filter(c => c.code !== editingCategory?.code) // Prevent self-parenting
+                .map(c => ({ value: c.code, label: c.name }))
+            ]}
+            value={formData.parentCode}
+            onChange={(e) => setFormData(prev => ({ ...prev, parentCode: e.target.value }))}
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button

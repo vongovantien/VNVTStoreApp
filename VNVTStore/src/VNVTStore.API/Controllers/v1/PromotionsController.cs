@@ -1,31 +1,31 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using VNVTStore.Application.Promotions.Commands;
+using VNVTStore.Application.Common;
+using VNVTStore.Application.DTOs;
+
 using VNVTStore.Application.Promotions.Queries;
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[ApiController]
 [Route("api/v1/[controller]")]
-public class PromotionsController : ControllerBase
+[ApiController]
+public class PromotionsController : BaseApiController<PromotionDto, CreatePromotionDto, UpdatePromotionDto>
 {
-    private readonly IMediator _mediator;
-
-    public PromotionsController(IMediator mediator)
+    public PromotionsController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     /// <summary>
     /// Get active promotions (Public)
     /// </summary>
     [HttpGet("active")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetActivePromotions()
     {
-        var result = await _mediator.Send(new GetActivePromotionsQuery());
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetActivePromotionsQuery());
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -38,71 +38,22 @@ public class PromotionsController : ControllerBase
         [FromQuery] int pageSize = 10,
         [FromQuery] bool? isActive = null)
     {
-        var result = await _mediator.Send(new GetAllPromotionsQuery(pageIndex, pageSize, isActive));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetAllPromotionsQuery(pageIndex, pageSize, isActive));
+        return HandleResult(result);
     }
 
-    /// <summary>
-    /// Get promotion by code
-    /// </summary>
-    [HttpGet("{code}")]
-    public async Task<IActionResult> GetPromotion(string code)
-    {
-        var result = await _mediator.Send(new GetPromotionByCodeQuery(code));
-        if (result.IsFailure) return NotFound(result.Error);
-        return Ok(result.Value);
-    }
+    protected override IRequest<Result<PagedResult<PromotionDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort)
+        => new GetPagedQuery<PromotionDto>(pageIndex, pageSize, search, sort);
 
-    /// <summary>
-    /// Create promotion (Admin)
-    /// </summary>
-    [Authorize(Roles = "admin")]
-    [HttpPost]
-    public async Task<IActionResult> CreatePromotion([FromBody] CreatePromotionRequest request)
-    {
-        var result = await _mediator.Send(new CreatePromotionCommand(
-            request.Name, request.Description, request.DiscountType, request.DiscountValue,
-            request.MinOrderAmount, request.MaxDiscountAmount, request.StartDate, request.EndDate, request.UsageLimit));
-        
-        if (result.IsFailure) return BadRequest(result.Error);
-        return CreatedAtAction(nameof(GetPromotion), new { code = result.Value!.Code }, result.Value);
-    }
+    protected override IRequest<Result<PromotionDto>> CreateGetByCodeQuery(string code)
+        => new GetByCodeQuery<PromotionDto>(code);
 
-    /// <summary>
-    /// Update promotion (Admin)
-    /// </summary>
-    [Authorize(Roles = "admin")]
-    [HttpPut("{code}")]
-    public async Task<IActionResult> UpdatePromotion(string code, [FromBody] UpdatePromotionRequest request)
-    {
-        var result = await _mediator.Send(new UpdatePromotionCommand(
-            code, request.Name, request.Description, request.DiscountValue,
-            request.MinOrderAmount, request.MaxDiscountAmount, request.StartDate, request.EndDate, 
-            request.UsageLimit, request.IsActive));
-        
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
-    }
+    protected override IRequest<Result<PromotionDto>> CreateCreateCommand(CreatePromotionDto dto)
+        => new CreateCommand<CreatePromotionDto, PromotionDto>(dto);
 
-    /// <summary>
-    /// Delete promotion (Admin)
-    /// </summary>
-    [Authorize(Roles = "admin")]
-    [HttpDelete("{code}")]
-    public async Task<IActionResult> DeletePromotion(string code)
-    {
-        var result = await _mediator.Send(new DeletePromotionCommand(code));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return NoContent();
-    }
+    protected override IRequest<Result<PromotionDto>> CreateUpdateCommand(string code, UpdatePromotionDto dto)
+        => new UpdateCommand<UpdatePromotionDto, PromotionDto>(code, dto);
+
+    protected override IRequest<Result> CreateDeleteCommand(string code)
+        => new DeleteCommand<TblPromotion>(code);
 }
-
-public record CreatePromotionRequest(
-    string Name, string? Description, string DiscountType, decimal DiscountValue,
-    decimal? MinOrderAmount, decimal? MaxDiscountAmount, DateTime StartDate, DateTime EndDate, int? UsageLimit);
-
-public record UpdatePromotionRequest(
-    string? Name, string? Description, decimal? DiscountValue,
-    decimal? MinOrderAmount, decimal? MaxDiscountAmount, DateTime? StartDate, DateTime? EndDate, 
-    int? UsageLimit, bool? IsActive);

@@ -5,69 +5,79 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.Coupons.Commands;
 using VNVTStore.Application.Coupons.Queries;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Application.Coupons.Handlers;
 
-public class CouponHandlers :
+public class CouponHandlers : BaseHandler<TblCoupon>,
     IRequestHandler<ValidateCouponCommand, Result<CouponDto>>,
-    IRequestHandler<GetCouponByCodeQuery, Result<CouponDto>>
+    IRequestHandler<GetByCodeQuery<CouponDto>, Result<CouponDto>>,
+    IRequestHandler<CreateCommand<CreateCouponDto, CouponDto>, Result<CouponDto>>,
+    IRequestHandler<DeleteCommand<TblCoupon>, Result>,
+    IRequestHandler<GetPagedQuery<CouponDto>, Result<PagedResult<CouponDto>>>
 {
-    private readonly IRepository<TblCoupon> _couponRepository;
-    private readonly IMapper _mapper;
+    private readonly IRepository<TblPromotion> _promotionRepository;
+    private readonly ICouponService _couponService;
 
     public CouponHandlers(
         IRepository<TblCoupon> couponRepository,
-        IMapper mapper)
+        IRepository<TblPromotion> promotionRepository,
+        ICouponService couponService,
+        IUnitOfWork unitOfWork,
+        IMapper mapper) : base(couponRepository, unitOfWork, mapper)
     {
-        _couponRepository = couponRepository;
-        _mapper = mapper;
+        _promotionRepository = promotionRepository;
+        _couponService = couponService;
     }
 
     public async Task<Result<CouponDto>> Handle(ValidateCouponCommand request, CancellationToken cancellationToken)
     {
-        var coupon = await _couponRepository.AsQueryable()
-            .Include(c => c.PromotionCodeNavigation)
-            .FirstOrDefaultAsync(c => c.Code == request.CouponCode, cancellationToken);
-
-        if (coupon == null)
-            return Result.Failure<CouponDto>(Error.NotFound("Coupon", request.CouponCode));
-
-        var promotion = coupon.PromotionCodeNavigation;
-
-        // Validate promotion exists and is active
-        if (promotion == null || promotion.IsActive != true)
-            return Result.Failure<CouponDto>(Error.Validation("Coupon", "Coupon is not active"));
-
-        // Validate date range
-        var now = DateTime.UtcNow;
-        if (now < promotion.StartDate || now > promotion.EndDate)
-            return Result.Failure<CouponDto>(Error.Validation("Coupon", "Coupon has expired or not yet started"));
-
-        // Validate minimum order amount
-        if (promotion.MinOrderAmount.HasValue && request.OrderAmount < promotion.MinOrderAmount)
-            return Result.Failure<CouponDto>(Error.Validation("Coupon", 
-                $"Minimum order amount is {promotion.MinOrderAmount}"));
-
-        // Validate usage limit
-        if (promotion.UsageLimit.HasValue && coupon.UsageCount >= promotion.UsageLimit)
-            return Result.Failure<CouponDto>(Error.Validation("Coupon", "Coupon usage limit reached"));
-
-        var dto = _mapper.Map<CouponDto>(coupon);
-        dto.IsValid = true;
-        return Result.Success(dto);
+        return await _couponService.ValidateCouponAsync(request.CouponCode, request.OrderAmount, cancellationToken);
     }
 
-    public async Task<Result<CouponDto>> Handle(GetCouponByCodeQuery request, CancellationToken cancellationToken)
+    public async Task<Result<CouponDto>> Handle(GetByCodeQuery<CouponDto> request, CancellationToken cancellationToken)
     {
-        var coupon = await _couponRepository.AsQueryable()
-            .Include(c => c.PromotionCodeNavigation)
-            .FirstOrDefaultAsync(c => c.Code == request.CouponCode, cancellationToken);
+        return await GetByCodeAsync<CouponDto>(
+            request.Code, 
+            MessageConstants.Coupon, 
+            cancellationToken,
+            includes: q => q.Include(c => c.PromotionCodeNavigation));
+    }
 
-        if (coupon == null)
-            return Result.Failure<CouponDto>(Error.NotFound("Coupon", request.CouponCode));
+    public async Task<Result<CouponDto>> Handle(CreateCommand<CreateCouponDto, CouponDto> request, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrEmpty(request.Dto.PromotionCode))
+        {
+            var promotion = await _promotionRepository.GetByCodeAsync(request.Dto.PromotionCode, cancellationToken);
+            if (promotion == null)
+            {
+                return Result.Failure<CouponDto>(Error.NotFound(MessageConstants.Coupon, request.Dto.PromotionCode));
+            }
+        }
 
-        return Result.Success(_mapper.Map<CouponDto>(coupon));
+        return await CreateAsync<CreateCouponDto, CouponDto>(
+            request.Dto,
+            cancellationToken,
+            c => {
+                c.Code = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
+                c.UsageCount = 0;
+            });
+    }
+
+    public async Task<Result> Handle(DeleteCommand<TblCoupon> request, CancellationToken cancellationToken)
+    {
+        return await DeleteAsync(request.Code, MessageConstants.Coupon, cancellationToken, softDelete: false);
+    }
+
+    public async Task<Result<PagedResult<CouponDto>>> Handle(GetPagedQuery<CouponDto> request, CancellationToken cancellationToken)
+    {
+        return await GetPagedAsync<CouponDto>(
+            request.PageIndex,
+            request.PageSize,
+            cancellationToken,
+            includes: q => q.Include(c => c.PromotionCodeNavigation),
+            orderBy: q => q.OrderByDescending(c => c.Code));
     }
 }

@@ -25,7 +25,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+app.UseCors("AllowedOrigins");
+
+app.UseRateLimiter();
 
 // Add request localization middleware
 app.UseLanguageLocalization();

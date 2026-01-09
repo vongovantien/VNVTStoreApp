@@ -5,9 +5,10 @@ import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Star, Eye, Scale, Phone } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button, Badge } from '@/components/ui';
-import { useCartStore, useWishlistStore, useCompareStore } from '@/store';
+import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';
 import { formatCurrency } from '@/utils/format';
 import type { Product } from '@/types';
+import CustomImage from '@/components/common/Image';
 
 // ============ ProductCard Props Interface ============
 export interface ProductCardProps {
@@ -44,6 +45,7 @@ export const ProductCard = memo(
     const addToCart = useCartStore((state) => state.addItem);
     const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
     const { addItem: addToCompare, removeItem: removeFromCompare, isInCompare } = useCompareStore();
+    const toast = useToast();
 
     // Derived states
     const isWishlisted = isInWishlist(product.id);
@@ -78,9 +80,10 @@ export const ProductCard = memo(
         e.stopPropagation();
         if (hasFixedPrice && !isOutOfStock) {
           addToCart(product);
+          toast.success(`${product.name} đã được thêm vào giỏ hàng`);
         }
       },
-      [hasFixedPrice, isOutOfStock, product, addToCart]
+      [hasFixedPrice, isOutOfStock, product, addToCart, toast]
     );
 
     const handleQuickView = useCallback(
@@ -120,7 +123,7 @@ export const ProductCard = memo(
           {/* Image */}
           <Link to={`/product/${product.id}`} className="flex-shrink-0">
             <div className="relative w-40 h-40 rounded-lg overflow-hidden bg-secondary">
-              <img
+              <CustomImage
                 src={product.image}
                 alt={product.name}
                 className="w-full h-full object-cover"
@@ -204,9 +207,9 @@ export const ProductCard = memo(
         transition={{ duration: 0.3 }}
       >
         <Link to={`/product/${product.id}`} className="flex-1 flex flex-col">
-          {/* Image Container */}
+            {/* Image Container */}
           <div className="relative aspect-square overflow-hidden bg-slate-50 rounded-t-2xl">
-            <img
+            <CustomImage
               src={product.image}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

@@ -1,39 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Phone, Mail, User, Send, Check } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
-import { productService, quoteService } from '@/services';
-import type { Product } from '@/types';
+import { quoteService } from '@/services';
+import { useProduct } from '@/hooks';
 
 export const QuoteRequestPage = () => {
   const { t } = useTranslation();
   const { productId } = useParams<{ productId: string }>();
-
-
+  const { data: product, isLoading: loading } = useProduct(productId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch product
-  useEffect(() => {
-    const fetchProduct = async () => {
-        if (!productId) return;
-        try {
-            const res = await productService.getProductByCode(productId);
-            if (res.success && res.data) {
-                setProduct(res.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch product', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-    fetchProduct();
-  }, [productId]);
 
 
   const [formData, setFormData] = useState({
@@ -55,16 +34,14 @@ export const QuoteRequestPage = () => {
 
     setIsSubmitting(true);
     try {
-        const res = await quoteService.createQuote({
-            productId: productId,
-            productName: product.name,
-            productImage: product.image,
+        const res = await quoteService.create({
+            productCode: productId,
+            quantity: parseInt(formData.quantity) || 1,
+            note: formData.note,
             customerName: formData.name,
             customerEmail: formData.email,
             customerPhone: formData.phone,
-            company: formData.company,
-            quantity: parseInt(formData.quantity) || 1,
-            note: formData.note
+            company: formData.company
         });
 
         if (res.success) {

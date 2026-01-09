@@ -15,13 +15,27 @@ public class MappingProfile : Profile
         // User mappings
         CreateMap<TblUser, UserDto>().ReverseMap();
 
+        // Banner mappings
+        CreateMap<TblBanner, BannerDto>().ReverseMap();
+        CreateMap<CreateBannerDto, TblBanner>();
+        CreateMap<UpdateBannerDto, TblBanner>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
         // Product mappings
         CreateMap<TblProduct, ProductDto>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryCodeNavigation != null ? src.CategoryCodeNavigation.Name : null))
-            .ReverseMap();
+            .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => (string?)null))
+            .ForMember(dest => dest.IsNew, opt => opt.MapFrom(src => false))
+            .ForMember(dest => dest.IsFeatured, opt => opt.MapFrom(src => false))
+            .ReverseMap()
+            .ForMember(dest => dest.CategoryCodeNavigation, opt => opt.Ignore());
         
         // CreateProductDto -> TblProduct mapping
-        CreateMap<Products.Commands.CreateProductDto, TblProduct>();
+        CreateMap<CreateProductDto, TblProduct>()
+            .ForMember(dest => dest.Code, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.IsActive, opt => opt.Ignore())
+            .ForMember(dest => dest.SupplierCode, opt => opt.Ignore());
         
         CreateMap<TblProductImage, ProductImageDto>().ReverseMap();
 
@@ -70,8 +84,15 @@ public class MappingProfile : Profile
         CreateMap<TblSupplier, SupplierDto>().ReverseMap();
 
         // Quote mappings
-        CreateMap<TblQuote, QuoteDto>()
-            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductCodeNavigation != null ? src.ProductCodeNavigation.Name : null))
-            .ReverseMap();
+        // Quote mappings
+    CreateMap<TblQuote, QuoteDto>()
+        .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductCodeNavigation != null ? src.ProductCodeNavigation.Name : null))
+        .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.ProductCodeNavigation != null && src.ProductCodeNavigation.TblProductImages.Any(i => i.IsPrimary == true) 
+            ? src.ProductCodeNavigation.TblProductImages.First(i => i.IsPrimary == true).ImageUrl 
+            : (src.ProductCodeNavigation != null && src.ProductCodeNavigation.TblProductImages.Any() ? src.ProductCodeNavigation.TblProductImages.First().ImageUrl : null)))
+        .ReverseMap();
+
+    CreateMap<CreateQuoteDto, TblQuote>();
+    CreateMap<UpdateQuoteDto, TblQuote>();
     }
 }

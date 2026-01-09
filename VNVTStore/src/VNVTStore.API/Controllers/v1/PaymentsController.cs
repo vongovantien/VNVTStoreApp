@@ -6,16 +6,11 @@ using VNVTStore.Application.Payments.Queries;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[ApiController]
-[Route("api/v1/[controller]")]
 [Authorize]
-public class PaymentsController : ControllerBase
+public class PaymentsController : BaseApiController
 {
-    private readonly IMediator _mediator;
-
-    public PaymentsController(IMediator mediator)
+    public PaymentsController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     /// <summary>
@@ -24,11 +19,10 @@ public class PaymentsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> ProcessPayment([FromBody] ProcessPaymentRequest request)
     {
-        var result = await _mediator.Send(new ProcessPaymentCommand(
+        var result = await Mediator.Send(new ProcessPaymentCommand(
             request.OrderCode, request.PaymentMethod, request.Amount));
         
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -37,11 +31,10 @@ public class PaymentsController : ControllerBase
     [HttpPost("status")]
     public async Task<IActionResult> UpdateStatus([FromBody] UpdatePaymentStatusRequest request)
     {
-        var result = await _mediator.Send(new UpdatePaymentStatusCommand(
+        var result = await Mediator.Send(new UpdatePaymentStatusCommand(
             request.PaymentCode, request.Status, request.TransactionId));
         
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -50,9 +43,8 @@ public class PaymentsController : ControllerBase
     [HttpGet("order/{orderCode}")]
     public async Task<IActionResult> GetPaymentByOrder(string orderCode)
     {
-        var result = await _mediator.Send(new GetPaymentByOrderQuery(orderCode));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetPaymentByOrderQuery(orderCode));
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -61,9 +53,8 @@ public class PaymentsController : ControllerBase
     [HttpGet("history")]
     public async Task<IActionResult> GetMyPayments()
     {
-        var result = await _mediator.Send(new GetMyPaymentsQuery());
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetMyPaymentsQuery());
+        return HandleResult(result);
     }
 }
 

@@ -3,6 +3,8 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using VNVTStore.Infrastructure.Services;
 
 namespace VNVTStore.API.Extensions;
@@ -56,14 +58,36 @@ public static class ServiceCollectionExtensions
         services.AddAuthorization();
 
         // Add CORS
+        // Add Cors
+        var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll", builder =>
+            options.AddPolicy("AllowedOrigins", builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins(allowedOrigins)
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
+                       .AllowAnyHeader()
+                       .AllowCredentials();
             });
+        });
+
+        // Add Rate Limiting
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.Identity?.IsAuthenticated == true
+                        ? httpContext.User.Identity.Name!
+                        : httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: partition => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = configuration.GetValue<int>("RateLimiting:PermitLimit", 100),
+                        QueueLimit = configuration.GetValue<int>("RateLimiting:QueueLimit", 2),
+                        Window = TimeSpan.FromSeconds(configuration.GetValue<int>("RateLimiting:WindowInSeconds", 60))
+                    }));
         });
 
         // Add Swagger

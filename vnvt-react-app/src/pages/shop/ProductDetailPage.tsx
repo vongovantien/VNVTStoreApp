@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button, Badge } from '@/components/ui';
 import { ProductCard } from '@/components/common/ProductCard';
+import SharedImage from '@/components/common/Image';
 import { useCartStore, useWishlistStore, useCompareStore } from '@/store';
 import { useProduct, useProducts } from '@/hooks';
 import { formatCurrency } from '@/utils/format';
@@ -37,16 +38,20 @@ const ImageGallery = memo(({ images, productName }: ImageGalleryProps) => {
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="aspect-square rounded-2xl overflow-hidden bg-secondary">
-        <motion.img
-          key={selectedIndex}
-          src={images[selectedIndex]}
-          alt={productName}
-          className="w-full h-full object-cover"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        />
+      <div className="aspect-[4/3] max-h-[500px] rounded-2xl overflow-hidden bg-secondary border border-tertiary">
+        <motion.div
+            key={selectedIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-full"
+        >
+            <SharedImage
+                src={images[selectedIndex]}
+                alt={productName}
+                className="w-full h-full object-contain bg-white"
+            />
+        </motion.div>
       </div>
 
       {/* Thumbnails */}
@@ -59,7 +64,7 @@ const ImageGallery = memo(({ images, productName }: ImageGalleryProps) => {
               className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${index === selectedIndex ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'
                 }`}
             >
-              <img src={img} alt={`${productName} ${index + 1}`} className="w-full h-full object-cover" />
+              <SharedImage src={img} alt={`${productName} ${index + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -89,9 +94,9 @@ export const ProductDetailPage = () => {
   // Fetch Reviews
   useEffect(() => {
       if (id) {
-          reviewService.getProductReviews(id).then(res => {
+          reviewService.search({ search: id, searchField: 'productCode' }).then(res => {
               if (res.success && res.data) {
-                  setReviews(res.data);
+                  setReviews(res.data.items);
               }
           });
       }
@@ -203,12 +208,14 @@ export const ProductDetailPage = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
           {/* Image Gallery */}
-          <ImageGallery images={images} productName={product.name} />
+          <div className="lg:col-span-2">
+            <ImageGallery images={images} productName={product.name} />
+          </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-6 lg:col-span-3">
             {/* Badges */}
             <div className="flex flex-wrap gap-2">
               {product.isNew && <Badge color="success">{t('product.new')}</Badge>}
@@ -378,7 +385,7 @@ export const ProductDetailPage = () => {
             <div className="space-y-6">
               {reviews.length > 0 ? (
                 reviews.map((review) => (
-                  <div key={review.id} className="border-b pb-6 last:border-0">
+                  <div key={review.code} className="border-b pb-6 last:border-0">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-purple-500 flex items-center justify-center text-white font-bold">
                         {review.userName?.charAt(0) || 'U'}

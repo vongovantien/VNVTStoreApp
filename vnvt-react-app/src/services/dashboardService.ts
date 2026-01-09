@@ -1,13 +1,13 @@
 /**
  * Dashboard Service
- * Uses only baseService CRUD methods
+ * Custom service for dashboard statistics
  */
 
-import { createCrudService, API_ENDPOINTS } from './baseService';
+import { apiClient } from './api';
+import { API_ENDPOINTS, type ApiResponse } from './baseService';
 
 // ============ Types ============
 export interface DashboardStatsDto {
-    code: string;
     totalRevenue: number;
     totalOrders: number;
     totalProducts: number;
@@ -19,9 +19,10 @@ export interface DashboardStatsDto {
 }
 
 // ============ Service ============
-export const dashboardService = createCrudService<DashboardStatsDto>({
-    endpoint: API_ENDPOINTS.DASHBOARD.STATS,
-    resourceName: 'Dashboard'
-});
+export const dashboardService = {
+    async getStats(): Promise<ApiResponse<DashboardStatsDto>> {
+        return apiClient.get<DashboardStatsDto>(API_ENDPOINTS.DASHBOARD.STATS);
+    }
+};
 
 export default dashboardService;

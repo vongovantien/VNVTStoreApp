@@ -8,9 +8,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/
 // ============ Types ============
 export interface ApiResponse<T> {
   success: boolean;
-  status: number;
   message: string;
   data: T | null;
+  statusCode: number;
 }
 
 export interface PagedResult<T> {
@@ -88,43 +88,27 @@ class ApiClient {
         ...options,
       });
 
-      // Handle empty responses (204 No Content or empty body)
-      const contentType = response.headers.get('content-type');
-      const contentLength = response.headers.get('content-length');
-      
-      if (response.status === 204 || contentLength === '0' || !contentType?.includes('application/json')) {
-        // Return success for 2xx status codes, failure otherwise
+      // Handle 204 No Content
+      if (response.status === 204) {
         return {
-          success: response.ok,
-          status: response.status,
-          message: response.ok ? 'Success' : 'Error',
+          success: true,
+          message: 'Success',
           data: null,
+          statusCode: 204
         };
       }
 
       const result = await response.json();
 
-      // Normalize backend Result<T> to frontend ApiResponse<T>
-      if (result && typeof result === 'object') {
-        // Backend returns: { value: T, isSuccess: boolean, isFailure: boolean, error: Error }
-        if ('value' in result && 'isSuccess' in result) {
-          return {
-            success: result.isSuccess,
-            status: response.status,
-            message: result.error ? result.error.message : (result.isSuccess ? 'Success' : 'Error'),
-            data: result.value
-          };
-        }
-      }
-
+      // The backend now always returns ApiResponse<T> structure
       return result as ApiResponse<T>;
     } catch (error) {
       console.error('API Error:', error);
       return {
         success: false,
-        status: 500,
         message: error instanceof Error ? error.message : 'Network error',
         data: null,
+        statusCode: 500,
       };
     }
   }

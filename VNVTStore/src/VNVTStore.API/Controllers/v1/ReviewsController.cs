@@ -1,34 +1,37 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VNVTStore.Application.Common;
+using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Reviews.Commands;
 using VNVTStore.Application.Reviews.Queries;
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.API.Controllers.v1;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class ReviewsController : ControllerBase
+public class ReviewsController : BaseApiController<ReviewDto, CreateReviewDto, UpdateReviewDto>
 {
-    private readonly IMediator _mediator;
     private readonly ICurrentUser _currentUser;
 
-    public ReviewsController(IMediator mediator, ICurrentUser currentUser)
+    public ReviewsController(IMediator mediator, ICurrentUser currentUser) : base(mediator)
     {
-        _mediator = mediator;
         _currentUser = currentUser;
     }
+
+    private string GetUserCode() => _currentUser.UserCode ?? throw new UnauthorizedAccessException();
 
     /// <summary>
     /// Get reviews for a product
     /// </summary>
     [HttpGet("product/{productCode}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProductReviews(string productCode, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _mediator.Send(new GetProductReviewsQuery(productCode, pageIndex, pageSize));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetProductReviewsQuery(productCode, pageIndex, pageSize));
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -38,56 +41,78 @@ public class ReviewsController : ControllerBase
     [HttpGet("my")]
     public async Task<IActionResult> GetMyReviews()
     {
-        var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await _mediator.Send(new GetUserReviewsQuery(userCode));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetUserReviewsQuery(GetUserCode()));
+        return HandleResult(result);
     }
 
-    /// <summary>
-    /// Create a review for a purchased item
-    /// </summary>
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> CreateReview([FromBody] CreateReviewRequest request)
+    public override async Task<IActionResult> Create([FromBody] RequestDTO<CreateReviewDto> request)
     {
-        var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await _mediator.Send(new CreateReviewCommand(
-            userCode, request.OrderItemCode, request.Rating, request.Title, request.Content));
-        
-        if (result.IsFailure) return BadRequest(result.Error);
-        return CreatedAtAction(nameof(GetProductReviews), new { productCode = "unknown" }, result.Value);
+        request.PostObject!.UserCode = GetUserCode();
+        return await base.Create(request);
     }
 
-    /// <summary>
-    /// Update a review
-    /// </summary>
     [Authorize]
     [HttpPut("{code}")]
-    public async Task<IActionResult> UpdateReview(string code, [FromBody] UpdateReviewRequest request)
+    public override async Task<IActionResult> Update(string code, [FromBody] RequestDTO<UpdateReviewDto> request)
     {
-        var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await _mediator.Send(new UpdateReviewCommand(
-            code, userCode, request.Rating, request.Title, request.Content));
-        
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        // For Update, we pass UserCode to the command factory
+        return await base.Update(code, request);
+    }
+
+    [Authorize]
+    [HttpDelete("{code}")]
+    public override async Task<IActionResult> Delete(string code)
+    {
+        return await base.Delete(code);
     }
 
     /// <summary>
-    /// Delete a review
+    /// Get all reviews (Admin moderation)
     /// </summary>
-    [Authorize]
-    [HttpDelete("{code}")]
-    public async Task<IActionResult> DeleteReview(string code)
+    [HttpGet]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> GetAllReviews([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10, [FromQuery] bool? isApproved = null)
     {
-        var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await _mediator.Send(new DeleteReviewCommand(code, userCode));
-        
-        if (result.IsFailure) return BadRequest(result.Error);
-        return NoContent();
+        var result = await Mediator.Send(new GetAllReviewsQuery(pageIndex, pageSize, isApproved));
+        return HandleResult(result);
     }
-}
 
-public record CreateReviewRequest(string OrderItemCode, int Rating, string? Title, string? Content);
-public record UpdateReviewRequest(int? Rating, string? Title, string? Content);
+    /// <summary>
+    /// Approve a review (Admin)
+    /// </summary>
+    [HttpPost("{code}/approve")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> ApproveReview(string code)
+    {
+        var result = await Mediator.Send(new ApproveReviewCommand(code));
+        return HandleDelete(result);
+    }
+
+    /// <summary>
+    /// Reject a review (Admin)
+    /// </summary>
+    [HttpPost("{code}/reject")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> RejectReview(string code)
+    {
+        var result = await Mediator.Send(new RejectReviewCommand(code));
+        return HandleDelete(result);
+    }
+
+    protected override IRequest<Result<PagedResult<ReviewDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort)
+        => new GetPagedQuery<ReviewDto>(pageIndex, pageSize, search, sort);
+
+    protected override IRequest<Result<ReviewDto>> CreateGetByCodeQuery(string code)
+        => new GetByCodeQuery<ReviewDto>(code);
+
+    protected override IRequest<Result<ReviewDto>> CreateCreateCommand(CreateReviewDto dto)
+        => new CreateCommand<CreateReviewDto, ReviewDto>(dto);
+
+    protected override IRequest<Result<ReviewDto>> CreateUpdateCommand(string code, UpdateReviewDto dto)
+        => new UpdateCommand<UpdateReviewDto, ReviewDto>(code, dto);
+
+    protected override IRequest<Result> CreateDeleteCommand(string code)
+        => new DeleteCommand<TblReview>(code);
+}

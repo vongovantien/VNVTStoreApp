@@ -9,7 +9,7 @@ export { cartService, type CartDto } from './cartService';
 
 export { userService, type UserProfileDto, type AddressDto } from './userService';
 export { orderService, type OrderDto, type CreateOrderRequest } from './orderService';
-export { paymentService, type ProcessPaymentRequest } from './paymentService';
+export { paymentService } from './paymentService';
 export { reviewService, type ReviewDto, type CreateReviewRequest } from './reviewService';
 export { supplierService, type SupplierDto, type CreateSupplierRequest, type UpdateSupplierRequest } from './supplierService';
 export { dashboardService, type DashboardStatsDto } from './dashboardService';

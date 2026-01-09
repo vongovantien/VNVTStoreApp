@@ -8,5 +8,6 @@ public interface IApplicationDbContext
     DbSet<TblUser> TblUsers { get; }
     DbSet<TblProduct> TblProducts { get; }
     DbSet<TblQuote> TblQuotes { get; }
+    DbSet<TblBanner> TblBanners { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

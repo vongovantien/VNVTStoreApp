@@ -41,7 +41,7 @@ public class PaymentHandlers :
     {
         var order = await _orderRepository.GetByCodeAsync(request.OrderCode, cancellationToken);
         if (order == null)
-            return Result.Failure<PaymentDto>(Error.NotFound("Order", request.OrderCode));
+            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Order, request.OrderCode));
 
         if (order.UserCode != _currentUser.UserCode)
             return Result.Failure<PaymentDto>(Error.Forbidden("Cannot pay for another user's order"));
@@ -52,7 +52,7 @@ public class PaymentHandlers :
             OrderCode = request.OrderCode,
             Method = request.PaymentMethod,
             Amount = request.Amount,
-            Status = "Pending",
+            Status = PaymentStatus.Pending.ToString(),
             PaymentDate = DateTime.UtcNow
         };
 
@@ -69,7 +69,7 @@ public class PaymentHandlers :
     {
         var payment = await _paymentRepository.GetByCodeAsync(request.PaymentCode, cancellationToken);
         if (payment == null)
-            return Result.Failure<PaymentDto>(Error.NotFound("Payment", request.PaymentCode));
+            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Payment, request.PaymentCode));
 
         payment.Status = request.Status;
         if (request.TransactionId != null)
@@ -79,12 +79,12 @@ public class PaymentHandlers :
         }
         
         // Update Order status if payment completed
-        if (request.Status == "Completed")
+        if (request.Status == PaymentStatus.Completed.ToString())
         {
             var order = await _orderRepository.GetByCodeAsync(payment.OrderCode!, cancellationToken);
             if (order != null)
             {
-                order.Status = "Paid"; // Or "Processing"
+                order.Status = OrderStatus.Paid.ToString(); // Or "Processing"
                 _orderRepository.Update(order);
             }
         }
@@ -101,7 +101,7 @@ public class PaymentHandlers :
             .FirstOrDefaultAsync(p => p.OrderCode == request.OrderCode, cancellationToken);
 
         if (payment == null)
-            return Result.Failure<PaymentDto>(Error.NotFound("Payment for Order", request.OrderCode));
+            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Payment, request.OrderCode));
 
         // Check ownership via order
         var order = await _orderRepository.GetByCodeAsync(request.OrderCode, cancellationToken);

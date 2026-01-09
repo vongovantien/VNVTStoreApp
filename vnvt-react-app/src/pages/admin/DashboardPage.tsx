@@ -82,28 +82,28 @@ export const DashboardPage = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Doanh thu"
+          title={t('admin.stats.revenue')}
           value={formatCurrency(stats.totalRevenue)}
           change={stats.revenueChange}
           icon={DollarSign}
           color="bg-gradient-to-r from-green-500 to-emerald-500"
         />
         <StatCard
-          title="Đơn hàng"
+          title={t('admin.stats.orders')}
           value={stats.totalOrders.toLocaleString()}
           change={stats.ordersChange}
           icon={ShoppingBag}
           color="bg-gradient-to-r from-blue-500 to-cyan-500"
         />
         <StatCard
-          title="Khách hàng"
+          title={t('admin.stats.customers')}
           value={stats.totalCustomers.toLocaleString()}
           change={stats.customersChange}
           icon={Users}
           color="bg-gradient-to-r from-purple-500 to-pink-500"
         />
         <StatCard
-          title="Sản phẩm"
+          title={t('admin.stats.products')}
           value={stats.totalProducts}
           icon={Package}
           color="bg-gradient-to-r from-orange-500 to-amber-500"
@@ -114,7 +114,7 @@ export const DashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Chart Placeholder */}
         <div className="lg:col-span-2 bg-primary rounded-xl p-6 shadow-sm border">
-          <h2 className="font-bold mb-4">Biểu đồ doanh thu</h2>
+          <h2 className="font-bold mb-4">{t('admin.revenueChart')}</h2>
           <div className="h-64">
             <RevenueChart />
           </div>
@@ -122,7 +122,7 @@ export const DashboardPage = () => {
 
         {/* Top Products */}
         <div className="bg-primary rounded-xl p-6">
-          <h2 className="font-bold mb-4">Sản phẩm bán chạy</h2>
+          <h2 className="font-bold mb-4">{t('admin.topProducts')}</h2>
           <div className="space-y-4">
             {[
               { name: 'Máy lọc nước RO Kangaroo', sales: 128, revenue: 1150000000 },
@@ -135,7 +135,7 @@ export const DashboardPage = () => {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{product.name}</p>
-                  <p className="text-sm text-tertiary">{product.sales} đã bán</p>
+                  <p className="text-sm text-tertiary">{product.sales} {t('admin.sold')}</p>
                 </div>
               </div>
             ))}
@@ -148,19 +148,19 @@ export const DashboardPage = () => {
         {/* Recent Orders */}
         <div className="bg-primary rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold">Đơn hàng gần đây</h2>
+            <h2 className="font-bold">{t('admin.recentOrders')}</h2>
             <a href="/admin/orders" className="text-sm text-primary flex items-center gap-1 hover:underline">
-              Xem tất cả <ArrowUpRight size={14} />
+              {t('common.viewAll')} <ArrowUpRight size={14} />
             </a>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left text-sm text-tertiary border-b">
-                  <th className="pb-3">Mã đơn</th>
-                  <th className="pb-3">Khách hàng</th>
-                  <th className="pb-3">Tổng tiền</th>
-                  <th className="pb-3">Trạng thái</th>
+                  <th className="pb-3">{t('admin.orderCode')}</th>
+                  <th className="pb-3">{t('admin.customer')}</th>
+                  <th className="pb-3">{t('admin.total')}</th>
+                  <th className="pb-3">{t('admin.status')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -185,13 +185,13 @@ export const DashboardPage = () => {
         <div className="bg-primary rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold flex items-center gap-2">
-              Yêu cầu báo giá
+              {t('admin.quoteRequests')}
               <span className="px-2 py-0.5 bg-error/20 text-error text-xs rounded-full">
-                {stats.pendingQuotes} chờ xử lý
+                {stats.pendingQuotes} {t('admin.pending')}
               </span>
             </h2>
             <a href="/admin/quotes" className="text-sm text-primary flex items-center gap-1 hover:underline">
-              Xem tất cả <ArrowUpRight size={14} />
+              {t('common.viewAll')} <ArrowUpRight size={14} />
             </a>
           </div>
           <div className="space-y-3">

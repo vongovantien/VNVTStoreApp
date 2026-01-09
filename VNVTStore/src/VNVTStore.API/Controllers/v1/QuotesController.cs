@@ -4,31 +4,41 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
-using VNVTStore.Application.Quotes.Commands;
-using VNVTStore.Application.Quotes.Queries;
+using VNVTStore.Domain.Entities;
 
 
 namespace VNVTStore.API.Controllers.v1;
 
+[Route("api/v1/[controller]")]
 [Authorize]
-public class QuotesController : BaseApiController
+public class QuotesController : BaseApiController<QuoteDto, CreateQuoteDto, UpdateQuoteDto>
 {
     public QuotesController(IMediator mediator) : base(mediator)
     {
     }
 
-    [HttpPost]
-
-    public async Task<ActionResult<ApiResponse<QuoteDto>>> CreateQuote(CreateQuoteCommand command)
-    {
-        return Ok(await Mediator.Send(command));
-    }
-
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<QuoteDto>>>> GetMyQuotes()
+    public async Task<IActionResult> GetMyQuotes()
     {
-        return Ok(await Mediator.Send(new GetMyQuotesQuery()));
+        var result = await Mediator.Send(new GetAllQuery<QuoteDto>());
+        return HandleResult(result);
     }
+
+    // Abstract methods implementation
+    protected override IRequest<Result<PagedResult<QuoteDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort)
+        => throw new NotImplementedException("Quotes Paged Query not implemented yet. Use GetMyQuotes.");
+
+    protected override IRequest<Result<QuoteDto>> CreateGetByCodeQuery(string code)
+        => new GetByCodeQuery<QuoteDto>(code);
+
+    protected override IRequest<Result<QuoteDto>> CreateCreateCommand(CreateQuoteDto dto)
+        => new CreateCommand<CreateQuoteDto, QuoteDto>(dto);
+
+    protected override IRequest<Result<QuoteDto>> CreateUpdateCommand(string code, UpdateQuoteDto dto)
+        => new UpdateCommand<UpdateQuoteDto, QuoteDto>(code, dto);
+
+    protected override IRequest<Result> CreateDeleteCommand(string code)
+        => new DeleteCommand<TblQuote>(code);
 }
 
 

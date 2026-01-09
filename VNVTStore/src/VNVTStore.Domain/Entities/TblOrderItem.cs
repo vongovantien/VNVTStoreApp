@@ -13,6 +13,10 @@ public partial class TblOrderItem
 
     public int Quantity { get; set; }
 
+    public string? Size { get; set; }
+
+    public string? Color { get; set; }
+
     public decimal PriceAtOrder { get; set; }
 
     public decimal? DiscountAmount { get; set; }

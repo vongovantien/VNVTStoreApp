@@ -1,14 +1,15 @@
 using MediatR;
 using VNVTStore.Application.Common;
+using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Application.Suppliers.Queries;
 
 public record GetAllSuppliersQuery(
-    int PageIndex = 1,
-    int PageSize = 10,
+    int PageIndex = AppConstants.Paging.DefaultPageNumber,
+    int PageSize = AppConstants.Paging.DefaultPageSize,
     string? Search = null,
     bool? IsActive = null
-) : IRequest<Result<PagedResult<SupplierDto>>>;
+) : GetPagedQuery<SupplierDto>(PageIndex, PageSize, Search);
 
-public record GetSupplierByCodeQuery(string SupplierCode) : IRequest<Result<SupplierDto>>;
+public record GetSupplierByCodeQuery(string SupplierCode) : GetByCodeQuery<SupplierDto>(SupplierCode);

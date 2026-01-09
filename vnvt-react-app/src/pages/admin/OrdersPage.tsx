@@ -77,14 +77,14 @@ export const OrdersPage = () => {
           <table className="w-full min-w-[900px]">
             <thead className="bg-secondary border-b">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Mã đơn</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Khách hàng</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">Sản phẩm</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">Tổng tiền</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">Thanh toán</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">Trạng thái</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Ngày đặt</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">Thao tác</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.orderCode')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.customer')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.products')}</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.total')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.payment')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.status')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.date')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.action')}</th>
               </tr>
             </thead>
             <tbody>

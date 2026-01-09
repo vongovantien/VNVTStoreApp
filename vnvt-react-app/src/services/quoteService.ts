@@ -22,6 +22,10 @@ export interface CreateQuoteRequest {
     productCode: string;
     quantity: number;
     note?: string;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    company?: string;
 }
 
 export interface UpdateQuoteRequest {

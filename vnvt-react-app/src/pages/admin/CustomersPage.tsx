@@ -50,12 +50,12 @@ export const CustomersPage = () => {
           <table className="w-full min-w-[700px]">
             <thead className="bg-secondary">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Khách hàng</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Liên hệ</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">Đơn hàng</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">Tổng chi tiêu</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Ngày tham gia</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">Thao tác</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.customer')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.contact')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.orders')}</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.totalSpent')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.joinDate')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.action')}</th>
               </tr>
             </thead>
             <tbody>

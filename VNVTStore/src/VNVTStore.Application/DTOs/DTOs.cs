@@ -41,8 +41,42 @@ public class ProductDto : IBaseDto
     public string? Sku { get; set; }
     public decimal? Weight { get; set; }
     public bool? IsActive { get; set; }
+    public string? Brand { get; set; }
+    public bool IsNew { get; set; }
+    public bool IsFeatured { get; set; }
     public DateTime? CreatedAt { get; set; }
     public List<ProductImageDto> ProductImages { get; set; } = new();
+}
+
+public class CreateProductDto
+{
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public decimal Price { get; set; }
+    public decimal? CostPrice { get; set; }
+    public string? CategoryCode { get; set; }
+    public int? StockQuantity { get; set; }
+    public string? Sku { get; set; }
+    public decimal? Weight { get; set; }
+    public string? Brand { get; set; }
+    public bool IsNew { get; set; }
+    public bool IsFeatured { get; set; }
+}
+
+public class UpdateProductDto
+{
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public decimal? Price { get; set; }
+    public decimal? CostPrice { get; set; }
+    public string? CategoryCode { get; set; }
+    public int? StockQuantity { get; set; }
+    public string? Sku { get; set; }
+    public decimal? Weight { get; set; }
+    public bool? IsActive { get; set; }
+    public string? Brand { get; set; }
+    public bool? IsNew { get; set; }
+    public bool? IsFeatured { get; set; }
 }
 
 public class ProductImageDto
@@ -65,6 +99,24 @@ public class CategoryDto : IBaseDto
     public bool? IsActive { get; set; }
 }
 
+public class CreateCategoryDto
+{
+    public string? Code { get; set; }
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? ParentCode { get; set; }
+}
+
+public class UpdateCategoryDto
+{
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? ParentCode { get; set; }
+    public bool? IsActive { get; set; }
+}
+
 // ==================== ORDER ====================
 public class OrderDto : IBaseDto
 {
@@ -74,6 +126,7 @@ public class OrderDto : IBaseDto
     public decimal TotalAmount { get; set; }
     public decimal? DiscountAmount { get; set; }
     public decimal FinalAmount { get; set; }
+    public decimal ShippingFee { get; set; }
     public string? Status { get; set; }
     public string? AddressCode { get; set; }
     public string? CouponCode { get; set; }
@@ -86,6 +139,8 @@ public class OrderItemDto
     public string OrderCode { get; set; } = null!;
     public string? ProductCode { get; set; }
     public string? ProductName { get; set; }
+    public string? Size { get; set; }
+    public string? Color { get; set; }
     public int Quantity { get; set; }
     public decimal PriceAtOrder { get; set; }
     public decimal? DiscountAmount { get; set; }
@@ -107,6 +162,8 @@ public class CartItemDto
     public string? ProductCode { get; set; }
     public string? ProductName { get; set; }
     public decimal? ProductPrice { get; set; }
+    public string? Size { get; set; }
+    public string? Color { get; set; }
     public int Quantity { get; set; }
     public DateTime? AddedAt { get; set; }
 }
@@ -116,6 +173,27 @@ public class AddressDto : IBaseDto
 {
     public string Code { get; set; } = null!;
     public string UserCode { get; set; } = null!;
+    public string? AddressLine { get; set; }
+    public string? City { get; set; }
+    public string? State { get; set; }
+    public string? PostalCode { get; set; }
+    public string? Country { get; set; }
+    public bool? IsDefault { get; set; }
+}
+
+public class CreateAddressDto
+{
+    public string UserCode { get; set; } = null!;
+    public string? AddressLine { get; set; }
+    public string? City { get; set; }
+    public string? State { get; set; }
+    public string? PostalCode { get; set; }
+    public string? Country { get; set; }
+    public bool IsDefault { get; set; }
+}
+
+public class UpdateAddressDto
+{
     public string? AddressLine { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
@@ -137,6 +215,20 @@ public class ReviewDto : IBaseDto
     public string? UserName { get; set; }
 }
 
+public class CreateReviewDto
+{
+    public string UserCode { get; set; } = null!;
+    public string OrderItemCode { get; set; } = null!;
+    public int? Rating { get; set; }
+    public string? Comment { get; set; }
+}
+
+public class UpdateReviewDto
+{
+    public int? Rating { get; set; }
+    public string? Comment { get; set; }
+}
+
 // ==================== COUPON ====================
 public class CouponDto : IBaseDto
 {
@@ -144,6 +236,11 @@ public class CouponDto : IBaseDto
     public string? PromotionCode { get; set; }
     public int? UsageCount { get; set; }
     public bool IsValid { get; set; }
+}
+
+public class CreateCouponDto
+{
+    public string? PromotionCode { get; set; }
 }
 
 // ==================== PROMOTION ====================
@@ -158,6 +255,33 @@ public class PromotionDto : IBaseDto
     public decimal? MaxDiscountAmount { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public int? UsageLimit { get; set; }
+    public bool? IsActive { get; set; }
+}
+
+public class CreatePromotionDto
+{
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public string? DiscountType { get; set; }
+    public decimal? DiscountValue { get; set; }
+    public decimal? MinOrderAmount { get; set; }
+    public decimal? MaxDiscountAmount { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public int? UsageLimit { get; set; }
+}
+
+public class UpdatePromotionDto
+{
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public string? DiscountType { get; set; }
+    public decimal? DiscountValue { get; set; }
+    public decimal? MinOrderAmount { get; set; }
+    public decimal? MaxDiscountAmount { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
     public int? UsageLimit { get; set; }
     public bool? IsActive { get; set; }
 }
@@ -228,7 +352,7 @@ public class PagedResult<T>
 }
 
 // ==================== SUPPLIER DTO ====================
-public class SupplierDto
+public class SupplierDto : IBaseDto
 {
     public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
@@ -242,6 +366,33 @@ public class SupplierDto
     public string? Notes { get; set; }
     public bool IsActive { get; set; }
     public DateTime? CreatedAt { get; set; }
+}
+
+public class CreateSupplierDto
+{
+    public string Name { get; set; } = null!;
+    public string? ContactPerson { get; set; }
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+    public string? Address { get; set; }
+    public string? TaxCode { get; set; }
+    public string? BankAccount { get; set; }
+    public string? BankName { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class UpdateSupplierDto
+{
+    public string? Name { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+    public string? Address { get; set; }
+    public string? TaxCode { get; set; }
+    public string? BankAccount { get; set; }
+    public string? BankName { get; set; }
+    public string? Notes { get; set; }
+    public bool? IsActive { get; set; }
 }
 
 // ==================== QUOTE DTO ====================
@@ -262,3 +413,22 @@ public class QuoteDto : IBaseDto
     public DateTime? UpdatedAt { get; set; }
 }
 
+public class CreateQuoteDto
+{
+    public string ProductCode { get; set; } = null!;
+    public int Quantity { get; set; }
+    public string? Note { get; set; }
+    public string? CustomerName { get; set; }
+    public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
+    public string? Company { get; set; }
+}
+
+public class UpdateQuoteDto
+{
+    public int? Quantity { get; set; }
+    public string? Note { get; set; }
+    public string? Status { get; set; }
+    public decimal? QuotedPrice { get; set; }
+    public string? AdminNote { get; set; }
+}

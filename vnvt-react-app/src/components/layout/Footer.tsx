@@ -15,11 +15,12 @@ import {
   HeadphonesIcon,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { useToast } from '@/store';
+import { useToast, useUIStore } from '@/store';
 
 export const Footer = memo(() => {
   const { t } = useTranslation();
   const toast = useToast();
+  const { theme, toggleTheme } = useUIStore();
   const [email, setEmail] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
 
@@ -31,16 +32,16 @@ export const Footer = memo(() => {
   ];
 
   const aboutLinks = [
-    { label: t('nav.about') || 'Giới thiệu', path: '/about' },
-    { label: t('nav.news') || 'Tin tức', path: '/news' },
-    { label: t('nav.promotions') || 'Khuyến mãi', path: '/promotions' },
-    { label: t('nav.contact') || 'Liên hệ', path: '/contact' },
+    { label: t('header.about') || 'Giới thiệu', path: '/about' },
+    { label: t('header.news') || 'Tin tức', path: '/news' },
+    { label: t('header.promotions') || 'Khuyến mãi', path: '/promotions' },
+    { label: t('header.contact') || 'Liên hệ', path: '/contact' },
   ];
 
   const supportLinks = [
-    { label: t('nav.tracking') || 'Tra cứu đơn hàng', path: '/tracking' },
-    { label: t('nav.support') || 'Hỗ trợ', path: '/support' },
-    { label: t('nav.products') || 'Sản phẩm', path: '/products' },
+    { label: t('header.trackOrder') || 'Tra cứu đơn hàng', path: '/tracking' },
+    { label: t('header.support') || 'Hỗ trợ', path: '/support' },
+    { label: t('common.products') || 'Sản phẩm', path: '/products' },
     { label: 'FAQ', path: '/support' },
   ];
 
@@ -224,12 +225,19 @@ export const Footer = memo(() => {
       <div className="bg-gray-950 py-4 border-t border-gray-800">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500">{t('footer.copyright')}</p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                title="Đổi giao diện"
+            >
+               <span className="text-xl">{theme === 'dark' ? '☀️' : '�'}</span>
+            </button>
             <Link to="/about" className="text-sm text-gray-500 hover:text-white transition-colors">
-              {t('nav.about') || 'Về chúng tôi'}
+              {t('header.about') || 'Về chúng tôi'}
             </Link>
             <Link to="/support" className="text-sm text-gray-500 hover:text-white transition-colors">
-              {t('nav.support') || 'Hỗ trợ'}
+              {t('header.support') || 'Hỗ trợ'}
             </Link>
           </div>
         </div>

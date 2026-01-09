@@ -10,18 +10,18 @@ public class ApiResponse<T>
     public T? Data { get; set; }
     public int StatusCode { get; set; }
 
-    public static ApiResponse<T> Ok(T data, string message = "Success") => new()
+    public static ApiResponse<T> Ok(T data, string? message = null) => new()
     {
         Success = true,
-        Message = message,
+        Message = message ?? MessageConstants.Get(MessageConstants.Success),
         Data = data,
         StatusCode = 200
     };
 
-    public static ApiResponse<T> Created(T data, string message = "Created successfully") => new()
+    public static ApiResponse<T> Created(T data, string? message = null) => new()
     {
         Success = true,
-        Message = message,
+        Message = message ?? MessageConstants.Get(MessageConstants.Created),
         Data = data,
         StatusCode = 201
     };
@@ -34,26 +34,26 @@ public class ApiResponse<T>
         StatusCode = statusCode
     };
 
-    public static ApiResponse<T> NotFound(string message = "Resource not found") => new()
+    public static ApiResponse<T> NotFound(string? message = null) => new()
     {
         Success = false,
-        Message = message,
+        Message = message ?? MessageConstants.Get(MessageConstants.NotFound),
         Data = default,
         StatusCode = 404
     };
 
-    public static ApiResponse<T> Unauthorized(string message = "Unauthorized") => new()
+    public static ApiResponse<T> Unauthorized(string? message = null) => new()
     {
         Success = false,
-        Message = message,
+        Message = message ?? MessageConstants.Get(MessageConstants.Unauthorized),
         Data = default,
         StatusCode = 401
     };
 
-    public static ApiResponse<T> Forbidden(string message = "Access denied") => new()
+    public static ApiResponse<T> Forbidden(string? message = null) => new()
     {
         Success = false,
-        Message = message,
+        Message = message ?? MessageConstants.Get(MessageConstants.Forbidden),
         Data = default,
         StatusCode = 403
     };

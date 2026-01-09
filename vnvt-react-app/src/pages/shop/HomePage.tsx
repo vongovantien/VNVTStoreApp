@@ -253,7 +253,7 @@ export const HomePage = () => {
                 icon={<span className="text-2xl">🆕</span>}
                 viewAllLink="/products?new=true"
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {newProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -270,15 +270,15 @@ export const HomePage = () => {
               <div className="relative z-10 p-6 text-white">
                 <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-semibold mb-4">
                   <Gift size={16} />
-                  Ưu đãi đặc biệt
+                  {t('home.specialOffer')}
                 </span>
-                <h3 className="text-2xl font-bold mb-2">Đăng ký thành viên</h3>
+                <h3 className="text-2xl font-bold mb-2">{t('home.registerMember')}</h3>
                 <p className="opacity-90 mb-6">
-                  Nhận ngay voucher 100K cho đơn hàng đầu tiên
+                  {t('home.voucherOffer')}
                 </p>
                 <Link to="/register">
                   <Button className="bg-white text-primary hover:bg-gray-100">
-                    Đăng ký ngay <ArrowRight size={18} />
+                    {t('home.registerNow')} <ArrowRight size={18} />
                   </Button>
                 </Link>
               </div>

@@ -24,6 +24,7 @@ export interface SearchParams {
     searchField?: string;
     sortBy?: string;
     sortDesc?: boolean;
+    filters?: Array<{ field: string; value: string; operator?: string }>;
 }
 
 // ============ HTTP Methods (internal) ============
@@ -47,12 +48,24 @@ export function createCrudService<
          * Search with pagination
          */
         async search(params: SearchParams = {}): Promise<ApiResponse<PagedResult<TDto>>> {
+            const searching = [];
+
+            if (params.search && params.searchField) {
+                searching.push({ field: params.searchField, operator: 'contains', value: params.search });
+            }
+
+            if (params.filters) {
+                searching.push(...params.filters.map(f => ({
+                    field: f.field,
+                    operator: f.operator || 'eq',
+                    value: f.value
+                })));
+            }
+
             const request: RequestDTO = {
                 pageIndex: params.pageIndex ?? 1,
                 pageSize: params.pageSize ?? PageSize.DEFAULT,
-                searching: params.search && params.searchField
-                    ? [{ field: params.searchField, operator: 'contains', value: params.search }]
-                    : undefined,
+                searching: searching.length > 0 ? searching : undefined,
                 sortDTO: params.sortBy
                     ? { sortBy: params.sortBy, sortDescending: params.sortDesc ?? false }
                     : undefined,
@@ -86,21 +99,33 @@ export function createCrudService<
          * Create new item
          */
         async create(data: TCreateDto): Promise<ApiResponse<TDto>> {
-            return http.post<TDto>(endpoint, data);
+            const response = await http.post<TDto>(endpoint, data);
+            if (!response.success) {
+                throw new Error(response.message || 'Create failed');
+            }
+            return response;
         },
 
         /**
          * Update item
          */
         async update(code: string, data: TUpdateDto): Promise<ApiResponse<TDto>> {
-            return http.put<TDto>(`${endpoint}/${code}`, data);
+            const response = await http.put<TDto>(`${endpoint}/${code}`, data);
+            if (!response.success) {
+                throw new Error(response.message || 'Update failed');
+            }
+            return response;
         },
 
         /**
          * Delete item
          */
         async delete(code: string): Promise<ApiResponse<void>> {
-            return http.delete<void>(`${endpoint}/${code}`);
+            const response = await http.delete<void>(`${endpoint}/${code}`);
+            if (!response.success) {
+                throw new Error(response.message || 'Delete failed');
+            }
+            return response;
         },
     };
 }

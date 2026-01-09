@@ -8,16 +8,10 @@ using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[ApiController]
-[ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : BaseApiController
 {
-    private readonly IMediator _mediator;
-
-    public AuthController(IMediator mediator)
+    public AuthController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     /// <summary>
@@ -26,7 +20,6 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var command = new RegisterCommand(
@@ -35,14 +28,8 @@ public class AuthController : ControllerBase
             request.Password,
             request.FullName);
 
-        var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-        {
-            return BadRequest(ApiResponse<string>.Fail(result.Error!.Message));
-        }
-
-        return Ok(ApiResponse<UserDto>.Ok(result.Value!, "User registered successfully"));
+        var result = await Mediator.Send(command);
+        return HandleResult(result, MessageConstants.Get(MessageConstants.RegisterSuccess));
     }
 
     /// <summary>
@@ -51,19 +38,11 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var command = new LoginCommand(request.Username, request.Password);
-
-        var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-        {
-            return Unauthorized(ApiResponse<string>.Fail(result.Error!.Message, 401));
-        }
-
-        return Ok(ApiResponse<AuthResponseDto>.Ok(result.Value!, "Login successful"));
+        var result = await Mediator.Send(command);
+        return HandleResult(result, MessageConstants.Get(MessageConstants.LoginSuccess));
     }
 }
 

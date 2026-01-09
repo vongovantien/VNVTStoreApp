@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using VNVTStore.Application.Localization;
 using VNVTStore.Application.MappingProfiles;
 
 namespace VNVTStore.Application;
@@ -18,7 +17,6 @@ public static class DependencyInjection
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
         // Add Localization Service
-        services.AddScoped<ILocalizationService, LocalizationService>();
 
         return services;
     }

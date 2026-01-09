@@ -1,7 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using VNVTStore.Application.Suppliers.Commands;
+using VNVTStore.Application.Common;
+using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Entities;
+using VNVTStore.Application.Common;
+
 using VNVTStore.Application.Suppliers.Queries;
 
 namespace VNVTStore.API.Controllers.v1;
@@ -9,18 +13,12 @@ namespace VNVTStore.API.Controllers.v1;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Roles = "admin")]
-public class SuppliersController : ControllerBase
+public class SuppliersController : BaseApiController<SupplierDto, CreateSupplierDto, UpdateSupplierDto>
 {
-    private readonly IMediator _mediator;
-
-    public SuppliersController(IMediator mediator)
+    public SuppliersController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
-    /// <summary>
-    /// Get all suppliers (Admin)
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAllSuppliers(
         [FromQuery] int pageIndex = 1,
@@ -28,66 +26,22 @@ public class SuppliersController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] bool? isActive = null)
     {
-        var result = await _mediator.Send(new GetAllSuppliersQuery(pageIndex, pageSize, search, isActive));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetAllSuppliersQuery(pageIndex, pageSize, search, isActive));
+        return HandleResult(result);
     }
 
-    /// <summary>
-    /// Get supplier by code
-    /// </summary>
-    [HttpGet("{code}")]
-    public async Task<IActionResult> GetSupplier(string code)
-    {
-        var result = await _mediator.Send(new GetSupplierByCodeQuery(code));
-        if (result.IsFailure) return NotFound(result.Error);
-        return Ok(result.Value);
-    }
+    protected override IRequest<Result<PagedResult<SupplierDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort)
+        => new GetPagedQuery<SupplierDto>(pageIndex, pageSize, search, sort);
 
-    /// <summary>
-    /// Create supplier
-    /// </summary>
-    [HttpPost]
-    public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierRequest request)
-    {
-        var result = await _mediator.Send(new CreateSupplierCommand(
-            request.Name, request.ContactPerson, request.Email, request.Phone,
-            request.Address, request.TaxCode, request.BankAccount, request.BankName, request.Notes));
-        
-        if (result.IsFailure) return BadRequest(result.Error);
-        return CreatedAtAction(nameof(GetSupplier), new { code = result.Value!.Code }, result.Value);
-    }
+    protected override IRequest<Result<SupplierDto>> CreateGetByCodeQuery(string code)
+        => new GetByCodeQuery<SupplierDto>(code);
 
-    /// <summary>
-    /// Update supplier
-    /// </summary>
-    [HttpPut("{code}")]
-    public async Task<IActionResult> UpdateSupplier(string code, [FromBody] UpdateSupplierRequest request)
-    {
-        var result = await _mediator.Send(new UpdateSupplierCommand(
-            code, request.Name, request.ContactPerson, request.Email, request.Phone,
-            request.Address, request.TaxCode, request.BankAccount, request.BankName, request.Notes, request.IsActive));
-        
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
-    }
+    protected override IRequest<Result<SupplierDto>> CreateCreateCommand(CreateSupplierDto dto)
+        => new CreateCommand<CreateSupplierDto, SupplierDto>(dto);
 
-    /// <summary>
-    /// Delete supplier
-    /// </summary>
-    [HttpDelete("{code}")]
-    public async Task<IActionResult> DeleteSupplier(string code)
-    {
-        var result = await _mediator.Send(new DeleteSupplierCommand(code));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return NoContent();
-    }
+    protected override IRequest<Result<SupplierDto>> CreateUpdateCommand(string code, UpdateSupplierDto dto)
+        => new UpdateCommand<UpdateSupplierDto, SupplierDto>(code, dto);
+
+    protected override IRequest<Result> CreateDeleteCommand(string code)
+        => new DeleteCommand<TblSupplier>(code);
 }
-
-public record CreateSupplierRequest(
-    string Name, string? ContactPerson, string? Email, string? Phone,
-    string? Address, string? TaxCode, string? BankAccount, string? BankName, string? Notes);
-
-public record UpdateSupplierRequest(
-    string? Name, string? ContactPerson, string? Email, string? Phone,
-    string? Address, string? TaxCode, string? BankAccount, string? BankName, string? Notes, bool? IsActive);

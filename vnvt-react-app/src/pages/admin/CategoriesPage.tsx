@@ -57,7 +57,7 @@ export const CategoriesPage = () => {
   // Mutations
   const createMutation = useMutation({
     mutationFn: (data: { name: string; description?: string }) =>
-      categoryService.createCategory(data),
+      categoryService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast.success(t('messages.createSuccess'));
@@ -71,7 +71,7 @@ export const CategoriesPage = () => {
 
   const updateMutation = useMutation({
     mutationFn: (data: { code: string; data: { name: string; description?: string } }) =>
-      categoryService.updateCategory(data.code, data.data),
+      categoryService.update(data.code, data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast.success(t('messages.updateSuccess'));
@@ -85,7 +85,7 @@ export const CategoriesPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (code: string) => categoryService.deleteCategory(code),
+    mutationFn: (code: string) => categoryService.delete(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast.success(t('messages.deleteSuccess'));

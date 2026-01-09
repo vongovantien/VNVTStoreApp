@@ -20,6 +20,7 @@ export interface Product {
     specifications?: Record<string, string>;
     createdAt: string;
     updatedAt?: string;
+    isActive?: boolean;
 }
 
 // ============ Category Types ============
@@ -31,6 +32,8 @@ export interface Category {
     image?: string;
     parentId?: string;
     productCount: number;
+    isActive?: boolean;
+    code?: string; // Appears to be used in CategoriesPage
 }
 
 // ============ Cart Types ============

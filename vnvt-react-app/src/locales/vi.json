@@ -23,7 +23,12 @@
     "notFound": "Không tìm thấy trang",
     "backToProducts": "Quay lại sản phẩm",
     "backToHome": "Về trang chủ",
-    "browseProducts": "Xem sản phẩm"
+
+    "browseProducts": "Xem sản phẩm",
+    "status": {
+      "active": "Hoạt động",
+      "inactive": "Ngưng hoạt động"
+    }
   },
   "header": {
     "hotline": "Hotline: 1900 123 456",
@@ -43,8 +48,12 @@
     "flashSale": "Flash Sale",
     "featured": "Sản phẩm nổi bật",
     "newArrivals": "Sản phẩm mới",
-    "bestSellers": "Bán chạy nhất",
-    "brands": "Thương hiệu đối tác"
+    "bestSellers": "Sản phẩm bán chạy",
+    "brands": "Đối tác thương hiệu",
+    "specialOffer": "Ưu đãi đặc biệt",
+    "registerMember": "Đăng ký thành viên",
+    "voucherOffer": "Nhận ngay voucher 100K cho đơn hàng đầu tiên",
+    "registerNow": "Đăng ký ngay"
   },
   "product": {
     "new": "Mới",
@@ -91,7 +100,15 @@
     "priceDesc": "Giá cao đến thấp",
     "topRated": "Đánh giá cao",
     "bestSeller": "Bán chạy",
-    "showResults": "Hiển thị {{count}} sản phẩm"
+    "showResults": "Hiển thị {{count}} sản phẩm",
+    "hideFilter": "Ẩn bộ lọc",
+    "showFilter": "Hiện bộ lọc",
+    "priceUnder1M": "Dưới 1 triệu",
+    "price1to5M": "1 - 5 triệu",
+    "price5to10M": "5 - 10 triệu",
+    "priceOver10M": "Trên 10 triệu",
+    "from": "Từ",
+    "to": "Đến"
   },
   "cart": {
     "title": "Giỏ hàng",
@@ -205,7 +222,49 @@
     "customers": "Khách hàng",
     "quotes": "Báo giá",
     "settings": "Cài đặt",
-    "addProduct": "Thêm sản phẩm"
+    "addProduct": "Thêm sản phẩm",
+    "stats": {
+      "revenue": "Doanh thu",
+      "orders": "Đơn hàng",
+      "customers": "Khách hàng",
+      "products": "Sản phẩm"
+    },
+    "revenueChart": "Biểu đồ doanh thu",
+    "topProducts": "Sản phẩm bán chạy",
+    "sold": "đã bán",
+    "recentOrders": "Đơn hàng gần đây",
+    "quoteRequests": "Yêu cầu báo giá",
+    "pending": "chờ xử lý",
+    "orderCode": "Mã đơn",
+    "customer": "Khách hàng",
+    "total": "Tổng tiền",
+    "status": "Trạng thái",
+    "columns": {
+      "image": "Hình ảnh",
+      "name": "Tên",
+      "sku": "Mã SKU",
+      "price": "Giá",
+      "stock": "Tồn kho",
+      "category": "Danh mục",
+      "rating": "Đánh giá",
+      "status": "Trạng thái",
+      "action": "Thao tác",
+      "contact": "Liên hệ",
+      "phone": "Điện thoại",
+      "address": "Địa chỉ",
+      "email": "Email",
+      "total": "Tổng tiền",
+      "payment": "Thanh toán",
+      "date": "Ngày tạo",
+      "orderCode": "Mã đơn",
+      "customer": "Khách hàng",
+      "description": "Mô tả",
+      "supplier": "Nhà cung cấp",
+      "quantity": "Số lượng",
+      "note": "Ghi chú",
+      "totalSpent": "Tổng chi tiêu",
+      "joinDate": "Ngày tham gia"
+    }
   },
   "footer": {
     "features": {
@@ -262,7 +321,16 @@
     "confirmDeleteCategory": "Bạn có chắc chắn muốn xóa danh mục \"{{name}}\"?",
     "enterEmail": "Vui lòng nhập email",
     "invalidEmail": "Email không hợp lệ",
-    "subscribeSuccess": "Đăng ký nhận tin thành công!"
+    "subscribeSuccess": "Đăng ký nhận tin thành công!",
+    "addSupplier": "Thêm nhà cung cấp",
+    "editSupplier": "Sửa nhà cung cấp",
+    "searchSupplier": "Tìm kiếm nhà cung cấp...",
+    "noSuppliers": "Chưa có nhà cung cấp nào",
+    "supplierName": "Tên nhà cung cấp",
+    "enterSupplierName": "Nhập tên nhà cung cấp",
+    "contactPerson": "Người liên hệ",
+    "enterContactPerson": "Nhập tên người liên hệ",
+    "confirmDeleteSupplier": "Bạn có chắc chắn muốn xóa nhà cung cấp \"{{name}}\"?"
   },
   "about": {
     "title": "Về VNVT Store",

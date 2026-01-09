@@ -7,6 +7,7 @@ using VNVTStore.Application.Orders.Commands;
 using VNVTStore.Application.Orders.Queries;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.Application.Orders.Handlers;
 
@@ -19,20 +20,20 @@ public class OrderHandlers :
     IRequestHandler<CancelOrderCommand, Result<bool>>
 {
     private readonly IRepository<TblOrder> _orderRepository;
-    private readonly IRepository<TblCart> _cartRepository;
+    private readonly ICartService _cartService;
     private readonly IRepository<TblProduct> _productRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public OrderHandlers(
         IRepository<TblOrder> orderRepository,
-        IRepository<TblCart> cartRepository,
+        ICartService cartService,
         IRepository<TblProduct> productRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _orderRepository = orderRepository;
-        _cartRepository = cartRepository;
+        _cartService = cartService;
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -41,14 +42,11 @@ public class OrderHandlers :
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         // 1. Get Cart
-        var cart = await _cartRepository.AsQueryable()
-            .Include(c => c.TblCartItems)
-            .ThenInclude(ci => ci.ProductCodeNavigation)
-            .FirstOrDefaultAsync(c => c.UserCode == request.UserCode, cancellationToken);
+        var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
 
         if (cart == null || !cart.TblCartItems.Any())
         {
-            return Result.Failure<OrderDto>(Error.Validation("Order", "Cart is empty"));
+            return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CartEmpty));
         }
 
         // 2. Validate Stock and Calculate Total
@@ -58,9 +56,7 @@ public class OrderHandlers :
         foreach (var item in cart.TblCartItems)
         {
             if (item.ProductCodeNavigation.StockQuantity < item.Quantity)
-            {
-                return Result.Failure<OrderDto>(Error.Validation("Order", $"Product {item.ProductCodeNavigation.Name} insufficient stock"));
-            }
+                return Result.Failure<OrderDto>(Error.Validation(MessageConstants.InsufficientStock, item.ProductCodeNavigation.Name));
 
             totalAmount += item.ProductCodeNavigation.Price * item.Quantity;
 
@@ -73,30 +69,48 @@ public class OrderHandlers :
                 Code = Guid.NewGuid().ToString("N").Substring(0, 10),
                 ProductCode = item.ProductCode,
                 Quantity = item.Quantity,
-                PriceAtOrder = item.ProductCodeNavigation.Price
+                PriceAtOrder = item.ProductCodeNavigation.Price,
+                Size = item.Size,
+                Color = item.Color
             });
         }
 
-        // 3. Create Order
+        // 3. Calculate Shipping Fee
+        // Rule: Free shipping for orders >= 1,000,000, else 30,000
+        decimal shippingFee = totalAmount >= 1000000 ? 0 : 30000;
+        decimal finalAmount = totalAmount + shippingFee; // - Discount (handled if Coupon logic is added)
+
+        // 4. Create Order
         var order = new TblOrder
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10), // Or use proper ID generation
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
             UserCode = request.UserCode,
             OrderDate = DateTime.UtcNow,
-            Status = "Pending",
+            Status = OrderStatus.Pending.ToString(),
             TotalAmount = totalAmount,
-            FinalAmount = totalAmount, // - Discount
+            ShippingFee = shippingFee,
+            FinalAmount = finalAmount,
             AddressCode = request.Dto.AddressCode,
+            CouponCode = request.Dto.CouponCode, // Store coupon code if provided
             TblOrderItems = orderItems
         };
 
-        // Note: Coupon logic can be added here
+        // 5. Create Payment Record
+        var payment = new TblPayment
+        {
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            OrderCode = order.Code,
+            Amount = finalAmount,
+            Method = request.Dto.PaymentMethod,
+            Status = "Pending", // Payment status
+            PaymentDate = null // Not paid yet
+        };
+        order.TblPayment = payment; // Link payment to order via Navigation property if exists, or add to DbSet if separate repository
 
         await _orderRepository.AddAsync(order, cancellationToken);
 
-        // 4. Clear Cart
-        cart.TblCartItems.Clear();
-        _cartRepository.Update(cart);
+        // 6. Clear Cart
+        await _cartService.ClearCartAsync(request.UserCode, cancellationToken);
 
         await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -134,7 +148,7 @@ public class OrderHandlers :
             .FirstOrDefaultAsync(o => o.Code == request.OrderCode, cancellationToken);
             
         if (order == null)
-             return Result.Failure<OrderDto>(Error.NotFound("Order", request.OrderCode));
+             return Result.Failure<OrderDto>(Error.NotFound(MessageConstants.Order, request.OrderCode));
 
         return Result.Success(_mapper.Map<OrderDto>(order));
     }
@@ -165,7 +179,7 @@ public class OrderHandlers :
     {
         var order = await _orderRepository.GetByCodeAsync(request.OrderCode, cancellationToken);
         if (order == null)
-            return Result.Failure<OrderDto>(Error.NotFound("Order", request.OrderCode));
+            return Result.Failure<OrderDto>(Error.NotFound(MessageConstants.Order, request.OrderCode));
 
         order.Status = request.Status;
         _orderRepository.Update(order);
@@ -182,13 +196,13 @@ public class OrderHandlers :
              .FirstOrDefaultAsync(o => o.Code == request.OrderCode, cancellationToken);
 
         if (order == null)
-            return Result.Failure<bool>(Error.NotFound("Order", request.OrderCode));
+            return Result.Failure<bool>(Error.NotFound(MessageConstants.Order, request.OrderCode));
 
         if (order.UserCode != request.UserCode)
              return Result.Failure<bool>(Error.Forbidden("Cannot cancel another user's order"));
 
-        if (order.Status != "Pending")
-             return Result.Failure<bool>(Error.Validation("Order", "Can only cancel pending orders"));
+        if (order.Status != OrderStatus.Pending.ToString())
+             return Result.Failure<bool>(Error.Validation(MessageConstants.OrderCannotCancel));
 
         // Restore stock
         foreach(var item in order.TblOrderItems)
@@ -197,7 +211,7 @@ public class OrderHandlers :
              _productRepository.Update(item.ProductCodeNavigation);
         }
 
-        order.Status = "Cancelled";
+        order.Status = OrderStatus.Cancelled.ToString();
         _orderRepository.Update(order);
         await _unitOfWork.CommitAsync(cancellationToken);
 

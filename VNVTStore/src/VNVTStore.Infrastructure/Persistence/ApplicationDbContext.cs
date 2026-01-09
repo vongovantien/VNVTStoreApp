@@ -17,6 +17,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public virtual DbSet<TblAddress> TblAddresses { get; set; }
 
+    public virtual DbSet<TblBanner> TblBanners { get; set; }
+
     public virtual DbSet<TblCart> TblCarts { get; set; }
 
     public virtual DbSet<TblCartItem> TblCartItems { get; set; }
@@ -48,6 +50,26 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TblBanner>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblBanner_pkey");
+
+            entity.ToTable("TblBanner");
+
+            entity.Property(e => e.Code)
+                .HasMaxLength(10)
+                .HasDefaultValueSql("('BNN'::text || lpad((nextval('banner_code_seq'::regclass))::text, 6, '0'::text))");
+            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.Content).HasMaxLength(500);
+            entity.Property(e => e.LinkUrl).HasMaxLength(200);
+            entity.Property(e => e.LinkText).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Priority).HasDefaultValue(0);
+        });
+
         modelBuilder.Entity<TblAddress>(entity =>
         {
             entity.HasKey(e => e.Code).HasName("TblAddress_pkey");
@@ -476,6 +498,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.HasSequence("review_code_seq");
         modelBuilder.HasSequence("quote_code_seq");
         modelBuilder.HasSequence("user_code_seq");
+        modelBuilder.HasSequence("banner_code_seq");
 
 
         OnModelCreatingPartial(modelBuilder);

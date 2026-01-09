@@ -33,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IImageUploadService, LocalImageUploadService>();
         services.AddScoped<ICurrentUser, CurrentUserService>();
+        services.AddScoped<ICartService, CartService>();
+        services.AddScoped<ICouponService, CouponService>();
         services.AddHttpContextAccessor();
 
         // Add JWT Settings

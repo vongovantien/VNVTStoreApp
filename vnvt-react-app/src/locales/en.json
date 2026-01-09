@@ -22,8 +22,12 @@
     "noResults": "No results found",
     "notFound": "Page not found",
     "backToProducts": "Back to products",
-    "backToHome": "Back to home",
-    "browseProducts": "Browse products"
+    "backToHome": "Back to Home",
+    "browseProducts": "Browse Products",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
   },
   "header": {
     "hotline": "Hotline: 1900 123 456",
@@ -44,7 +48,11 @@
     "featured": "Featured Products",
     "newArrivals": "New Arrivals",
     "bestSellers": "Best Sellers",
-    "brands": "Brand Partners"
+    "brands": "Brand Partners",
+    "specialOffer": "Special Offer",
+    "registerMember": "Member Registration",
+    "voucherOffer": "Get 100K voucher for your first order",
+    "registerNow": "Register Now"
   },
   "product": {
     "new": "New",
@@ -91,7 +99,15 @@
     "priceDesc": "Price: High to Low",
     "topRated": "Top Rated",
     "bestSeller": "Best Seller",
-    "showResults": "Showing {{count}} products"
+    "showResults": "Showing {{count}} products",
+    "hideFilter": "Hide Filters",
+    "showFilter": "Show Filters",
+    "priceUnder1M": "Under 1M",
+    "price1to5M": "1 - 5M",
+    "price5to10M": "5 - 10M",
+    "priceOver10M": "Over 10M",
+    "from": "Min",
+    "to": "Max"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -205,7 +221,49 @@
     "customers": "Customers",
     "quotes": "Quotes",
     "settings": "Settings",
-    "addProduct": "Add Product"
+    "addProduct": "Add Product",
+    "stats": {
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "customers": "Customers",
+      "products": "Products"
+    },
+    "revenueChart": "Revenue Chart",
+    "topProducts": "Top Products",
+    "sold": "sold",
+    "recentOrders": "Recent Orders",
+    "quoteRequests": "Quote Requests",
+    "pending": "pending",
+    "orderCode": "Order Code",
+    "customer": "Customer",
+    "total": "Total",
+    "status": "Status",
+    "columns": {
+      "image": "Image",
+      "name": "Name",
+      "sku": "SKU",
+      "price": "Price",
+      "stock": "Stock",
+      "category": "Category",
+      "rating": "Rating",
+      "status": "Status",
+      "action": "Actions",
+      "contact": "Contact",
+      "phone": "Phone",
+      "address": "Address",
+      "email": "Email",
+      "total": "Total",
+      "payment": "Payment",
+      "date": "Date",
+      "orderCode": "Order Code",
+      "customer": "Customer",
+      "description": "Description",
+      "supplier": "Supplier",
+      "quantity": "Quantity",
+      "note": "Note",
+      "totalSpent": "Total Spent",
+      "joinDate": "Join Date"
+    }
   },
   "footer": {
     "features": {
@@ -262,7 +320,16 @@
     "confirmDeleteCategory": "Are you sure you want to delete category \"{{name}}\"?",
     "enterEmail": "Please enter your email",
     "invalidEmail": "Invalid email address",
-    "subscribeSuccess": "Subscribed successfully!"
+    "subscribeSuccess": "Subscribed successfully!",
+    "addSupplier": "Add Supplier",
+    "editSupplier": "Edit Supplier",
+    "searchSupplier": "Search suppliers...",
+    "noSuppliers": "No suppliers found",
+    "supplierName": "Supplier Name",
+    "enterSupplierName": "Enter supplier name",
+    "contactPerson": "Contact Person",
+    "enterContactPerson": "Enter contact person",
+    "confirmDeleteSupplier": "Are you sure you want to delete supplier \"{{name}}\"?"
   },
   "about": {
     "title": "About VNVT Store",

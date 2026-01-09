@@ -1,19 +1,16 @@
+using MediatR;
 using VNVTStore.Application.Common;
+using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Application.Products.Queries;
 
-/// <summary>
-/// Query lấy danh sách Products với phân trang
-/// </summary>
 public record GetProductsQuery(
-    int PageIndex = 1,
-    int PageSize = 10,
+    int PageIndex = AppConstants.Paging.DefaultPageNumber,
+    int PageSize = AppConstants.Paging.DefaultPageSize,
     string? Search = null,
-    SortDTO? SortDTO = null
+    SortDTO? SortDTO = null,
+    string? CategoryCode = null
 ) : GetPagedQuery<ProductDto>(PageIndex, PageSize, Search, SortDTO);
 
-/// <summary>
-/// Query lấy Product theo Code
-/// </summary>
 public record GetProductByCodeQuery(string Code) : GetByCodeQuery<ProductDto>(Code);

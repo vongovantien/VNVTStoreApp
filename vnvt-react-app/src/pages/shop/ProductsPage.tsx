@@ -11,14 +11,18 @@ import {
   Star,
   Loader2,
   AlertCircle,
+  Search,
 } from 'lucide-react';
 import { ProductCard } from '@/components/common/ProductCard';
+import { ProductSkeleton } from '@/components/common/ProductSkeleton';
 import { Button, Badge } from '@/components/ui';
-import { useDebounce, useProducts } from '@/hooks';
-import { mockCategories } from '@/data/mockData';
+import { useDebounce, useProducts, useCategories } from '@/hooks';
+
+import type { CategoryDto } from '@/services/productService';
 
 // ============ Filter Sidebar Component ============
 interface FilterSidebarProps {
+  categories: CategoryDto[];
   selectedCategories: string[];
   onCategoryToggle: (id: string) => void;
   selectedBrands: string[];
@@ -35,6 +39,7 @@ interface FilterSidebarProps {
 }
 
 const FilterSidebar = memo(({
+  categories,
   selectedCategories,
   onCategoryToggle,
   selectedBrands,
@@ -52,14 +57,14 @@ const FilterSidebar = memo(({
   const { t } = useTranslation();
 
   const priceShortcuts = [
-    { label: 'Dưới 1 triệu', range: [0, 1000000] as [number, number] },
-    { label: '1 - 5 triệu', range: [1000000, 5000000] as [number, number] },
-    { label: '5 - 10 triệu', range: [5000000, 10000000] as [number, number] },
-    { label: 'Trên 10 triệu', range: [10000000, 100000000] as [number, number] },
+    { label: t('filter.priceUnder1M'), range: [0, 1000000] as [number, number] },
+    { label: t('filter.price1to5M'), range: [1000000, 5000000] as [number, number] },
+    { label: t('filter.price5to10M'), range: [5000000, 10000000] as [number, number] },
+    { label: t('filter.priceOver10M'), range: [10000000, 100000000] as [number, number] },
   ];
 
   return (
-    <aside className="w-72 bg-primary rounded-xl p-5 h-fit sticky top-24 border shadow-sm">
+    <aside className="w-80 bg-primary rounded-xl p-4 h-fit sticky top-24 border shadow-sm z-10 shrink-0">
       <div className="flex justify-between items-center mb-4 pb-3 border-b">
         <h3 className="flex items-center gap-2 font-semibold text-primary">
           <SlidersHorizontal size={18} />
@@ -70,6 +75,41 @@ const FilterSidebar = memo(({
             {t('filter.clearAll')}
           </button>
         )}
+      </div>
+
+      {/* Categories */}
+      <div className="mb-6">
+        <h4 className="text-sm font-semibold mb-3">{t('filter.category')}</h4>
+        <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+          {categories.map((cat) => (
+            <div
+              key={cat.code}
+              onClick={() => onCategoryToggle(cat.code)}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
+              <span
+                className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${selectedCategories.includes(cat.code) ? 'border-primary bg-accent-primary' : 'border-tertiary'
+                  }`}
+              >
+                {selectedCategories.includes(cat.code) && (
+                  <svg viewBox="0 0 12 9" className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 4L4.5 7.5L11 1" />
+                  </svg>
+                )}
+              </span>
+              <span className="flex-1 text-sm text-secondary group-hover:text-primary transition-colors">
+                {cat.name}
+              </span>
+              {/* Product count not available in API yet */}
+              {/* <span className="text-xs text-tertiary bg-secondary px-1.5 py-0.5 rounded">
+                {cat.productCount}
+              </span> */}
+            </div>
+          ))}
+          {categories.length === 0 && (
+             <div className="text-sm text-tertiary italic">Chưa có danh mục</div>
+          )}
+        </div>
       </div>
 
       {/* Price Type */}
@@ -94,55 +134,24 @@ const FilterSidebar = memo(({
         </div>
       </div>
 
-      {/* Categories */}
-      <div className="mb-6">
-        <h4 className="text-sm font-semibold mb-3">{t('filter.category')}</h4>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {mockCategories.map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => onCategoryToggle(cat.id)}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <span
-                className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${selectedCategories.includes(cat.id) ? 'border-primary bg-accent-primary' : 'border-tertiary'
-                  }`}
-              >
-                {selectedCategories.includes(cat.id) && (
-                  <svg viewBox="0 0 12 9" className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 4L4.5 7.5L11 1" />
-                  </svg>
-                )}
-              </span>
-              <span className="flex-1 text-sm text-secondary group-hover:text-primary transition-colors">
-                {cat.name}
-              </span>
-              <span className="text-xs text-tertiary bg-secondary px-1.5 py-0.5 rounded">
-                {cat.productCount}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Price Range */}
       <div className="mb-6">
         <h4 className="text-sm font-semibold mb-3">{t('filter.priceRange')}</h4>
         <div className="flex gap-2 mb-3">
           <input
             type="number"
-            placeholder="Từ"
+            placeholder={t('filter.from')}
             value={priceRange[0] || ''}
             onChange={(e) => onPriceRangeChange([Number(e.target.value) || 0, priceRange[1]])}
-            className="flex-1 px-3 py-2 border rounded-lg text-sm text-center focus:outline-none focus:border-primary"
+            className="flex-1 w-full min-w-0 px-2 py-2 border rounded-lg text-sm text-center focus:outline-none focus:border-primary"
           />
           <span className="self-center text-tertiary">-</span>
           <input
             type="number"
-            placeholder="Đến"
+            placeholder={t('filter.to')}
             value={priceRange[1] === 100000000 ? '' : priceRange[1]}
             onChange={(e) => onPriceRangeChange([priceRange[0], Number(e.target.value) || 100000000])}
-            className="flex-1 px-3 py-2 border rounded-lg text-sm text-center focus:outline-none focus:border-primary"
+            className="flex-1 w-full min-w-0 px-2 py-2 border rounded-lg text-sm text-center focus:outline-none focus:border-primary"
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -229,8 +238,10 @@ export const ProductsPage = () => {
   const pageSize = 12;
 
   // Filters state
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]); // Filter States
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    searchParams.get('category') ? [searchParams.get('category')!] : []
+  );
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [priceType, setPriceType] = useState<'all' | 'fixed' | 'contact'>('all');
@@ -254,6 +265,10 @@ export const ProductsPage = () => {
 
   // Fetch products from API
   const sortConfig = getSortConfig();
+  // Fetch Categories
+  const { data: categories = [] } = useCategories();
+
+  // Fetch Products
   const {
     data: productsData,
     isLoading,
@@ -265,6 +280,7 @@ export const ProductsPage = () => {
     search: debouncedSearch || undefined,
     sortField: sortConfig.field,
     sortDir: sortConfig.dir,
+    category: categorySlug,
   });
 
   // Get unique brands from fetched products
@@ -280,10 +296,7 @@ export const ProductsPage = () => {
     let products = [...(productsData?.products || [])];
 
     if (categorySlug) {
-      const category = mockCategories.find((c) => c.slug === categorySlug);
-      if (category) {
-        products = products.filter((p) => p.categoryId === category.id);
-      }
+      products = products.filter((p) => p.categoryId === categorySlug);
     }
 
     if (selectedCategories.length > 0) {
@@ -323,10 +336,28 @@ export const ProductsPage = () => {
 
   // Handlers
   const handleCategoryToggle = useCallback((id: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    );
-  }, []);
+    setSelectedCategories((prev) => {
+        const next = prev.includes(id)
+            ? prev.filter((c) => c !== id)
+            : [...prev, id];
+        
+        // Optional: Update URL to reflect single category selection (common pattern)
+        // If we want multi-select in URL, we'd join them. For now let's assume single or primary category in URL
+        if (next.length > 0) {
+            setSearchParams(params => {
+                params.set('category', next[next.length -1]); // Set the most recently selected
+                return params;
+            });
+        } else {
+             setSearchParams(params => {
+                params.delete('category');
+                return params;
+            });
+        }
+        return next;
+    });
+    setCurrentPage(1);
+  }, [setSearchParams]);
 
   const handleBrandToggle = useCallback((brand: string) => {
     setSelectedBrands((prev) =>
@@ -365,7 +396,7 @@ export const ProductsPage = () => {
             <>
               <ChevronRight size={14} className="text-tertiary" />
               <span className="text-primary font-medium">
-                {mockCategories.find((c) => c.slug === categorySlug)?.name}
+                {categories.find((c) => c.code === categorySlug)?.name || categorySlug}
               </span>
             </>
           )}
@@ -384,6 +415,7 @@ export const ProductsPage = () => {
                 className="hidden lg:block"
               >
                 <FilterSidebar
+                  categories={categories}
                   selectedCategories={selectedCategories}
                   onCategoryToggle={handleCategoryToggle}
                   selectedBrands={selectedBrands}
@@ -414,8 +446,29 @@ export const ProductsPage = () => {
                   leftIcon={<SlidersHorizontal size={18} />}
                   className="hidden lg:flex"
                 >
-                  {showFilters ? 'Ẩn bộ lọc' : 'Hiện bộ lọc'}
+                  {showFilters ? t('filter.hideFilter') : t('filter.showFilter')}
                 </Button>
+                
+                {/* Search Input */}
+                <div className="relative flex-1 max-w-xs">
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
+                  <input
+                    type="text"
+                    placeholder={t('common.search')}
+                    value={searchParams.get('search') || ''}
+                    onChange={(e) => {
+                      const newParams = new URLSearchParams(searchParams);
+                      if (e.target.value) {
+                        newParams.set('search', e.target.value);
+                      } else {
+                        newParams.delete('search');
+                      }
+                      setSearchParams(newParams);
+                    }}
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-secondary"
+                  />
+                </div>
+                
                 <span className="text-sm text-secondary">
                   {t('filter.showResults', { count: filteredProducts.length })}
                 </span>
@@ -463,7 +516,7 @@ export const ProductsPage = () => {
             {hasActiveFilters && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedCategories.map((catId) => {
-                  const cat = mockCategories.find((c) => c.id === catId);
+                  const cat = categories.find((c) => c.code === catId);
                   return (
                     <Badge
                       key={catId}
@@ -502,9 +555,17 @@ export const ProductsPage = () => {
 
             {/* Products Grid */}
             {isLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-accent" />
-                <span className="ml-3 text-secondary">Đang tải sản phẩm...</span>
+              <div
+                className={`grid gap-6 ${viewMode === 'list'
+                  ? 'grid-cols-1'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                  }`}
+              >
+                {Array.from({ length: pageSize }).map((_, i) => (
+                  <div key={i} className="h-[400px]">
+                    <ProductSkeleton />
+                  </div>
+                ))}
               </div>
             ) : isError ? (
               <div className="text-center py-16 bg-primary rounded-xl">

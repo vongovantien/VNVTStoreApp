@@ -1,15 +1,16 @@
 using MediatR;
 using VNVTStore.Application.Common;
+using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Application.Promotions.Queries;
 
 public record GetAllPromotionsQuery(
-    int PageIndex = 1,
-    int PageSize = 10,
+    int PageIndex = AppConstants.Paging.DefaultPageNumber,
+    int PageSize = AppConstants.Paging.DefaultPageSize,
     bool? IsActive = null
-) : IRequest<Result<PagedResult<PromotionDto>>>;
+) : GetPagedQuery<PromotionDto>(PageIndex, PageSize);
 
-public record GetActivePromotionsQuery() : IRequest<Result<IEnumerable<PromotionDto>>>;
+public record GetActivePromotionsQuery() : GetAllQuery<PromotionDto>;
 
-public record GetPromotionByCodeQuery(string PromotionCode) : IRequest<Result<PromotionDto>>;
+public record GetPromotionByCodeQuery(string PromotionCode) : GetByCodeQuery<PromotionDto>(PromotionCode);

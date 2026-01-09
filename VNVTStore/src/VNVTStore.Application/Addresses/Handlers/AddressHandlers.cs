@@ -6,158 +6,127 @@ using VNVTStore.Application.Addresses.Queries;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Domain.Entities;
+using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Application.Addresses.Handlers;
 
-public class AddressHandlers :
-    IRequestHandler<CreateAddressCommand, Result<AddressDto>>,
-    IRequestHandler<UpdateAddressCommand, Result<AddressDto>>,
-    IRequestHandler<DeleteAddressCommand, Result<bool>>,
-    IRequestHandler<SetDefaultAddressCommand, Result<bool>>,
-    IRequestHandler<GetUserAddressesQuery, Result<IEnumerable<AddressDto>>>,
-    IRequestHandler<GetAddressByCodeQuery, Result<AddressDto>>
+public class AddressHandlers : BaseHandler<TblAddress>,
+    IRequestHandler<CreateCommand<CreateAddressDto, AddressDto>, Result<AddressDto>>,
+    IRequestHandler<UpdateCommand<UpdateAddressDto, AddressDto>, Result<AddressDto>>,
+    IRequestHandler<DeleteCommand<TblAddress>, Result>,
+    IRequestHandler<SetDefaultAddressCommand, Result>,
+    IRequestHandler<GetAllQuery<AddressDto>, Result<IEnumerable<AddressDto>>>,
+    IRequestHandler<GetByCodeQuery<AddressDto>, Result<AddressDto>>
 {
-    private readonly IRepository<TblAddress> _addressRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUser;
 
     public AddressHandlers(
         IRepository<TblAddress> addressRepository,
+        ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper) : base(addressRepository, unitOfWork, mapper)
     {
-        _addressRepository = addressRepository;
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _currentUser = currentUser;
     }
 
-    public async Task<Result<AddressDto>> Handle(CreateAddressCommand request, CancellationToken cancellationToken)
+    public async Task<Result<AddressDto>> Handle(CreateCommand<CreateAddressDto, AddressDto> request, CancellationToken cancellationToken)
     {
         // If setting as default, reset others
-        if (request.IsDefault)
+        if (request.Dto.IsDefault)
         {
-            var existingAddresses = await _addressRepository.FindAllAsync(
-                a => a.UserCode == request.UserCode && a.IsDefault == true, cancellationToken);
-            foreach (var addr in existingAddresses)
-            {
-                addr.IsDefault = false;
-                _addressRepository.Update(addr);
-            }
+            await ResetOtherDefaultsInternal(_currentUser.UserCode!, null, cancellationToken);
         }
 
-        var address = new TblAddress
-        {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-            UserCode = request.UserCode,
-            AddressLine = request.AddressLine,
-            City = request.City,
-            State = request.State,
-            PostalCode = request.PostalCode,
-            Country = request.Country ?? "Vietnam",
-            IsDefault = request.IsDefault,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await _addressRepository.AddAsync(address, cancellationToken);
-        await _unitOfWork.CommitAsync(cancellationToken);
-
-        return Result.Success(_mapper.Map<AddressDto>(address));
+        return await CreateAsync<CreateAddressDto, AddressDto>(
+            request.Dto,
+            cancellationToken,
+            a => {
+                a.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
+                a.CreatedAt = DateTime.UtcNow;
+                if (string.IsNullOrEmpty(a.Country)) a.Country = "Vietnam";
+            });
     }
 
-    public async Task<Result<AddressDto>> Handle(UpdateAddressCommand request, CancellationToken cancellationToken)
+    public async Task<Result<AddressDto>> Handle(UpdateCommand<UpdateAddressDto, AddressDto> request, CancellationToken cancellationToken)
     {
-        var address = await _addressRepository.GetByCodeAsync(request.AddressCode, cancellationToken);
-
+        var address = await Repository.GetByCodeAsync(request.Code, cancellationToken);
         if (address == null)
-            return Result.Failure<AddressDto>(Error.NotFound("Address", request.AddressCode));
+            return Result.Failure<AddressDto>(Error.NotFound(MessageConstants.Address, request.Code));
 
-        if (address.UserCode != request.UserCode)
+        var userCode = _currentUser.UserCode;
+        if (address.UserCode != userCode)
             return Result.Failure<AddressDto>(Error.Forbidden("Cannot update another user's address"));
 
-        if (request.AddressLine != null) address.AddressLine = request.AddressLine;
-        if (request.City != null) address.City = request.City;
-        if (request.State != null) address.State = request.State;
-        if (request.PostalCode != null) address.PostalCode = request.PostalCode;
-        
-        if (request.IsDefault == true)
+        if (request.Dto.IsDefault == true)
         {
-            var existingAddresses = await _addressRepository.FindAllAsync(
-                a => a.UserCode == request.UserCode && a.IsDefault == true && a.Code != request.AddressCode, cancellationToken);
-            foreach (var addr in existingAddresses)
-            {
-                addr.IsDefault = false;
-                _addressRepository.Update(addr);
-            }
-            address.IsDefault = true;
+            await ResetOtherDefaultsInternal(userCode!, request.Code, cancellationToken);
         }
 
-        _addressRepository.Update(address);
-        await _unitOfWork.CommitAsync(cancellationToken);
-
-        return Result.Success(_mapper.Map<AddressDto>(address));
+        return await UpdateAsync<UpdateAddressDto, AddressDto>(
+            request.Code,
+            request.Dto,
+            MessageConstants.Address,
+            cancellationToken);
     }
 
-    public async Task<Result<bool>> Handle(DeleteAddressCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteCommand<TblAddress> request, CancellationToken cancellationToken)
     {
-        var address = await _addressRepository.GetByCodeAsync(request.AddressCode, cancellationToken);
-
+        var address = await Repository.GetByCodeAsync(request.Code, cancellationToken);
         if (address == null)
-            return Result.Failure<bool>(Error.NotFound("Address", request.AddressCode));
+            return Result.Failure(Error.NotFound(MessageConstants.Address, request.Code));
 
-        if (address.UserCode != request.UserCode)
-            return Result.Failure<bool>(Error.Forbidden("Cannot delete another user's address"));
+        var userCode = _currentUser.UserCode;
+        if (address.UserCode != userCode)
+            return Result.Failure(Error.Forbidden("Cannot delete another user's address"));
 
-        _addressRepository.Delete(address);
-        await _unitOfWork.CommitAsync(cancellationToken);
-
-        return Result.Success(true);
+        return await DeleteAsync(request.Code, MessageConstants.Address, cancellationToken, softDelete: false);
     }
 
-    public async Task<Result<bool>> Handle(SetDefaultAddressCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(SetDefaultAddressCommand request, CancellationToken cancellationToken)
     {
-        var address = await _addressRepository.GetByCodeAsync(request.AddressCode, cancellationToken);
-
+        var address = await Repository.GetByCodeAsync(request.Code, cancellationToken);
         if (address == null)
-            return Result.Failure<bool>(Error.NotFound("Address", request.AddressCode));
+            return Result.Failure(Error.NotFound(MessageConstants.Address, request.Code));
 
-        if (address.UserCode != request.UserCode)
-            return Result.Failure<bool>(Error.Forbidden("Cannot modify another user's address"));
+        if (address.UserCode != _currentUser.UserCode)
+            return Result.Failure(Error.Forbidden("Cannot modify another user's address"));
 
-        // Reset all other addresses
-        var existingAddresses = await _addressRepository.FindAllAsync(
-            a => a.UserCode == request.UserCode && a.IsDefault == true, cancellationToken);
-        foreach (var addr in existingAddresses)
-        {
-            addr.IsDefault = false;
-            _addressRepository.Update(addr);
-        }
+        await ResetOtherDefaultsInternal(_currentUser.UserCode!, request.Code, cancellationToken);
 
         address.IsDefault = true;
-        _addressRepository.Update(address);
-        await _unitOfWork.CommitAsync(cancellationToken);
+        Repository.Update(address);
+        await UnitOfWork.CommitAsync(cancellationToken);
 
-        return Result.Success(true);
+        return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<AddressDto>>> Handle(GetUserAddressesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<AddressDto>>> Handle(GetAllQuery<AddressDto> request, CancellationToken cancellationToken)
     {
-        var addresses = await _addressRepository.AsQueryable()
-            .Where(a => a.UserCode == request.UserCode)
+        var addresses = await Repository.AsQueryable()
+            .Where(a => a.UserCode == _currentUser.UserCode)
             .OrderByDescending(a => a.IsDefault)
             .ThenByDescending(a => a.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return Result.Success(_mapper.Map<IEnumerable<AddressDto>>(addresses));
+        return Result.Success(Mapper.Map<IEnumerable<AddressDto>>(addresses));
     }
 
-    public async Task<Result<AddressDto>> Handle(GetAddressByCodeQuery request, CancellationToken cancellationToken)
+    public async Task<Result<AddressDto>> Handle(GetByCodeQuery<AddressDto> request, CancellationToken cancellationToken)
     {
-        var address = await _addressRepository.GetByCodeAsync(request.AddressCode, cancellationToken);
+        return await GetByCodeAsync<AddressDto>(request.Code, MessageConstants.Address, cancellationToken);
+    }
 
-        if (address == null)
-            return Result.Failure<AddressDto>(Error.NotFound("Address", request.AddressCode));
-
-        return Result.Success(_mapper.Map<AddressDto>(address));
+    private async Task ResetOtherDefaultsInternal(string userCode, string? currentAddressCode, CancellationToken cancellationToken)
+    {
+        var existingAddresses = await Repository.FindAllAsync(
+            a => a.UserCode == userCode && a.IsDefault == true && (currentAddressCode == null || a.Code != currentAddressCode), 
+            cancellationToken);
+            
+        foreach (var addr in existingAddresses)
+        {
+            addr.IsDefault = false;
+            Repository.Update(addr);
+        }
     }
 }

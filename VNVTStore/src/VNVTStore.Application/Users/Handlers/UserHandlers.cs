@@ -39,7 +39,7 @@ public class UserHandlers :
         var user = await _userRepository.GetByCodeAsync(request.UserCode, cancellationToken);
         
         if (user == null)
-            return Result.Failure<UserDto>(Error.NotFound("User", request.UserCode));
+            return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.UserCode));
 
         return Result.Success(_mapper.Map<UserDto>(user));
     }
@@ -78,7 +78,7 @@ public class UserHandlers :
         var user = await _userRepository.GetByCodeAsync(request.UserCode, cancellationToken);
 
         if (user == null)
-            return Result.Failure<UserDto>(Error.NotFound("User", request.UserCode));
+            return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.UserCode));
 
         // Update fields if provided
         if (request.FullName != null) user.FullName = request.FullName;
@@ -89,7 +89,7 @@ public class UserHandlers :
             var existingEmail = await _userRepository.FindAsync(
                 u => u.Email == request.Email && u.Code != request.UserCode, cancellationToken);
             if (existingEmail != null)
-                return Result.Failure<UserDto>(Error.Conflict("Email already in use"));
+                return Result.Failure<UserDto>(Error.Conflict(MessageConstants.EmailInUse));
             user.Email = request.Email;
         }
 
@@ -105,11 +105,11 @@ public class UserHandlers :
         var user = await _userRepository.GetByCodeAsync(request.UserCode, cancellationToken);
 
         if (user == null)
-            return Result.Failure<bool>(Error.NotFound("User", request.UserCode));
+            return Result.Failure<bool>(Error.NotFound(MessageConstants.User, request.UserCode));
 
         // Verify current password
         if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
-            return Result.Failure<bool>(Error.Validation("Current password is incorrect"));
+            return Result.Failure<bool>(Error.Validation(MessageConstants.CurrentPasswordIncorrect));
 
         // Update password
         user.PasswordHash = _passwordHasher.Hash(request.NewPassword);

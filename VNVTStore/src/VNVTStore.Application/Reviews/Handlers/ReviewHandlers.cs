@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Reviews.Commands;
 using VNVTStore.Application.Reviews.Queries;
 using VNVTStore.Domain.Entities;
@@ -10,147 +11,164 @@ using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Application.Reviews.Handlers;
 
-public class ReviewHandlers :
-    IRequestHandler<CreateReviewCommand, Result<ReviewDto>>,
-    IRequestHandler<UpdateReviewCommand, Result<ReviewDto>>,
-    IRequestHandler<DeleteReviewCommand, Result<bool>>,
+public class ReviewHandlers : BaseHandler<TblReview>,
+    IRequestHandler<CreateCommand<CreateReviewDto, ReviewDto>, Result<ReviewDto>>,
+    IRequestHandler<UpdateCommand<UpdateReviewDto, ReviewDto>, Result<ReviewDto>>,
+    IRequestHandler<DeleteCommand<TblReview>, Result>,
     IRequestHandler<GetProductReviewsQuery, Result<PagedResult<ReviewDto>>>,
     IRequestHandler<GetUserReviewsQuery, Result<IEnumerable<ReviewDto>>>,
-    IRequestHandler<GetReviewByCodeQuery, Result<ReviewDto>>
+    IRequestHandler<GetByCodeQuery<ReviewDto>, Result<ReviewDto>>,
+    IRequestHandler<ApproveReviewCommand, Result>,
+    IRequestHandler<RejectReviewCommand, Result>,
+    IRequestHandler<GetPagedQuery<ReviewDto>, Result<PagedResult<ReviewDto>>>
 {
-    private readonly IRepository<TblReview> _reviewRepository;
     private readonly IRepository<TblOrderItem> _orderItemRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUser;
 
     public ReviewHandlers(
         IRepository<TblReview> reviewRepository,
         IRepository<TblOrderItem> orderItemRepository,
+        ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper) : base(reviewRepository, unitOfWork, mapper)
     {
-        _reviewRepository = reviewRepository;
         _orderItemRepository = orderItemRepository;
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _currentUser = currentUser;
     }
 
-    public async Task<Result<ReviewDto>> Handle(CreateReviewCommand request, CancellationToken cancellationToken)
+    public async Task<Result<ReviewDto>> Handle(CreateCommand<CreateReviewDto, ReviewDto> request, CancellationToken cancellationToken)
     {
         // Validate order item exists and belongs to user
         var orderItem = await _orderItemRepository.AsQueryable()
             .Include(oi => oi.OrderCodeNavigation)
-            .FirstOrDefaultAsync(oi => oi.Code == request.OrderItemCode, cancellationToken);
+            .FirstOrDefaultAsync(oi => oi.Code == request.Dto.OrderItemCode, cancellationToken);
 
         if (orderItem == null)
-            return Result.Failure<ReviewDto>(Error.NotFound("OrderItem", request.OrderItemCode));
+            return Result.Failure<ReviewDto>(Error.NotFound(MessageConstants.OrderItem, request.Dto.OrderItemCode));
 
-        if (orderItem.OrderCodeNavigation.UserCode != request.UserCode)
+        if (orderItem.OrderCodeNavigation.UserCode != request.Dto.UserCode)
             return Result.Failure<ReviewDto>(Error.Forbidden("Cannot review item from another user's order"));
 
         // Check if already reviewed
-        var existingReview = await _reviewRepository.FindAsync(
-            r => r.OrderItemCode == request.OrderItemCode && r.UserCode == request.UserCode,
+        var existingReview = await Repository.FindAsync(
+            r => r.OrderItemCode == request.Dto.OrderItemCode && r.UserCode == request.Dto.UserCode,
             cancellationToken);
 
         if (existingReview != null)
-            return Result.Failure<ReviewDto>(Error.Conflict("You have already reviewed this item"));
+            return Result.Failure<ReviewDto>(Error.Conflict(MessageConstants.ReviewAlreadyExists));
 
-        var review = new TblReview
-        {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-            UserCode = request.UserCode,
-            OrderItemCode = request.OrderItemCode,
-            Rating = request.Rating,
-            Comment = request.Content ?? request.Title, // Combine title and content into Comment
-            IsApproved = true, // Auto-approve for now
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await _reviewRepository.AddAsync(review, cancellationToken);
-        await _unitOfWork.CommitAsync(cancellationToken);
-
-        return Result.Success(_mapper.Map<ReviewDto>(review));
+        return await CreateAsync<CreateReviewDto, ReviewDto>(
+            request.Dto,
+            cancellationToken,
+            r => {
+                r.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
+                r.IsApproved = false; // Changed to false for moderation
+                r.CreatedAt = DateTime.UtcNow;
+            });
     }
 
-    public async Task<Result<ReviewDto>> Handle(UpdateReviewCommand request, CancellationToken cancellationToken)
+    public async Task<Result<ReviewDto>> Handle(UpdateCommand<UpdateReviewDto, ReviewDto> request, CancellationToken cancellationToken)
     {
-        var review = await _reviewRepository.GetByCodeAsync(request.ReviewCode, cancellationToken);
-
+        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
-            return Result.Failure<ReviewDto>(Error.NotFound("Review", request.ReviewCode));
+            return Result.Failure<ReviewDto>(Error.NotFound(MessageConstants.Review, request.Code));
 
-        if (review.UserCode != request.UserCode)
+        var userCode = _currentUser.UserCode;
+        if (review.UserCode != userCode)
             return Result.Failure<ReviewDto>(Error.Forbidden("Cannot update another user's review"));
 
-        if (request.Rating.HasValue) review.Rating = request.Rating.Value;
-        if (request.Content != null || request.Title != null) 
-            review.Comment = request.Content ?? request.Title;
-
-        _reviewRepository.Update(review);
-        await _unitOfWork.CommitAsync(cancellationToken);
-
-        return Result.Success(_mapper.Map<ReviewDto>(review));
+        return await UpdateAsync<UpdateReviewDto, ReviewDto>(
+            request.Code,
+            request.Dto,
+            MessageConstants.Review,
+            cancellationToken);
     }
 
-    public async Task<Result<bool>> Handle(DeleteReviewCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteCommand<TblReview> request, CancellationToken cancellationToken)
     {
-        var review = await _reviewRepository.GetByCodeAsync(request.ReviewCode, cancellationToken);
-
+        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
-            return Result.Failure<bool>(Error.NotFound("Review", request.ReviewCode));
+            return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
 
-        if (review.UserCode != request.UserCode)
-            return Result.Failure<bool>(Error.Forbidden("Cannot delete another user's review"));
+        var userCode = _currentUser.UserCode;
+        var isAdmin = _currentUser.IsAdmin;
 
-        _reviewRepository.Delete(review);
-        await _unitOfWork.CommitAsync(cancellationToken);
+        if (review.UserCode != userCode && !isAdmin)
+            return Result.Failure(Error.Forbidden("Cannot delete another user's review"));
 
-        return Result.Success(true);
+        return await DeleteAsync(request.Code, MessageConstants.Review, cancellationToken, softDelete: false);
     }
 
     public async Task<Result<PagedResult<ReviewDto>>> Handle(GetProductReviewsQuery request, CancellationToken cancellationToken)
     {
-        var query = _reviewRepository.AsQueryable()
-            .Include(r => r.UserCodeNavigation)
-            .Include(r => r.OrderItemCodeNavigation)
-            .Where(r => r.OrderItemCodeNavigation != null && 
-                        r.OrderItemCodeNavigation.ProductCode == request.ProductCode &&
-                        r.IsApproved == true);
-
-        var totalItems = await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .OrderByDescending(r => r.CreatedAt)
-            .Skip((request.PageIndex - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToListAsync(cancellationToken);
-
-        var dtos = _mapper.Map<List<ReviewDto>>(items);
-        return Result.Success(new PagedResult<ReviewDto>(dtos, totalItems, request.PageIndex, request.PageSize));
+        return await GetPagedAsync<ReviewDto>(
+            request.PageIndex,
+            request.PageSize,
+            cancellationToken,
+            predicate: r => r.OrderItemCodeNavigation != null && 
+                            r.OrderItemCodeNavigation.ProductCode == request.ProductCode &&
+                            r.IsApproved == true,
+            includes: q => q.Include(r => r.UserCodeNavigation).Include(r => r.OrderItemCodeNavigation),
+            orderBy: q => q.OrderByDescending(r => r.CreatedAt));
     }
 
     public async Task<Result<IEnumerable<ReviewDto>>> Handle(GetUserReviewsQuery request, CancellationToken cancellationToken)
     {
-        var reviews = await _reviewRepository.AsQueryable()
+        var reviews = await Repository.AsQueryable()
             .Where(r => r.UserCode == request.UserCode)
             .Include(r => r.OrderItemCodeNavigation)
             .ThenInclude(oi => oi!.ProductCodeNavigation)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return Result.Success(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
+        return Result.Success(Mapper.Map<IEnumerable<ReviewDto>>(reviews));
     }
 
-    public async Task<Result<ReviewDto>> Handle(GetReviewByCodeQuery request, CancellationToken cancellationToken)
+    public async Task<Result<ReviewDto>> Handle(GetByCodeQuery<ReviewDto> request, CancellationToken cancellationToken)
     {
-        var review = await _reviewRepository.AsQueryable()
-            .Include(r => r.UserCodeNavigation)
-            .FirstOrDefaultAsync(r => r.Code == request.ReviewCode, cancellationToken);
+        return await GetByCodeAsync<ReviewDto>(
+            request.Code,
+            MessageConstants.Review,
+            cancellationToken,
+            includes: q => q.Include(r => r.UserCodeNavigation));
+    }
 
+    public async Task<Result> Handle(ApproveReviewCommand request, CancellationToken cancellationToken)
+    {
+        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
-            return Result.Failure<ReviewDto>(Error.NotFound("Review", request.ReviewCode));
+             return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
 
-        return Result.Success(_mapper.Map<ReviewDto>(review));
+        review.IsApproved = true;
+        Repository.Update(review);
+        await UnitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> Handle(RejectReviewCommand request, CancellationToken cancellationToken)
+    {
+        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        if (review == null)
+             return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
+
+        review.IsApproved = false;
+        Repository.Update(review);
+        await UnitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
+    public async Task<Result<PagedResult<ReviewDto>>> Handle(GetPagedQuery<ReviewDto> request, CancellationToken cancellationToken)
+    {
+        return await GetPagedAsync<ReviewDto>(
+            request.PageIndex,
+            request.PageSize,
+            cancellationToken,
+            predicate: r => true, // Review GetAllReviewsQuery used IsApproved. Generic GetPagedQuery doesn't have it.
+            includes: q => q.Include(r => r.UserCodeNavigation)
+                             .Include(r => r.OrderItemCodeNavigation)
+                             .ThenInclude(oi => oi!.ProductCodeNavigation),
+            orderBy: q => q.OrderByDescending(r => r.CreatedAt));
     }
 }

@@ -13,6 +13,10 @@ public partial class TblCartItem
 
     public int Quantity { get; set; }
 
+    public string? Size { get; set; }
+
+    public string? Color { get; set; }
+
     public DateTime? AddedAt { get; set; }
 
     public virtual TblCart CartCodeNavigation { get; set; } = null!;

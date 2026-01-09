@@ -58,23 +58,26 @@ public class Error
     }
 
     public static Error NotFound(string entityName, object identifier) => 
-        new("NotFound", $"{entityName} with id/code '{identifier}' not found");
+        new("NotFound", MessageConstants.Get(MessageConstants.EntityNotFound, entityName, identifier));
     
-    public static Error NotFound(string message) => 
-        new("NotFound", message);
+    public static Error NotFound(string? message = null) => 
+        new("NotFound", message ?? MessageConstants.Get(MessageConstants.NotFound));
     
     public static Error Validation(string message) => 
         new("Validation", message);
     
-    public static Error Validation(string entityName, string message) => 
-        new("Validation", $"{entityName}: {message}");
+    public static Error Validation(string key, params object[] args) => 
+        new("Validation", MessageConstants.Get(key, args));
     
     public static Error Conflict(string message) => 
         new("Conflict", message);
+
+    public static Error Conflict(string key, params object[] args) => 
+        new("Conflict", MessageConstants.Get(key, args));
     
-    public static Error Unauthorized(string message = "Unauthorized") => 
-        new("Unauthorized", message);
+    public static Error Unauthorized(string? message = null) => 
+        new("Unauthorized", message ?? MessageConstants.Get(MessageConstants.Unauthorized));
     
-    public static Error Forbidden(string message = "Access denied") => 
-        new("Forbidden", message);
+    public static Error Forbidden(string? message = null) => 
+        new("Forbidden", message ?? MessageConstants.Get(MessageConstants.Forbidden));
 }

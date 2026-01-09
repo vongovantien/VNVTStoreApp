@@ -1,54 +1,33 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using VNVTStore.Application.Categories.Queries;
-using VNVTStore.Application.Categories.Commands;
+
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.API.Controllers.v1;
 
 [Route("api/v1/[controller]")]
 [ApiController]
-public class CategoriesController : ControllerBase
+public class CategoriesController : BaseApiController<CategoryDto, CreateCategoryDto, UpdateCategoryDto>
 {
-    private readonly IMediator _mediator;
-
-    public CategoriesController(IMediator mediator)
+    public CategoriesController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
-    [HttpPost("search")]
-    public async Task<ActionResult<Result<PagedResult<CategoryDto>>>> Search([FromBody] RequestDTO request)
-    {
-        var result = await _mediator.Send(new GetCategoriesQuery(request));
-        if (result.IsSuccess)
-        {
-            return Ok(result);
-        }
-        return BadRequest(result);
-    }
-    
-    [HttpGet]
-    public async Task<ActionResult<Result<PagedResult<CategoryDto>>>> GetAll()
-    {
-        var request = new RequestDTO { PageIndex = 1, PageSize = 1000 };
-        var result = await _mediator.Send(new GetCategoriesQuery(request));
-        if (result.IsSuccess)
-        {
-            return Ok(result);
-        }
-        return BadRequest(result);
-    }
+    protected override IRequest<Result<PagedResult<CategoryDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort)
+        => new GetPagedQuery<CategoryDto>(pageIndex, pageSize, search, sort);
 
-    [HttpPost]
-    public async Task<ActionResult<Result<CategoryDto>>> Create([FromBody] CategoryDto dto)
-    {
-        var result = await _mediator.Send(new CreateCategoryCommand(dto));
-        if (result.IsSuccess)
-        {
-            return Ok(result);
-        }
-        return BadRequest(result);
-    }
+    protected override IRequest<Result<CategoryDto>> CreateGetByCodeQuery(string code)
+        => new GetByCodeQuery<CategoryDto>(code);
+
+    protected override IRequest<Result<CategoryDto>> CreateCreateCommand(CreateCategoryDto dto)
+        => new CreateCommand<CreateCategoryDto, CategoryDto>(dto);
+
+    protected override IRequest<Result<CategoryDto>> CreateUpdateCommand(string code, UpdateCategoryDto dto)
+        => new UpdateCommand<UpdateCategoryDto, CategoryDto>(code, dto);
+
+    protected override IRequest<Result> CreateDeleteCommand(string code)
+        => new DeleteCommand<TblCategory>(code);
 }

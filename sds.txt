@@ -1,0 +1,33 @@
+-- NHÓM 1: THIẾT BỊ ĐIỆN (ELECTRICAL)
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_ELEC', 'Thiết bị Điện', NULL, 'Electrical Equipment', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_ELEC_WIRE', 'Dây & Cáp điện', 'CAT_ELEC', 'Wire & Cable', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_ELEC_CB', 'Thiết bị đóng cắt', 'CAT_ELEC', 'Circuit Breakers', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_ELEC_SW', 'Công tắc & Ổ cắm', 'CAT_ELEC', 'Switches & Sockets', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_ELEC_PIPE', 'Ống luồn & Vật tư điện', 'CAT_ELEC', 'Conduit & Accessories', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_ELEC_CABINET', 'Tủ điện & Phụ kiện', 'CAT_ELEC', 'Electric Cabinets', TRUE);
+-- NHÓM 2: VẬT TƯ NƯỚC & KIM KHÍ (PLUMBING & HARDWARE)
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_PLUMB', 'Vật tư Nước & Kim khí', NULL, 'Plumbing & Hardware', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_PLUMB_PIPE', 'Hệ thống ống nước', 'CAT_PLUMB', 'Water Pipes', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_PLUMB_FITTING', 'Phụ kiện đường ống', 'CAT_PLUMB', 'Pipe Fittings', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_PLUMB_HARDWARE', 'Kim khí & Ngũ kim', 'CAT_PLUMB', 'Hardware', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_PLUMB_GLUE', 'Keo & Chất tẩy rửa', 'CAT_PLUMB', 'Glues & Cleaners', TRUE);
+-- NHÓM 3: THIẾT BỊ CHIẾU SÁNG (LIGHTING)
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_LIGHT', 'Thiết bị Chiếu sáng', NULL, 'Lighting', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_LIGHT_HOME', 'Chiếu sáng dân dụng', 'CAT_LIGHT', 'Home Lighting', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_LIGHT_DECOR', 'Chiếu sáng trang trí', 'CAT_LIGHT', 'Decorative Lighting', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_LIGHT_OUT', 'Chiếu sáng ngoại thất', 'CAT_LIGHT', 'Outdoor Lighting', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_LIGHT_CTRL', 'Thiết bị điều khiển', 'CAT_LIGHT', 'Lighting Control', TRUE);
+-- NHÓM 4: THIẾT BỊ VỆ SINH & NHÀ BẾP (BATHROOM & KITCHEN)
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_KITCHEN', 'Thiết bị Vệ sinh & Nhà bếp', NULL, 'Bathroom & Kitchen', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_KITCHEN_BATH', 'Phòng tắm', 'CAT_KITCHEN', 'Bathroom', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_KITCHEN_KIT', 'Nhà bếp', 'CAT_KITCHEN', 'Kitchen', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_KITCHEN_HEATER', 'Bình nóng lạnh', 'CAT_KITCHEN', 'Water Heaters', TRUE);
+-- NHÓM 5: THIẾT BỊ GIA DỤNG (HOME APPLIANCES)
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_HOME', 'Thiết bị Gia dụng', NULL, 'Home Appliances', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_HOME_COOL', 'Làm mát & Thông gió', 'CAT_HOME', 'Cooling & Ventilation', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_HOME_SMALL', 'Điện gia dụng nhỏ', 'CAT_HOME', 'Small Appliances', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_HOME_TOOL', 'Máy bơm & Máy công cụ', 'CAT_HOME', 'Pumps & Tools', TRUE);
+-- NHÓM 6: NHÀ THÔNG MINH (SMART HOME)
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_SMART', 'Nhà thông minh', NULL, 'Smart Home', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_SMART_CTRL', 'Điều khiển thông minh', 'CAT_SMART', 'Smart Control', TRUE);
+INSERT INTO "TblCategory" ("Code", "Name", "ParentCode", "Description", "IsActive") VALUES ('CAT_SMART_SEC', 'An ninh', 'CAT_SMART', 'Security', TRUE);

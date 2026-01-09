@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRouter } from './router';
+import { ToastContainer } from '@/components/ui/Toast';
 import './config/i18n';
-import './index.css';
 
 // Create query client with caching config
 const queryClient = new QueryClient({
@@ -19,6 +19,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppRouter />
+      <ToastContainer />
     </QueryClientProvider>
   );
 }

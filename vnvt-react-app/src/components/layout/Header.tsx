@@ -1,4 +1,5 @@
-import { memo, useState } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,11 +22,12 @@ import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui';
 import { useCartStore, useWishlistStore, useUIStore, useCompareStore } from '@/store';
 import { useClickOutside } from '@/hooks';
-import { mockCategories } from '@/data/mockData';
+import { useCategories } from '@/hooks/useProducts';
 
 export const Header = memo(() => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const { data: categories = [] } = useCategories(); // Fetch categories
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategories, setShowCategories] = useState(false);
@@ -35,12 +37,34 @@ export const Header = memo(() => {
 
   const categoriesRef = useClickOutside<HTMLDivElement>(() => setShowCategories(false));
   const userMenuRef = useClickOutside<HTMLDivElement>(() => setShowUserMenu(false));
-  const langMenuRef = useClickOutside<HTMLDivElement>(() => setShowLangMenu(false));
+  // const langMenuRef = useClickOutside<HTMLDivElement>(() => setShowLangMenu(false)); // Temporarily removed
+  const langMenuRef = useRef<HTMLDivElement>(null); // Use simple ref for button
+  const langDropdownRef = useRef<HTMLDivElement>(null); // Ref for dropdown portal
 
   const cartCount = useCartStore((state) => state.getItemCount());
   const wishlistCount = useWishlistStore((state) => state.items.length);
   const compareCount = useCompareStore((state) => state.items.length);
   const { theme, toggleTheme, setCartOpen } = useUIStore();
+
+  // Manual click outside handler for language menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      // Check if click is outside both the button and the dropdown
+      const isOutsideButton = langMenuRef.current && !langMenuRef.current.contains(target);
+      const isOutsideDropdown = langDropdownRef.current && !langDropdownRef.current.contains(target);
+      
+      if (isOutsideButton && isOutsideDropdown) {
+        setShowLangMenu(false);
+      }
+    };
+    if (showLangMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLangMenu]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,41 +138,54 @@ export const Header = memo(() => {
           {/* Actions */}
           <div className="flex items-center gap-1">
             {/* Language Switcher */}
+            {/* Language Switcher */}
             <div className="relative" ref={langMenuRef}>
-              <Button variant="ghost" size="sm" onClick={() => setShowLangMenu(!showLangMenu)}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowLangMenu(!showLangMenu);
+                }}
+              >
                 <Globe size={20} />
-                <span className="text-xs ml-1 uppercase">{i18n.language}</span>
+                <span className="text-xs ml-1 uppercase">{(i18n.language || 'vi').substring(0, 2)}</span>
               </Button>
-              <AnimatePresence>
-                {showLangMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full right-0 mt-2 bg-primary rounded-lg shadow-xl border p-1 min-w-[120px] z-50"
-                  >
-                    <button
-                      onClick={() => changeLanguage('vi')}
-                      className={cn(
-                        'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                        i18n.language === 'vi' ? 'bg-primary/10 text-primary' : 'hover:bg-secondary'
-                      )}
-                    >
-                      🇻🇳 Tiếng Việt
-                    </button>
-                    <button
-                      onClick={() => changeLanguage('en')}
-                      className={cn(
-                        'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                        i18n.language === 'en' ? 'bg-primary/10 text-primary' : 'hover:bg-secondary'
-                      )}
-                    >
-                      🇺🇸 English
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
+            {showLangMenu && createPortal(
+              <div
+                ref={langDropdownRef}
+                className="fixed bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-1 min-w-[140px] z-[9999]"
+                style={{
+                  top: langMenuRef.current ? langMenuRef.current.getBoundingClientRect().bottom + 8 : 0,
+                  left: langMenuRef.current ? langMenuRef.current.getBoundingClientRect().left : 0,
+                }}
+              >
+                <button
+                  onClick={() => changeLanguage('vi')}
+                  className={cn(
+                    'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
+                    (i18n.language || 'vi').startsWith('vi') 
+                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
+                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                  )}
+                >
+                  🇻🇳 Tiếng Việt
+                </button>
+                <button
+                  onClick={() => changeLanguage('en')}
+                  className={cn(
+                    'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
+                    (i18n.language || 'en').startsWith('en') 
+                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
+                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                  )}
+                >
+                  🇺🇸 English
+                </button>
+              </div>,
+              document.body
+            )}
 
             {/* Theme Toggle */}
             <Button variant="ghost" size="sm" onClick={toggleTheme}>
@@ -244,29 +281,32 @@ export const Header = memo(() => {
             </Button>
             <AnimatePresence>
               {showCategories && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-2 min-w-[280px] z-50"
-                >
-                  {mockCategories.map((category) => (
-                    <Link
-                      key={category.id}
-                      to={`/products?category=${category.slug}`}
-                      onClick={() => setShowCategories(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-secondary rounded-lg transition-colors"
-                    >
-                      {category.image && (
-                        <img src={category.image} alt={category.name} className="w-10 h-10 object-cover rounded-lg" />
-                      )}
-                      <span className="flex-1 font-medium">{category.name}</span>
-                      <span className="text-xs text-tertiary bg-secondary px-2 py-0.5 rounded-full">
-                        {category.productCount}
-                      </span>
-                    </Link>
-                  ))}
-                </motion.div>
+                  <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 min-w-[800px] z-50 grid grid-cols-3 gap-6">
+                    {categories.filter(c => !c.parentCode).map((parent) => (
+                      <div key={parent.code} className="space-y-3">
+                        <Link 
+                           to={`/products?category=${parent.code}`}
+                           onClick={() => setShowCategories(false)}
+                           className="font-bold text-base hover:text-indigo-600 block"
+                        >
+                          {parent.name}
+                        </Link>
+                        <ul className="space-y-2">
+                          {categories.filter(c => c.parentCode === parent.code).map((child) => (
+                            <li key={child.code}>
+                              <Link
+                                to={`/products?category=${child.code}`}
+                                onClick={() => setShowCategories(false)}
+                                className="text-sm text-secondary hover:text-primary block transition-colors"
+                              >
+                                {child.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
               )}
             </AnimatePresence>
           </div>
@@ -370,12 +410,12 @@ export const Header = memo(() => {
                   <h3 className="text-xs font-semibold text-tertiary uppercase mb-2 px-4">
                     {t('common.categories')}
                   </h3>
-                  {mockCategories.map((category) => (
+                  {categories.map((category) => (
                     <Link
-                      key={category.id}
-                      to={`/products?category=${category.slug}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block px-4 py-2 text-secondary hover:text-primary transition-colors"
+                      key={category.code}
+                      to={`/products?category=${category.code}`}
+                      className="block px-4 py-2 hover:bg-secondary/50 transition-colors rounded-lg"
+                      onClick={() => setShowCategories(false)}
                     >
                       {category.name}
                     </Link>

@@ -1,7 +1,7 @@
 /**
- * Product Service
- * Uses only baseService CRUD methods
- */
+* Product Service
+* Uses only baseService CRUD methods
+*/
 
 import { createCrudService, API_ENDPOINTS } from './baseService';
 
@@ -51,12 +51,14 @@ export interface CategoryDto {
     name: string;
     description?: string;
     imageUrl?: string;
+    parentCode?: string;
     isActive?: boolean;
 }
 
 export interface CreateCategoryRequest {
     name: string;
     description?: string;
+    parentCode?: string;
 }
 
 export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {

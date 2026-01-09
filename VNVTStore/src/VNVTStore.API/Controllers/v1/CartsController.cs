@@ -7,80 +7,57 @@ using VNVTStore.Application.Carts.Queries;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
-using System.Security.Claims;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[ApiController]
-[ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
-public class CartsController : ControllerBase
+public class CartsController : BaseApiController
 {
-    private readonly IMediator _mediator;
-    private readonly ICurrentUser _currentUser; // We need this interface to get Current User Code safely
+    private readonly ICurrentUser _currentUser;
 
-    public CartsController(IMediator mediator, ICurrentUser currentUser)
+    public CartsController(IMediator mediator, ICurrentUser currentUser) : base(mediator)
     {
-        _mediator = mediator;
         _currentUser = currentUser;
     }
 
-    // Helper to get UserCode
     private string GetUserCode()
     {
-        // If ICurrentUser handles it:
         return _currentUser.UserCode ?? throw new UnauthorizedAccessException();
     }
 
     [HttpGet]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<CartDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMyCart()
+    public async Task<IActionResult> GetCart()
     {
-        var result = await _mediator.Send(new GetMyCartQuery(GetUserCode()));
-        return Ok(ApiResponse<CartDto>.Ok(result.Value!, "Cart retrieved successfully"));
+        var result = await Mediator.Send(new GetCartQuery(GetUserCode()));
+        return HandleResult(result, MessageConstants.Get(MessageConstants.CartRetrieved));
     }
 
-    [HttpPost]
+    [HttpPost("items")]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<CartDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> AddToCart([FromBody] AddToCartDto dto)
+    public async Task<IActionResult> AddItem([FromBody] AddCartItemDto dto)
     {
-        var command = new AddToCartCommand(GetUserCode(), dto.ProductCode, dto.Quantity);
-        var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<string>.Fail(result.Error!.Message));
-
-        return Ok(ApiResponse<CartDto>.Ok(result.Value!, "Item added to cart"));
+        var result = await Mediator.Send(new AddToCartCommand(GetUserCode(), dto.ProductCode, dto.Quantity, dto.Size, dto.Color));
+        return HandleResult(result, MessageConstants.Get(MessageConstants.CartAdded));
     }
 
-    [HttpPut]
+    [HttpPut("items/{itemCode}")]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<CartDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemDto dto)
+    public async Task<IActionResult> UpdateItem(string itemCode, [FromBody] UpdateCartItemDto dto)
     {
-        var command = new UpdateCartItemCommand(GetUserCode(), dto.ProductCode, dto.Quantity);
-        var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<string>.Fail(result.Error!.Message));
-
-        return Ok(ApiResponse<CartDto>.Ok(result.Value!, "Cart updated"));
+        var result = await Mediator.Send(new UpdateCartItemCommand(GetUserCode(), itemCode, dto.Quantity));
+        return HandleResult(result, MessageConstants.Get(MessageConstants.CartUpdated));
     }
 
-    [HttpDelete("{productCode}")]
+    [HttpDelete("items/{itemCode}")]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<CartDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> RemoveFromCart(string productCode)
+    public async Task<IActionResult> RemoveItem(string itemCode)
     {
-        var command = new RemoveFromCartCommand(GetUserCode(), productCode);
-        var result = await _mediator.Send(command);
-        
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<string>.Fail(result.Error!.Message));
-            
-        return Ok(ApiResponse<CartDto>.Ok(result.Value!, "Item removed from cart"));
+        var result = await Mediator.Send(new RemoveFromCartCommand(GetUserCode(), itemCode));
+        return HandleResult(result, MessageConstants.Get(MessageConstants.CartRemoved));
     }
 
     [HttpDelete]
@@ -88,8 +65,7 @@ public class CartsController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ClearCart()
     {
-        var command = new ClearCartCommand(GetUserCode());
-        await _mediator.Send(command);
-        return Ok(ApiResponse<bool>.Ok(true, "Cart cleared"));
+        var result = await Mediator.Send(new ClearCartCommand(GetUserCode()));
+        return HandleDelete(result);
     }
 }

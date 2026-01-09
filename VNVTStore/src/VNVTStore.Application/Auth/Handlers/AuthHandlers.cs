@@ -34,12 +34,12 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
         // Check if username exists
         var existingUser = await _repository.FindAsync(u => u.Username == request.Username, cancellationToken);
         if (existingUser != null)
-            return Result.Failure<UserDto>(Error.Conflict("Username already exists"));
+            return Result.Failure<UserDto>(Error.Conflict(MessageConstants.UsernameExists));
 
         // Check if email exists
         existingUser = await _repository.FindAsync(u => u.Email == request.Email, cancellationToken);
         if (existingUser != null)
-            return Result.Failure<UserDto>(Error.Conflict("Email already exists"));
+            return Result.Failure<UserDto>(Error.Conflict(MessageConstants.EmailInUse));
 
         var user = new TblUser
         {
@@ -82,12 +82,11 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
     {
         var user = await _repository.FindAsync(u => u.Username == request.Username || u.Email == request.Username, cancellationToken);
         
-        if (user == null)
-            return Result.Failure<AuthResponseDto>(Error.Validation("Invalid username or password"));
-
-        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
-            return Result.Failure<AuthResponseDto>(Error.Validation("Invalid username or password"));
-
+        if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        {
+            return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
+        }
+        
         var token = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role);
 
         return Result.Success(new AuthResponseDto

@@ -24,7 +24,7 @@ export const CheckoutPage = () => {
 
   const [formData, setFormData] = useState({
     fullName: user?.fullName || '',
-    phone: user?.phoneNumber || '',
+    phone: user?.phone || '',
     email: user?.email || '',
     address: '',
     city: '',
@@ -53,7 +53,7 @@ export const CheckoutPage = () => {
             paymentMethod: paymentMethod
         };
 
-        const res = await orderService.createOrder(orderData);
+        const res = await orderService.create(orderData);
         if (res.success) {
             // Cart is cleared on backend, sync frontend
             await fetchCart();

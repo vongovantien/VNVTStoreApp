@@ -42,6 +42,7 @@ const AdminCategories = lazy(() => import('@/pages/admin/CategoriesPage'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/SuppliersPage'));
 
 // Error pages
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Router configuration
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <ShopLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,
@@ -136,6 +138,30 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageLoader />}>
             <ContactPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'about',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <AboutPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'support',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <SupportPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'tracking',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <TrackingPage />
           </Suspense>
         ),
       },

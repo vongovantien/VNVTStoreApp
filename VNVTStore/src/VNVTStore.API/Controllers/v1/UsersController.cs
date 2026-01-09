@@ -1,22 +1,19 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VNVTStore.Application.Common;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Users.Commands;
 using VNVTStore.Application.Users.Queries;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[ApiController]
-[Route("api/v1/[controller]")]
-public class UsersController : ControllerBase
+public class UsersController : BaseApiController
 {
-    private readonly IMediator _mediator;
     private readonly ICurrentUser _currentUser;
 
-    public UsersController(IMediator mediator, ICurrentUser currentUser)
+    public UsersController(IMediator mediator, ICurrentUser currentUser) : base(mediator)
     {
-        _mediator = mediator;
         _currentUser = currentUser;
     }
 
@@ -28,9 +25,8 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetProfile()
     {
         var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await _mediator.Send(new GetUserProfileQuery(userCode));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetUserProfileQuery(userCode));
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -41,11 +37,10 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await _mediator.Send(new UpdateProfileCommand(
+        var result = await Mediator.Send(new UpdateProfileCommand(
             userCode, request.FullName, request.Phone, request.Email));
         
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        return HandleResult(result, MessageConstants.Get(MessageConstants.ProfileUpdated));
     }
 
     /// <summary>
@@ -56,11 +51,10 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await _mediator.Send(new ChangePasswordCommand(
+        var result = await Mediator.Send(new ChangePasswordCommand(
             userCode, request.CurrentPassword, request.NewPassword));
         
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(new { message = "Password changed successfully" });
+        return HandleResult(result, MessageConstants.Get(MessageConstants.PasswordChanged));
     }
 
     /// <summary>
@@ -74,9 +68,8 @@ public class UsersController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] string? role = null)
     {
-        var result = await _mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, role));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, role));
+        return HandleResult(result);
     }
 }
 

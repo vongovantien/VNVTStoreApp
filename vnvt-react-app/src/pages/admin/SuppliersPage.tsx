@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Building2, Phone, Mail, Loader2, AlertCircle, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Building2, Phone, Mail, Loader2, AlertCircle, Search, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, Input, ConfirmDialog, Pagination } from '@/components/ui';
 import { useToast } from '@/store';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -22,8 +22,8 @@ export const SuppliersPage = () => {
   // Fetch suppliers
   const { data: suppliersData, isLoading, isError, isFetching } = useQuery({
     queryKey: ['suppliers'],
-    queryFn: () => supplierService.getAllSuppliers(),
-    select: (response) => response.data || [],
+    queryFn: () => supplierService.getAll(),
+    select: (response) => response.data?.items || [],
   });
 
   const suppliers = suppliersData || [];
@@ -63,19 +63,19 @@ export const SuppliersPage = () => {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: Partial<Supplier>) => supplierService.createSupplier(data as any),
+    mutationFn: (data: Partial<Supplier>) => supplierService.create(data as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Tạo nhà cung cấp thành công!');
       setIsFormOpen(false);
       resetForm();
     },
-    onError: () => toast.error('Không thể tạo nhà cung cấp'),
+    onError: (error: Error) => toast.error(error.message || 'Không thể tạo nhà cung cấp'),
   });
 
   const updateMutation = useMutation({
     mutationFn: (data: { code: string; payload: Partial<Supplier> }) =>
-      supplierService.updateSupplier(data.code, data.payload as any),
+      supplierService.update(data.code, data.payload as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Cập nhật nhà cung cấp thành công!');
@@ -83,17 +83,17 @@ export const SuppliersPage = () => {
       setEditingSupplier(null);
       resetForm();
     },
-    onError: () => toast.error('Không thể cập nhật nhà cung cấp'),
+    onError: (error: Error) => toast.error(error.message || 'Không thể cập nhật nhà cung cấp'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (code: string) => supplierService.deleteSupplier(code),
+    mutationFn: (code: string) => supplierService.delete(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success('Xóa nhà cung cấp thành công!');
       setSupplierToDelete(null);
     },
-    onError: () => toast.error('Không thể xóa nhà cung cấp'),
+    onError: (error: Error) => toast.error(error.message || 'Không thể xóa nhà cung cấp'),
   });
 
   const resetForm = () => {
@@ -156,21 +156,36 @@ export const SuppliersPage = () => {
   const showError = isError && !isLoading;
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
+  // Refresh handler
+  const handleRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+  }, [queryClient]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">{t('admin.suppliers') || 'Nhà cung cấp'}</h1>
-        <Button leftIcon={<Plus size={20} />} onClick={openCreateModal}>
-          Thêm nhà cung cấp
-        </Button>
+        <h1 className="text-2xl font-bold">{t('admin.suppliers')}</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            leftIcon={<RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />}
+          >
+            {t('common.refresh') || 'Làm mới'}
+          </Button>
+          <Button leftIcon={<Plus size={20} />} onClick={openCreateModal}>
+            {t('messages.addSupplier')}
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
       <div className="bg-primary rounded-xl p-4 border">
         <div className="max-w-md">
           <Input
-            placeholder="Tìm kiếm nhà cung cấp..."
+            placeholder={t('messages.searchSupplier')}
             leftIcon={<Search size={18} />}
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -185,7 +200,7 @@ export const SuppliersPage = () => {
           <div className="absolute inset-0 bg-primary/70 flex items-center justify-center z-10">
             <div className="flex items-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-              <span className="text-secondary text-sm">Đang tải...</span>
+              <span className="text-secondary text-sm">{t('common.loading')}</span>
             </div>
           </div>
         )}
@@ -204,12 +219,12 @@ export const SuppliersPage = () => {
           <table className="w-full min-w-[800px]">
             <thead className="bg-secondary border-b">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Tên</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Người liên hệ</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Email</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Điện thoại</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">Status</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">Thao tác</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.name')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.contact')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.email')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.phone')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.status')}</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -217,7 +232,7 @@ export const SuppliersPage = () => {
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-secondary">
                     <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>Chưa có nhà cung cấp nào</p>
+                    <p>{t('messages.noSuppliers')}</p>
                   </td>
                 </tr>
               ) : (
@@ -255,7 +270,7 @@ export const SuppliersPage = () => {
                     </td>
                     <td className="px-4 py-4 text-center">
                       <Badge color={supplier.isActive ? 'success' : 'secondary'} size="sm" variant="outline">
-                        {supplier.isActive ? 'Active' : 'Inactive'}
+                        {supplier.isActive ? t('common.status.active') : t('common.status.inactive')}
                       </Badge>
                     </td>
                     <td className="px-4 py-4 text-right">
@@ -299,33 +314,33 @@ export const SuppliersPage = () => {
       <Modal
         isOpen={isFormOpen}
         onClose={() => { setIsFormOpen(false); setEditingSupplier(null); resetForm(); }}
-        title={editingSupplier ? 'Sửa nhà cung cấp' : 'Thêm nhà cung cấp mới'}
+        title={editingSupplier ? t('messages.editSupplier') : t('messages.addSupplier')}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Tên nhà cung cấp *"
-              placeholder="Nhập tên"
+              label={t('messages.supplierName') + " *"}
+              placeholder={t('messages.enterSupplierName')}
               value={formData.name}
               onChange={(e) => updateFormField('name', e.target.value)}
               required
             />
             <Input
-              label="Người liên hệ"
-              placeholder="Nhập tên người liên hệ"
+              label={t('messages.contactPerson')}
+              placeholder={t('messages.enterContactPerson')}
               value={formData.contactPerson}
               onChange={(e) => updateFormField('contactPerson', e.target.value)}
             />
             <Input
               label="Email"
               type="email"
-              placeholder="email@example.com"
+              placeholder={t('footer.emailPlaceholder')}
               value={formData.email}
               onChange={(e) => updateFormField('email', e.target.value)}
             />
             <Input
-              label="Số điện thoại"
+              label={t('admin.columns.phone')}
               placeholder="0123 456 789"
               value={formData.phone}
               onChange={(e) => updateFormField('phone', e.target.value)}
@@ -337,7 +352,7 @@ export const SuppliersPage = () => {
               onChange={(e) => updateFormField('taxCode', e.target.value)}
             />
             <Input
-              label="Địa chỉ"
+              label={t('admin.columns.address')}
               placeholder="Nhập địa chỉ"
               value={formData.address}
               onChange={(e) => updateFormField('address', e.target.value)}
@@ -356,7 +371,7 @@ export const SuppliersPage = () => {
             />
           </div>
           <Input
-            label="Ghi chú"
+            label={t('admin.columns.note')}
             placeholder="Ghi chú (tùy chọn)"
             value={formData.notes}
             onChange={(e) => updateFormField('notes', e.target.value)}
@@ -367,10 +382,10 @@ export const SuppliersPage = () => {
               variant="outline"
               onClick={() => { setIsFormOpen(false); setEditingSupplier(null); resetForm(); }}
             >
-              Hủy
+              {t('common.cancel')}
             </Button>
             <Button type="submit" isLoading={isSubmitting} disabled={!formData.name?.trim()}>
-              {editingSupplier ? 'Cập nhật' : 'Tạo mới'}
+              {editingSupplier ? t('messages.update') : t('messages.create')}
             </Button>
           </div>
         </form>
@@ -381,13 +396,13 @@ export const SuppliersPage = () => {
         isOpen={!!supplierToDelete}
         onClose={() => setSupplierToDelete(null)}
         onConfirm={handleDelete}
-        title="Xác nhận xóa"
+        title={t('messages.confirmDelete')}
         message={
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Bạn có chắc chắn muốn xóa nhà cung cấp <strong className="text-gray-900 dark:text-white">"{supplierToDelete?.name}"</strong>?
+             {t('messages.confirmDeleteSupplier', { name: supplierToDelete?.name })}
           </p>
         }
-        confirmText="Xóa"
+        confirmText={t('messages.delete')}
         variant="danger"
         isLoading={deleteMutation.isPending}
       />

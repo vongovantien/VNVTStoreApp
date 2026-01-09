@@ -1,19 +1,19 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using VNVTStore.Application.Common;
 using VNVTStore.Application.Coupons.Commands;
 using VNVTStore.Application.Coupons.Queries;
+using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[ApiController]
 [Route("api/v1/[controller]")]
-public class CouponsController : ControllerBase
+[ApiController]
+public class CouponsController : BaseApiController<CouponDto, CreateCouponDto, CouponDto>
 {
-    private readonly IMediator _mediator;
-
-    public CouponsController(IMediator mediator)
+    public CouponsController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     /// <summary>
@@ -22,21 +22,31 @@ public class CouponsController : ControllerBase
     [HttpPost("validate")]
     public async Task<IActionResult> ValidateCoupon([FromBody] ValidateCouponRequest request)
     {
-        var result = await _mediator.Send(new ValidateCouponCommand(request.CouponCode, request.OrderAmount));
-        if (result.IsFailure) return BadRequest(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new ValidateCouponCommand(request.CouponCode, request.OrderAmount));
+        return HandleResult(result);
     }
 
-    /// <summary>
-    /// Get coupon details by code
-    /// </summary>
-    [HttpGet("{code}")]
-    public async Task<IActionResult> GetCoupon(string code)
+    [HttpGet]
+    public async Task<IActionResult> GetAllCoupons([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _mediator.Send(new GetCouponByCodeQuery(code));
-        if (result.IsFailure) return NotFound(result.Error);
-        return Ok(result.Value);
+        var result = await Mediator.Send(new GetAllCouponsQuery(pageIndex, pageSize));
+        return HandleResult(result);
     }
+
+    protected override IRequest<Result<PagedResult<CouponDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort)
+        => new GetPagedQuery<CouponDto>(pageIndex, pageSize, search, sort);
+
+    protected override IRequest<Result<CouponDto>> CreateGetByCodeQuery(string code)
+        => new GetByCodeQuery<CouponDto>(code);
+
+    protected override IRequest<Result<CouponDto>> CreateCreateCommand(CreateCouponDto dto)
+        => new CreateCommand<CreateCouponDto, CouponDto>(dto);
+
+    protected override IRequest<Result<CouponDto>> CreateUpdateCommand(string code, CouponDto dto)
+        => throw new NotImplementedException("Coupons do not support update.");
+
+    protected override IRequest<Result> CreateDeleteCommand(string code)
+        => new DeleteCommand<TblCoupon>(code);
 }
 
 public record ValidateCouponRequest(string CouponCode, decimal OrderAmount);

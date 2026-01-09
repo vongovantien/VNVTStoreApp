@@ -8,7 +8,7 @@ import { useWishlistStore, useCartStore } from '@/store';
 
 export const WishlistPage = () => {
   const { t } = useTranslation();
-  const { items, removeItem, clearWishlist } = useWishlistStore();
+  const { items, clearWishlist } = useWishlistStore();
   const addToCart = useCartStore((state) => state.addItem);
 
   const handleAddAllToCart = () => {

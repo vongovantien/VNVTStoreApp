@@ -1,30 +1,37 @@
-import { apiClient, type ApiResponse } from './api';
+/**
+ * Review Service
+ * Uses only baseService CRUD methods
+ */
 
+import { createCrudService, API_ENDPOINTS } from './baseService';
+
+// ============ Types ============
 export interface ReviewDto {
-    id: string; // Code
+    code: string;
     productCode: string;
     userCode: string;
-    userName: string; // If mapped
+    userName?: string;
     rating: number;
     comment: string;
     createdAt: string;
+    status?: string;
 }
 
 export interface CreateReviewRequest {
     productCode: string;
-    orderItemCode: string; // Required for verification
+    orderItemCode: string;
     rating: number;
     comment: string;
 }
 
-export const reviewService = {
-    async getProductReviews(productCode: string): Promise<ApiResponse<ReviewDto[]>> {
-        return apiClient.get<ReviewDto[]>(`/reviews/product/${productCode}`);
-    },
+export interface UpdateReviewRequest {
+    status?: string;
+}
 
-    async createReview(data: CreateReviewRequest): Promise<ApiResponse<string>> {
-        return apiClient.post<string>('/reviews', data);
-    }
-};
+// ============ Service ============
+export const reviewService = createCrudService<ReviewDto, CreateReviewRequest, UpdateReviewRequest>({
+    endpoint: API_ENDPOINTS.REVIEWS.BASE,
+    resourceName: 'Review'
+});
 
 export default reviewService;

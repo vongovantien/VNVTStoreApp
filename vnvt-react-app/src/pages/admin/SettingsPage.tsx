@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, Store, CreditCard, Truck, Bell, Shield, Globe } from 'lucide-react';
 import { Button, Input, Select } from '@/components/ui';
+import { useToast } from '@/store';
 
 export const SettingsPage = () => {
   const { t } = useTranslation();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('general');
 
   const tabs = [
@@ -27,9 +29,8 @@ export const SettingsPage = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeTab === tab.id ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-secondary'
-                }`}
+                className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg text-left transition-colors ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-secondary'
+                  }`}
               >
                 <tab.icon size={18} />
                 <span className="font-medium">{tab.label}</span>
@@ -67,7 +68,7 @@ export const SettingsPage = () => {
                   </div>
                 </div>
 
-                <Button leftIcon={<Save size={18} />}>Lưu thay đổi</Button>
+                <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>Lưu thay đổi</Button>
               </div>
             )}
 
@@ -100,7 +101,7 @@ export const SettingsPage = () => {
                   ))}
                 </div>
 
-                <Button leftIcon={<Save size={18} />}>Lưu thay đổi</Button>
+                <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>Lưu thay đổi</Button>
               </div>
             )}
 
@@ -131,7 +132,7 @@ export const SettingsPage = () => {
                   />
                 </div>
 
-                <Button leftIcon={<Save size={18} />}>Lưu thay đổi</Button>
+                <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>Lưu thay đổi</Button>
               </div>
             )}
 
@@ -160,7 +161,7 @@ export const SettingsPage = () => {
                   ))}
                 </div>
 
-                <Button leftIcon={<Save size={18} />}>Lưu thay đổi</Button>
+                <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>Lưu thay đổi</Button>
               </div>
             )}
 
@@ -191,7 +192,7 @@ export const SettingsPage = () => {
                   </div>
                 </div>
 
-                <Button leftIcon={<Save size={18} />}>Lưu thay đổi</Button>
+                <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>Lưu thay đổi</Button>
               </div>
             )}
           </div>

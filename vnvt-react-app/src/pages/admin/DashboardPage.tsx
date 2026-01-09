@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
@@ -15,6 +14,7 @@ import { mockOrders } from '@/data/mockData';
 import { RevenueChart } from './components/RevenueChart';
 import { formatCurrency, getStatusColor } from '@/utils/format';
 import { dashboardService } from '@/services';
+import { useQuery } from '@tanstack/react-query';
 
 // ============ Stat Card Component ============
 interface StatCardProps {
@@ -52,7 +52,14 @@ const StatCard = ({ title, value, change, icon: Icon, color }: StatCardProps) =>
 // ============ Dashboard Page ============
 export const DashboardPage = () => {
   const { t } = useTranslation();
-  const [stats, setStats] = useState<any>({
+
+  const { data: statsResponse } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: () => dashboardService.getStats(),
+    staleTime: 30000, // 30 seconds - prevents double calls
+  });
+
+  const stats = statsResponse?.success && statsResponse?.data ? statsResponse.data : {
     totalRevenue: 0,
     revenueChange: 0,
     totalOrders: 0,
@@ -61,15 +68,7 @@ export const DashboardPage = () => {
     customersChange: 0,
     totalProducts: 0,
     pendingQuotes: 0
-  });
-
-  useEffect(() => {
-     dashboardService.getStats().then(res => {
-         if(res.success && res.data) {
-             setStats(res.data);
-         }
-     });
-  }, []);
+  };
 
   return (
     <div className="space-y-6">
@@ -117,7 +116,7 @@ export const DashboardPage = () => {
         <div className="lg:col-span-2 bg-primary rounded-xl p-6 shadow-sm border">
           <h2 className="font-bold mb-4">Biểu đồ doanh thu</h2>
           <div className="h-64">
-             <RevenueChart />
+            <RevenueChart />
           </div>
         </div>
 

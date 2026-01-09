@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Folder, Loader2, AlertCircle } from 'lucide-react';
-import { Button, Badge, Modal, Input, ConfirmDialog } from '@/components/ui';
+import { Plus, Edit2, Trash2, Folder, Loader2, AlertCircle, Search } from 'lucide-react';
+import { Button, Badge, Modal, Input, ConfirmDialog, Pagination } from '@/components/ui';
 import { useToast } from '@/store';
 import { useCategories } from '@/hooks';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,8 +21,27 @@ export const CategoriesPage = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
+  // Pagination & Search
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const pageSize = 10;
+
   // Fetch categories
   const { data: categories = [], isLoading, isError, isFetching } = useCategories();
+
+  // Filter by search
+  const filteredCategories = (categories as Category[]).filter((c) =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Paginate
+  const totalItems = filteredCategories.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const paginatedCategories = filteredCategories.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -41,12 +60,12 @@ export const CategoriesPage = () => {
       categoryService.createCategory(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success('Tạo danh mục thành công!');
+      toast.success(t('messages.createSuccess'));
       setIsFormOpen(false);
       resetForm();
     },
-    onError: () => {
-      toast.error('Không thể tạo danh mục');
+    onError: (error: any) => {
+      toast.error(error?.message || t('messages.createError'));
     },
   });
 
@@ -55,13 +74,13 @@ export const CategoriesPage = () => {
       categoryService.updateCategory(data.code, data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success('Cập nhật danh mục thành công!');
+      toast.success(t('messages.updateSuccess'));
       setIsFormOpen(false);
       setEditingCategory(null);
       resetForm();
     },
-    onError: () => {
-      toast.error('Không thể cập nhật danh mục');
+    onError: (error: any) => {
+      toast.error(error?.message || t('messages.updateError'));
     },
   });
 
@@ -69,11 +88,11 @@ export const CategoriesPage = () => {
     mutationFn: (code: string) => categoryService.deleteCategory(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success('Xóa danh mục thành công!');
+      toast.success(t('messages.deleteSuccess'));
       setCategoryToDelete(null);
     },
-    onError: () => {
-      toast.error('Không thể xóa danh mục');
+    onError: (error: any) => {
+      toast.error(error?.message || t('messages.deleteError'));
     },
   });
 
@@ -128,18 +147,30 @@ export const CategoriesPage = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold">{t('admin.categories')}</h1>
         <Button leftIcon={<Plus size={20} />} onClick={openCreateModal}>
-          Thêm danh mục
+          {t('messages.addCategory')}
         </Button>
       </div>
 
-      {/* Categories Grid */}
-      <div className="bg-primary rounded-xl shadow-sm border relative min-h-[300px]">
+      {/* Search */}
+      <div className="bg-primary rounded-xl p-4 border">
+        <div className="max-w-md">
+          <Input
+            placeholder={t('messages.searchCategory')}
+            leftIcon={<Search size={18} />}
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+          />
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-primary rounded-xl overflow-hidden shadow-sm border relative min-h-[400px]">
         {/* Loading overlay */}
         {(isLoading || isFetching) && (
           <div className="absolute inset-0 bg-primary/70 flex items-center justify-center z-10">
             <div className="flex items-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-              <span className="text-secondary text-sm">Đang tải...</span>
+              <span className="text-secondary text-sm">{t('common.loading')}</span>
             </div>
           </div>
         )}
@@ -149,77 +180,106 @@ export const CategoriesPage = () => {
           <div className="absolute inset-0 bg-primary flex items-center justify-center z-10">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-              <h3 className="font-semibold mb-2">Có lỗi xảy ra</h3>
+              <h3 className="font-semibold mb-2">{t('messages.error')}</h3>
             </div>
           </div>
         )}
 
-        <div className="p-6">
-          {categories.length === 0 && !isLoading ? (
-            <div className="text-center py-12">
-              <Folder className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-secondary">Chưa có danh mục nào</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {(categories as Category[]).map((category) => (
-                <div
-                  key={category.code}
-                  className="p-4 bg-secondary rounded-lg border hover:border-indigo-500 transition-colors group"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                      <Folder className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => openEditModal(category)}
-                        className="p-1.5 hover:bg-tertiary rounded transition-colors"
-                        title="Sửa"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => setCategoryToDelete(category)}
-                        className="p-1.5 hover:bg-error/10 text-error rounded transition-colors"
-                        title="Xóa"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <h3 className="font-medium mb-1">{category.name}</h3>
-                  {category.description && (
-                    <p className="text-sm text-tertiary line-clamp-2 mb-2">{category.description}</p>
-                  )}
-                  <Badge color={category.isActive !== false ? 'success' : 'gray'} size="sm" variant="outline">
-                    {category.isActive !== false ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
+            <thead className="bg-secondary border-b">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('messages.name')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">{t('messages.description')}</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">{t('messages.status')}</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold">{t('messages.actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedCategories.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-12 text-center text-secondary">
+                    <Folder className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>{t('messages.noCategories')}</p>
+                  </td>
+                </tr>
+              ) : (
+                paginatedCategories.map((category) => (
+                  <tr key={category.code} className="border-b last:border-0 hover:bg-secondary/50 transition-colors">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                          <Folder className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{category.name}</p>
+                          <p className="text-xs text-tertiary">{category.code}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-secondary text-sm max-w-xs truncate">
+                      {category.description || '-'}
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <Badge color={category.isActive !== false ? 'success' : 'secondary'} size="sm" variant="outline">
+                        {category.isActive !== false ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openEditModal(category)}
+                          className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                          title={t('messages.edit')}
+                        >
+                          <Edit2 size={16} className="text-primary" />
+                        </button>
+                        <button
+                          onClick={() => setCategoryToDelete(category)}
+                          className="p-2 hover:bg-error/10 rounded-lg transition-colors"
+                          title={t('messages.delete')}
+                        >
+                          <Trash2 size={16} className="text-error" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
 
       {/* Create/Edit Modal */}
       <Modal
         isOpen={isFormOpen}
         onClose={() => { setIsFormOpen(false); setEditingCategory(null); resetForm(); }}
-        title={editingCategory ? 'Sửa danh mục' : 'Thêm danh mục mới'}
+        title={editingCategory ? t('messages.editCategory') : t('messages.addCategory')}
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Tên danh mục"
-            placeholder="Nhập tên danh mục"
+            label={t('messages.categoryName')}
+            placeholder={t('messages.enterCategoryName')}
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             required
           />
           <Input
-            label="Mô tả"
-            placeholder="Nhập mô tả (tùy chọn)"
+            label={t('messages.description')}
+            placeholder={t('messages.enterDescription')}
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
           />
@@ -229,10 +289,10 @@ export const CategoriesPage = () => {
               variant="outline"
               onClick={() => { setIsFormOpen(false); setEditingCategory(null); resetForm(); }}
             >
-              Hủy
+              {t('common.cancel')}
             </Button>
             <Button type="submit" isLoading={isSubmitting} disabled={!formData.name.trim()}>
-              {editingCategory ? 'Cập nhật' : 'Tạo mới'}
+              {editingCategory ? t('messages.update') : t('messages.create')}
             </Button>
           </div>
         </form>
@@ -243,13 +303,13 @@ export const CategoriesPage = () => {
         isOpen={!!categoryToDelete}
         onClose={() => setCategoryToDelete(null)}
         onConfirm={handleDelete}
-        title="Xác nhận xóa"
+        title={t('messages.confirmDelete')}
         message={
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Bạn có chắc chắn muốn xóa danh mục <strong className="text-gray-900 dark:text-white">"{categoryToDelete?.name}"</strong>?
+            {t('messages.confirmDeleteCategory', { name: categoryToDelete?.name })}
           </p>
         }
-        confirmText="Xóa"
+        confirmText={t('messages.delete')}
         variant="danger"
         isLoading={deleteMutation.isPending}
       />

@@ -1,46 +1,47 @@
-import { apiClient, type ApiResponse } from './api';
+/**
+ * Supplier Service
+ * Uses only baseService CRUD methods
+ */
 
+import { createCrudService, API_ENDPOINTS } from './baseService';
+
+// ============ Types ============
 export interface SupplierDto {
     code: string;
     name: string;
-    contactName: string;
-    email: string;
-    phone: string;
-    address: string;
+    contactPerson?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    taxCode?: string;
+    bankAccount?: string;
+    bankName?: string;
+    notes?: string;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface CreateSupplierRequest {
     name: string;
-    contactName: string;
-    email: string;
-    phone: string;
-    address: string;
+    contactPerson?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    taxCode?: string;
+    bankAccount?: string;
+    bankName?: string;
+    notes?: string;
 }
 
-export interface UpdateSupplierRequest extends CreateSupplierRequest {
-    code: string;
+export interface UpdateSupplierRequest extends Partial<CreateSupplierRequest> {
+    isActive?: boolean;
 }
 
-export const supplierService = {
-    async getAllSuppliers(): Promise<ApiResponse<SupplierDto[]>> {
-        return apiClient.get<SupplierDto[]>('/suppliers');
-    },
-
-    async getSupplier(code: string): Promise<ApiResponse<SupplierDto>> {
-        return apiClient.get<SupplierDto>(`/suppliers/${code}`);
-    },
-
-    async createSupplier(data: CreateSupplierRequest): Promise<ApiResponse<string>> {
-        return apiClient.post<string>('/suppliers', data);
-    },
-
-    async updateSupplier(code: string, data: UpdateSupplierRequest): Promise<ApiResponse<boolean>> {
-        return apiClient.put<boolean>(`/suppliers/${code}`, data);
-    },
-
-    async deleteSupplier(code: string): Promise<ApiResponse<boolean>> {
-        return apiClient.delete<boolean>(`/suppliers/${code}`);
-    }
-};
+// ============ Service ============
+export const supplierService = createCrudService<SupplierDto, CreateSupplierRequest, UpdateSupplierRequest>({
+    endpoint: API_ENDPOINTS.SUPPLIERS.BASE,
+    resourceName: 'Supplier'
+});
 
 export default supplierService;

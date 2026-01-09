@@ -5,6 +5,7 @@ namespace VNVTStore.Domain.Entities;
 
 public partial class TblProductImage
 {
+    [System.ComponentModel.DataAnnotations.Key]
     public string Code { get; set; } = null!;
 
     public string ProductCode { get; set; } = null!;

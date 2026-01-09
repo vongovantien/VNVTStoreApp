@@ -115,3 +115,42 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         return Result.Success(_mapper.Map<CategoryDto>(entity));
     }
 }
+
+public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, Result>
+{
+    private readonly IRepository<TblCategory> _categoryRepository;
+    private readonly IRepository<TblProduct> _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public DeleteCategoryCommandHandler(
+        IRepository<TblCategory> categoryRepository,
+        IRepository<TblProduct> productRepository,
+        IUnitOfWork unitOfWork)
+    {
+        _categoryRepository = categoryRepository;
+        _productRepository = productRepository;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
+    {
+        var category = await _categoryRepository.GetByCodeAsync(request.Code, cancellationToken);
+        if (category == null)
+            return Result.Failure(Error.NotFound("Category", request.Code));
+
+        // Check if category has products
+        var productCount = await _productRepository
+            .AsQueryable()
+            .Where(p => p.CategoryCode == request.Code)
+            .CountAsync(cancellationToken);
+
+        if (productCount > 0)
+            return Result.Failure(Error.Validation("CategoryHasProducts", 
+                $"Không thể xóa danh mục đang có {productCount} sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước."));
+
+        _categoryRepository.Delete(category);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success();
+    }
+}

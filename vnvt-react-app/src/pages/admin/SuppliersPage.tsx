@@ -55,7 +55,7 @@ export const SuppliersPage = () => {
 
   const updateMutation = useMutation({
     mutationFn: (data: { code: string; payload: Partial<Supplier> }) =>
-      supplierService.update(data.code, data.payload as any),
+      supplierService.update(data.code, data.payload as SupplierDto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       toast.success(t('messages.updateSuccess'));

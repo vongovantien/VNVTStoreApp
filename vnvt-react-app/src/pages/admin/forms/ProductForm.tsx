@@ -36,7 +36,6 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     control,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),

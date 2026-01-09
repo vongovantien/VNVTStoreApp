@@ -1,47 +1,27 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Building2, Phone, Mail, Loader2, AlertCircle, Search, RefreshCw } from 'lucide-react';
-import { Button, Badge, Modal, Input, ConfirmDialog, Pagination } from '@/components/ui';
+import { Plus, Building2, Phone, Mail, RefreshCw } from 'lucide-react';
+import { Button, Badge, Modal, Input, ConfirmDialog } from '@/components/ui';
 import { useToast } from '@/store';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supplierService, type SupplierDto } from '@/services';
+import { DataTable, type DataTableColumn } from '@/components/common';
 
-type Supplier = SupplierDto; // Alias for backward compatibility locally
-
+type Supplier = SupplierDto;
 
 export const SuppliersPage = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  // Pagination & Search
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const pageSize = 10;
-
   // Fetch suppliers
-  const { data: suppliersData, isLoading, isError, isFetching } = useQuery({
+  const { data: suppliersData, isLoading, isError, isFetching, error } = useQuery({
     queryKey: ['suppliers'],
     queryFn: () => supplierService.getAll(),
     select: (response) => response.data?.items || [],
   });
 
-  const suppliers = suppliersData || [];
-  
-  // Filter by search
-  const filteredSuppliers = suppliers.filter((s: Supplier) =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.phone?.includes(searchQuery)
-  );
-
-  // Paginate
-  const totalItems = filteredSuppliers.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const paginatedSuppliers = filteredSuppliers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const suppliers = (suppliersData || []) as Supplier[];
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -66,11 +46,11 @@ export const SuppliersPage = () => {
     mutationFn: (data: Partial<Supplier>) => supplierService.create(data as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      toast.success('Tạo nhà cung cấp thành công!');
+      toast.success(t('messages.createSuccess'));
       setIsFormOpen(false);
       resetForm();
     },
-    onError: (error: Error) => toast.error(error.message || 'Không thể tạo nhà cung cấp'),
+    onError: (error: Error) => toast.error(error.message || t('messages.createError')),
   });
 
   const updateMutation = useMutation({
@@ -78,22 +58,22 @@ export const SuppliersPage = () => {
       supplierService.update(data.code, data.payload as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      toast.success('Cập nhật nhà cung cấp thành công!');
+      toast.success(t('messages.updateSuccess'));
       setIsFormOpen(false);
       setEditingSupplier(null);
       resetForm();
     },
-    onError: (error: Error) => toast.error(error.message || 'Không thể cập nhật nhà cung cấp'),
+    onError: (error: Error) => toast.error(error.message || t('messages.updateError')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (code: string) => supplierService.delete(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      toast.success('Xóa nhà cung cấp thành công!');
+      toast.success(t('messages.deleteSuccess'));
       setSupplierToDelete(null);
     },
-    onError: (error: Error) => toast.error(error.message || 'Không thể xóa nhà cung cấp'),
+    onError: (error: Error) => toast.error(error.message || t('messages.deleteError')),
   });
 
   const resetForm = () => {
@@ -153,13 +133,60 @@ export const SuppliersPage = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const showError = isError && !isLoading;
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
-  // Refresh handler
-  const handleRefresh = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-  }, [queryClient]);
+  // Column definitions for DataTable
+  const columns: DataTableColumn<Supplier>[] = [
+    {
+      id: 'name',
+      header: t('admin.columns.name'),
+      accessor: (supplier) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+            <Building2 size={20} className="text-primary" />
+          </div>
+          <div>
+            <p className="font-medium">{supplier.name}</p>
+            {supplier.contactPerson && (
+              <p className="text-xs text-tertiary">{supplier.contactPerson}</p>
+            )}
+          </div>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      id: 'email',
+      header: t('admin.columns.email'),
+      accessor: (supplier) => supplier.email ? (
+        <div className="flex items-center gap-2 text-secondary">
+          <Mail size={14} /> {supplier.email}
+        </div>
+      ) : '-',
+      sortable: true,
+    },
+    {
+      id: 'phone',
+      header: t('admin.columns.phone'),
+      accessor: (supplier) => supplier.phone ? (
+        <div className="flex items-center gap-2 text-secondary">
+          <Phone size={14} /> {supplier.phone}
+        </div>
+      ) : '-',
+    },
+    {
+      id: 'isActive',
+      header: t('admin.columns.status'),
+      accessor: (supplier) => (
+        <Badge color={supplier.isActive ? 'success' : 'secondary'} size="sm">
+          {supplier.isActive ? t('common.active') : t('common.inactive')}
+        </Badge>
+      ),
+      sortable: true,
+      className: 'text-center',
+      headerClassName: 'text-center',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -170,7 +197,7 @@ export const SuppliersPage = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleRefresh}
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['suppliers'] })}
             leftIcon={<RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />}
           >
             {t('common.refresh') || 'Làm mới'}
@@ -181,198 +208,91 @@ export const SuppliersPage = () => {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-primary rounded-xl p-4 border">
-        <div className="max-w-md">
-          <Input
-            placeholder={t('messages.searchSupplier')}
-            leftIcon={<Search size={18} />}
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-          />
-        </div>
-      </div>
+      {/* DataTable */}
+      <DataTable
+        columns={columns}
+        data={suppliers}
+        keyField="code"
+        isLoading={isLoading}
+        isFetching={isFetching}
+        error={isError ? (error as Error) : null}
+        onAdd={openCreateModal}
+        onEdit={openEditModal}
+        onDelete={(supplier) => setSupplierToDelete(supplier)}
+        exportFilename="suppliers_export"
+        searchOptions={[
+          { label: t('admin.columns.name'), value: 'name' },
+          { label: t('admin.columns.email'), value: 'email' },
+          { label: t('admin.columns.phone'), value: 'phone' },
+        ]}
+        emptyMessage={t('common.noResults')}
+      />
 
-      {/* Table */}
-      <div className="bg-primary rounded-xl overflow-hidden shadow-sm border relative min-h-[400px]">
-        {/* Loading overlay */}
-        {(isLoading || isFetching) && (
-          <div className="absolute inset-0 bg-primary/70 flex items-center justify-center z-10">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-              <span className="text-secondary text-sm">{t('common.loading')}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Error overlay */}
-        {showError && (
-          <div className="absolute inset-0 bg-primary flex items-center justify-center z-10">
-            <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-              <h3 className="font-semibold mb-2">Có lỗi xảy ra</h3>
-            </div>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px]">
-            <thead className="bg-secondary border-b">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.name')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.contact')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.email')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.phone')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.status')}</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.action')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedSuppliers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-secondary">
-                    <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>{t('messages.noSuppliers')}</p>
-                  </td>
-                </tr>
-              ) : (
-                paginatedSuppliers.map((supplier: Supplier) => (
-                  <tr key={supplier.code} className="border-b last:border-0 hover:bg-secondary/50 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                          <Building2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{supplier.name}</p>
-                          {supplier.taxCode && (
-                            <p className="text-xs text-tertiary">MST: {supplier.taxCode}</p>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-secondary">{supplier.contactPerson || '-'}</td>
-                    <td className="px-4 py-4">
-                      {supplier.email && (
-                        <a href={`mailto:${supplier.email}`} className="flex items-center gap-1 text-indigo-600 hover:underline text-sm">
-                          <Mail size={14} />
-                          {supplier.email}
-                        </a>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      {supplier.phone && (
-                        <a href={`tel:${supplier.phone}`} className="flex items-center gap-1 text-sm">
-                          <Phone size={14} />
-                          {supplier.phone}
-                        </a>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <Badge color={supplier.isActive ? 'success' : 'secondary'} size="sm" variant="outline">
-                        {supplier.isActive ? t('common.status.active') : t('common.status.inactive')}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => openEditModal(supplier)}
-                          className="p-2 hover:bg-secondary rounded-lg transition-colors"
-                          title="Sửa"
-                        >
-                          <Edit2 size={16} className="text-primary" />
-                        </button>
-                        <button
-                          onClick={() => setSupplierToDelete(supplier)}
-                          className="p-2 hover:bg-error/10 rounded-lg transition-colors"
-                          title="Xóa"
-                        >
-                          <Trash2 size={16} className="text-error" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-          />
-        )}
-      </div>
-
-      {/* Create/Edit Modal */}
+      {/* Form Modal */}
       <Modal
         isOpen={isFormOpen}
-        onClose={() => { setIsFormOpen(false); setEditingSupplier(null); resetForm(); }}
-        title={editingSupplier ? t('messages.editSupplier') : t('messages.addSupplier')}
+        onClose={() => { setIsFormOpen(false); setEditingSupplier(null); }}
+        title={editingSupplier ? t('admin.actions.edit') : t('admin.actions.create')}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label={t('admin.columns.name') + ' *'}
+            placeholder={t('admin.columns.name')}
+            value={formData.name}
+            onChange={(e) => updateFormField('name', e.target.value)}
+            required
+          />
+          <Input
+            label={t('admin.columns.contactPerson')}
+            placeholder={t('admin.columns.contactPerson')}
+            value={formData.contactPerson}
+            onChange={(e) => updateFormField('contactPerson', e.target.value)}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label={t('messages.supplierName') + " *"}
-              placeholder={t('messages.enterSupplierName')}
-              value={formData.name}
-              onChange={(e) => updateFormField('name', e.target.value)}
-              required
-            />
-            <Input
-              label={t('messages.contactPerson')}
-              placeholder={t('messages.enterContactPerson')}
-              value={formData.contactPerson}
-              onChange={(e) => updateFormField('contactPerson', e.target.value)}
-            />
-            <Input
-              label="Email"
+              label={t('admin.columns.email')}
               type="email"
-              placeholder={t('footer.emailPlaceholder')}
+              placeholder={t('admin.columns.email')}
               value={formData.email}
               onChange={(e) => updateFormField('email', e.target.value)}
             />
             <Input
               label={t('admin.columns.phone')}
-              placeholder="0123 456 789"
+              placeholder={t('admin.columns.phone')}
               value={formData.phone}
               onChange={(e) => updateFormField('phone', e.target.value)}
             />
+          </div>
+          <Input
+            label={t('admin.columns.address')}
+            placeholder={t('admin.columns.address')}
+            value={formData.address}
+            onChange={(e) => updateFormField('address', e.target.value)}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Mã số thuế"
-              placeholder="Nhập MST"
+              label={t('admin.columns.taxCode')}
+              placeholder={t('admin.columns.taxCode')}
               value={formData.taxCode}
               onChange={(e) => updateFormField('taxCode', e.target.value)}
             />
             <Input
-              label={t('admin.columns.address')}
-              placeholder="Nhập địa chỉ"
-              value={formData.address}
-              onChange={(e) => updateFormField('address', e.target.value)}
-            />
-            <Input
-              label="Số tài khoản"
-              placeholder="Nhập STK"
-              value={formData.bankAccount}
-              onChange={(e) => updateFormField('bankAccount', e.target.value)}
-            />
-            <Input
-              label="Ngân hàng"
-              placeholder="Tên ngân hàng"
+              label={t('admin.columns.bankName')}
+              placeholder={t('admin.columns.bankName')}
               value={formData.bankName}
               onChange={(e) => updateFormField('bankName', e.target.value)}
             />
           </div>
           <Input
-            label={t('admin.columns.note')}
-            placeholder="Ghi chú (tùy chọn)"
+            label={t('admin.columns.bankAccount')}
+            placeholder={t('admin.columns.bankAccount')}
+            value={formData.bankAccount}
+            onChange={(e) => updateFormField('bankAccount', e.target.value)}
+          />
+          <Input
+            label={t('admin.columns.notes')}
+            placeholder={t('admin.columns.notes')}
             value={formData.notes}
             onChange={(e) => updateFormField('notes', e.target.value)}
           />
@@ -380,12 +300,12 @@ export const SuppliersPage = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => { setIsFormOpen(false); setEditingSupplier(null); resetForm(); }}
+              onClick={() => { setIsFormOpen(false); setEditingSupplier(null); }}
             >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" isLoading={isSubmitting} disabled={!formData.name?.trim()}>
-              {editingSupplier ? t('messages.update') : t('messages.create')}
+            <Button type="submit" isLoading={isSubmitting}>
+              {editingSupplier ? t('common.update') : t('common.create')}
             </Button>
           </div>
         </form>
@@ -396,14 +316,9 @@ export const SuppliersPage = () => {
         isOpen={!!supplierToDelete}
         onClose={() => setSupplierToDelete(null)}
         onConfirm={handleDelete}
-        title={t('messages.confirmDelete')}
-        message={
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-             {t('messages.confirmDeleteSupplier', { name: supplierToDelete?.name })}
-          </p>
-        }
-        confirmText={t('messages.delete')}
-        variant="danger"
+        title={t('admin.actions.delete')}
+        message={t('common.confirmDelete', { count: 1 })}
+        confirmText={t('common.delete')}
         isLoading={deleteMutation.isPending}
       />
     </div>

@@ -82,8 +82,8 @@ export const AdminToolbar = ({
   const BlueItem = ({ icon, onClick, title, disabled, className: itemClassName }: AdminToolbarAction) => (
     <button
       type="button"
-      onClick={onClick}
-      disabled={disabled}
+      onClick={onClick ? onClick : undefined}
+      disabled={disabled || !onClick}
       title={title}
       className={cn(
         "p-2 hover:bg-blue-50 dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed",

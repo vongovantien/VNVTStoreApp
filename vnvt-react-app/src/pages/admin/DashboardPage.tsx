@@ -9,12 +9,13 @@ import {
   TrendingDown,
   ArrowUpRight,
   FileText,
+  Loader2,
 } from 'lucide-react';
-import { mockOrders } from '@/data/mockData';
 import { RevenueChart } from './components/RevenueChart';
-import { formatCurrency, getStatusColor } from '@/utils/format';
+import { formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { dashboardService } from '@/services';
 import { useQuery } from '@tanstack/react-query';
+import { useAdminOrders } from '@/hooks';
 
 // ============ Stat Card Component ============
 interface StatCardProps {
@@ -58,6 +59,10 @@ export const DashboardPage = () => {
     queryFn: () => dashboardService.getStats(),
     staleTime: 30000, // 30 seconds - prevents double calls
   });
+
+  // Fetch recent orders
+  const { data: ordersData, isLoading: ordersLoading } = useAdminOrders({ pageIndex: 1, pageSize: 5 });
+  const recentOrders = ordersData?.orders || [];
 
   const stats = statsResponse?.success && statsResponse?.data ? statsResponse.data : {
     totalRevenue: 0,
@@ -164,18 +169,22 @@ export const DashboardPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockOrders.slice(0, 5).map((order) => (
-                  <tr key={order.id} className="border-b last:border-0">
-                    <td className="py-3 font-medium">{order.orderNumber}</td>
-                    <td className="py-3">{order.customer.name}</td>
-                    <td className="py-3 text-error font-medium">{formatCurrency(order.total)}</td>
+                {ordersLoading ? (
+                    <tr><td colSpan={4} className="py-8 text-center"><Loader2 className="animate-spin mx-auto" /></td></tr>
+                ) : recentOrders.length === 0 ? (
+                    <tr><td colSpan={4} className="py-4 text-center text-secondary">Chưa có đơn hàng</td></tr>
+                ) : (recentOrders.map((order) => (
+                  <tr key={order.code} className="border-b last:border-0">
+                    <td className="py-3 font-medium">{order.code}</td>
+                    <td className="py-3">{order.shippingName || order.userCode}</td>
+                    <td className="py-3 text-error font-medium">{formatCurrency(order.finalAmount)}</td>
                     <td className="py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium bg-${getStatusColor(order.status)}/20 text-${getStatusColor(order.status)}`}>
-                        {order.status}
+                        {getStatusText(order.status)}
                       </span>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>

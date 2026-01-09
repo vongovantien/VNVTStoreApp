@@ -40,6 +40,7 @@ const AdminQuotes = lazy(() => import('@/pages/admin/QuotesPage'));
 const AdminSettings = lazy(() => import('@/pages/admin/SettingsPage'));
 const AdminCategories = lazy(() => import('@/pages/admin/CategoriesPage'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/SuppliersPage'));
+const AdminBanners = lazy(() => import('@/pages/admin/BannersPage'));
 
 // Error pages
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -260,6 +261,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageLoader />}>
             <AdminSuppliers />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'banners',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <AdminBanners />
           </Suspense>
         ),
       },

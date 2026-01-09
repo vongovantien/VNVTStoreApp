@@ -79,7 +79,13 @@ ImageGallery.displayName = 'ImageGallery';
 export const ProductDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  // Mock attributes
+  const sizes = ['S', 'M', 'L', 'XL'];
+  const colors = ['Black', 'White', 'Blue', 'Red'];
+  
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string>('M'); // Default
+  const [selectedColor, setSelectedColor] = useState<string>('Black'); // Default
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
   const [reviews, setReviews] = useState<ReviewDto[]>([]);
 
@@ -123,9 +129,9 @@ export const ProductDetailPage = () => {
   // Handlers
   const handleAddToCart = useCallback(() => {
     if (product && hasFixedPrice) {
-      addToCart(product, quantity);
+      addToCart(product, quantity, { size: selectedSize, color: selectedColor });
     }
-  }, [product, hasFixedPrice, quantity, addToCart]);
+  }, [product, hasFixedPrice, quantity, addToCart, selectedSize, selectedColor]);
 
   const handleWishlistToggle = useCallback(() => {
     if (product) {
@@ -261,6 +267,51 @@ export const ProductDetailPage = () => {
 
             {/* Description */}
             <p className="text-secondary leading-relaxed">{product.description}</p>
+
+            {/* Attributes Selection */}
+            {hasFixedPrice && (
+                <div className="space-y-4 mb-6">
+                    {/* Size */}
+                    <div>
+                        <span className="font-medium text-primary block mb-2">{t('product.size') || 'Size'}</span>
+                        <div className="flex flex-wrap gap-2">
+                            {sizes.map(size => (
+                                <button
+                                    key={size}
+                                    onClick={() => setSelectedSize(size)}
+                                    className={`px-3 py-1 border rounded-md text-sm transition-colors ${
+                                        selectedSize === size 
+                                            ? 'border-primary bg-primary text-secondary' 
+                                            : 'border-gray-200 hover:border-primary'
+                                    }`}
+                                >
+                                    {size}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Color */}
+                    <div>
+                        <span className="font-medium text-primary block mb-2">{t('product.color') || 'Color'}</span>
+                        <div className="flex flex-wrap gap-2">
+                            {colors.map(color => (
+                                <button
+                                    key={color}
+                                    onClick={() => setSelectedColor(color)}
+                                    className={`px-3 py-1 border rounded-md text-sm transition-colors ${
+                                        selectedColor === color 
+                                            ? 'border-primary bg-primary text-secondary' 
+                                            : 'border-gray-200 hover:border-primary'
+                                    }`}
+                                >
+                                    {color}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Quantity & Add to Cart */}
             {hasFixedPrice && (

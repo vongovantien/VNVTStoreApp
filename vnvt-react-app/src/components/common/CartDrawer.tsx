@@ -100,7 +100,7 @@ export const CartDrawer = memo(() => {
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center border rounded-lg overflow-hidden">
                           <button
-                            onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
+                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                             className="p-1.5 hover:bg-tertiary transition-colors"
                             disabled={item.quantity <= 1}
                           >
@@ -108,7 +108,7 @@ export const CartDrawer = memo(() => {
                           </button>
                           <span className="px-3 text-sm font-medium">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="p-1.5 hover:bg-tertiary transition-colors"
                           >
                             <Plus size={14} />
@@ -116,7 +116,7 @@ export const CartDrawer = memo(() => {
                         </div>
 
                         <button
-                          onClick={() => removeItem(item.product.id)}
+                          onClick={() => removeItem(item.id)}
                           className="text-tertiary hover:text-error transition-colors"
                         >
                           <X size={18} />

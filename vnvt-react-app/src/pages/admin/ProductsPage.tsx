@@ -134,7 +134,7 @@ export const ProductsPage = () => {
   };
 
   const handleBulkDelete = async (): Promise<void> => {
-    if (confirm(`Bạn có chắc chắn muốn xóa ${selectedIds.size} sản phẩm đã chọn?`)) {
+    if (confirm(t('common.confirmDelete', { count: selectedIds.size }))) {
       for (const id of selectedIds) {
         await deleteMutation.mutateAsync(id);
       }
@@ -154,13 +154,13 @@ export const ProductsPage = () => {
 
       if (result.success) {
         setIsFormOpen(false);
-        toast.success('Tạo sản phẩm thành công!');
+        toast.success(t('common.createSuccess'));
       } else {
-        toast.error(`Lỗi: ${result.message}`);
+        toast.error(result.message || t('common.createError'));
       }
     } catch (err) {
       console.error('Failed to create product:', err);
-      toast.error('Không thể tạo sản phẩm');
+      toast.error(t('common.createError'));
     }
   };
 
@@ -181,13 +181,13 @@ export const ProductsPage = () => {
       if (result.success) {
         setIsFormOpen(false);
         setEditingProduct(null);
-        toast.success('Cập nhật sản phẩm thành công!');
+        toast.success(t('common.updateSuccess'));
       } else {
-        toast.error(`Lỗi: ${result.message}`);
+        toast.error(result.message || t('common.updateError'));
       }
     } catch (err) {
       console.error('Failed to update product:', err);
-      toast.error('Không thể cập nhật sản phẩm');
+      toast.error(t('common.updateError'));
     }
   };
 
@@ -196,13 +196,13 @@ export const ProductsPage = () => {
       try {
         await deleteMutation.mutateAsync(productToDelete.id);
         setProductToDelete(null);
-        toast.success('Xóa sản phẩm thành công!');
+        toast.success(t('common.deleteSuccess'));
       } catch (err) {
-        console.error('Failed to delete product:', err);
-        toast.error('Không thể xóa sản phẩm');
+        toast.error(t('common.deleteError'));
       }
     }
   };
+
 
   const openEditModal = (product: Product): void => {
     setEditingProduct(product);
@@ -465,10 +465,11 @@ export const ProductsPage = () => {
       </div>
 
       {/* Product Form Modal */}
+      {/* Product Form Modal */}
       <Modal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        title={editingProduct ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
+        title={editingProduct ? t('admin.actions.edit') : t('admin.actions.create')}
         size="lg"
       >
         <ProductForm
@@ -492,14 +493,9 @@ export const ProductsPage = () => {
         isOpen={!!productToDelete}
         onClose={() => setProductToDelete(null)}
         onConfirm={handleDeleteProduct}
-        title="Xác nhận xóa"
-        message={
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Bạn có chắc chắn muốn xóa sản phẩm <strong className="text-gray-900 dark:text-white">"{productToDelete?.name}"</strong>? 
-            Hành động này không thể hoàn tác.
-          </p>
-        }
-        confirmText="Xóa"
+        title={t('admin.actions.delete')}
+        message={t('common.confirmDelete', { count: 1 })}
+        confirmText={t('common.delete')}
         variant="danger"
         isLoading={deleteMutation.isPending}
       />

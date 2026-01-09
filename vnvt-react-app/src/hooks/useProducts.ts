@@ -5,7 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 
-import { productService, categoryService, type CreateProductDto, type UpdateProductDto } from '@/services/productService';
+import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
 
 // ============ Query Keys ============
 export const productKeys = {
@@ -25,14 +25,13 @@ export const productKeys = {
 export function useCategories() {
     return useQuery({
         queryKey: productKeys.categories,
-        queryFn: () => categoryService.getAllCategories(),
+        queryFn: () => categoryService.getAll(),
         select: (response) => {
             if (response.success && response.data) {
                 return response.data.items || [];
             }
             return [];
         }
-
     });
 }
 
@@ -51,7 +50,14 @@ export function useProducts(params: {
 
     return useQuery({
         queryKey: productKeys.list(searchParams),
-        queryFn: () => productService.searchProducts(searchParams),
+        queryFn: () => productService.search({
+            pageIndex: searchParams.pageIndex,
+            pageSize: searchParams.pageSize,
+            search: searchParams.search,
+            searchField: 'name',
+            sortBy: searchParams.sortField,
+            sortDesc: searchParams.sortDir === 'desc'
+        }),
         enabled,
         placeholderData: keepPreviousData,
         select: (response) => {
@@ -86,7 +92,7 @@ export function useProducts(params: {
 export function useProduct(code: string, enabled = true) {
     return useQuery({
         queryKey: productKeys.detail(code),
-        queryFn: () => productService.getProductByCode(code),
+        queryFn: () => productService.getByCode(code),
         enabled: enabled && !!code,
         select: (response) => {
             if (response.success && response.data) {
@@ -106,7 +112,7 @@ export function useCreateProduct() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (data: CreateProductDto) => productService.createProduct(data),
+        mutationFn: (data: CreateProductRequest) => productService.create(data),
         onSuccess: () => {
             // Invalidate products list to refetch
             queryClient.invalidateQueries({ queryKey: productKeys.lists() });
@@ -121,8 +127,8 @@ export function useUpdateProduct() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ code, data }: { code: string; data: UpdateProductDto }) =>
-            productService.updateProduct(code, data),
+        mutationFn: ({ code, data }: { code: string; data: UpdateProductRequest }) =>
+            productService.update(code, data),
         onSuccess: (_, variables) => {
             // Invalidate specific product and lists
             queryClient.invalidateQueries({ queryKey: productKeys.detail(variables.code) });
@@ -138,7 +144,7 @@ export function useDeleteProduct() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (code: string) => productService.deleteProduct(code),
+        mutationFn: (code: string) => productService.delete(code),
         onSuccess: () => {
             // Invalidate products list
             queryClient.invalidateQueries({ queryKey: productKeys.lists() });

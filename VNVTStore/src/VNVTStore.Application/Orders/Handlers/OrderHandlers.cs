@@ -110,7 +110,7 @@ public class OrderHandlers :
                      UserCode = request.UserCode,
                      AddressLine = fullAddressLine.Length > 255 ? fullAddressLine.Substring(0, 255) : fullAddressLine,
                      City = request.Dto.City,
-                     CreatedAt = DateTime.UtcNow,
+                     CreatedAt = DateTime.Now,
                      IsDefault = false
                  };
                  await _addressRepository.AddAsync(newAddress, cancellationToken);
@@ -127,7 +127,7 @@ public class OrderHandlers :
         {
             Code = Guid.NewGuid().ToString("N").Substring(0, 10),
             UserCode = request.UserCode,
-            OrderDate = DateTime.UtcNow,
+            OrderDate = DateTime.Now,
             Status = OrderStatus.Pending.ToString(),
             TotalAmount = totalAmount,
             ShippingFee = shippingFee,
@@ -199,10 +199,62 @@ public class OrderHandlers :
     {
         var query = _orderRepository.AsQueryable();
 
-        if (!string.IsNullOrEmpty(request.Status))
+        if (!string.IsNullOrEmpty(request.Status) && request.Status != "all")
              query = query.Where(o => o.Status == request.Status);
-        
-        // Search by user code or order code logic if needed (skipped for brevity)
+                // Advanced Filters
+            if (request.Filters != null && request.Filters.Any())
+            {
+                var f = request.Filters;
+
+                // Date Range
+                if (f.ContainsKey("fromdate") && DateTime.TryParse(f["fromdate"], out var fromDate))
+                    query = query.Where(o => o.OrderDate >= fromDate);
+                
+                if (f.ContainsKey("todate") && DateTime.TryParse(f["todate"], out var toDate))
+                    query = query.Where(o => o.OrderDate <= toDate.AddDays(1)); // End of day
+
+                // Amount Range
+                if (f.ContainsKey("amountfrom") && decimal.TryParse(f["amountfrom"], out var minAmount))
+                    query = query.Where(o => o.FinalAmount >= minAmount);
+
+                if (f.ContainsKey("amountto") && decimal.TryParse(f["amountto"], out var maxAmount))
+                    query = query.Where(o => o.FinalAmount <= maxAmount);
+
+                // Payment Status
+                if (f.ContainsKey("paymentstatus") && !string.IsNullOrEmpty(f["paymentstatus"]))
+                {
+                    var ps = f["paymentstatus"];
+                    if (ps == "paid") query = query.Where(o => o.TblPayment != null && o.TblPayment.Status == "paid");
+                    else if (ps == "pending") query = query.Where(o => o.TblPayment == null || o.TblPayment.Status == "pending" || o.TblPayment.Status == "Pending");
+                }
+
+                // Specific Fields
+                if (f.ContainsKey("customer") && !string.IsNullOrEmpty(f["customer"]))
+                {
+                    var c = f["customer"].ToLower();
+                    query = query.Where(o => o.UserCodeNavigation.FullName.ToLower().Contains(c) 
+                                          || (o.UserCodeNavigation.Phone != null && o.UserCodeNavigation.Phone.Contains(c)));
+                }
+
+                if (f.ContainsKey("code") && !string.IsNullOrEmpty(f["code"]))
+                    query = query.Where(o => o.Code.Contains(f["code"]));
+                
+                // Status (if passed in filters instead of root param)
+                if (f.ContainsKey("status") && !string.IsNullOrEmpty(f["status"]) && f["status"] != "all")
+                    query = query.Where(o => o.Status == f["status"]);
+            }
+
+            // Global Search (existing)
+            if (!string.IsNullOrEmpty(request.Search))
+            {
+                var s = request.Search.ToLower();
+                query = query.Where(o =>
+                    o.Code.ToLower().Contains(s) ||
+                    o.UserCodeNavigation.FullName.ToLower().Contains(s) ||
+                    (o.UserCodeNavigation.Phone != null && o.UserCodeNavigation.Phone.Contains(s)) ||
+                    (o.AddressCodeNavigation != null && o.AddressCodeNavigation.AddressLine.ToLower().Contains(s))
+                );
+            }
 
          var totalItems = await query.CountAsync(cancellationToken);
         
@@ -211,6 +263,8 @@ public class OrderHandlers :
              .Skip((request.PageIndex - 1) * request.PageSize)
             .Take(request.PageSize)
             .Include(o => o.TblOrderItems)
+            .Include(o => o.UserCodeNavigation)
+            .Include(o => o.AddressCodeNavigation)
             .ToListAsync(cancellationToken);
 
         var dtos = _mapper.Map<List<OrderDto>>(items);

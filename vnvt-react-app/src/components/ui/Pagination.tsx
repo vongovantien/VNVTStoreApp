@@ -1,3 +1,4 @@
+import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
@@ -6,43 +7,29 @@ interface PaginationProps {
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  pageSizeOptions?: number[];
 }
 
 /**
  * Generate page numbers to display with ellipsis
  */
 function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
+  // ... (existing code, unchange)
   const pages: (number | string)[] = [];
-  
+
   if (totalPages <= 7) {
-    // Show all pages if 7 or less
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
-    }
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
   } else {
-    // Always show first page
     pages.push(1);
-    
-    if (currentPage > 3) {
-      pages.push('...');
-    }
-    
-    // Show pages around current
+    if (currentPage > 3) pages.push('...');
     const start = Math.max(2, currentPage - 1);
     const end = Math.min(totalPages - 1, currentPage + 1);
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
-    if (currentPage < totalPages - 2) {
-      pages.push('...');
-    }
-    
-    // Always show last page
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push('...');
     pages.push(totalPages);
   }
-  
+
   return pages;
 }
 
@@ -52,6 +39,8 @@ export const Pagination = ({
   totalItems,
   pageSize,
   onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [10, 20, 50, 100],
 }: PaginationProps): JSX.Element => {
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
@@ -80,14 +69,32 @@ export const Pagination = ({
       {/* Desktop pagination */}
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-secondary">
-            Hiển thị{' '}
-            <span className="font-medium text-primary">{startItem}</span>
-            {' '}đến{' '}
-            <span className="font-medium text-primary">{endItem}</span>
-            {' '}trong{' '}
-            <span className="font-medium text-primary">{totalItems}</span>
-            {' '}kết quả
+          <p className="text-sm text-secondary flex items-center gap-4">
+            <span>
+              Hiển thị{' '}
+              <span className="font-medium text-primary">{startItem}</span>
+              {' '}đến{' '}
+              <span className="font-medium text-primary">{endItem}</span>
+              {' '}trong{' '}
+              <span className="font-medium text-primary">{totalItems}</span>
+              {' '}kết quả
+            </span>
+
+            {onPageSizeChange && (
+              <span className="flex items-center gap-2 ml-4 border-l pl-4 border-gray-300 dark:border-gray-600">
+                <span className="hidden lg:inline">Hiển thị</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                  className="block w-16 rounded-md border-0 py-1.5 pl-2 pr-6 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:text-white dark:ring-gray-600"
+                >
+                  {pageSizeOptions.map(size => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
+                <span className="hidden lg:inline">dòng/trang</span>
+              </span>
+            )}
           </p>
         </div>
         <div>

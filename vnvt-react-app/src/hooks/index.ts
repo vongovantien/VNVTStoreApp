@@ -9,6 +9,7 @@ export {
     useUpdateProduct,
     useDeleteProduct,
     useCategories,
+    useCategoriesList,
     productKeys,
 } from './useProducts';
 

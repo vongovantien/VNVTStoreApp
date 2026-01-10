@@ -81,19 +81,11 @@ public class UserHandlers :
             return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.UserCode));
 
         // Update fields if provided
-        if (request.FullName != null) user.FullName = request.FullName;
-        if (request.Phone != null) user.Phone = request.Phone;
-        if (request.Email != null)
-        {
-            // Check email uniqueness
-            var existingEmail = await _userRepository.FindAsync(
-                u => u.Email == request.Email && u.Code != request.UserCode, cancellationToken);
-            if (existingEmail != null)
-                return Result.Failure<UserDto>(Error.Conflict(MessageConstants.EmailInUse));
-            user.Email = request.Email;
-        }
-
-        user.UpdatedAt = DateTime.UtcNow;
+        // Use Domain Method for validation and encapsulation
+        user.UpdateProfile(
+            request.FullName ?? user.FullName, 
+            request.Phone ?? user.Phone, 
+            request.Email ?? user.Email);
         _userRepository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -111,9 +103,8 @@ public class UserHandlers :
         if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
             return Result.Failure<bool>(Error.Validation(MessageConstants.CurrentPasswordIncorrect));
 
-        // Update password
-        user.PasswordHash = _passwordHasher.Hash(request.NewPassword);
-        user.UpdatedAt = DateTime.UtcNow;
+        // Update password using Domain Method
+        user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         
         _userRepository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);

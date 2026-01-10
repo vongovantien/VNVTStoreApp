@@ -44,7 +44,7 @@ public class PromotionHandlersTests
         // Act
         var result = await _handler.Handle(
             new CreatePromotionCommand("Summer Sale", "20% off", "percentage", 20, 100000, 500000, 
-                DateTime.UtcNow, DateTime.UtcNow.AddDays(30), 100),
+                DateTime.Now, DateTime.Now.AddDays(30), 100),
             CancellationToken.None);
 
         // Assert

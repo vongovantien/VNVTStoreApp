@@ -48,7 +48,7 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
                 q.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
                 q.UserCode = userCode;
                 q.Status = "pending";
-                q.CreatedAt = DateTime.UtcNow;
+                q.CreatedAt = DateTime.Now;
             });
     }
 

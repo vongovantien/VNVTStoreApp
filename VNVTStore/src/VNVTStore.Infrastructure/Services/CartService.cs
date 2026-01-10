@@ -29,7 +29,7 @@ public class CartService : ICartService
             {
                 Code = Guid.NewGuid().ToString("N").Substring(0, 10),
                 UserCode = userCode,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             await _cartRepository.AddAsync(cart, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);

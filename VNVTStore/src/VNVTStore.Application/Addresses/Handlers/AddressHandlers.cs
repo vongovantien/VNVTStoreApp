@@ -43,7 +43,7 @@ public class AddressHandlers : BaseHandler<TblAddress>,
             cancellationToken,
             a => {
                 a.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
-                a.CreatedAt = DateTime.UtcNow;
+                a.CreatedAt = DateTime.Now;
                 if (string.IsNullOrEmpty(a.Country)) a.Country = "Vietnam";
             });
     }

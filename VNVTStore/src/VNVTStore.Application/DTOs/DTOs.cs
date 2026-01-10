@@ -40,6 +40,11 @@ public class ProductDto : IBaseDto
     public int? StockQuantity { get; set; }
     public string? Sku { get; set; }
     public decimal? Weight { get; set; }
+    public string? Color { get; set; }
+    public string? Power { get; set; }
+    public string? Voltage { get; set; }
+    public string? Material { get; set; }
+    public string? Size { get; set; }
     public bool? IsActive { get; set; }
     public string? Brand { get; set; }
     public bool IsNew { get; set; }
@@ -58,6 +63,11 @@ public class CreateProductDto
     public int? StockQuantity { get; set; }
     public string? Sku { get; set; }
     public decimal? Weight { get; set; }
+    public string? Color { get; set; }
+    public string? Power { get; set; }
+    public string? Voltage { get; set; }
+    public string? Material { get; set; }
+    public string? Size { get; set; }
     public string? Brand { get; set; }
     public bool IsNew { get; set; }
     public bool IsFeatured { get; set; }
@@ -73,6 +83,11 @@ public class UpdateProductDto
     public int? StockQuantity { get; set; }
     public string? Sku { get; set; }
     public decimal? Weight { get; set; }
+    public string? Color { get; set; }
+    public string? Power { get; set; }
+    public string? Voltage { get; set; }
+    public string? Material { get; set; }
+    public string? Size { get; set; }
     public bool? IsActive { get; set; }
     public string? Brand { get; set; }
     public bool? IsNew { get; set; }

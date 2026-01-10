@@ -9,11 +9,11 @@ interface TableToolbarProps {
   searchField: string;
   onSearchFieldChange: (value: string) => void;
   searchOptions: { label: string; value: string }[];
-  
+
   // Selection
   selectedCount: number;
   onBulkDelete?: () => void;
-  
+
   // Actions
   onExport: () => void;
   onImport?: (file: File) => void; // Made optional - backend doesn't support import yet
@@ -31,7 +31,7 @@ export const TableToolbar = ({
   onImport,
 }: TableToolbarProps) => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="bg-primary p-4 rounded-xl space-y-4 border shadow-sm">
       <div className="flex flex-col md:flex-row gap-4">
@@ -47,7 +47,7 @@ export const TableToolbar = ({
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
-          
+
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" size={18} />
             <input
@@ -59,10 +59,7 @@ export const TableToolbar = ({
             />
           </div>
 
-          {/* Export Button - Right after search */}
-          <Button variant="primary" size="sm" leftIcon={<Download size={16} />} onClick={onExport}>
-            {t('common.export')}
-          </Button>
+
         </div>
       </div>
 
@@ -73,20 +70,20 @@ export const TableToolbar = ({
             <span className="font-semibold">{selectedCount} {t('common.selected')}</span>
             <span className="text-sm opacity-80">|</span>
             <button className="text-sm hover:underline" onClick={onBulkDelete}>
-                {t('common.deleteAll')}
+              {t('common.deleteAll')}
             </button>
           </div>
-          
+
           {onBulkDelete && (
-             <Button 
-               variant="primary" 
-               size="sm" 
-               className="bg-error hover:bg-error/90 border-error text-white h-8"
-               leftIcon={<Trash2 size={14} />}
-               onClick={onBulkDelete}
-             >
-               {t('common.delete')} {selectedCount} {t('common.items')}
-             </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="bg-error hover:bg-error/90 border-error text-white h-8"
+              leftIcon={<Trash2 size={14} />}
+              onClick={onBulkDelete}
+            >
+              {t('common.delete')} {selectedCount} {t('common.items')}
+            </Button>
           )}
         </div>
       )}

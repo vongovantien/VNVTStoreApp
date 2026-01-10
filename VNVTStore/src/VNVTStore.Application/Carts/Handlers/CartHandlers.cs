@@ -78,7 +78,7 @@ public class CartHandlers :
                 Quantity = request.Quantity,
                 Size = request.Size,
                 Color = request.Color,
-                AddedAt = DateTime.UtcNow
+                AddedAt = DateTime.Now
             };
             cart.TblCartItems.Add(cartItem);
         }

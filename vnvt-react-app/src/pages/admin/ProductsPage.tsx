@@ -1,11 +1,9 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Eye, Star, Loader2, AlertCircle, ChevronUp, ChevronDown } from 'lucide-react';
-import { Button, Badge, Modal, Pagination, ConfirmDialog } from '@/components/ui';
+import { Plus, Edit2, Trash2, Eye, Star } from 'lucide-react';
+import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { formatCurrency } from '@/utils/format';
 import { ProductForm, ProductFormData } from './forms/ProductForm';
-import { TableToolbar } from './components/TableToolbar';
-import { exportToCSV } from '@/utils/export';
 import {
   useProducts,
   useCreateProduct,
@@ -14,8 +12,7 @@ import {
 } from '@/hooks';
 import { useToast } from '@/store';
 import type { Product } from '@/types';
-import { AdminToolbar } from '@/components/admin/AdminToolbar';
-import { ColumnVisibility } from '@/components/admin/ColumnVisibility';
+import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 
 // Types for sorting
 type SortField = 'name' | 'price' | 'stock' | 'createdAt';
@@ -23,135 +20,188 @@ type SortDirection = 'asc' | 'desc';
 
 export const ProductsPage = () => {
   const { t } = useTranslation();
+  const toast = useToast();
 
-  // Pagination and Search State
+  // State
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchField, setSearchField] = useState<string>('all');
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
   const pageSize: number = 10;
 
-  // Sorting State
+  // Sorting
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
 
-  // Fetch products from API with sorting
+  // Fetch API
   const {
     data: productsData,
     isLoading,
+    isFetching,
     isError,
     error,
-    isFetching,
   } = useProducts({
     pageIndex: currentPage,
     pageSize,
     search: searchQuery || undefined,
     sortField,
     sortDir,
+    ...advancedFilters
   });
-
-  // Mutations
-  const createMutation = useCreateProduct();
-  const updateMutation = useUpdateProduct();
-  const deleteMutation = useDeleteProduct();
-  const toast = useToast();
 
   const products: Product[] = productsData?.products || [];
   const totalPages: number = productsData?.totalPages || 1;
   const totalItems: number = productsData?.totalItems || 0;
 
-  // Selection State (for bulk operations)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Mutations
+  const createMutation = useCreateProduct();
+  const updateMutation = useUpdateProduct();
+  const deleteMutation = useDeleteProduct();
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
-  // Toolbar & Column Visibility State
-  const [showSearch, setShowSearch] = useState(true);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([
-    'name', 'category', 'price', 'stock', 'rating', 'status', 'actions'
-  ]);
-  
-  const columnsDef = [
-    { id: 'name', label: t('admin.columns.name') },
-    { id: 'category', label: t('admin.columns.category') },
-    { id: 'price', label: t('admin.columns.price') },
-    { id: 'stock', label: t('admin.columns.stock') },
-    { id: 'rating', label: t('admin.columns.rating') },
-    { id: 'status', label: t('admin.columns.status') },
-    { id: 'actions', label: t('admin.columns.action') },
+  // Column Definitions
+  const columns: DataTableColumn<Product>[] = [
+    {
+      id: 'name',
+      header: t('admin.columns.name'),
+      accessor: (product) => (
+        <div className="flex items-center gap-3">
+          <img
+            src={product.images?.[0] || 'https://placehold.co/100?text=No+Image'}
+            alt={product.name}
+            className="w-12 h-12 rounded-lg object-cover border bg-white"
+          />
+          <div>
+            <p className="font-medium text-sm text-slate-700 dark:text-slate-200">{product.name}</p>
+            <p className="text-xs text-slate-500">{product.brand}</p>
+          </div>
+        </div>
+      ),
+      sortable: true
+    },
+    {
+      id: 'category',
+      header: t('admin.columns.category'),
+      accessor: 'category',
+    },
+    {
+      id: 'price',
+      header: t('admin.columns.price'),
+      accessor: (product) => (
+        product.price > 0 ? (
+          <span className="font-semibold text-rose-600">{formatCurrency(product.price)}</span>
+        ) : (
+          <Badge color="primary" size="sm">Liên hệ</Badge>
+        )
+      ),
+      className: 'text-right',
+      headerClassName: 'text-right',
+      sortable: true
+    },
+    {
+      id: 'stock',
+      header: t('admin.columns.stock'),
+      accessor: (product) => (
+        <span className={product.stock > 10 ? 'text-emerald-600 font-medium' : product.stock > 0 ? 'text-amber-600 font-medium' : 'text-rose-600 font-medium'}>
+          {product.stock}
+        </span>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center',
+      sortable: true
+    },
+    {
+      id: 'rating',
+      header: t('admin.columns.rating'),
+      accessor: (product) => (
+        <div className="flex items-center justify-center gap-1 text-sm">
+          <Star size={16} className="text-amber-400 fill-amber-400" />
+          <span>{product.rating} ({product.reviewCount})</span>
+        </div>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center'
+    },
+    {
+      id: 'status',
+      header: t('admin.columns.status'),
+      accessor: (product) => (
+        <Badge
+          color={product.isActive !== false ? 'success' : 'secondary'}
+          size="sm"
+          variant="outline"
+        >
+          {product.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
+        </Badge>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center'
+    },
+    {
+      id: 'actions',
+      header: t('admin.columns.action'),
+      accessor: (product) => (
+        <div className="flex items-center justify-center gap-2">
+          <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500" title="Xem">
+            <Eye size={16} />
+          </button>
+          <button
+            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600"
+            title="Sửa"
+            onClick={() => {
+              setEditingProduct(product);
+              setIsFormOpen(true);
+            }}
+          >
+            <Edit2 size={16} />
+          </button>
+          <button
+            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors text-rose-600"
+            title="Xóa"
+            onClick={() => setProductToDelete(product)}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center'
+    }
   ];
 
-  // Sorting Handler
-  const handleSort = useCallback((field: SortField): void => {
-    if (sortField === field) {
-      // Toggle direction if same field
-      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      // New field, default to ascending
-      setSortField(field);
-      setSortDir('asc');
-    }
-    setCurrentPage(1); // Reset to first page on sort
-  }, [sortField]);
-
-  // Sort Icon Component
-  const SortIcon = ({ field }: { field: SortField }): JSX.Element | null => {
-    if (sortField !== field) return null;
-    return sortDir === 'asc' 
-      ? <ChevronUp size={14} className="inline ml-1" />
-      : <ChevronDown size={14} className="inline ml-1" />;
-  };
-
-  // Selection Handlers
-  const handleSelectAll = useCallback(
-    (checked: boolean): void => {
-      if (checked) {
-        setSelectedIds(new Set(products.map((p) => p.id)));
-      } else {
-        setSelectedIds(new Set());
-      }
-    },
-    [products]
-  );
-
-  const handleSelectRow = useCallback((id: string): void => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
-
   // Handlers
-  const handleExport = (): void => {
-    exportToCSV(products, 'products_export');
+  const handleSort = (field: string, dir: 'asc' | 'desc') => {
+    setSortField(field as SortField);
+    setSortDir(dir);
+    setCurrentPage(1);
   };
 
-  const handleBulkDelete = async (): Promise<void> => {
-    if (confirm(t('common.confirmDelete', { count: selectedIds.size }))) {
-      for (const id of selectedIds) {
-        await deleteMutation.mutateAsync(id);
-      }
-      setSelectedIds(new Set());
+  const handleAdvancedSearch = (filters: Record<string, string>) => {
+    setAdvancedFilters(filters);
+    setCurrentPage(1);
+    // Extract text search if present
+    if (filters.search) {
+      setSearchQuery(filters.search);
     }
   };
 
-  const handleAddProduct = async (data: ProductFormData): Promise<void> => {
+  const handleCreate = async (data: ProductFormData) => {
     try {
       const result = await createMutation.mutateAsync({
         name: data.name,
         description: data.description,
         price: data.price,
-        categoryCode: data.categoryId,
+        categoryId: data.categoryId,
         stockQuantity: data.stock,
+        color: data.color,
+        power: data.power,
+        voltage: data.voltage,
+        material: data.material,
+        size: data.size,
       });
-
       if (result.success) {
         setIsFormOpen(false);
         toast.success(t('common.createSuccess'));
@@ -159,12 +209,11 @@ export const ProductsPage = () => {
         toast.error(result.message || t('common.createError'));
       }
     } catch (err) {
-      console.error('Failed to create product:', err);
       toast.error(t('common.createError'));
     }
   };
 
-  const handleEditProduct = async (data: ProductFormData): Promise<void> => {
+  const handleUpdate = async (data: ProductFormData) => {
     if (!editingProduct) return;
     try {
       const result = await updateMutation.mutateAsync({
@@ -175,9 +224,13 @@ export const ProductsPage = () => {
           price: data.price,
           categoryCode: data.categoryId,
           stockQuantity: data.stock,
+          color: data.color,
+          power: data.power,
+          voltage: data.voltage,
+          material: data.material,
+          size: data.size,
         },
       });
-
       if (result.success) {
         setIsFormOpen(false);
         setEditingProduct(null);
@@ -186,12 +239,11 @@ export const ProductsPage = () => {
         toast.error(result.message || t('common.updateError'));
       }
     } catch (err) {
-      console.error('Failed to update product:', err);
       toast.error(t('common.updateError'));
     }
   };
 
-  const handleDeleteProduct = async (): Promise<void> => {
+  const handleDelete = async () => {
     if (productToDelete) {
       try {
         await deleteMutation.mutateAsync(productToDelete.id);
@@ -203,269 +255,85 @@ export const ProductsPage = () => {
     }
   };
 
-
-  const openEditModal = (product: Product): void => {
-    setEditingProduct(product);
-    setIsFormOpen(true);
-  };
-
-  // Error State - show as alert, not full page
-  const showError = isError && !isLoading;
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">{t('admin.products')}</h1>
-        <Button leftIcon={<Plus size={20} />} onClick={() => { setEditingProduct(null); setIsFormOpen(true); }}>
-          {t('admin.addProduct')}
-        </Button>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.products')}</h1>
       </div>
 
+      <DataTable
+        columns={columns}
+        data={products}
+        keyField="id"
+        isLoading={isLoading}
+        isFetching={isFetching}
+        error={isError ? (error as Error) : null}
 
+        // Sorting
+        externalSortField={sortField}
+        externalSortDir={sortDir}
+        onExternalSort={handleSort}
 
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center gap-4 bg-white dark:bg-slate-800 p-2 rounded-lg border shadow-sm">
-            <AdminToolbar 
-                onAdd={() => { setEditingProduct(null); setIsFormOpen(true); }}
-                onEdit={() => { 
-                   if (selectedIds.size === 1) {
-                      const id = Array.from(selectedIds)[0];
-                      const product = products.find(p => p.id === id);
-                      if (product) openEditModal(product);
-                   }
-                }}
-                onDelete={handleBulkDelete}
-                onSearchClick={() => setShowSearch(!showSearch)}
-                onReset={() => {
-                  setSearchQuery('');
-                  setSearchField('all');
-                  setSortField('createdAt');
-                  setSortDir('desc');
-                  setCurrentPage(1);
-                  setSelectedIds(new Set());
-                }}
-                onExport={handleExport}
-                isSearchActive={showSearch}
-                selectedCount={selectedIds.size}
-            />
-            <ColumnVisibility 
-                columns={columnsDef} 
-                visibleColumns={visibleColumns} 
-                onChange={setVisibleColumns} 
-            />
-        </div>
+        // Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
 
-        {showSearch && (
-          <TableToolbar
-            searchQuery={searchQuery}
-            onSearchChange={(val: string) => {
-              setSearchQuery(val);
-              setCurrentPage(1);
-            }}
-            searchField={searchField}
-            onSearchFieldChange={setSearchField}
-            searchOptions={[
-              { label: 'Tên sản phẩm', value: 'name' },
-              { label: 'Danh mục', value: 'category' },
-              { label: 'Hãng', value: 'brand' }
-            ]}
-            selectedCount={selectedIds.size}
-            onBulkDelete={handleBulkDelete}
-            onExport={handleExport}
-          />
-        )}
-      </div>
+        // Actions
+        onAdd={() => { setEditingProduct(null); setIsFormOpen(true); }}
+        onEdit={(product) => { setEditingProduct(product); setIsFormOpen(true); }}
+        onDelete={(product) => setProductToDelete(product)}
 
-      {/* Table */}
-      <div className="bg-primary rounded-xl overflow-hidden shadow-sm border relative min-h-[400px]">
-        {/* Loading/Fetching overlay - show on initial load or refetch */}
-        {(isLoading || isFetching) && (
-          <div className="absolute inset-0 bg-primary/70 flex items-center justify-center z-10">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-              <span className="text-secondary text-sm">Đang tải...</span>
-            </div>
-          </div>
-        )}
+        // Search & Filters
+        onAdvancedSearch={handleAdvancedSearch}
+        advancedFilterDefs={[
+          {
+            id: 'name',
+            label: t('admin.columns.name'),
+            type: 'text',
+            placeholder: t('admin.placeholders.searchProduct') || 'Tên sản phẩm...'
+          },
+          {
+            id: 'category',
+            label: t('admin.columns.category'),
+            type: 'text',
+            placeholder: t('admin.columns.category')
+          },
+          {
+            id: 'price',
+            label: t('admin.columns.price'),
+            type: 'number',
+            placeholder: 'Giá từ...'
+          },
+          {
+            id: 'stock',
+            label: t('admin.columns.stock'),
+            type: 'number',
+            placeholder: 'Tồn kho từ...'
+          },
+          {
+            id: 'rating',
+            label: t('admin.columns.rating'),
+            type: 'number',
+            placeholder: 'Đánh giá từ...'
+          },
+          {
+            id: 'status',
+            label: t('admin.columns.status'),
+            type: 'select',
+            options: [
+              { value: 'active', label: t('common.status.active') },
+              { value: 'inactive', label: t('common.status.inactive') }
+            ]
+          }
+        ]}
+        exportFilename="products_export"
+        enableColumnVisibility={true}
+      />
 
-        {/* Error overlay */}
-        {showError && (
-          <div className="absolute inset-0 bg-primary flex items-center justify-center z-10">
-            <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-              <h3 className="font-semibold mb-2">Có lỗi xảy ra</h3>
-              <p className="text-secondary text-sm">
-                {error instanceof Error ? error.message : 'Không thể tải dữ liệu'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1000px]">
-            <thead className="bg-secondary border-b">
-              <tr>
-                <th className="px-4 py-3 w-[40px]">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300"
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    checked={products.length > 0 && selectedIds.size >= products.length}
-                  />
-                </th>
-                {visibleColumns.includes('name') && (
-                  <th 
-                    className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-tertiary/10 transition-colors"
-                    onClick={() => handleSort('name')}
-                  >
-                    {t('admin.columns.name')} <SortIcon field="name" />
-                  </th>
-                )}
-                {visibleColumns.includes('category') && (
-                  <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.category')}</th>
-                )}
-                {visibleColumns.includes('price') && (
-                  <th 
-                    className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-tertiary/10 transition-colors"
-                    onClick={() => handleSort('price')}
-                  >
-                    {t('admin.columns.price')} <SortIcon field="price" />
-                  </th>
-                )}
-                {visibleColumns.includes('stock') && (
-                  <th 
-                    className="px-4 py-3 text-center text-sm font-semibold cursor-pointer hover:bg-tertiary/10 transition-colors"
-                    onClick={() => handleSort('stock')}
-                  >
-                    {t('admin.columns.stock')} <SortIcon field="stock" />
-                  </th>
-                )}
-                {visibleColumns.includes('rating') && (
-                  <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.rating')}</th>
-                )}
-                {visibleColumns.includes('status') && (
-                  <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.status')}</th>
-                )}
-                {visibleColumns.includes('actions') && (
-                  <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.action')}</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {products.length === 0 ? (
-                <tr>
-                  <td colSpan={visibleColumns.length + 1} className="px-4 py-12 text-center text-secondary">
-                    Không có sản phẩm nào
-                  </td>
-                </tr>
-              ) : (
-                products.map((product) => (
-                  <tr key={product.id} className={`border-b last:border-0 hover:bg-secondary/50 transition-colors ${selectedIds.has(product.id) ? 'bg-accent/5' : ''}`}>
-
-                    <td className="px-4 py-4">
-                      <input
-                        type="checkbox"
-                        className="rounded border-gray-300"
-                        checked={selectedIds.has(product.id)}
-                        onChange={() => handleSelectRow(product.id)}
-                      />
-                    </td>
-                    {visibleColumns.includes('name') && (
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={product.images?.[0] || 'https://placehold.co/100?text=No+Image'}
-                            alt={product.name}
-                            className="w-12 h-12 rounded-lg object-cover border"
-                          />
-                          <div>
-                            <p className="font-medium text-sm">{product.name}</p>
-                            <p className="text-xs text-tertiary">{product.brand}</p>
-                          </div>
-                        </div>
-                      </td>
-                    )}
-                    {visibleColumns.includes('category') && (
-                      <td className="px-4 py-4 text-secondary">{product.category}</td>
-                    )}
-                    {visibleColumns.includes('price') && (
-                      <td className="px-4 py-4 text-right">
-                        {product.price > 0 ? (
-                          <span className="font-semibold text-error">{formatCurrency(product.price)}</span>
-                        ) : (
-                          <Badge color="primary" size="sm">Liên hệ</Badge>
-                        )}
-                      </td>
-                    )}
-                    {visibleColumns.includes('stock') && (
-                      <td className="px-4 py-4 text-center">
-                        <span className={product.stock > 10 ? 'text-success' : product.stock > 0 ? 'text-warning' : 'text-error'}>
-                          {product.stock}
-                        </span>
-                      </td>
-                    )}
-                    {visibleColumns.includes('rating') && (
-                      <td className="px-4 py-4 text-center">
-                        <div className="flex items-center justify-center gap-1 text-sm">
-                          <Star size={16} className="text-warning fill-warning" />
-                          <span>{product.rating} ({product.reviewCount})</span>
-                        </div>
-                      </td>
-                    )}
-                    {visibleColumns.includes('status') && (
-                      <td className="px-4 py-4 text-center">
-                        <Badge 
-                          color={product.isActive !== false ? 'success' : 'secondary'} 
-                          size="sm"
-                          variant="outline"
-                        >
-                          {product.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
-                        </Badge>
-                      </td>
-                    )}
-                    {visibleColumns.includes('actions') && (
-                      <td className="px-4 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 hover:bg-secondary rounded-lg transition-colors" title="Xem">
-                            <Eye size={16} className="text-secondary" />
-                          </button>
-                          <button
-                            className="p-2 hover:bg-secondary rounded-lg transition-colors"
-                            title="Sửa"
-                            onClick={() => openEditModal(product)}
-                          >
-                            <Edit2 size={16} className="text-primary" />
-                          </button>
-                          <button
-                            className="p-2 hover:bg-error/10 rounded-lg transition-colors"
-                            title="Xóa"
-                            onClick={() => setProductToDelete(product)}
-                          >
-                            <Trash2 size={16} className="text-error" />
-                          </button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-        />
-      </div>
-
-      {/* Product Form Modal */}
-      {/* Product Form Modal */}
+      {/* Form Modal */}
       <Modal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -480,19 +348,23 @@ export const ProductsPage = () => {
             categoryId: editingProduct.categoryId,
             stock: editingProduct.stock,
             image: editingProduct.image,
+            color: editingProduct.color,
+            power: editingProduct.power,
+            voltage: editingProduct.voltage,
+            material: editingProduct.material,
+            size: editingProduct.size,
           } : undefined}
-          onSubmit={editingProduct ? handleEditProduct : handleAddProduct}
+          onSubmit={editingProduct ? handleUpdate : handleCreate}
           onCancel={() => setIsFormOpen(false)}
           isLoading={createMutation.isPending || updateMutation.isPending}
         />
       </Modal>
 
-
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!productToDelete}
         onClose={() => setProductToDelete(null)}
-        onConfirm={handleDeleteProduct}
+        onConfirm={handleDelete}
         title={t('admin.actions.delete')}
         message={t('common.confirmDelete', { count: 1 })}
         confirmText={t('common.delete')}

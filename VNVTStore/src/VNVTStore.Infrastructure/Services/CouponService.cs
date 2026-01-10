@@ -35,7 +35,7 @@ public class CouponService : ICouponService
             return Result.Failure<CouponDto>(Error.Validation(MessageConstants.CouponNotActive));
 
         // Validate date range
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         if (now < promotion.StartDate || now > promotion.EndDate)
             return Result.Failure<CouponDto>(Error.Validation(MessageConstants.CouponExpired));
 

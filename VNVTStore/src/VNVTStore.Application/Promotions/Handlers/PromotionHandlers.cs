@@ -61,7 +61,7 @@ public class PromotionHandlers : BaseHandler<TblPromotion>,
 
     public async Task<Result<IEnumerable<PromotionDto>>> Handle(GetActivePromotionsQuery request, CancellationToken cancellationToken)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         var promotions = await Repository.AsQueryable()
             .Where(p => p.IsActive == true && p.StartDate <= now && p.EndDate >= now)
             .ToListAsync(cancellationToken);

@@ -23,7 +23,6 @@
     "notFound": "Không tìm thấy trang",
     "backToProducts": "Quay lại sản phẩm",
     "backToHome": "Về trang chủ",
-
     "browseProducts": "Xem sản phẩm",
     "status": {
       "active": "Hoạt động",
@@ -41,11 +40,16 @@
     "update": "Cập nhật",
     "confirmDelete": "Bạn có chắc chắn muốn xóa {count} mục đã chọn?",
     "createSuccess": "Tạo mới thành công",
+    "apply": "Áp dụng",
+    "close": "Đóng",
+    "reset": "Đặt lại",
     "updateSuccess": "Cập nhật thành công",
     "deleteSuccess": "Xóa thành công",
     "createError": "Tạo mới thất bại",
     "updateError": "Cập nhật thất bại",
-    "deleteError": "Xóa thất bại"
+    "deleteError": "Xóa thất bại",
+    "columnsVisible": "Cột hiển thị",
+    "columns": "Cột"
   },
   "admin": {
     "products": "Sản phẩm",
@@ -114,7 +118,10 @@
     },
     "filters": {
       "allStatus": "Tất cả trạng thái",
-      "filterByStatus": "Lọc theo trạng thái"
+      "fromDate": "Từ ngày",
+      "toDate": "Đến ngày",
+      "amountFrom": "Tổng tiền từ",
+      "amountTo": "Tổng tiền đến"
     },
     "status": {
       "pending": "Chờ xác nhận",
@@ -123,6 +130,10 @@
       "shipping": "Đang giao",
       "delivered": "Đã giao",
       "cancelled": "Đã hủy"
+    },
+    "placeholders": {
+      "searchCustomer": "Tìm kiếm khách hàng...",
+      "searchOrderCode": "Tìm kiếm mã đơn hàng..."
     },
     "actions": {
       "edit": "Sửa",

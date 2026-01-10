@@ -40,8 +40,8 @@ public class DashboardHandlersTests
         // Mock AsQueryable for ToListAsync calls
         var orders = new List<TblOrder>
         {
-            new TblOrder { OrderDate = DateTime.UtcNow, FinalAmount = 100 },
-            new TblOrder { OrderDate = DateTime.UtcNow.AddMonths(-1), FinalAmount = 90 }
+            new TblOrder { OrderDate = DateTime.Now, FinalAmount = 100 },
+            new TblOrder { OrderDate = DateTime.Now.AddMonths(-1), FinalAmount = 90 }
         };
         _orderRepoMock.Setup(r => r.AsQueryable()).Returns(orders.BuildMock());
 

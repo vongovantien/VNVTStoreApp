@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, User, Mail, Phone, ShoppingBag, Eye } from 'lucide-react';
-import { Button, Badge, Modal } from '@/components/ui';
+import { Mail, Phone, ShoppingBag, Eye } from 'lucide-react';
+import { Button, Modal } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 
 interface Customer {
   id: string;
@@ -17,109 +18,149 @@ interface Customer {
 
 export const CustomersPage = () => {
   const { t } = useTranslation();
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  // Mock customers with additional data
-  const customers = [
+  // Mock Data (Assuming hook or API call would be here)
+  const customersData: Customer[] = [
     { id: 'user-2', email: 'customer@email.com', name: 'Khách Hàng Demo', phone: '0909123456', role: 'customer' as const, createdAt: '2024-01-10', orders: 5, totalSpent: 25000000 },
     { id: 'user-3', email: 'nguyenvana@email.com', name: 'Nguyễn Văn A', phone: '0901234567', role: 'customer' as const, createdAt: '2024-01-15', orders: 12, totalSpent: 85000000 },
     { id: 'user-4', email: 'tranthib@email.com', name: 'Trần Thị B', phone: '0912345678', role: 'customer' as const, createdAt: '2024-01-20', orders: 3, totalSpent: 15000000 },
-  ].filter((c) =>
-    (c.name?.toLowerCase() || '').includes(searchQuery?.toLowerCase() || '') ||
-    (c.email?.toLowerCase() || '').includes(searchQuery?.toLowerCase() || '')
-  );
+  ];
+
+  const columns: DataTableColumn<Customer>[] = [
+    {
+      id: 'name',
+      header: t('admin.columns.customer'),
+      accessor: (customer) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
+            {customer.name.charAt(0)}
+          </div>
+          <p className="font-medium text-slate-800 dark:text-slate-100">{customer.name}</p>
+        </div>
+      ),
+      sortable: true
+    },
+    {
+      id: 'contact',
+      header: t('admin.columns.contact'),
+      accessor: (customer) => (
+        <div className="space-y-1">
+          <p className="text-sm flex items-center gap-2 text-slate-600 dark:text-slate-400">
+            <Mail size={14} className="text-blue-400" />
+            {customer.email}
+          </p>
+          {customer.phone && (
+            <p className="text-sm flex items-center gap-2 text-slate-500 dark:text-slate-500">
+              <Phone size={14} className="text-slate-400" />
+              {customer.phone}
+            </p>
+          )}
+        </div>
+      )
+    },
+    {
+      id: 'orders',
+      header: t('admin.orders'),
+      accessor: (customer) => (
+        <div className="flex items-center justify-center gap-1.5">
+          <ShoppingBag size={16} className="text-emerald-500" />
+          <span className="font-medium">{customer.orders}</span>
+        </div>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center',
+      sortable: true
+    },
+    {
+      id: 'totalSpent',
+      header: t('admin.columns.totalSpent'),
+      accessor: (customer) => (
+        <span className="font-semibold text-emerald-600">{formatCurrency(customer.totalSpent)}</span>
+      ),
+      className: 'text-right',
+      headerClassName: 'text-right',
+      sortable: true
+    },
+    {
+      id: 'joinDate',
+      header: t('admin.columns.joinDate'),
+      accessor: (customer) => <span className="text-slate-500">{formatDate(customer.createdAt)}</span>,
+      sortable: true
+    },
+    {
+      id: 'action',
+      header: t('admin.columns.action'),
+      accessor: (customer) => (
+        <div className="flex items-center justify-center">
+          <button
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500"
+            onClick={() => setSelectedCustomer(customer)}
+            title="Xem chi tiết"
+          >
+            <Eye size={16} />
+          </button>
+        </div>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center'
+    }
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">{t('admin.customers')}</h1>
-        <p className="text-secondary">Tổng: {customers.length} khách hàng</p>
-      </div>
+      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.customers')}</h1>
 
-      {/* Search */}
-      <div className="bg-primary rounded-xl p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
-            <input
-              type="text"
-              placeholder="Tìm theo tên, email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-primary"
-            />
-          </div>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={customersData}
+        keyField="id"
+        // Pass fake loading false
+        isLoading={false}
 
-      {/* Table */}
-      <div className="bg-primary rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]">
-            <thead className="bg-secondary">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.customer')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.contact')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.orders')}</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.totalSpent')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.joinDate')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.action')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((customer) => (
-                <tr key={customer.id} className="border-b last:border-0 hover:bg-secondary/50 transition-colors">
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-purple-500 flex items-center justify-center text-white font-bold">
-                        {customer.name.charAt(0)}
-                      </div>
-                      <p className="font-medium">{customer.name}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="space-y-1">
-                      <p className="text-sm flex items-center gap-2">
-                        <Mail size={14} className="text-tertiary" />
-                        {customer.email}
-                      </p>
-                      {customer.phone && (
-                        <p className="text-sm flex items-center gap-2 text-secondary">
-                          <Phone size={14} className="text-tertiary" />
-                          {customer.phone}
-                        </p>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <span className="inline-flex items-center gap-1">
-                      <ShoppingBag size={14} className="text-tertiary" />
-                      {customer.orders}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-right font-semibold text-success">
-                    {formatCurrency(customer.totalSpent)}
-                  </td>
-                  <td className="px-4 py-4 text-secondary">{formatDate(customer.createdAt)}</td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center justify-center">
-                      <button
-                        className="p-2 hover:bg-secondary rounded-lg transition-colors"
-                        onClick={() => setSelectedCustomer(customer)}
-                        title="Xem chi tiết"
-                      >
-                        <Eye size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        // Search & Filter
+        onAdvancedSearch={() => { }} // Client side filtering not strictly implemented for mock, but prop enables panel
+        advancedFilterDefs={[
+          {
+            id: 'name',
+            label: t('admin.columns.customer'),
+            type: 'text',
+            placeholder: 'Tên khách hàng...'
+          },
+          {
+            id: 'email',
+            label: 'Email',
+            type: 'text',
+          },
+          {
+            id: 'phone',
+            label: t('admin.columns.phone') || 'Số điện thoại',
+            type: 'text',
+          },
+          {
+            id: 'orders',
+            label: t('admin.orders'),
+            type: 'number',
+            placeholder: 'Số đơn hàng từ...'
+          },
+          {
+            id: 'totalSpent',
+            label: t('admin.columns.totalSpent'),
+            type: 'number',
+            placeholder: 'Chi tiêu từ...'
+          },
+          {
+            id: 'joinDate',
+            label: t('admin.columns.joinDate'),
+            type: 'date'
+          }
+        ]}
+
+        // Visibility
+        enableColumnVisibility={true}
+        exportFilename="customers_export"
+        emptyMessage={t('common.noResults')}
+      />
 
       {/* Customer Detail Modal */}
       <Modal
@@ -131,36 +172,36 @@ export const CustomersPage = () => {
         {selectedCustomer && (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-purple-500 flex items-center justify-center text-white font-bold text-2xl">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-2xl shadow-md">
                 {selectedCustomer.name.charAt(0)}
               </div>
               <div>
-                <h2 className="text-xl font-bold">{selectedCustomer.name}</h2>
-                <p className="text-secondary">{selectedCustomer.email}</p>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">{selectedCustomer.name}</h2>
+                <p className="text-slate-500">{selectedCustomer.email}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-secondary rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold">{selectedCustomer.orders}</p>
-                <p className="text-sm text-secondary">{t('admin.orders')}</p>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 text-center border border-slate-100 dark:border-slate-700">
+                <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedCustomer.orders}</p>
+                <p className="text-sm text-slate-500">{t('admin.orders')}</p>
               </div>
-              <div className="bg-secondary rounded-lg p-4 text-center">
-                <p className="text-xl font-bold text-success">{formatCurrency(selectedCustomer.totalSpent)}</p>
-                <p className="text-sm text-secondary">{t('admin.columns.totalSpent')}</p>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 text-center border border-slate-100 dark:border-slate-700">
+                <p className="text-xl font-bold text-emerald-600">{formatCurrency(selectedCustomer.totalSpent)}</p>
+                <p className="text-sm text-slate-500">{t('admin.columns.totalSpent')}</p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-semibold">{t('admin.columns.contact')}</h3>
-              <div className="space-y-2 text-secondary">
+              <h3 className="font-semibold text-slate-800 dark:text-white">{t('admin.columns.contact')}</h3>
+              <div className="space-y-2 text-slate-600 dark:text-slate-400">
                 <p className="flex items-center gap-2">
-                  <Mail size={16} />
+                  <Mail size={16} className="text-blue-500" />
                   {selectedCustomer.email}
                 </p>
                 {selectedCustomer.phone && (
                   <p className="flex items-center gap-2">
-                    <Phone size={16} />
+                    <Phone size={16} className="text-slate-400" />
                     {selectedCustomer.phone}
                   </p>
                 )}

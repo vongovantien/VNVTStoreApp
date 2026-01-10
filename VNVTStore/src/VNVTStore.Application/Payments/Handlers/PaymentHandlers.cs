@@ -53,7 +53,7 @@ public class PaymentHandlers :
             Method = request.PaymentMethod,
             Amount = request.Amount,
             Status = PaymentStatus.Pending.ToString(),
-            PaymentDate = DateTime.UtcNow
+            PaymentDate = DateTime.Now
         };
 
         // Simulate external payment processing here if needed

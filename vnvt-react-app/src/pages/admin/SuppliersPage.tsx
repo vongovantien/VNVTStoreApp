@@ -190,25 +190,8 @@ export const SuppliersPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">{t('admin.suppliers')}</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['suppliers'] })}
-            leftIcon={<RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />}
-          >
-            {t('common.refresh') || 'Làm mới'}
-          </Button>
-          <Button leftIcon={<Plus size={20} />} onClick={openCreateModal}>
-            {t('messages.addSupplier')}
-          </Button>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.suppliers')}</h1>
 
-      {/* DataTable */}
       <DataTable
         columns={columns}
         data={suppliers}
@@ -224,7 +207,47 @@ export const SuppliersPage = () => {
           { label: t('admin.columns.name'), value: 'name' },
           { label: t('admin.columns.email'), value: 'email' },
           { label: t('admin.columns.phone'), value: 'phone' },
+          { label: t('admin.columns.contactPerson'), value: 'contactPerson' },
+          { label: t('admin.columns.taxCode'), value: 'taxCode' },
         ]}
+        advancedFilterDefs={[
+          {
+            id: 'name',
+            label: t('admin.columns.name'),
+            type: 'text',
+            placeholder: 'Tên nhà cung cấp...'
+          },
+          {
+            id: 'contactPerson',
+            label: t('admin.columns.contactPerson'),
+            type: 'text',
+          },
+          {
+            id: 'email',
+            label: t('admin.columns.email'),
+            type: 'text',
+          },
+          {
+            id: 'phone',
+            label: t('admin.columns.phone'),
+            type: 'text',
+          },
+          {
+            id: 'taxCode',
+            label: t('admin.columns.taxCode'),
+            type: 'text',
+          },
+          {
+            id: 'isActive',
+            label: t('admin.columns.status'),
+            type: 'select',
+            options: [
+              { value: 'true', label: t('common.active') },
+              { value: 'false', label: t('common.inactive') }
+            ]
+          }
+        ]}
+        enableColumnVisibility={true}
         emptyMessage={t('common.noResults')}
       />
 

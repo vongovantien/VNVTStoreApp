@@ -39,11 +39,16 @@
     "update": "Update",
     "confirmDelete": "Are you sure you want to delete {count} selected items?",
     "createSuccess": "Create successful",
+    "apply": "Apply",
+    "close": "Close",
+    "reset": "Reset",
     "updateSuccess": "Update successful",
     "deleteSuccess": "Delete successful",
     "createError": "Create failed",
     "updateError": "Update failed",
-    "deleteError": "Delete failed"
+    "deleteError": "Delete failed",
+    "columnsVisible": "Columns Visible",
+    "columns": "Columns"
   },
   "admin": {
     "products": "Products",
@@ -112,7 +117,11 @@
     },
     "filters": {
       "allStatus": "All Status",
-      "filterByStatus": "Filter by Status"
+      "filterByStatus": "Filter by Status",
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "amountFrom": "Amount From",
+      "amountTo": "Amount To"
     },
     "status": {
       "pending": "Pending",
@@ -121,6 +130,10 @@
       "shipping": "Shipping",
       "delivered": "Delivered",
       "cancelled": "Cancelled"
+    },
+    "placeholders": {
+      "searchCustomer": "Search Customer...",
+      "searchOrderCode": "Search Order Code..."
     },
     "actions": {
       "edit": "Edit",

@@ -100,7 +100,7 @@ public class PaymentHandlersTests
             new TblPayment { 
                 Code = "P1", 
                 OrderCodeNavigation = new TblOrder { UserCode = userCode },
-                PaymentDate = DateTime.UtcNow 
+                PaymentDate = DateTime.Now 
             }
         }.BuildMock();
 

@@ -1,6 +1,0 @@
-@vnvt_back_end.API_HostAddress = http://localhost:5234
-
-GET {{vnvt_back_end.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

@@ -65,7 +65,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.LinkText).HasMaxLength(50);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Priority).HasDefaultValue(0);
         });
@@ -86,7 +86,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("'Vietnam'::character varying");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsDefault).HasDefaultValue(false);
             entity.Property(e => e.PostalCode).HasMaxLength(10);
             entity.Property(e => e.State).HasMaxLength(50);
@@ -110,10 +110,10 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("('CRT'::text || lpad((nextval('cart_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.UserCode).HasMaxLength(10);
 
             entity.HasOne(d => d.UserCodeNavigation).WithMany(p => p.TblCarts)
@@ -132,7 +132,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("('CRI'::text || lpad((nextval('cartitem_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.AddedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.CartCode).HasMaxLength(10);
             entity.Property(e => e.ProductCode).HasMaxLength(10);
             entity.Property(e => e.Quantity).HasDefaultValue(1);
@@ -205,7 +205,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.FinalAmount).HasPrecision(15, 2);
             entity.Property(e => e.OrderDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasDefaultValueSql("'pending'::character varying");
@@ -267,7 +267,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.OrderCode).HasMaxLength(10);
             entity.Property(e => e.PaymentDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasDefaultValueSql("'pending'::character varying");
@@ -297,7 +297,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.CostPrice).HasPrecision(15, 2);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Price).HasPrecision(15, 2);
@@ -373,12 +373,12 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("('PROM'::text || lpad((nextval('promotion_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.DiscountType).HasMaxLength(20);
             entity.Property(e => e.DiscountValue).HasPrecision(15, 2);
-            entity.Property(e => e.EndDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.EndDate).HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.MaxDiscountAmount).HasPrecision(15, 2);
             entity.Property(e => e.MinOrderAmount).HasPrecision(15, 2);
             entity.Property(e => e.Name).HasMaxLength(100);
-            entity.Property(e => e.StartDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.StartDate).HasColumnType("timestamp with time zone");
         });
 
         modelBuilder.Entity<TblReview>(entity =>
@@ -392,7 +392,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("('REV'::text || lpad((nextval('review_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsApproved).HasDefaultValue(false);
             entity.Property(e => e.OrderItemCode).HasMaxLength(10);
             entity.Property(e => e.UserCode).HasMaxLength(10);
@@ -436,7 +436,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("('QT'::text || lpad((nextval('quote_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasDefaultValueSql("'pending'::character varying");
@@ -470,7 +470,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("('USR'::text || lpad((nextval('user_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
@@ -480,7 +480,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("'customer'::character varying");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Username).HasMaxLength(50);
         });
         modelBuilder.HasSequence("address_code_seq");
@@ -499,6 +499,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.HasSequence("quote_code_seq");
         modelBuilder.HasSequence("user_code_seq");
         modelBuilder.HasSequence("banner_code_seq");
+
+
 
 
         OnModelCreatingPartial(modelBuilder);

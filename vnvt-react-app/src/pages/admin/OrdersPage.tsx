@@ -6,15 +6,21 @@ import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
 import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/utils/format';
 import type { OrderDto, OrderItemDto } from '@/services/orderService';
 import { AdminToolbar } from '@/components/admin/AdminToolbar';
+import { ColumnVisibility } from '@/components/admin/ColumnVisibility';
+import { DataTable } from '@/components/common';
 import { TableToolbar } from './components/TableToolbar';
 import { exportToCSV } from '@/utils/export';
+import { DataTableColumn } from '@/components/common/DataTable';
 
 export const OrdersPage = () => {
   const { t } = useTranslation();
+  const updateStatusMutation = useUpdateOrderStatus();
+
+  // State
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<OrderDto | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
 
   // Sorting
   type SortField = 'orderDate' | 'totalAmount' | 'status';
@@ -22,34 +28,179 @@ export const OrdersPage = () => {
   const [sortField, setSortField] = useState<SortField>('orderDate');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDir('desc');
+  // Actions
+  const updateStatus = (orderId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ code: orderId, status: newStatus });
+    if (selectedOrder && selectedOrder.code === orderId) {
+      setSelectedOrder({ ...selectedOrder, status: newStatus });
     }
   };
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null;
-    return sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+  const handlePrintInvoice = () => {
+    window.print();
   };
 
-  // Fetch orders
+  // Column Definitions
+  const columns: DataTableColumn<OrderDto>[] = [
+    {
+      id: 'code',
+      header: t('admin.columns.orderCode'),
+      accessor: (row) => <span className="font-medium">{row.code}</span>,
+      sortable: true
+    },
+    {
+      id: 'customer',
+      header: t('admin.columns.customer'),
+      accessor: (row) => (
+        <div>
+          <p className="font-medium">{row.shippingName || row.userCode}</p>
+          <p className="text-xs text-tertiary">{row.shippingPhone || '-'}</p>
+        </div>
+      )
+    },
+    {
+      id: 'products',
+      header: t('admin.products'),
+      accessor: (row) => <span>{row.orderItems?.length || 0} sản phẩm</span>,
+      className: 'text-center',
+      headerClassName: 'text-center'
+    },
+    {
+      id: 'total',
+      header: t('admin.columns.total'),
+      accessor: (row) => <span className="font-semibold text-error">{formatCurrency(row.finalAmount)}</span>,
+      className: 'text-right',
+      headerClassName: 'text-right',
+      sortable: true
+    },
+    {
+      id: 'payment',
+      header: t('admin.columns.payment'),
+      accessor: (row) => (
+        <Badge
+          color={row.paymentStatus === 'paid' ? 'success' : row.paymentStatus === 'pending' ? 'warning' : 'error'}
+          size="sm"
+        >
+          {row.paymentStatus === 'paid' ? 'Đã thanh toán' : row.paymentStatus === 'pending' ? 'Chờ thanh toán' : 'Thất bại'}
+        </Badge>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center'
+    },
+    {
+      id: 'status',
+      header: t('admin.columns.status'),
+      accessor: (row) => (
+        <Badge color={getStatusColor(row.status) as any} size="sm">
+          {getStatusText(row.status)}
+        </Badge>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center',
+      sortable: true
+    },
+    {
+      id: 'date',
+      header: t('admin.columns.date'),
+      accessor: (row) => <span className="text-secondary text-sm">{formatDate(row.createdAt)}</span>,
+      sortable: true
+    },
+    {
+      id: 'action',
+      header: t('admin.columns.action'),
+      className: 'text-center',
+      headerClassName: 'text-center',
+      accessor: (order) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            className="p-2 hover:bg-secondary rounded-lg transition-colors"
+            onClick={() => setSelectedOrder(order)}
+            title="Xem chi tiết"
+          >
+            <Eye size={16} />
+          </button>
+
+          {/* Workflow Actions */}
+          {order.status === 'pending' && (
+            <button
+              className="p-2 hover:bg-success/10 rounded-lg transition-colors"
+              title="Xác nhận đơn"
+              onClick={() => updateStatus(order.code, 'confirmed')}
+            >
+              <Check size={16} className="text-success" />
+            </button>
+          )}
+
+          {order.status === 'confirmed' && (
+            <button
+              className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
+              title="Giao hàng"
+              onClick={() => updateStatus(order.code, 'shipping')}
+            >
+              <Truck size={16} className="text-primary" />
+            </button>
+          )}
+
+          {order.status === 'shipping' && (
+            <button
+              className="p-2 hover:bg-success/10 rounded-lg transition-colors"
+              title="Đã giao"
+              onClick={() => updateStatus(order.code, 'delivered')}
+            >
+              <Package size={16} className="text-success" />
+            </button>
+          )}
+
+          {order.status === 'delivered' && (
+            <button
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
+              title="In hóa đơn"
+              onClick={handlePrintInvoice}
+            >
+              <Printer size={16} className="text-secondary" />
+            </button>
+          )}
+
+          {order.status === 'pending' && (
+            <button
+              className="p-2 hover:bg-error/10 rounded-lg transition-colors"
+              title="Hủy đơn"
+              onClick={() => updateStatus(order.code, 'cancelled')}
+            >
+              <X size={16} className="text-error" />
+            </button>
+          )}
+        </div>
+      )
+    }
+  ];
+
+  // Visible Columns State
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(columns.map(c => c.id));
+
+  // Fetch Data
   const { data: ordersData, isLoading, isFetching } = useAdminOrders({
     pageIndex: currentPage,
     pageSize: 10,
-    status: statusFilter !== 'all' ? statusFilter : undefined,
-    search: searchQuery || undefined
+    filters: {
+      ...advancedFilters,
+      ...(searchQuery ? { search: searchQuery } : {})
+    }
   });
-  
-  const updateStatusMutation = useUpdateOrderStatus();
 
   const orders = ordersData?.orders || [];
   const totalPages = ordersData?.totalPages || 1;
 
-  // Client-side sort (API might not support all sort fields)
+  const handleAdvancedSearch = (filters: Record<string, string>) => {
+    setAdvancedFilters(filters);
+    setCurrentPage(1);
+  };
+
+  // Selection & Toolbar State
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showSearch, setShowSearch] = useState(true);
+
+  // Sorting Handler
   const sortedOrders = [...orders].sort((a, b) => {
     let comparison = 0;
     if (sortField === 'orderDate') {
@@ -62,23 +213,22 @@ export const OrdersPage = () => {
     return sortDir === 'desc' ? -comparison : comparison;
   });
 
-  const updateStatus = (orderId: string, newStatus: string) => {
-    updateStatusMutation.mutate({ code: orderId, status: newStatus });
-    if (selectedOrder && selectedOrder.code === orderId) {
-      setSelectedOrder({ ...selectedOrder, status: newStatus });
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return null;
+    return sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('desc');
     }
   };
 
-  // Selection & Toolbar State
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [showSearch, setShowSearch] = useState(true);
-
   const handleExport = () => {
     exportToCSV(sortedOrders, 'orders_export');
-  };
-
-  const handlePrintInvoice = () => {
-    window.print();
   };
 
   return (
@@ -92,200 +242,85 @@ export const OrdersPage = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center gap-4 bg-white dark:bg-slate-800 p-2 rounded-lg border shadow-sm">
-          <AdminToolbar
-            onSearchClick={() => setShowSearch(!showSearch)}
-            onReset={() => {
-              setSearchQuery('');
-              setStatusFilter('all');
-              setSortField('orderDate');
-              setSortDir('desc');
-              setCurrentPage(1);
-              setSelectedIds(new Set());
-            }}
-            onExport={handleExport}
-            isSearchActive={showSearch}
-            selectedCount={selectedIds.size}
-          />
-        </div>
 
-        {showSearch && (
-          <TableToolbar
-            searchQuery={searchQuery}
-            onSearchChange={(val) => { setSearchQuery(val); setCurrentPage(1); }}
-            searchField="all"
-            onSearchFieldChange={() => {}}
-            searchOptions={[
-              { label: t('admin.columns.orderCode'), value: 'code' },
-              { label: t('admin.columns.customer'), value: 'customer' },
-            ]}
-            selectedCount={selectedIds.size}
-            onExport={handleExport}
-          />
-        )}
 
-        {/* Status Filter */}
-        <div className="flex gap-2">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:outline-none focus:border-primary bg-primary"
-          >
-            <option value="all">{t('admin.filters.allStatus')}</option>
-            <option value="pending">{t('admin.status.pending')}</option>
-            <option value="confirmed">{t('admin.status.confirmed')}</option>
-            <option value="processing">{t('admin.status.processing')}</option>
-            <option value="shipping">{t('admin.status.shipping')}</option>
-            <option value="delivered">{t('admin.status.delivered')}</option>
-            <option value="cancelled">{t('admin.status.cancelled')}</option>
-          </select>
-          <Badge color="warning">{orders.filter(o => o.status === 'pending').length} chờ xác nhận</Badge>
-          <Badge color="info">{orders.filter(o => o.status === 'shipping').length} đang giao</Badge>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={orders}
+        keyField="code"
+        isLoading={isLoading || isFetching}
+        onAdd={() => { }}
+        onEdit={(order) => setSelectedOrder(order)}
+        exportFilename="orders_export"
 
-      {/* Table */}
-      <div className="bg-primary rounded-xl overflow-hidden shadow-sm border">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px]">
-            <thead className="bg-secondary border-b">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.orderCode')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.customer')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.products')}</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">{t('admin.columns.total')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.payment')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.status')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">{t('admin.columns.date')}</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold">{t('admin.columns.action')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center">
-                    <Loader2 className="w-8 h-8 mx-auto animate-spin" />
-                  </td>
-                </tr>
-              ) : sortedOrders.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-secondary">
-                    Không có đơn hàng nào
-                  </td>
-                </tr>
-              ) : (
-                sortedOrders.map((order: OrderDto) => (
-                <tr key={order.code} className="border-b last:border-0 hover:bg-secondary/50 transition-colors">
-                  <td className="px-4 py-4 font-medium">{order.code}</td>
-                  <td className="px-4 py-4">
-                    <div>
-                      <p className="font-medium">{order.shippingName || order.userCode}</p>
-                      <p className="text-xs text-tertiary">{order.shippingPhone || '-'}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-center">{order.orderItems?.length || 0} sản phẩm</td>
-                  <td className="px-4 py-4 text-right font-semibold text-error">
-                    {formatCurrency(order.finalAmount)}
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <Badge
-                      color={order.paymentStatus === 'paid' ? 'success' : order.paymentStatus === 'pending' ? 'warning' : 'error'}
-                      size="sm"
-                    >
-                      {order.paymentStatus === 'paid' ? 'Đã thanh toán' : order.paymentStatus === 'pending' ? 'Chờ thanh toán' : 'Thất bại'}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <Badge color={getStatusColor(order.status) as any} size="sm">
-                      {getStatusText(order.status)}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-4 text-secondary text-sm">{formatDate(order.createdAt)}</td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        className="p-2 hover:bg-secondary rounded-lg transition-colors"
-                        onClick={() => setSelectedOrder(order)}
-                        title="Xem chi tiết"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      
-                      {/* Workflow Actions */}
-                      {order.status === 'pending' && (
-                        <button 
-                          className="p-2 hover:bg-success/10 rounded-lg transition-colors" 
-                          title="Xác nhận đơn"
-                          onClick={() => updateStatus(order.code, 'confirmed')}
-                        >
-                          <Check size={16} className="text-success" />
-                        </button>
-                      )}
-                      
-                      {order.status === 'confirmed' && (
-                        <button 
-                          className="p-2 hover:bg-primary/10 rounded-lg transition-colors" 
-                          title="Giao hàng"
-                          onClick={() => updateStatus(order.code, 'shipping')}
-                        >
-                          <Truck size={16} className="text-primary" />
-                        </button>
-                      )}
+        // Search & Filter
+        onAdvancedSearch={handleAdvancedSearch}
+        advancedFilterDefs={[
+          {
+            id: 'fromDate',
+            label: t('admin.filters.fromDate') || 'Từ ngày',
+            type: 'date',
+            placeholder: 'dd/mm/yyyy'
+          },
+          {
+            id: 'toDate',
+            label: t('admin.filters.toDate') || 'Đến ngày',
+            type: 'date',
+            placeholder: 'dd/mm/yyyy'
+          },
+          {
+            id: 'status',
+            label: t('admin.columns.status'),
+            type: 'select',
+            options: [
+              { value: 'pending', label: t('admin.status.pending') },
+              { value: 'confirmed', label: t('admin.status.confirmed') },
+              { value: 'shipping', label: t('admin.status.shipping') },
+              { value: 'delivered', label: t('admin.status.delivered') },
+              { value: 'cancelled', label: t('admin.status.cancelled') },
+            ]
+          },
+          {
+            id: 'paymentStatus',
+            label: t('admin.columns.payment'),
+            type: 'select',
+            options: [
+              { value: 'paid', label: t('admin.status.paid') || 'Đã thanh toán' },
+              { value: 'pending', label: t('admin.status.unpaid') || 'Chưa thanh toán' },
+            ]
+          },
+          {
+            id: 'amountFrom',
+            label: t('admin.filters.amountFrom') || 'Tổng tiền từ',
+            type: 'number',
+            placeholder: '0'
+          },
+          {
+            id: 'amountTo',
+            label: t('admin.filters.amountTo') || 'Tổng tiền đến',
+            type: 'number',
+            placeholder: '0'
+          },
+          {
+            id: 'customer',
+            label: t('admin.columns.customer'),
+            type: 'text',
+            placeholder: t('admin.placeholders.searchCustomer') || 'Nhập tên hoặc SĐT'
+          },
+          {
+            id: 'code',
+            label: t('admin.columns.orderCode'),
+            type: 'text',
+            placeholder: t('admin.placeholders.searchOrderCode') || 'Nhập mã đơn hàng'
+          }
+        ]}
 
-                      {order.status === 'shipping' && (
-                        <button 
-                          className="p-2 hover:bg-success/10 rounded-lg transition-colors" 
-                          title="Đã giao"
-                          onClick={() => updateStatus(order.code, 'delivered')}
-                        >
-                          <Package size={16} className="text-success" />
-                        </button>
-                      )}
+        // Visibility
+        visibleColumns={visibleColumns}
+        onColumnVisibilityChange={setVisibleColumns}
 
-                      {order.status === 'delivered' && (
-                         <button 
-                           className="p-2 hover:bg-secondary rounded-lg transition-colors" 
-                           title="In hóa đơn"
-                           onClick={handlePrintInvoice}
-                         >
-                           <Printer size={16} className="text-secondary" />
-                         </button>
-                      )}
-                      
-                      {order.status === 'pending' && (
-                         <button 
-                           className="p-2 hover:bg-error/10 rounded-lg transition-colors" 
-                           title="Hủy đơn"
-                           onClick={() => updateStatus(order.code, 'cancelled')}
-                         >
-                           <X size={16} className="text-error" />
-                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between p-4 border-t">
-          <p className="text-sm text-secondary">Hiển thị {sortedOrders.length} / {ordersData?.totalItems || 0} đơn hàng</p>
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={ordersData?.totalItems || 0}
-              pageSize={10}
-              onPageChange={setCurrentPage}
-            />
-          )}
-        </div>
-      </div>
+        emptyMessage={t('common.noResults')}
+      />
 
       {/* Order Detail Modal */}
       <Modal
@@ -294,17 +329,17 @@ export const OrdersPage = () => {
         title={`Chi tiết đơn hàng ${selectedOrder?.code}`}
         size="lg"
         footer={
-           selectedOrder && (
-             <div className="flex justify-end gap-3">
-               <Button variant="outline" onClick={() => setSelectedOrder(null)}>Đóng</Button>
-               {selectedOrder.status === 'pending' && (
-                 <Button onClick={() => updateStatus(selectedOrder.code, 'confirmed')}>Xác nhận đơn hàng</Button>
-               )}
-               {selectedOrder.status === 'delivered' && (
-                 <Button leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>In hóa đơn</Button>
-               )}
-             </div>
-           )
+          selectedOrder && (
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setSelectedOrder(null)}>Đóng</Button>
+              {selectedOrder.status === 'pending' && (
+                <Button onClick={() => updateStatus(selectedOrder.code, 'confirmed')}>Xác nhận đơn hàng</Button>
+              )}
+              {selectedOrder.status === 'delivered' && (
+                <Button leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>In hóa đơn</Button>
+              )}
+            </div>
+          )
         }
       >
         {selectedOrder && (
@@ -327,9 +362,9 @@ export const OrdersPage = () => {
                 <p className="text-secondary text-sm">{selectedOrder.shippingPhone || '-'}</p>
                 <p className="text-secondary text-sm mt-1">{selectedOrder.shippingAddress || '-'}</p>
               </div>
-              
-               {/* Order Info */}
-               <div className="bg-secondary rounded-lg p-4">
+
+              {/* Order Info */}
+              <div className="bg-secondary rounded-lg p-4">
                 <h3 className="font-semibold mb-2">Thông tin đơn hàng</h3>
                 <p className="text-secondary text-sm">Ngày đặt: {formatDate(selectedOrder.createdAt)}</p>
                 <p className="text-secondary text-sm">Phương thức: {selectedOrder.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản'}</p>

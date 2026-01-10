@@ -41,16 +41,14 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
         if (existingUser != null)
             return Result.Failure<UserDto>(Error.Conflict(MessageConstants.EmailInUse));
 
-        var user = new TblUser
-        {
-            Username = request.Username,
-            Email = request.Email,
-            PasswordHash = _passwordHasher.Hash(request.Password),
-            FullName = request.FullName,
-            Role = request.Email.Contains("admin") ? "admin" : "customer",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        // Use Rich Domain Model Factory
+        var user = TblUser.Create(
+            request.Username, 
+            request.Email, 
+            _passwordHasher.Hash(request.Password), 
+            request.FullName, 
+            request.Email.Contains("admin") ? "admin" : "customer"
+        );
 
         await _repository.AddAsync(user, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);

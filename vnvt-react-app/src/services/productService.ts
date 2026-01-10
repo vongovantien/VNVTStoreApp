@@ -26,6 +26,11 @@ export interface ProductDto {
     sku?: string;
     weight?: number;
     isActive?: boolean;
+    color?: string;
+    power?: string;
+    voltage?: string;
+    material?: string;
+    size?: string;
     createdAt?: string;
     productImages: ProductImageDto[];
 }
@@ -39,6 +44,11 @@ export interface CreateProductRequest {
     stockQuantity?: number;
     sku?: string;
     weight?: number;
+    color?: string;
+    power?: string;
+    voltage?: string;
+    material?: string;
+    size?: string;
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {

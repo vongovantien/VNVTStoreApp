@@ -26,7 +26,7 @@ public class DashboardHandlers :
 
     public async Task<Result<DashboardStatsDto>> Handle(GetDashboardStatsQuery request, CancellationToken cancellationToken)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         var thisMonthStart = new DateTime(now.Year, now.Month, 1);
         var lastMonthStart = thisMonthStart.AddMonths(-1);
 

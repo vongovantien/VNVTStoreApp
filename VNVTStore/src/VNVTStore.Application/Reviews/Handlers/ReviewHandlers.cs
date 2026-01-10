@@ -63,7 +63,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             r => {
                 r.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
                 r.IsApproved = false; // Changed to false for moderation
-                r.CreatedAt = DateTime.UtcNow;
+                r.CreatedAt = DateTime.Now;
             });
     }
 

@@ -18,7 +18,7 @@ export const ColumnVisibility = ({ columns, visibleColumns, onChange }: ColumnVi
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState('');
-  
+
   const dropdownRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false));
 
   const handleToggle = (id: string) => {
@@ -37,42 +37,43 @@ export const ColumnVisibility = ({ columns, visibleColumns, onChange }: ColumnVi
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         type="button"
-        className="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700"
+        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-200 shadow-sm rounded-lg hover:bg-blue-50 transition-all text-sm font-medium text-slate-700 group"
         onClick={() => setIsOpen(!isOpen)}
+        title={t('common.columnsVisible') || 'Cột hiển thị'}
       >
-        <Columns size={16} />
-        <span>{visibleColumns.length} {t('common.columnsVisible') || 'Cột hiển thị'}</span>
+        <Columns size={18} className="text-gray-400 group-hover:text-[#2d7ad6] transition-colors" />
+        <span>{visibleColumns.length} {t('common.columns') || 'Cột'}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800 dark:ring-slate-700 animate-in fade-in zoom-in-95 duration-100">
-          <div className="p-2 border-b dark:border-slate-700">
+        <div className="absolute right-0 top-full mt-2 z-[9999] w-64 origin-top-right rounded-lg bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800 dark:ring-slate-700 animate-in fade-in zoom-in-95 duration-200">
+          <div className="p-2 border-b dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-t-lg">
             <input
               type="text"
-              className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none dark:bg-slate-900 dark:border-slate-600"
+              className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:bg-slate-800 dark:border-slate-600"
               placeholder={t('common.search') || 'Tìm kiếm...'}
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               autoFocus
             />
           </div>
-          <div className="max-h-60 overflow-y-auto p-1">
+          <div className="max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
             {filteredColumns.map((col) => (
               <label
                 key={col.id}
-                className="flex cursor-pointer items-center rounded-md px-2 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+                className="flex cursor-pointer items-center rounded-md px-3 py-2 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
               >
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   checked={visibleColumns.includes(col.id)}
                   onChange={() => handleToggle(col.id)}
                 />
-                <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">{col.label}</span>
+                <span className="ml-3 text-sm text-gray-700 dark:text-gray-200 select-none">{col.label}</span>
               </label>
             ))}
             {filteredColumns.length === 0 && (
-              <p className="px-2 py-2 text-sm text-gray-500">No columns found</p>
+              <p className="px-4 py-3 text-sm text-gray-500 text-center">Không tìm thấy</p>
             )}
           </div>
         </div>

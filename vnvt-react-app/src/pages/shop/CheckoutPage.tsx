@@ -6,23 +6,26 @@ import { Button, Input, Select, Modal } from '@/components/ui';
 import { useCartStore, useAuthStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
 import { orderService, type CreateOrderRequest } from '@/services/orderService';
+import { paymentService } from '@/services/paymentService'; // Added import
 import { PaymentMethod } from '@/constants';
+import { useToast } from '@/store'; // Added useToast
 
 export const CheckoutPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const toast = useToast(); // Added toast hook
   const { items, getTotal, clearCart, fetchCart } = useCartStore();
   const { user, isAuthenticated } = useAuthStore();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  
+
   useEffect(() => {
     if (!isAuthenticated) {
-        setShowLoginModal(true);
+      setShowLoginModal(true);
     } else {
-        setShowLoginModal(false);
+      setShowLoginModal(false);
     }
   }, [isAuthenticated]);
-  
+
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<string>(PaymentMethod.COD);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,36 +54,57 @@ export const CheckoutPage = () => {
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
-        const orderData: CreateOrderRequest = {
-            fullName: formData.fullName,
-            phone: formData.phone,
-            address: formData.address, // Should ideally include city/district/ward
-            city: formData.city,
-            district: formData.district,
-            ward: formData.ward,
-            note: formData.note,
-            paymentMethod: paymentMethod
-        };
+      const orderData: CreateOrderRequest = {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        address: formData.address, // Should ideally include city/district/ward
+        city: formData.city,
+        district: formData.district,
+        ward: formData.ward,
+        note: formData.note,
+        paymentMethod: paymentMethod
+      };
 
-        const res = await orderService.create(orderData);
-        if (res.success) {
-            // Cart is cleared on backend, sync frontend
-            await fetchCart();
-            // Redirect to Orders page or separate Success page
-            navigate('/account/orders?success=true');
-        } else {
-            alert('Failed to place order: ' + (res.message || 'Unknown error'));
+      // 1. Create Order
+      const orderRes = await orderService.create(orderData);
+
+      if (orderRes.success && orderRes.data) {
+        const orderCode = orderRes.data.code;
+        toast.success(t('messages.orderSuccess') || 'Đặt hàng thành công!');
+
+        // 2. Process Payment
+        try {
+          const totalAmount = orderRes.data.finalAmount || total;
+          await paymentService.create({
+            orderCode: orderCode,
+            method: paymentMethod,
+            amount: totalAmount
+          });
+          // Payment success (or pending for COD)
+          // For online payment simulation, we might want to update status here or backend handles it
+        } catch (paymentError) {
+          console.error('Payment creation failed', paymentError);
+          toast.error(t('messages.paymentError') || 'Có lỗi khi tạo thanh toán, vui lòng liên hệ CSKH.');
+          // We still redirect because Order is created, just payment failed/pending
         }
-    } catch (error) {
-        console.error('Order failed', error);
-        alert('An error occurred');
+
+        // 3. Clear Cart & Redirect
+        await fetchCart();
+        // Redirect to Orders page with success flag
+        navigate('/account/orders?success=true');
+      } else {
+        toast.error(orderRes.message || t('messages.orderError') || 'Đặt hàng thất bại');
+      }
+    } catch (error: any) {
+      console.error('Order failed', error);
+      toast.error(error?.message || t('messages.generalError') || 'Có lỗi xảy ra');
     } finally {
-        setIsProcessing(false);
+      setIsProcessing(false);
     }
   };
 
   // Re-fetch cart if empty? No, handled by App/ShopLayout.
-  
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
@@ -117,9 +141,8 @@ export const CheckoutPage = () => {
           ].map((s, i) => (
             <div key={s.num} className="flex items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                  step >= s.num ? 'bg-primary text-white' : 'bg-tertiary text-secondary'
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= s.num ? 'bg-primary text-white' : 'bg-tertiary text-secondary'
+                  }`}
               >
                 {s.num}
               </div>
@@ -238,9 +261,8 @@ export const CheckoutPage = () => {
                   ].map((method) => (
                     <label
                       key={method.value}
-                      className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${
-                        paymentMethod === method.value ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
-                      }`}
+                      className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${paymentMethod === method.value ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                        }`}
                     >
                       <input
                         type="radio"
@@ -365,7 +387,7 @@ export const CheckoutPage = () => {
       {/* Login Required Modal */}
       <Modal
         isOpen={showLoginModal}
-        onClose={() => {}} // Block closing by clicking outside? Modal 'closeOnOverlayClick' defaults true.
+        onClose={() => { }} // Block closing by clicking outside? Modal 'closeOnOverlayClick' defaults true.
         // If mandatory, we should disable closing.
         // CheckoutPage usually implies Intent to Checkout. If they cancel, they go back to Cart?
         title={t('checkout.loginRequired') || 'Đăng nhập để thanh toán'}
@@ -373,28 +395,28 @@ export const CheckoutPage = () => {
         closeOnOverlayClick={false}
         closeOnEsc={false}
         footer={
-            <div className="flex gap-4 w-full justify-end">
-                <Link to="/cart">
-                    <Button variant="ghost">{t('common.back')}</Button>
-                </Link>
-                <Link to="/register" state={{ from: '/checkout' }}>
-                    <Button variant="outline">{t('auth.register')}</Button>
-                </Link>
-                <Link to="/auth/login" state={{ from: '/checkout' }}> 
-                    <Button>{t('auth.login')}</Button>
-                </Link>
-            </div>
+          <div className="flex gap-4 w-full justify-end">
+            <Link to="/cart">
+              <Button variant="ghost">{t('common.back')}</Button>
+            </Link>
+            <Link to="/register" state={{ from: '/checkout' }}>
+              <Button variant="outline">{t('auth.register')}</Button>
+            </Link>
+            <Link to="/auth/login" state={{ from: '/checkout' }}>
+              <Button>{t('auth.login')}</Button>
+            </Link>
+          </div>
         }
       >
         <div className="text-secondary">
-            <p className="mb-4">
-                {t('checkout.loginMessage') || 'Vui lòng đăng nhập hoặc đăng ký tài khoản để tiếp tục thanh toán.'}
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-sm text-tertiary">
-                <li>Tra cứu đơn hàng dễ dàng</li>
-                <li>Tích điểm thành viên</li>
-                <li>Lưu địa chỉ giao hàng</li>
-            </ul>
+          <p className="mb-4">
+            {t('checkout.loginMessage') || 'Vui lòng đăng nhập hoặc đăng ký tài khoản để tiếp tục thanh toán.'}
+          </p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-tertiary">
+            <li>Tra cứu đơn hàng dễ dàng</li>
+            <li>Tích điểm thành viên</li>
+            <li>Lưu địa chỉ giao hàng</li>
+          </ul>
         </div>
       </Modal>
     </div>

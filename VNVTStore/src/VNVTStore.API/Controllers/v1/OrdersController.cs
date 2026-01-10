@@ -57,10 +57,54 @@ public class OrdersController : BaseApiController
 
     [HttpPost("{code}/cancel")]
     [Authorize]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CancelOrder(string code, [FromBody] string reason)
     {
         var result = await Mediator.Send(new CancelOrderCommand(GetUserCode(), code, reason));
         return HandleResult(result, MessageConstants.Get(MessageConstants.OrderCancelled));
+    }
+
+
+    
+    // ... wait, I cannot easily extend the Controller without updating the Application layer.
+    // I will revert to a simple mapping for now and update the Query next.
+    
+    // Let's implement the mapping logic, assuming I WILL update the Query in the next step.
+    
+    [HttpPost("search")]
+    public async Task<IActionResult> SearchOrders([FromBody] RequestDTO request)
+    {
+        string? status = null;
+        string? search = null;
+        
+        // Extract filters
+        var filters = new Dictionary<string, string>();
+        if (request.Searching != null)
+        {
+            foreach (var s in request.Searching)
+            {
+               if (!string.IsNullOrEmpty(s.Field) && s.Value != null)
+               {
+                   filters[s.Field.ToLower()] = s.Value;
+               }
+            }
+        }
+        
+        // Generic search term
+        if (filters.ContainsKey("all")) search = filters["all"];
+        if (filters.ContainsKey("search")) search = filters["search"];
+        if (filters.ContainsKey("status")) status = filters["status"];
+
+        // Construct Query with Dictionary for advanced filters
+        var query = new GetAllOrdersQuery(
+            request.PageIndex ?? 1,
+            request.PageSize ?? 10,
+            status,
+            search,
+            filters // Passing the whole dictionary for advanced filtering
+        );
+
+        var result = await Mediator.Send(query);
+        return HandleResult(result);
     }
 }

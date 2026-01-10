@@ -44,7 +44,7 @@ public class CreateQuoteHandler : IRequestHandler<Commands.CreateQuoteCommand, A
             Note = request.Note,
             UserCode = userCode, 
             Status = "pending",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now
         };
 
         _context.TblQuotes.Add(quote);

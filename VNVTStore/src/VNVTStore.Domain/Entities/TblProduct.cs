@@ -23,6 +23,16 @@ public partial class TblProduct
 
     public decimal? Weight { get; set; }
 
+    public string? Color { get; set; }
+
+    public string? Power { get; set; } // Công suất
+
+    public string? Voltage { get; set; } // Điện áp
+
+    public string? Material { get; set; }
+
+    public string? Size { get; set; }
+
     public bool? IsActive { get; set; }
 
     public DateTime? CreatedAt { get; set; }

@@ -21,6 +21,11 @@ export interface Product {
     createdAt: string;
     updatedAt?: string;
     isActive?: boolean;
+    color?: string;
+    power?: string;
+    voltage?: string;
+    material?: string;
+    size?: string;
 }
 
 // ============ Category Types ============

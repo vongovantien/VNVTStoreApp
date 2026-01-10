@@ -38,6 +38,56 @@ export function useCategories() {
 }
 
 /**
+ * Hook for fetching categories with pagination
+ */
+export function useCategoriesList(params: {
+    pageIndex?: number;
+    pageSize?: number;
+    search?: string;
+    parentCode?: string;
+    isActive?: string; // 'true' | 'false'
+}) {
+    const { ...searchParams } = params;
+
+    // Build filters
+    const filters: { field: string; value: string; operator?: string }[] = [];
+    if (searchParams.parentCode) filters.push({ field: 'parentCode', value: searchParams.parentCode });
+    if (searchParams.isActive) filters.push({ field: 'isActive', value: searchParams.isActive });
+    if (searchParams.search) filters.push({ field: 'name', value: searchParams.search, operator: 'contains' });
+
+
+    return useQuery({
+        queryKey: [...productKeys.categories, searchParams],
+        queryFn: () => categoryService.search({
+            pageIndex: searchParams.pageIndex,
+            pageSize: searchParams.pageSize,
+            // Search is handled via filters for precise control or generic search
+            // If we use baseService search, we can pass filters directly
+            filters: filters.length > 0 ? filters : undefined
+        }),
+        placeholderData: keepPreviousData,
+        select: (response) => {
+            if (response.success && response.data) {
+                return {
+                    categories: response.data.items || [],
+                    totalItems: response.data.totalItems,
+                    totalPages: response.data.totalPages,
+                    pageNumber: response.data.pageNumber,
+                    pageSize: response.data.pageSize,
+                };
+            }
+            return {
+                categories: [],
+                totalItems: 0,
+                totalPages: 0,
+                pageNumber: 1,
+                pageSize: 10,
+            };
+        }
+    });
+}
+
+/**
  * Hook for fetching products with pagination and search
  */
 export function useProducts(params: {
@@ -51,6 +101,16 @@ export function useProducts(params: {
 }) {
     const { enabled = true, ...searchParams } = params;
 
+    // Build filters dynamically
+    const filters = Object.entries(searchParams).reduce((acc, [key, value]) => {
+        // Skip pagination/sorting params
+        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir'].includes(key)) return acc;
+        if (value !== undefined && value !== null && value !== '') {
+            acc.push({ field: key, value: String(value) });
+        }
+        return acc;
+    }, [] as Array<{ field: string; value: string }>);
+
     return useQuery({
         queryKey: productKeys.list(searchParams),
         queryFn: () => productService.search({
@@ -60,7 +120,7 @@ export function useProducts(params: {
             searchField: 'name',
             sortBy: searchParams.sortField,
             sortDesc: searchParams.sortDir === 'desc',
-            filters: searchParams.category ? [{ field: 'category', value: searchParams.category }] : undefined
+            filters: filters.length > 0 ? filters : undefined
         }),
         enabled,
         placeholderData: keepPreviousData,
@@ -86,6 +146,12 @@ export function useProducts(params: {
                     category: item.categoryName || '',
                     categoryId: item.categoryCode || '',
                     stock: item.stockQuantity || 0,
+                    // Attributes
+                    color: item.color,
+                    power: item.power,
+                    voltage: item.voltage,
+                    material: item.material,
+                    size: item.size,
                     // Mock/Default values for missing backend fields
                     brand: 'VNVT',
                     rating: 5,

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Folder, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, Input, ConfirmDialog, Select } from '@/components/ui';
 import { useToast } from '@/store';
-import { useCategories } from '@/hooks';
+import { useCategories, useCategoriesList } from '@/hooks';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoryService } from '@/services/productService';
 import { DataTable, type DataTableColumn } from '@/components/common';
@@ -22,8 +22,32 @@ export const CategoriesPage = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
+  // State
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
+
   // Fetch categories
-  const { data: categories = [], isLoading, isError, isFetching, error } = useCategories();
+  const {
+    data: categoriesData,
+    isLoading,
+    isError,
+    isFetching,
+    error
+  } = useCategoriesList({
+    pageIndex: currentPage,
+    pageSize,
+    search: advancedFilters.name,
+    parentCode: advancedFilters.parentCode,
+    isActive: advancedFilters.isActive
+  });
+
+  const categories = categoriesData?.categories || [];
+  const totalPages = categoriesData?.totalPages || 1;
+  const totalItems = categoriesData?.totalItems || 0;
+
+  // Helper for dropdown (get all categories) - simpler version or reuse search with large page size
+  const { data: allCategories = [] } = useCategories();
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -127,6 +151,21 @@ export const CategoriesPage = () => {
       sortable: true,
     },
     {
+      id: 'parentCategory',
+      header: t('admin.columns.parentCategory'),
+      accessor: (category) => {
+        const parent = (allCategories as Category[]).find(c => c.code === category.parentCode);
+        return parent ? (
+          <Badge variant="outline" className="font-normal">
+            {parent.name}
+          </Badge>
+        ) : (
+          <span className="text-tertiary italic text-sm">-</span>
+        );
+      },
+      sortable: true,
+    },
+    {
       id: 'productCount',
       header: t('admin.columns.productCount'),
       accessor: (category) => (
@@ -151,25 +190,8 @@ export const CategoriesPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">{t('admin.categories')}</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['categories'] })}
-            leftIcon={<RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />}
-          >
-            {t('common.refresh')}
-          </Button>
-          <Button leftIcon={<Plus size={20} />} onClick={openCreateModal}>
-            {t('admin.actions.create')}
-          </Button>
-        </div>
-      </div>
+      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.categories')}</h1>
 
-      {/* DataTable */}
       <DataTable
         columns={columns}
         data={categories as Category[]}
@@ -181,10 +203,57 @@ export const CategoriesPage = () => {
         onEdit={openEditModal}
         onDelete={(category) => setCategoryToDelete(category)}
         exportFilename="categories_export"
+
+        // Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+
+        // Filters
+        onAdvancedSearch={(filters) => {
+          setAdvancedFilters(filters);
+          setCurrentPage(1);
+        }}
         searchOptions={[
           { label: t('admin.columns.name'), value: 'name' },
           { label: t('admin.columns.description'), value: 'description' },
+          { label: t('admin.columns.parentCategory'), value: 'parentCode' },
         ]}
+        advancedFilterDefs={[
+          {
+            id: 'name',
+            label: t('admin.columns.name'),
+            type: 'text',
+            placeholder: 'Tên danh mục...'
+          },
+          {
+            id: 'description',
+            label: t('admin.columns.description'),
+            type: 'text',
+          },
+          {
+            id: 'parentCode',
+            label: t('admin.columns.parentCategory'),
+            type: 'select',
+            options: (categories as Category[]).map(c => ({ label: c.name, value: c.code }))
+          },
+          {
+            id: 'isActive',
+            label: t('admin.columns.status'),
+            type: 'select',
+            options: [
+              { value: 'true', label: t('common.status.active') },
+              { value: 'false', label: t('common.status.inactive') }
+            ]
+          }
+        ]}
+        enableColumnVisibility={true}
         emptyMessage={t('common.noResults')}
       />
 
@@ -233,7 +302,7 @@ export const CategoriesPage = () => {
           </div>
         </form>
       </Modal>
-      
+
       {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!categoryToDelete}

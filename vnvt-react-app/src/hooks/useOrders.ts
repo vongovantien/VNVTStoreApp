@@ -29,16 +29,28 @@ export function useOrders(params?: {
 export function useAdminOrders(params?: {
     pageIndex?: number;
     pageSize?: number;
-    status?: string;
-    search?: string;
+    filters?: Record<string, any>;
 }) {
+    const searchFilters: { field: string; value: string; operator?: string }[] = [];
+    const searchTerm = params?.filters?.search;
+
+    // Convert filters to array for backend
+    if (params?.filters) {
+        Object.entries(params.filters).forEach(([key, value]) => {
+            if (value && key !== 'search') {
+                searchFilters.push({ field: key, value: String(value) });
+            }
+        });
+    }
+
     return useQuery({
         queryKey: ['admin-orders', params],
         queryFn: () => orderService.search({
             pageIndex: params?.pageIndex || 1,
             pageSize: params?.pageSize || 10,
-            search: params?.status || params?.search,
-            searchField: params?.status ? 'status' : params?.search ? 'orderNumber' : undefined
+            search: searchTerm,
+            searchField: 'all', // Backend will search across default fields if not specified
+            filters: searchFilters.length > 0 ? searchFilters : undefined
         }),
         select: (response) => ({
             orders: response.data?.items || [],

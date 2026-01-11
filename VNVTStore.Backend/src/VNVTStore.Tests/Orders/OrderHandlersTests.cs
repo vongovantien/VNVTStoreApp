@@ -106,7 +106,7 @@ public class OrderHandlersTests
         Assert.True(result.IsFailure);
         // Note: The Handler iterates cart items and checks stock.
         // It should return failure.
-        Assert.Contains("insufficient", result.Error!.Message, StringComparison.OrdinalIgnoreCase); 
+        Assert.Contains("không đủ hàng", result.Error!.Message, StringComparison.OrdinalIgnoreCase); 
     }
 
     [Theory]

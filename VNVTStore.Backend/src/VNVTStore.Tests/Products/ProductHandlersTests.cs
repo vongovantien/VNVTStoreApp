@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using System.Linq.Expressions;
+using System.Reflection;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Products.Handlers;
@@ -28,17 +29,16 @@ public class ProductHandlersTests
         _handler = new ProductHandlers(_repoMock.Object, _uowMock.Object, _mapperMock.Object);
     }
     
+    private void SetPrivate<T>(object obj, string propName, T value)
+    {
+        var prop = obj.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        if (prop != null) prop.SetValue(obj, value);
+    }
+
     private TblProduct CreateTestProduct(string code, string name, string sku, decimal price, string? categoryCode = null)
     {
-        var p = new TblProduct 
-        { 
-            Code = code, 
-            Name = name, 
-            Sku = sku, 
-            Price = price, 
-            CategoryCode = categoryCode, 
-            IsActive = true 
-        };
+        var p = TblProduct.Create(name, price, 0, categoryCode, sku);
+        SetPrivate(p, "Code", code);
         return p;
     }
 
@@ -56,14 +56,16 @@ public class ProductHandlersTests
             .Callback<TblProduct, CancellationToken>((p, c) => {
                 Assert.True(p.IsActive);
                 Assert.NotNull(p.Code);
-                Assert.StartsWith("P", p.Code);
+                // Assert.StartsWith("P", p.Code); // Removed as Factory uses Guid
             })
             .Returns(Task.CompletedTask);
 
         _uowMock.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-        // Fix: Mock Input Mapping
-        _mapperMock.Setup(m => m.Map<TblProduct>(It.IsAny<CreateProductDto>()))
-            .Returns((CreateProductDto d) => new TblProduct { Name = d.Name, Price = d.Price, Sku = d.Sku });
+        
+        // Remove manual mapping mock that creates invalid object.
+        // The Handler now uses TblProduct.Create internally, so it doesn't use Mapper.Map<TblProduct>(dto) anymore.
+        // It manually creates entity.
+        // So we only look at Map<ProductDto>(entity).
         _mapperMock.Setup(m => m.Map<ProductDto>(It.IsAny<TblProduct>())).Returns(productDto);
 
         var cmd = new CreateCommand<CreateProductDto, ProductDto>(requestDto);

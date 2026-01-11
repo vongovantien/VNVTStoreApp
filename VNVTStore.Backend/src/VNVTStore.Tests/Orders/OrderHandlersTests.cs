@@ -1,6 +1,6 @@
 using AutoMapper;
 using Moq;
-using System.Linq.Expressions;
+using System.Reflection;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
@@ -42,9 +42,21 @@ public class OrderHandlersTests
         );
     }
 
+    private void SetPrivate<T>(object obj, string propName, T value)
+    {
+        var prop = obj.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        if (prop != null)
+        {
+             prop.SetValue(obj, value);
+        }
+    }
+
     private TblProduct CreateTestProduct(string code, string name, int stock, decimal price)
     {
-        return new TblProduct { Code = code, Name = name, StockQuantity = stock, Price = price };
+        // Factory creates with random code, so we override it
+        var p = TblProduct.Create(name, price, stock, "CAT1", "SKU1");
+        SetPrivate(p, "Code", code);
+        return p;
     }
 
     [Fact]
@@ -53,7 +65,7 @@ public class OrderHandlersTests
         // Arrange
         var userCode = "USR001";
         _cartServiceMock.Setup(c => c.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TblCart?)null); // Or empty items
+            .ReturnsAsync((TblCart?)null); 
 
         var cmd = new CreateOrderCommand(userCode, new CreateOrderDto());
 
@@ -71,12 +83,16 @@ public class OrderHandlersTests
         // Arrange
         var userCode = "USR001";
         var product = CreateTestProduct("P1", "Phone", 5, 1000);
-        var cart = new TblCart { 
-            TblCartItems = new List<TblCartItem> 
-            { 
-                new TblCartItem { ProductCode = "P1", Quantity = 10, ProductCodeNavigation = product } 
-            } 
-        };
+        
+        var cart = TblCart.Create(userCode);
+        SetPrivate(cart, "Code", "CART1");
+        
+        var cartItem = TblCartItem.Create("CART1", "P1", 10, null, null);
+        SetPrivate(cartItem, "ProductCodeNavigation", product);
+        
+        // Use reflection or internal method if Add is not adding directly to collection exposed?
+        // TblCart has public TblCartItems collection (ICollection).
+        cart.TblCartItems.Add(cartItem);
 
         _cartServiceMock.Setup(c => c.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
@@ -88,7 +104,9 @@ public class OrderHandlersTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Contains("insufficient", result.Error!.Message);
+        // Note: The Handler iterates cart items and checks stock.
+        // It should return failure.
+        Assert.Contains("insufficient", result.Error!.Message, StringComparison.OrdinalIgnoreCase); 
     }
 
     [Theory]
@@ -100,13 +118,12 @@ public class OrderHandlersTests
         // Arrange
         var userCode = "USR001";
         var product = CreateTestProduct("P1", "Item", 10, itemPrice);
-        var cart = new TblCart
-        {
-            TblCartItems = new List<TblCartItem>
-            {
-                new TblCartItem { ProductCode = "P1", Quantity = 1, ProductCodeNavigation = product }
-            }
-        };
+
+        var cart = TblCart.Create(userCode);
+        SetPrivate(cart, "Code", "CART1");
+        var cartItem = TblCartItem.Create("CART1", "P1", 1, null, null);
+        SetPrivate(cartItem, "ProductCodeNavigation", product);
+        cart.TblCartItems.Add(cartItem);
 
         _cartServiceMock.Setup(c => c.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
@@ -114,6 +131,7 @@ public class OrderHandlersTests
         _orderRepoMock.Setup(r => r.AddAsync(It.IsAny<TblOrder>(), It.IsAny<CancellationToken>()))
             .Callback<TblOrder, CancellationToken>((o, c) => {
                 Assert.Equal(expectedFee, o.ShippingFee);
+                // Check Final Amount
                 Assert.Equal(itemPrice + expectedFee, o.FinalAmount);
             })
             .Returns(Task.CompletedTask);
@@ -139,7 +157,12 @@ public class OrderHandlersTests
         // Arrange
         var userCode = "USR001";
         var product = CreateTestProduct("P1", "Item", 10, 100); // Stock 10
-        var cart = new TblCart { TblCartItems = new List<TblCartItem> { new TblCartItem { Quantity = 2, ProductCodeNavigation = product } } };
+        
+        var cart = TblCart.Create(userCode);
+        SetPrivate(cart, "Code", "CART1");
+        var cartItem = TblCartItem.Create("CART1", "P1", 2, null, null);
+        SetPrivate(cartItem, "ProductCodeNavigation", product);
+        cart.TblCartItems.Add(cartItem);
 
         _cartServiceMock.Setup(c => c.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
              .ReturnsAsync(cart);
@@ -163,44 +186,35 @@ public class OrderHandlersTests
         var orderCode = "ORD001";
         var userCode = "USR001";
         var product = CreateTestProduct("P1", "Item", 8, 100); // Current Stock 8
-        var order = new TblOrder 
+        
+        // TblOrder.Create requires args.
+        var order = TblOrder.Create(userCode, "ADDR1", 200, 0, 0, null);
+        SetPrivate(order, "Code", orderCode);
+        
+        var orderItem = new TblOrderItem 
         { 
-            Code = orderCode, 
-            UserCode = userCode, 
-            Status = "Pending",
-            TblOrderItems = new List<TblOrderItem> 
-            { 
-                new TblOrderItem { ProductCode = "P1", Quantity = 2, ProductCodeNavigation = product } 
-            }
+            Code = "OI1", // manual
+            ProductCode = "P1", 
+            Quantity = 2 
         };
+        SetPrivate(orderItem, "ProductCodeNavigation", product);
+        order.AddOrderItem(orderItem);
 
-        // Need to mock GetByCodeAsync or AsQueryable depending on Handler implementation
-        // Handler uses AsQueryable().Include(...).FirstOrDefaultAsync(...)
-        // This makes mocking hard without MockQueryable.
-        // HOWEVER, Cancel Handler creates a query.
-        // I will attempt to Mock AsQueryable if I can't inject a list.
-        // If strict testing "AsQueryable" is too hard without libs, I might need to rely on the fact that 
-        // CreateOrder logic is verifiable.
-        // BUT wait, I can simulate `AsQueryable` using a simple list wrapped in EnumerableQuery.
-        
-        var list = new List<TblOrder> { order }.AsQueryable();
-        _orderRepoMock.Setup(r => r.AsQueryable()).Returns(list);
-        
+        // Mock AsQueryable to return this order
+        var list = new List<TblOrder> { order };
+        var mockSet = new TestAsyncEnumerable<TblOrder>(list);
+
+        _orderRepoMock.Setup(r => r.AsQueryable()).Returns(mockSet);
         _uowMock.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var cmd = new CancelOrderCommand(userCode, orderCode, "Customer Request");
 
         // Act
-        // Note: The Handler uses `FirstOrDefaultAsync` (Extension method). 
-        // If I return EnumerableQuery, `FirstOrDefaultAsync` works if using `Microsoft.EntityFrameworkCore.Query.Internal`? 
-        // No, `FirstOrDefaultAsync` expects `IAsyncEnumerable`.
-        // Standard EnumerableQuery is not Async.
-        // Tests typically fail here unless using `MockQueryable`.
-        // I will skip the Async Query test in this environment or use a workaround?
-        // Workaround: Mock `FirstOrDefaultAsync`. But it is static extension.
-        // I will try to Mock `GetByCodeAsync` if the Handler used it. But Handler uses Queryable manually.
-        // I will Modify `OrderHandlers` to use `Repository.GetByCodeAsync` or a method I can mock?
-        // No, I shouldn't change code just for tests if possible.
-        // I will TRY to use `MockQueryable` logic if I can write a helper class quickly in checking `AsyncQueryableMock.cs` if exists?
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(10, product.StockQuantity); // 8 + 2
+        Assert.Equal("Cancelled", order.Status);
     }
 }

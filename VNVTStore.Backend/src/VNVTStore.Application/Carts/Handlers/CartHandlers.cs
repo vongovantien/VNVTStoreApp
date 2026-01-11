@@ -56,95 +56,69 @@ public class CartHandlers :
             return Result.Failure<CartDto>(Error.NotFound(MessageConstants.Product, request.ProductCode));
         }
 
-        if (product.StockQuantity < request.Quantity)
-        {
-            return Result.Failure<CartDto>(Error.Validation(MessageConstants.InsufficientStock, product.Name));
-        }
-
         var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
-        // Find item by Product AND Attributes
-        var cartItem = cart.TblCartItems.FirstOrDefault(ci => 
-            ci.ProductCode == request.ProductCode && 
-            ci.Size == request.Size && 
-            ci.Color == request.Color);
 
-        if (cartItem == null)
+        try
         {
-            cartItem = new TblCartItem
-            {
-                Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-                CartCode = cart.Code,
-                ProductCode = request.ProductCode,
-                Quantity = request.Quantity,
-                Size = request.Size,
-                Color = request.Color,
-                AddedAt = DateTime.Now
-            };
-            cart.TblCartItems.Add(cartItem);
+            cart.AddItem(request.ProductCode, request.Quantity, request.Size, request.Color, product.StockQuantity ?? 0);
         }
-        else
+        catch (InvalidOperationException ex)
         {
-            cartItem.Quantity += request.Quantity;
-        }
-
-        // Validate total quantity against stock
-        if (cartItem.Quantity > product.StockQuantity)
-        {
-             return Result.Failure<CartDto>(Error.Validation(MessageConstants.InsufficientStock, product.Name));
+            return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
         }
 
         await _unitOfWork.CommitAsync(cancellationToken);
-
-        // Map for response needs Product loaded
         return Result.Success(_mapper.Map<CartDto>(cart));
     }
 
     public async Task<Result<CartDto>> Handle(UpdateCartItemCommand request, CancellationToken cancellationToken)
     {
         var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
-        // Find by CartItemCode instead of ProductCode
+        
+        // Need to load product to check stock if increasing quantity. 
+        // But UpdateItem logic in Domain checks against MaxStock passed in.
+        // So we need to find the product associated with the cart item.
+        // However, Domain method `UpdateItem` takes `maxStock`.
+        // We first find the item to get ProductCode. Is that available? 
+        // TblCartItems might be loaded.
+        
         var cartItem = cart.TblCartItems.FirstOrDefault(ci => ci.Code == request.CartItemCode);
-
         if (cartItem == null)
         {
-            return Result.Failure<CartDto>(Error.NotFound(MessageConstants.OrderItem, request.CartItemCode));
+             return Result.Failure<CartDto>(Error.NotFound(MessageConstants.OrderItem, request.CartItemCode));
         }
 
-        if (request.Quantity <= 0)
+        var product = await _productRepository.GetByCodeAsync(cartItem.ProductCode, cancellationToken);
+        int maxStock = product?.StockQuantity ?? 0;
+
+        try
         {
-            cart.TblCartItems.Remove(cartItem);
+            cart.UpdateItem(request.CartItemCode, request.Quantity, maxStock);
         }
-        else
+        catch (InvalidOperationException ex)
         {
-            var product = await _productRepository.GetByCodeAsync(cartItem.ProductCode, cancellationToken);
-            if (product != null && product.StockQuantity < request.Quantity)
-                  return Result.Failure<CartDto>(Error.Validation(MessageConstants.InsufficientStock, product.Name));
-            
-            cartItem.Quantity = request.Quantity;
+             return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
         }
 
         await _unitOfWork.CommitAsync(cancellationToken);
-
         return Result.Success(_mapper.Map<CartDto>(cart));
     }
 
     public async Task<Result<CartDto>> Handle(RemoveFromCartCommand request, CancellationToken cancellationToken)
     {
         var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
-        var cartItem = cart.TblCartItems.FirstOrDefault(ci => ci.Code == request.CartItemCode);
-
-        if (cartItem != null)
-        {
-            cart.TblCartItems.Remove(cartItem);
-            await _unitOfWork.CommitAsync(cancellationToken);
-        }
+        
+        cart.RemoveItem(request.CartItemCode);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         return Result.Success(_mapper.Map<CartDto>(cart));
     }
 
     public async Task<Result<bool>> Handle(ClearCartCommand request, CancellationToken cancellationToken)
     {
-        await _cartService.ClearCartAsync(request.UserCode, cancellationToken);
+        var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
+        cart.Clear();
+        await _unitOfWork.CommitAsync(cancellationToken);
         return Result.Success(true);
     }
 }

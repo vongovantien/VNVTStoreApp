@@ -1,3 +1,4 @@
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store';
 
 /**
@@ -62,137 +63,200 @@ export interface RequestDTO {
   sortDTO?: SortDTO;
 }
 
-// ============ API Client ============
-class ApiClient {
-  private baseURL: string;
+// ============ Axios Setup ============
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL;
-  }
+const axiosInstance: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000, // 30 seconds timeout
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true // For XSRF protection if backend supports it
+});
 
-  private getAuthHeaders(): Record<string, string> {
+// Request Interceptor: Attach Token
+axiosInstance.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
     const { token } = useAuthStore.getState();
-    if (token) {
-      return { Authorization: `Bearer ${token}` };
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`; // Use standard 'Bearer' prefix
     }
-    return {};
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Variables for 401 Refresh Logic
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: unknown) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response Interceptor: Handle Errors & Refresh Token
+axiosInstance.interceptors.response.use(
+  (response) => {
+    // Return data directly if needed, or keeping full response based on preference.
+    // However, existing code expects specific wrapper/handling.
+    // Axios puts body in `data`.
+    return response;
+  },
+  async (error: AxiosError) => {
+    const originalRequest = error.config as any;
+
+    if (error.response) {
+      switch (error.response.status) {
+        case HttpStatus.UNAUTHORIZED: // 401
+          // Special handling for Login/Refresh endpoints to avoid infinite loops
+          if (originalRequest.url?.includes('auth/login') || originalRequest.url?.includes('auth/refresh-token')) {
+            console.error("Phiên đăng nhập hết hạn hoặc không hợp lệ.");
+            useAuthStore.getState().logout();
+            return Promise.reject(error);
+          }
+
+          if (!originalRequest._retry) {
+            if (isRefreshing) {
+              return new Promise(function (resolve, reject) {
+                failedQueue.push({ resolve, reject });
+              })
+                .then((token) => {
+                  originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                  return axiosInstance(originalRequest);
+                })
+                .catch((err) => {
+                  return Promise.reject(err);
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+              const { token, refreshToken, setTokens } = useAuthStore.getState();
+
+              if (!token || !refreshToken) {
+                // No tokens to refresh, just logout
+                console.error("Token hết hạn, đang chuyển hướng đăng nhập...");
+                throw new Error('No tokens available');
+              }
+
+              const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+                token,
+                refreshToken
+              });
+
+              const { data } = response;
+              if (data.success && data.data) {
+                setTokens(data.data.token, data.data.refreshToken);
+                axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + data.data.token;
+                processQueue(null, data.data.token);
+
+                originalRequest.headers['Authorization'] = 'Bearer ' + data.data.token;
+                return axiosInstance(originalRequest);
+              } else {
+                console.error("Làm mới token thất bại.");
+                throw new Error('Refresh failed');
+              }
+            } catch (err) {
+              processQueue(err, null);
+              useAuthStore.getState().logout();
+              return Promise.reject(err);
+            } finally {
+              isRefreshing = false;
+            }
+          }
+          break;
+
+        case HttpStatus.FORBIDDEN: // 403
+          console.error("Bạn không có quyền truy cập tính năng này.");
+          break;
+
+        case HttpStatus.INTERNAL_SERVER_ERROR: // 500
+          console.error("Lỗi server, vui lòng thử lại sau.");
+          break;
+
+        case HttpStatus.NOT_FOUND: // 404
+          console.error("Không tìm thấy tài nguyên yêu cầu.");
+          break;
+
+        default:
+          console.error(`Đã có lỗi xảy ra (${error.response.status}):`, error.response.data || error.message);
+      }
+    } else {
+      console.error("Lỗi mạng hoặc server không phản hồi.");
+    }
+
+    return Promise.reject(error);
   }
+);
+
+
+// ============ API Client Adapter ============
+// Maintains compatibility with existing code calling `apiClient.get<T>`
+class ApiClient {
 
   async request<T>(
     method: string,
     endpoint: string,
     data?: unknown,
-    options?: RequestInit
+    options?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const url = `${this.baseURL}${endpoint}`;
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders(),
-      ...(options?.headers as Record<string, string>),
-    };
-
     try {
-      let response = await fetch(url, {
+      const response = await axiosInstance.request({
         method,
-        headers,
-        body: data ? JSON.stringify(data) : undefined,
-        ...options,
+        url: endpoint,
+        data,
+        ...options
       });
 
-      // Handle 401 Unauthorized - Refresh Token Logic
-      if (response.status === HttpStatus.UNAUTHORIZED) {
-        // Avoid infinite loop if refresh token endpoint itself returns 401
-        if (endpoint.includes('refresh-token') || endpoint.includes('login')) {
-          useAuthStore.getState().logout();
-          return {
-            success: false,
-            message: 'Session expired',
-            data: null,
-            statusCode: HttpStatus.UNAUTHORIZED
-          };
-        }
+      // The backend returns ApiResponse<T>
+      return response.data as ApiResponse<T>;
+    } catch (error: any) {
+      // Unify error format for frontend consumption
+      const msg = error.response?.data?.message || (error instanceof Error ? error.message : 'Unknown error');
+      const statusCode = error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
 
-        const success = await this.handleRefreshToken();
-        if (success) {
-          // Retry original request with new token
-          headers['Authorization'] = `Bearer ${useAuthStore.getState().token}`;
-          response = await fetch(url, {
-            method,
-            headers,
-            body: data ? JSON.stringify(data) : undefined,
-            ...options,
-          });
-        } else {
-          useAuthStore.getState().logout();
-          return {
-            success: false,
-            message: 'Session expired',
-            data: null,
-            statusCode: HttpStatus.UNAUTHORIZED
-          };
-        }
-      }
-
-      // The backend now always returns ApiResponse<T> structure including deletes
-      const result = await response.json();
-      return result as ApiResponse<T>;
-    } catch (error) {
-      console.error('API Error:', error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Network error',
+        message: msg,
         data: null,
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: statusCode
       };
     }
   }
 
-  private async handleRefreshToken(): Promise<boolean> {
-    const { token, refreshToken, setTokens } = useAuthStore.getState();
-    if (!token || !refreshToken) return false;
-
-    try {
-      // Call direct fetch to avoid circular dependency or infinite loop
-      const response = await fetch(`${this.baseURL}/auth/refresh-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ token, refreshToken })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setTokens(result.data.token, result.data.refreshToken);
-          return true;
-        }
-      }
-    } catch (error) {
-      console.error("Refresh token failed", error);
-    }
-    return false;
-  }
-
-  // Helper methods...
-
-  get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+  get<T>(endpoint: string, options?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>('GET', endpoint, undefined, options);
   }
 
-  post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+  post<T>(endpoint: string, data?: unknown, options?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>('POST', endpoint, data, options);
   }
 
-  put<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+  put<T>(endpoint: string, data?: unknown, options?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>('PUT', endpoint, data, options);
   }
 
-  delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+  delete<T>(endpoint: string, options?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>('DELETE', endpoint, undefined, options);
+  }
+
+  // Expose axios instance if needed for advanced usage
+  get instance() {
+    return axiosInstance;
   }
 }
 
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient();
 export default apiClient;

@@ -5,33 +5,86 @@ namespace VNVTStore.Domain.Entities;
 
 public partial class TblOrder
 {
-    public string Code { get; set; } = null!;
+    private TblOrder() 
+    {
+        TblOrderItems = new List<TblOrderItem>();
+    }
 
-    public string UserCode { get; set; } = null!;
+    public string Code { get; private set; } = null!;
 
-    public DateTime? OrderDate { get; set; }
+    public string UserCode { get; private set; } = null!;
 
-    public decimal TotalAmount { get; set; }
+    public DateTime? OrderDate { get; private set; }
 
-    public decimal ShippingFee { get; set; }
+    public decimal TotalAmount { get; private set; }
 
-    public decimal? DiscountAmount { get; set; }
+    public decimal ShippingFee { get; private set; }
 
-    public decimal FinalAmount { get; set; }
+    public decimal? DiscountAmount { get; private set; }
 
-    public string? Status { get; set; }
+    public decimal FinalAmount { get; private set; }
 
-    public string? AddressCode { get; set; }
+    public string? Status { get; private set; }
 
-    public string? CouponCode { get; set; }
+    public string? AddressCode { get; private set; }
 
-    public virtual TblAddress? AddressCodeNavigation { get; set; }
+    public string? CouponCode { get; private set; }
 
-    public virtual TblCoupon? CouponCodeNavigation { get; set; }
+    public virtual TblAddress? AddressCodeNavigation { get; private set; }
 
-    public virtual ICollection<TblOrderItem> TblOrderItems { get; set; } = new List<TblOrderItem>();
+    public virtual TblCoupon? CouponCodeNavigation { get; private set; }
 
-    public virtual TblPayment? TblPayment { get; set; }
+    public virtual ICollection<TblOrderItem> TblOrderItems { get; private set; }
 
-    public virtual TblUser UserCodeNavigation { get; set; } = null!;
+    public virtual TblPayment? TblPayment { get; private set; }
+
+    public virtual TblUser UserCodeNavigation { get; private set; } = null!;
+
+    public static TblOrder Create(
+        string userCode, 
+        string addressCode, 
+        decimal totalAmount, 
+        decimal shippingFee, 
+        decimal? discountAmount,
+        string? couponCode)
+    {
+        var finalAmount = totalAmount + shippingFee - (discountAmount ?? 0);
+        if (finalAmount < 0) finalAmount = 0;
+
+        return new TblOrder
+        {
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            UserCode = userCode,
+            AddressCode = addressCode,
+            OrderDate = DateTime.UtcNow,
+            TotalAmount = totalAmount,
+            ShippingFee = shippingFee,
+            DiscountAmount = discountAmount,
+            FinalAmount = finalAmount,
+            Status = "Pending",
+            CouponCode = couponCode,
+            TblOrderItems = new List<TblOrderItem>()
+        };
+    }
+
+    public void AddOrderItem(TblOrderItem item)
+    {
+        TblOrderItems.Add(item);
+    }
+
+    public void UpdateStatus(string status)
+    {
+        // Add valid status transitions if needed
+        Status = status;
+    }
+
+    public void Cancel(string reason)
+    {
+        if (Status == "Completed" || Status == "Cancelled")
+        {
+             throw new InvalidOperationException($"Cannot cancel order in status {Status}.");
+        }
+        Status = "Cancelled";
+        // Optionally store cancellation reason if there was a field
+    }
 }

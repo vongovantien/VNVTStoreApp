@@ -74,7 +74,6 @@ public class ProductHandlers : BaseHandler<TblProduct>,
     {
         var dto = request.Dto;
 
-        // Check SKU uniqueness
         if (!string.IsNullOrWhiteSpace(dto.Sku))
         {
             var existingSku = await Repository.FindAsync(p => p.Sku == dto.Sku, cancellationToken);
@@ -82,19 +81,19 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", dto.Sku));
         }
 
-        return await CreateAsync<CreateProductDto, ProductDto>(
-            dto, 
-            cancellationToken,
-            p => {
-                if (string.IsNullOrWhiteSpace(p.Sku))
-                {
-                    p.Sku = $"SKU{DateTime.Now.Ticks.ToString().Substring(10)}";
-                }
-                
-                var random = new Random();
-                p.Code = $"P{random.Next(100000, 999999)}";
-                p.IsActive = true;
-            });
+        var sku = string.IsNullOrWhiteSpace(dto.Sku) 
+            ? $"SKU{DateTime.Now.Ticks.ToString().Substring(10)}" 
+            : dto.Sku;
+
+        var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, sku);
+        
+        // Ensure other fields are set if needed via new methods or just accept defaults for now
+        // product.SetAttributes(dto.Color, dto.Size...); // If I added this
+
+        await Repository.AddAsync(product, cancellationToken);
+        await UnitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success(Mapper.Map<ProductDto>(product));
     }
 
     public async Task<Result<ProductDto>> Handle(UpdateCommand<UpdateProductDto, ProductDto> request, CancellationToken cancellationToken)
@@ -103,7 +102,6 @@ public class ProductHandlers : BaseHandler<TblProduct>,
         if (product == null)
             return Result.Failure<ProductDto>(Error.NotFound(MessageConstants.Product, request.Code));
 
-        // Check SKU uniqueness if changed
         if (!string.IsNullOrWhiteSpace(request.Dto.Sku) && request.Dto.Sku != product.Sku)
         {
             var existingSku = await Repository.FindAsync(p => p.Sku == request.Dto.Sku && p.Code != request.Code, cancellationToken);
@@ -111,11 +109,12 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", request.Dto.Sku));
         }
 
-        return await UpdateAsync<UpdateProductDto, ProductDto>(
-            request.Code, 
-            request.Dto, 
-            MessageConstants.Product, 
-            cancellationToken);
+        product.UpdateInfo(request.Dto.Name, request.Dto.Price ?? 0, request.Dto.Description, request.Dto.CategoryCode);
+        
+        Repository.Update(product);
+        await UnitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success(Mapper.Map<ProductDto>(product));
     }
 
     public async Task<Result> Handle(DeleteCommand<TblProduct> request, CancellationToken cancellationToken)

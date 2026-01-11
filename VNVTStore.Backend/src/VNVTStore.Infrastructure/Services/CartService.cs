@@ -25,12 +25,7 @@ public class CartService : ICartService
 
         if (cart == null)
         {
-            cart = new TblCart
-            {
-                Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-                UserCode = userCode,
-                CreatedAt = DateTime.Now
-            };
+            cart = TblCart.Create(userCode);
             await _cartRepository.AddAsync(cart, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
         }

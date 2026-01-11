@@ -84,7 +84,7 @@ public class PaymentHandlers :
             var order = await _orderRepository.GetByCodeAsync(payment.OrderCode!, cancellationToken);
             if (order != null)
             {
-                order.Status = OrderStatus.Paid.ToString(); // Or "Processing"
+                order.UpdateStatus(OrderStatus.Paid.ToString()); // Or "Processing"
                 _orderRepository.Update(order);
             }
         }

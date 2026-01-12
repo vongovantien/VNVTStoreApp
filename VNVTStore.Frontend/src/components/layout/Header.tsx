@@ -338,7 +338,7 @@ export const Header = memo(() => {
 
           {/* Promo */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="bg-secondary text-white px-2 py-0.5 rounded-full text-xs font-bold">🔥 HOT</span>
+            <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">🔥 HOT</span>
             <span className="text-secondary">{t('header.freeShipping')}</span>
           </div>
         </div>

@@ -389,7 +389,7 @@
     "emailPlaceholder": "Nhập email của bạn",
     "subscribe": "Đăng ký",
     "paymentMethods": "Phương thức thanh toán",
-    "copyright": "© 2024 VNVT Store. Tất cả quyền được bảo lưu."
+    "copyright": "© {{year}} VNVT Store. Tất cả quyền được bảo lưu."
   },
   "messages": {
     "createSuccess": "Tạo thành công!",

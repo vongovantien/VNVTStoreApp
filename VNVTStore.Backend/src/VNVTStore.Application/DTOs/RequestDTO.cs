@@ -42,5 +42,5 @@ public class SearchDTO
 {
     public string? Field { get; set; }
     public SearchCondition Operator { get; set; } // Uses new Enum
-    public string? Value { get; set; }
+    public object? Value { get; set; }
 }

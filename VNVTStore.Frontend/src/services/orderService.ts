@@ -41,6 +41,7 @@ export interface CreateOrderRequest {
     ward: string;
     note?: string;
     paymentMethod: string;
+    promotionCode?: string;
 }
 
 export interface UpdateOrderRequest {

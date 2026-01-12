@@ -103,19 +103,75 @@ export function useProducts(params: {
     sortField?: string;
     sortDir?: 'asc' | 'desc';
     category?: string;
+    brands?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    rating?: number;
     enabled?: boolean;
+    ids?: string[];
 }) {
     const { enabled = true, ...searchParams } = params;
 
     // Build filters dynamically
-    const filters = Object.entries(searchParams).reduce((acc, [key, value]) => {
-        // Skip pagination/sorting params
-        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir'].includes(key)) return acc;
+    const filters: { field: string; value: any; operator?: SearchCondition }[] = [];
+
+    // 1. Generic/Dynamic params (excluding specific ones)
+    Object.entries(searchParams).forEach(([key, value]) => {
+        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir', 'brands', 'minPrice', 'maxPrice', 'rating', 'category', 'ids'].includes(key)) return;
         if (value !== undefined && value !== null && value !== '') {
-            acc.push({ field: key, value: String(value), operator: SearchCondition.Equal });
+            filters.push({ field: key, value: String(value), operator: SearchCondition.Equal });
         }
-        return acc;
-    }, [] as Array<{ field: string; value: string; operator?: SearchCondition }>);
+    });
+
+    // 0. IDs (Multi-select)
+    if (searchParams.ids && searchParams.ids.length > 0) {
+        filters.push({
+            field: 'Code',
+            value: searchParams.ids,
+            operator: SearchCondition.In
+        });
+    }
+
+    // 2. Category (Multi-select)
+    if (searchParams.category) {
+        if (searchParams.category.includes(',')) {
+            const cats = searchParams.category.split(',').map(c => c.trim());
+            filters.push({
+                field: 'CategoryCode',
+                value: cats,
+                operator: SearchCondition.In
+            });
+        } else {
+            filters.push({
+                field: 'CategoryCode',
+                value: searchParams.category,
+                operator: SearchCondition.Equal
+            });
+        }
+    }
+
+    // 2. Brands (Multi-select) -> In Operator
+    if (searchParams.brands && searchParams.brands.length > 0) {
+        filters.push({
+            field: 'brand', // Make sure backend entity has 'Brand' property
+            value: searchParams.brands,
+            operator: SearchCondition.In
+        });
+    }
+
+    // 3. Price Range
+    if (searchParams.minPrice !== undefined) {
+        filters.push({ field: 'price', value: String(searchParams.minPrice), operator: SearchCondition.GreaterThanEqual });
+    }
+    if (searchParams.maxPrice !== undefined) {
+        filters.push({ field: 'price', value: String(searchParams.maxPrice), operator: SearchCondition.LessThanEqual });
+    }
+
+    // 4. Rating
+    if (searchParams.rating !== undefined && searchParams.rating !== null) {
+        filters.push({ field: 'rating', value: String(searchParams.rating), operator: SearchCondition.GreaterThanEqual });
+    }
+
 
     return useQuery({
         queryKey: productKeys.list(searchParams),

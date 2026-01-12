@@ -131,7 +131,7 @@ public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : Bas
         
         // Default search extraction
         string? search = request.Searching?.FirstOrDefault(s => 
-            s.Field?.ToLower() == "name" || s.Field?.ToLower() == "search" || s.Field?.ToLower() == "code")?.Value;
+            s.Field?.ToLower() == "name" || s.Field?.ToLower() == "search" || s.Field?.ToLower() == "code")?.Value?.ToString();
 
         // Extract other filters (exclude the ones used for text search)
         var filters = request.Searching?.Where(s => 

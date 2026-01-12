@@ -43,13 +43,15 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             orderBy: q => {
                 if (request.SortDTO != null && !string.IsNullOrWhiteSpace(request.SortDTO.SortBy))
                 {
-                    return request.SortDTO.SortBy.ToLower() switch
-                    {
-                        "price" => request.SortDTO.SortDescending ? q.OrderByDescending(p => p.Price) : q.OrderBy(p => p.Price),
-                        "name" => request.SortDTO.SortDescending ? q.OrderByDescending(p => p.Name) : q.OrderBy(p => p.Name),
-                        "createdat" => request.SortDTO.SortDescending ? q.OrderByDescending(p => p.CreatedAt) : q.OrderBy(p => p.CreatedAt),
-                        _ => q.OrderByDescending(p => p.CreatedAt)
-                    };
+                    var sortBy = request.SortDTO.SortBy.ToLower();
+                    if (sortBy == nameof(TblProduct.Price).ToLower())
+                        return request.SortDTO.SortDescending ? q.OrderByDescending(p => p.Price) : q.OrderBy(p => p.Price);
+                    if (sortBy == nameof(TblProduct.Name).ToLower())
+                        return request.SortDTO.SortDescending ? q.OrderByDescending(p => p.Name) : q.OrderBy(p => p.Name);
+                    if (sortBy == nameof(TblProduct.CreatedAt).ToLower())
+                        return request.SortDTO.SortDescending ? q.OrderByDescending(p => p.CreatedAt) : q.OrderBy(p => p.CreatedAt);
+                    
+                    return q.OrderByDescending(p => p.CreatedAt);
                 }
                 return q.OrderByDescending(p => p.CreatedAt);
             });

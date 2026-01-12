@@ -78,7 +78,7 @@ public class MappingProfile : Profile
             .ReverseMap();
 
         // Promotion mappings
-        CreateMap<TblPromotion, PromotionDto>().ReverseMap();
+
 
         // Payment mappings
         CreateMap<TblPayment, PaymentDto>().ReverseMap();
@@ -114,9 +114,14 @@ public class MappingProfile : Profile
     CreateMap<UpdateReviewDto, TblReview>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-    // Promotion Create/Update
-    CreateMap<CreatePromotionDto, TblPromotion>();
-    CreateMap<UpdatePromotionDto, TblPromotion>()
+        // Promotion mappings
+        CreateMap<TblPromotion, PromotionDto>()
+            .ForMember(d => d.ProductCodes, o => o.MapFrom(s => s.TblProductPromotions.Select(pp => pp.ProductCode).ToList()))
+            .ReverseMap();
+
+        // Promotion Create/Update
+        CreateMap<CreatePromotionDto, TblPromotion>();
+        CreateMap<UpdatePromotionDto, TblPromotion>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             
     // Supplier Create/Update

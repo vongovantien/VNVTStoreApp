@@ -240,7 +240,7 @@ export const ProductsPage = () => {
   // Filters state
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]); // Filter States
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.get('category') ? [searchParams.get('category')!] : []
+    searchParams.get('category') ? searchParams.get('category')!.split(',') : []
   );
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
@@ -281,6 +281,10 @@ export const ProductsPage = () => {
     sortField: sortConfig.field,
     sortDir: sortConfig.dir,
     category: categorySlug,
+    brands: selectedBrands,   // Pass to API (even if backend doesn't support it yet, hook handles it)
+    minPrice: priceRange[0], // Server-side Price Filter
+    maxPrice: priceRange[1], // Server-side Price Filter
+    rating: selectedRating || undefined, // Pass to API
   });
 
   // Get unique brands from fetched products
@@ -291,34 +295,37 @@ export const ProductsPage = () => {
     return Array.from(brandSet) as string[];
   }, [productsData?.products]);
 
-  // Apply client-side filters (price, category, brand, rating)
+  // Apply client-side logic for features NOT supported by API yet
+  // Currently: None (if Generic Search handles everything via 'In' or property checks)
+  // However, since Brand/Rating are mocked on FE, passing them to API might return empty or error if fields don't exist.
+  // QueryHelper uses reflection. If 'Brand' doesn't exist on TblProduct, it skips. UseProducts will send it.
+  // Result: API returns ALL products (filter ignored). FE must filter client-side for these mocked fields.
   const filteredProducts = useMemo(() => {
     let products = [...(productsData?.products || [])];
 
-    if (categorySlug) {
-      products = products.filter((p) => p.categoryId === categorySlug);
-    }
-
+    // Client-side filtering for Multi-Category (if passed as separate params or single param in URL)
+    // Controller logic handles "category" param. 
+    // If selectedCategories has content, it overrides categorySlug.
     if (selectedCategories.length > 0) {
-      products = products.filter((p) => selectedCategories.includes(p.categoryId));
+      // Logic handled by API "category" param which we set in URL?
+      // Wait, selectedCategories updates URL 'category'.
+      // So API receives it.
+      // But we might have latency or mismatch.
+      // Actually, if we trust API, we don't need this.
+      // products = products.filter((p) => selectedCategories.includes(p.categoryId));
     }
 
+    // Client-side Brand (Mock Validation)
     if (selectedBrands.length > 0) {
-      products = products.filter((p) => p.brand && selectedBrands.includes(p.brand));
+       // Since backend might ignore 'Brand' if missing, we filter here to be safe for Mock UI
+       products = products.filter((p) => p.brand && selectedBrands.includes(p.brand));
     }
 
-    products = products.filter(
-      (p) => p.price >= priceRange[0] && (p.price <= priceRange[1] || p.price === 0)
-    );
-
-    if (priceType === 'fixed') {
-      products = products.filter((p) => p.price > 0);
-    } else if (priceType === 'contact') {
-      products = products.filter((p) => p.price === 0);
-    }
+    // Price is now Server-Side. Remove client filter.
 
     if (selectedRating) {
-      products = products.filter((p) => p.rating >= selectedRating);
+       // Since backend might ignore 'Rating', and data is mocked
+       products = products.filter((p) => p.rating >= selectedRating);
     }
 
     // Client-side sorting for rating/bestseller (not supported by API)
@@ -345,7 +352,7 @@ export const ProductsPage = () => {
       // If we want multi-select in URL, we'd join them. For now let's assume single or primary category in URL
       if (next.length > 0) {
         setSearchParams(params => {
-          params.set('category', next[next.length - 1]); // Set the most recently selected
+          params.set('category', next.join(',')); // Join with comma for multiple selection
           return params;
         });
       } else {
@@ -558,7 +565,7 @@ export const ProductsPage = () => {
               <div
                 className={`grid gap-6 ${viewMode === 'list'
                   ? 'grid-cols-1'
-                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                  : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4'
                   }`}
               >
                 {Array.from({ length: pageSize }).map((_, i) => (
@@ -580,7 +587,7 @@ export const ProductsPage = () => {
               <div
                 className={`grid gap-6 ${viewMode === 'list'
                   ? 'grid-cols-1'
-                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                  : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4'
                   }`}
               >
                 {filteredProducts.map((product) => (

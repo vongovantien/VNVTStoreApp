@@ -35,20 +35,27 @@ export interface PagedResult<T> {
 
 export enum SearchCondition {
   Equal = 0,
-  Contains = 1,
-  GreaterThan = 2,
-  LessThan = 3,
-  GreaterThanOrEqual = 4,
-  LessThanOrEqual = 5,
-  NotEqual = 6,
-  IsNull = 7,
-  IsNotNull = 8
+  NotEqual = 1,
+  Contains = 2,
+  GreaterThan = 3,
+  GreaterThanEqual = 4,
+  LessThan = 5,
+  LessThanEqual = 6,
+  DateTimeRange = 7,
+  DayPart = 8,
+  MonthPart = 9,
+  DatePart = 10,
+  IsNull = 11,
+  IsNotNull = 12,
+  In = 13,
+  NotIn = 14,
+  EqualExact = 15
 }
 
 export interface SearchDTO {
   field: string;
   operator: SearchCondition;
-  value: string;
+  value: any;
 }
 
 export interface SortDTO {

@@ -388,7 +388,7 @@
     "emailPlaceholder": "Enter your email",
     "subscribe": "Subscribe",
     "paymentMethods": "Payment Methods",
-    "copyright": "© 2024 VNVT Store. All rights reserved."
+    "copyright": "© {{year}} VNVT Store. All rights reserved."
   },
   "messages": {
     "createSuccess": "Created successfully!",

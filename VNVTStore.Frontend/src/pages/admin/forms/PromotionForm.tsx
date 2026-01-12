@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Save, X } from 'lucide-react';
-import { Button, Input, Select, DatePicker } from '@/components/ui';
+import { Button, Input, Select } from '@/components/ui';
 import { CreatePromotionRequest } from '@/services/promotionService';
 import { useProducts } from '@/hooks';
 
@@ -48,7 +48,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
   isLoading
 }) => {
   const { t } = useTranslation();
-  
+
   const { register, control, handleSubmit, watch, setFocus, setValue, formState: { errors } } = useForm<PromotionFormData>({
     resolver: zodResolver(promotionSchema),
     defaultValues: {
@@ -59,9 +59,6 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
       discountValue: 0,
       minOrderAmount: null,
       maxDiscountAmount: null,
-      startDate: new Date(),
-      endDate: new Date(new Date().setDate(new Date().getDate() + 7)),
-      usageLimit: null,
       isActive: true,
       productCodes: [],
       ...initialData,
@@ -86,11 +83,11 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
 
   const handleFormSubmit = async (data: any) => {
     await onSubmit({
-        ...data,
-        // Ensure dates are sent/handled as objects or strings? 
-        // Service expects string ISO. Form uses Date objects.
-        // We will conversion in the Page component or here.
-        // Schema output is Date.
+      ...data,
+      // Ensure dates are sent/handled as objects or strings? 
+      // Service expects string ISO. Form uses Date objects.
+      // We will conversion in the Page component or here.
+      // Schema output is Date.
     });
   };
 
@@ -106,7 +103,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             placeholder="SUMMER2024"
             disabled={!!initialData?.code} // Code immutable on edit
           />
-          
+
           <Input
             label={t('admin.columns.name')}
             {...register('name')}
@@ -160,34 +157,36 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             />
           )}
 
-           <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <Controller
-                name="startDate"
-                control={control}
-                render={({ field }) => (
-                    <DatePicker
-                        label={t('admin.columns.startDate')}
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        // error={errors.startDate?.message}
-                    />
-                )}
+              name="startDate"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  label={t('admin.columns.startDate')}
+                  type="date"
+                  value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                  error={errors.startDate?.message}
+                />
+              )}
             />
             <Controller
-                name="endDate"
-                control={control}
-                render={({ field }) => (
-                    <DatePicker
-                        label={t('admin.columns.endDate')}
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        // error={errors.endDate?.message}
-                    />
-                )}
+              name="endDate"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  label={t('admin.columns.endDate')}
+                  type="date"
+                  value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                  error={errors.endDate?.message}
+                />
+              )}
             />
-           </div>
+          </div>
 
-           <Input
+          <Input
             label={t('admin.columns.usageLimit')}
             type="number"
             {...register('usageLimit', { valueAsNumber: true })}
@@ -196,42 +195,42 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
           />
         </div>
       </div>
-      
+
       {/* Description */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('admin.columns.description')}
+          {t('admin.columns.description')}
         </label>
         <textarea
-            {...register('description')}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-slate-900 dark:border-gray-700"
-            rows={3}
+          {...register('description')}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-slate-900 dark:border-gray-700"
+          rows={3}
         />
       </div>
 
       {/* Product Selection for Flash Sales (Optional) */}
       <div className="border-t pt-4">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Applicable Products (Flash Sale)
+          Applicable Products (Flash Sale)
         </label>
         <div className="h-48 overflow-y-auto border rounded-md p-2 bg-gray-50 dark:bg-slate-900">
-            {products.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center p-4">No products available</p>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                     {products.map(p => (
-                        <label key={p.code} className="flex items-center gap-2 text-sm p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded cursor-pointer">
-                            <input 
-                                type="checkbox"
-                                value={p.code}
-                                {...register('productCodes')}
-                                className="rounded border-gray-300"
-                            />
-                            <span className="truncate">{p.name} - {p.code}</span>
-                        </label>
-                     ))}
-                </div>
-            )}
+          {products.length === 0 ? (
+            <p className="text-gray-500 text-sm text-center p-4">No products available</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {products.map(p => (
+                <label key={p.id} className="flex items-center gap-2 text-sm p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    value={p.id}
+                    {...register('productCodes')}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="truncate">{p.name} - {p.id}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
         <p className="text-xs text-gray-500 mt-1">Select products to include in this promotion (effectively making it a Flash Sale for these items).</p>
       </div>

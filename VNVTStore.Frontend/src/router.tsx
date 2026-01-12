@@ -34,7 +34,7 @@ const TrackingPage = lazy(() => import('@/pages/shop/TrackingPage'));
 // Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/DashboardPage'));
 const AdminProducts = lazy(() => import('@/pages/admin/ProductsPage'));
-const PromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'));
+const AdminPromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'));
 const AdminOrders = lazy(() => import('@/pages/admin/OrdersPage'));
 const AdminCustomers = lazy(() => import('@/pages/admin/CustomersPage'));
 const AdminQuotes = lazy(() => import('@/pages/admin/QuotesPage'));
@@ -126,7 +126,7 @@ const router = createBrowserRouter([
             path: 'promotions',
             element: (
               <Suspense fallback={<PageLoader />}>
-                <PromotionsPage />
+                <AdminPromotionsPage />
               </Suspense>
             ),
           },
@@ -264,7 +264,7 @@ const router = createBrowserRouter([
             path: 'promotions',
             element: (
               <Suspense fallback={<PageLoader />}>
-                <PromotionsPage />
+                <AdminPromotionsPage />
               </Suspense>
             ),
           },

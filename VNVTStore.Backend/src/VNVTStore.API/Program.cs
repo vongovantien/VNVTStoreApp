@@ -2,6 +2,7 @@ using VNVTStore.API.Extensions;
 using VNVTStore.API.Middlewares;
 using VNVTStore.Application;
 using VNVTStore.Infrastructure;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +16,15 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.UseSwagger(options =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "VNVTStore API v1");
-        c.RoutePrefix = string.Empty;
+        options.RouteTemplate = "openapi/{documentName}.json";
+    });
+    app.MapScalarApiReference(options =>
+    {
+        options.WithTitle("VNVTStore API")
+               .WithTheme(Scalar.AspNetCore.ScalarTheme.DeepSpace)
+               .WithDefaultHttpClient(Scalar.AspNetCore.ScalarTarget.CSharp, Scalar.AspNetCore.ScalarClient.HttpClient);
     });
 }
 

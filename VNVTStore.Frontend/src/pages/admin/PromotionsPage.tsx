@@ -25,11 +25,11 @@ import { useToast } from '@/store';
 
 // We need a hook to fetch promotions compatible with DataTable
 const usePromotions = (params: any) => {
-    return useQuery({
-        queryKey: ['promotions', params],
-        queryFn: () => promotionService.getAll(params),
-        placeholderData: (previousData) => previousData,
-    });
+  return useQuery({
+    queryKey: ['promotions', params],
+    queryFn: () => promotionService.getAll(params),
+    placeholderData: (previousData) => previousData,
+  });
 };
 
 export const PromotionsPage = () => {
@@ -63,11 +63,8 @@ export const PromotionsPage = () => {
     ...advancedFilters
   });
 
-  const promotions: Promotion[] = promotionsData?.items || []; // PagedResult usually has items or data
-  // Check PagedResult helper. Usually it's `items`. 
-  // BaseController returns `PagedResult<T>`. 
-  // Let's assume structure is { items: [], totalItems: 0, ... }
-  const totalItems: number = promotionsData?.totalItems || 0;
+  const promotions: Promotion[] = promotionsData?.data?.items || [];
+  const totalItems: number = promotionsData?.data?.totalItems || 0;
   const totalPages: number = Math.ceil(totalItems / pageSize);
 
   // Mutations and State via useEntityManager
@@ -105,8 +102,8 @@ export const PromotionsPage = () => {
       header: t('admin.columns.code'),
       accessor: (p) => (
         <div className="flex flex-col">
-            <span className="font-bold text-primary">{p.code}</span>
-            <span className="text-xs text-slate-500">{p.name}</span>
+          <span className="font-bold text-primary">{p.code}</span>
+          <span className="text-xs text-slate-500">{p.name}</span>
         </div>
       ),
       sortable: true
@@ -115,13 +112,13 @@ export const PromotionsPage = () => {
       id: 'type',
       header: t('admin.columns.type'),
       accessor: (p) => (
-          <Badge variant="outline" className="flex items-center gap-1 w-fit">
-              {p.productCodes && p.productCodes.length > 0 ? (
-                  <><Clock size={12} /> Flash Sale</>
-              ) : (
-                  <><Tag size={12} /> Voucher</>
-              )}
-          </Badge>
+        <Badge variant="outline" className="flex items-center gap-1 w-fit">
+          {p.productCodes && p.productCodes.length > 0 ? (
+            <><Clock size={12} /> Flash Sale</>
+          ) : (
+            <><Tag size={12} /> Voucher</>
+          )}
+        </Badge>
       )
     },
     {
@@ -129,7 +126,7 @@ export const PromotionsPage = () => {
       header: t('admin.columns.discount'),
       accessor: (p) => (
         <div className="font-semibold text-rose-600">
-            {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : formatCurrency(p.discountValue)}
+          {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : formatCurrency(p.discountValue)}
         </div>
       ),
       sortable: true
@@ -138,19 +135,19 @@ export const PromotionsPage = () => {
       id: 'date',
       header: t('admin.columns.date'),
       accessor: (p) => (
-          <div className="text-xs flex flex-col">
-              <span>{formatDate(p.startDate)}</span>
-              <span className="text-slate-400">to</span>
-              <span>{formatDate(p.endDate)}</span>
-          </div>
+        <div className="text-xs flex flex-col">
+          <span>{formatDate(p.startDate)}</span>
+          <span className="text-slate-400">to</span>
+          <span>{formatDate(p.endDate)}</span>
+        </div>
       )
     },
     {
-        id: 'usage',
-        header: 'Usage Limit',
-        accessor: (p) => p.usageLimit ?? '∞',
-        className: 'text-center',
-        headerClassName: 'text-center'
+      id: 'usage',
+      header: 'Usage Limit',
+      accessor: (p) => p.usageLimit ?? '∞',
+      className: 'text-center',
+      headerClassName: 'text-center'
     },
     {
       id: 'status',
@@ -199,16 +196,16 @@ export const PromotionsPage = () => {
 
   // Handler Wrappers
   const handleCreate = async (data: any) => {
-      // Map data if needed
-      await createMutation.mutateAsync(data);
+    // Map data if needed
+    await createMutation.mutateAsync(data);
   };
 
   const handleUpdate = async (data: any) => {
-      if(!editingPromotion) return;
-      await updateMutation.mutateAsync({
-          code: editingPromotion.code, // Use code as ID
-          data: data
-      });
+    if (!editingPromotion) return;
+    await updateMutation.mutateAsync({
+      id: editingPromotion.code, // Map code to id for generic hook
+      data: data
+    });
   };
 
   const handleDelete = async () => {
@@ -220,13 +217,13 @@ export const PromotionsPage = () => {
         setSelectedIds(new Set());
         setShowBulkConfirm(false);
         toast.success(t('common.deleteSuccess'));
-      } catch (err) {}
+      } catch (err) { }
     }
   };
 
   const handleReset = () => {
     setAdvancedFilters({});
-    setCurrentPage( PaginationDefaults.PAGE_INDEX);
+    setCurrentPage(PaginationDefaults.PAGE_INDEX);
     setSearchQuery('');
     setSortField('createdAt');
     setSortDir(SortDirection.DESC);
@@ -235,78 +232,78 @@ export const PromotionsPage = () => {
 
   return (
     <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.promotions')}</h1>
-        </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.promotions')}</h1>
+      </div>
 
-        <DataTable
-            columns={columns}
-            data={promotions}
-            keyField="code"
-            isLoading={isLoading}
-            isFetching={isFetching}
-            error={isError ? (error as Error) : null}
-            
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
+      <DataTable
+        columns={columns}
+        data={promotions}
+        keyField="code"
+        isLoading={isLoading}
+        isFetching={isFetching}
+        error={isError ? (error as Error) : null}
 
-            externalSortField={sortField}
-            externalSortDir={sortDir}
-            onExternalSort={(f, d) => { setSortField(f); setSortDir(d as any); }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
 
-            onAdd={openCreate}
-            onEdit={openEdit}
-            onDelete={confirmDelete}
-            onView={setViewingPromotion}
-            
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-            onBulkDelete={() => setShowBulkConfirm(true)}
+        externalSortField={sortField}
+        externalSortDir={sortDir}
+        onExternalSort={(f, d) => { setSortField(f); setSortDir(d as any); }}
 
-            // Search
-            onReset={handleReset}
-            onAdvancedSearch={(filters) => {
-                setAdvancedFilters(filters);
-                setCurrentPage(1);
-            }}
-            advancedFilterDefs={[
-                { id: 'search', label: 'Search', type: 'text', placeholder: 'Search by Name/Code...' },
-                { id: 'type', label: 'Type', type: 'select', options: [{value: 'voucher', label: 'Voucher'}, {value: 'flash_sale', label: 'Flash Sale'}] },
-                { id: 'isActive', label: 'Status', type: 'select', options: [{value: 'true', label: 'Active'}, {value: 'false', label: 'Inactive'}] }
-            ]}
+        onAdd={openCreate}
+        onEdit={openEdit}
+        onDelete={confirmDelete}
+        onView={setViewingPromotion}
+
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        onBulkDelete={() => setShowBulkConfirm(true)}
+
+        // Search
+        onReset={handleReset}
+        onAdvancedSearch={(filters) => {
+          setAdvancedFilters(filters);
+          setCurrentPage(1);
+        }}
+        advancedFilterDefs={[
+          { id: 'search', label: 'Search', type: 'text', placeholder: 'Search by Name/Code...' },
+          { id: 'type', label: 'Type', type: 'select', options: [{ value: 'voucher', label: 'Voucher' }, { value: 'flash_sale', label: 'Flash Sale' }] },
+          { id: 'isActive', label: 'Status', type: 'select', options: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] }
+        ]}
+      />
+
+      <Modal
+        isOpen={isFormOpen}
+        onClose={closeForm}
+        title={editingPromotion ? t('admin.actions.edit') : t('admin.actions.create')}
+        size="2xl"
+      >
+        <PromotionForm
+          initialData={editingPromotion ? {
+            ...editingPromotion,
+            startDate: new Date(editingPromotion.startDate),
+            endDate: new Date(editingPromotion.endDate),
+          } : undefined}
+          onSubmit={editingPromotion ? handleUpdate : handleCreate}
+          onCancel={closeForm}
+          isLoading={isSubmitting}
         />
+      </Modal>
 
-        <Modal
-            isOpen={isFormOpen}
-            onClose={closeForm}
-            title={editingPromotion ? t('admin.actions.edit') : t('admin.actions.create')}
-            size="2xl"
-        >
-            <PromotionForm
-                initialData={editingPromotion ? {
-                    ...editingPromotion,
-                    startDate: new Date(editingPromotion.startDate),
-                    endDate: new Date(editingPromotion.endDate),
-                } : undefined}
-                onSubmit={editingPromotion ? handleUpdate : handleCreate}
-                onCancel={closeForm}
-                isLoading={isSubmitting}
-            />
-        </Modal>
-
-        <ConfirmDialog
-            isOpen={!!promotionToDelete || showBulkConfirm}
-            onClose={() => { cancelDelete(); setShowBulkConfirm(false); }}
-            onConfirm={handleDelete}
-            title={t('admin.actions.delete')}
-            message={t('common.confirmDelete', { count: showBulkConfirm ? selectedToDelete.length : 1 })}
-            confirmText={t('common.delete')}
-            variant="danger"
-            isLoading={isDeleting}
-        />
+      <ConfirmDialog
+        isOpen={!!promotionToDelete || showBulkConfirm}
+        onClose={() => { cancelDelete(); setShowBulkConfirm(false); }}
+        onConfirm={handleDelete}
+        title={t('admin.actions.delete')}
+        message={t('common.confirmDelete', { count: showBulkConfirm ? selectedToDelete.length : 1 })}
+        confirmText={t('common.delete')}
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

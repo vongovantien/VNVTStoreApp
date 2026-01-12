@@ -232,7 +232,7 @@ export const Footer = memo(() => {
       {/* Bottom */}
       <div className="bg-gray-950 py-4 border-t border-gray-800">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500">{t('footer.copyright')}</p>
+          <p className="text-sm text-gray-500">{t('footer.copyright', { year: new Date().getFullYear() })}</p>
           <div className="flex gap-4 items-center">
             <button
               onClick={toggleTheme}

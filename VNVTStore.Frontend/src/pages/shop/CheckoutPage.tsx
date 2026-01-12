@@ -51,18 +51,67 @@ export const CheckoutPage = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Voucher Logic
+  const [voucherCode, setVoucherCode] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState<{code: string, discount: number, type: string} | null>(null);
+
+  const handleApplyVoucher = async () => {
+    if(!voucherCode.trim()) return;
+    try {
+        const res = await import('@/services/promotionService').then(m => m.promotionService.getByCode(voucherCode));
+        if(res.success && res.data) {
+            const promo = res.data;
+            // Validate
+            const now = new Date();
+            if(!promo.isActive || new Date(promo.startDate) > now || new Date(promo.endDate) < now) {
+                toast.error(t('checkout.voucherExpired') || 'Mã giảm giá không hợp lệ hoặc đã hết hạn');
+                return;
+            }
+            if(promo.minOrderAmount && subtotal < promo.minOrderAmount) {
+                 toast.error(`${t('checkout.minOrderAmount') || 'Đơn hàng tối thiểu'}: ${formatCurrency(promo.minOrderAmount)}`);
+                 return;
+            }
+
+            // Calculate Discount
+            let discount = 0;
+            if(promo.discountType === 'PERCENTAGE') {
+                discount = subtotal * (promo.discountValue / 100);
+                if(promo.maxDiscountAmount) discount = Math.min(discount, promo.maxDiscountAmount);
+            } else {
+                discount = promo.discountValue;
+            }
+
+            setAppliedVoucher({
+                code: promo.code,
+                discount: discount,
+                type: promo.discountType
+            });
+            toast.success(t('checkout.voucherApplied') || 'Áp dụng mã giảm giá thành công');
+        } else {
+            toast.error(t('checkout.voucherInvalid') || 'Mã giảm giá không tồn tại');
+        }
+    } catch (e) {
+        toast.error(t('checkout.voucherError') || 'Lỗi kiểm tra mã giảm giá');
+    }
+  };
+
+  const discountAmount = appliedVoucher ? appliedVoucher.discount : 0;
+  // Recalculate total with discount
+  const finalTotal = Math.max(0, subtotal + shippingFee - discountAmount);
+
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
       const orderData: CreateOrderRequest = {
         fullName: formData.fullName,
         phone: formData.phone,
-        address: formData.address, // Should ideally include city/district/ward
+        address: formData.address,
         city: formData.city,
         district: formData.district,
         ward: formData.ward,
         note: formData.note,
-        paymentMethod: paymentMethod
+        paymentMethod: paymentMethod,
+        promotionCode: appliedVoucher?.code
       };
 
       // 1. Create Order
@@ -74,23 +123,20 @@ export const CheckoutPage = () => {
 
         // 2. Process Payment
         try {
-          const totalAmount = orderRes.data.finalAmount || total;
+          // Use the ACTUAL final amount from backend response if available, else local calc
+          const totalAmount = orderRes.data.finalAmount || finalTotal; 
           await paymentService.create({
             orderCode: orderCode,
             method: paymentMethod,
             amount: totalAmount
           });
-          // Payment success (or pending for COD)
-          // For online payment simulation, we might want to update status here or backend handles it
         } catch (paymentError) {
           console.error('Payment creation failed', paymentError);
           toast.error(t('messages.paymentError') || 'Có lỗi khi tạo thanh toán, vui lòng liên hệ CSKH.');
-          // We still redirect because Order is created, just payment failed/pending
         }
 
         // 3. Clear Cart & Redirect
         await fetchCart();
-        // Redirect to Orders page with success flag
         navigate('/account/orders?success=true');
       } else {
         toast.error(orderRes.message || t('messages.orderError') || 'Đặt hàng thất bại');
@@ -363,7 +409,26 @@ export const CheckoutPage = () => {
               <hr className="my-4" />
 
               <div className="space-y-2">
-                <div className="flex justify-between">
+                {/* Voucher Input */}
+                <div className="flex gap-2">
+                    <Input 
+                        placeholder={t('checkout.voucherPlaceholder') || 'Mã giảm giá'} 
+                        value={voucherCode}
+                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                        className="flex-1"
+                    />
+                    <Button size="sm" onClick={handleApplyVoucher} disabled={!voucherCode || !!appliedVoucher}>
+                        {t('common.apply')}
+                    </Button>
+                </div>
+                {appliedVoucher && (
+                    <div className="flex justify-between text-success text-sm items-center bg-success/10 p-2 rounded">
+                        <span>Voucher: <strong>{appliedVoucher.code}</strong></span>
+                        <button onClick={() => {setAppliedVoucher(null); setVoucherCode('');}} className="text-secondary hover:text-error">✕</button>
+                    </div>
+                )}
+
+                <div className="flex justify-between mt-4">
                   <span className="text-secondary">{t('cart.subtotal')}</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
@@ -373,10 +438,19 @@ export const CheckoutPage = () => {
                     {shippingFee === 0 ? t('cart.free') : formatCurrency(shippingFee)}
                   </span>
                 </div>
+                
+                {/* Discount Row */}
+                {discountAmount > 0 && (
+                <div className="flex justify-between text-success">
+                  <span>{t('cart.discount')}</span>
+                  <span>-{formatCurrency(discountAmount)}</span>
+                </div>
+                )}
+
                 <hr />
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('cart.total')}</span>
-                  <span className="text-error">{formatCurrency(total)}</span>
+                  <span className="text-error">{formatCurrency(finalTotal)}</span>
                 </div>
               </div>
             </div>

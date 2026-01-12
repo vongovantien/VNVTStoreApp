@@ -18,26 +18,7 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
     {
     }
 
-    [HttpPost("search")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(ApiResponse<PagedResult<ProductDto>>), StatusCodes.Status200OK)]
-    public override async Task<IActionResult> Search([FromBody] RequestDTO request)
-    {
-        var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
-        var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
 
-        string? search = request.Searching?.FirstOrDefault(s =>
-            s.Field?.ToLower() == "name" || s.Field?.ToLower() == "search" || s.Field?.ToLower() == "code")?.Value;
-        
-        string? categoryCode = request.Searching?.FirstOrDefault(s => s.Field?.ToLower() == "category")?.Value;
-
-        var filters = request.Searching?.Where(s => 
-            !new[] { "name", "search", "code", "category" }.Contains(s.Field?.ToLower())
-        ).ToList();
-
-        var result = await Mediator.Send(new GetProductsQuery(pageIndex, pageSize, search, request.SortDTO, categoryCode, filters));
-        return HandleResult(result);
-    }
 
     [HttpGet("{code}")]
     [AllowAnonymous]

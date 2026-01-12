@@ -5,54 +5,63 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Promotions.Queries;
+using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
+
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using VNVTStore.Application.Common;
+using VNVTStore.Application.Constants;
+using VNVTStore.Application.DTOs;
+using VNVTStore.Application.Promotions.Queries;
+using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Entities; // For TblPromotion marker
 
 namespace VNVTStore.API.Controllers.v1;
 
-[Route("api/v1/[controller]")]
-[ApiController]
-[Authorize(Roles = "admin")]
 public class PromotionsController : BaseApiController<PromotionDto, CreatePromotionDto, UpdatePromotionDto>
 {
-    public PromotionsController(IMediator mediator) : base(mediator)
+    private readonly ICurrentUser _currentUser;
+
+    public PromotionsController(IMediator mediator, ICurrentUser currentUser) : base(mediator)
     {
+        _currentUser = currentUser;
     }
 
-    /// <summary>
-    /// Get active promotions (Public)
-    /// </summary>
-    [HttpGet("active")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetActivePromotions()
-    {
-        var result = await Mediator.Send(new GetActivePromotionsQuery());
-        return HandleResult(result);
-    }
-
-    /// <summary>
-    [Authorize(Roles = "admin")]
-    [HttpGet]
-    public async Task<IActionResult> GetAllPromotions(
-        [FromQuery] int pageIndex = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] bool? isActive = null)
-    {
-        var result = await Mediator.Send(new GetAllPromotionsQuery(pageIndex, pageSize, isActive));
-        return HandleResult(result);
-    }
-
+    // Factory methods for Generic Base Controller
     protected override IRequest<Result<PagedResult<PromotionDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
-        => new GetPagedQuery<PromotionDto>(pageIndex, pageSize, search, sort, filters);
+    {
+        return new GetPagedQuery<PromotionDto>(pageIndex, pageSize, search, sort, filters);
+    }
 
     protected override IRequest<Result<PromotionDto>> CreateGetByCodeQuery(string code)
-        => new GetByCodeQuery<PromotionDto>(code);
+    {
+        return new GetByCodeQuery<PromotionDto>(code);
+    }
 
     protected override IRequest<Result<PromotionDto>> CreateCreateCommand(CreatePromotionDto dto)
-        => new CreateCommand<CreatePromotionDto, PromotionDto>(dto);
+    {
+        return new CreateCommand<CreatePromotionDto, PromotionDto>(dto);
+    }
 
     protected override IRequest<Result<PromotionDto>> CreateUpdateCommand(string code, UpdatePromotionDto dto)
-        => new UpdateCommand<UpdatePromotionDto, PromotionDto>(code, dto);
+    {
+        return new UpdateCommand<UpdatePromotionDto, PromotionDto>(code, dto);
+    }
 
     protected override IRequest<Result> CreateDeleteCommand(string code)
-        => new DeleteCommand<TblPromotion>(code);
+    {
+        return new DeleteCommand<TblPromotion>(code);
+    }
+
+    // Specific endpoints
+    [HttpGet("flash-sale")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<List<PromotionDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFlashSales()
+    {
+        var result = await Mediator.Send(new GetFlashSaleQuery());
+        return HandleResult(result);
+    }
 }

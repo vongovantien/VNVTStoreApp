@@ -86,7 +86,7 @@ public class OrdersController : BaseApiController
             {
                if (!string.IsNullOrEmpty(s.Field) && s.Value != null)
                {
-                   filters[s.Field.ToLower()] = s.Value;
+                   filters[s.Field.ToLower()] = s.Value?.ToString();
                }
             }
         }

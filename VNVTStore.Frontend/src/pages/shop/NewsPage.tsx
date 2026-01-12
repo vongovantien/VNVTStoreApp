@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Calendar, ArrowRight, Clock } from 'lucide-react';
@@ -40,6 +41,11 @@ const newsItems = [
 
 export const NewsPage = () => {
     const { t } = useTranslation();
+    const [displayCount, setDisplayCount] = useState(4); // Start with 4 items
+
+    const handleLoadMore = () => {
+        setDisplayCount(prev => prev + 4);
+    };
 
     return (
         <div className="min-h-screen bg-secondary py-12">
@@ -58,7 +64,7 @@ export const NewsPage = () => {
 
                 {/* News Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {newsItems.map((news, index) => (
+                    {newsItems.slice(0, displayCount).map((news, index) => (
                         <motion.article
                             key={news.id}
                             initial={{ opacity: 0, y: 20 }}
@@ -101,11 +107,16 @@ export const NewsPage = () => {
                 </div>
 
                 {/* Load More */}
-                <div className="text-center mt-12">
-                    <button className="px-8 py-3 border-2 border-primary text-primary rounded-full font-medium hover:bg-primary hover:text-white transition-colors">
-                        Xem thêm bài viết
-                    </button>
-                </div>
+                {displayCount < newsItems.length && (
+                    <div className="text-center mt-12">
+                        <button 
+                            onClick={handleLoadMore}
+                            className="px-8 py-3 border-2 border-primary text-primary rounded-full font-medium hover:bg-primary hover:text-white transition-colors"
+                        >
+                            Xem thêm bài viết
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -86,7 +86,7 @@ public class UsersController : BaseApiController
         // Extract basic search (name/email/username) from the generic 'Search' field if provided, 
         // OR from the 'searching' list if it contains 'search', 'name', 'code'.
         string? search = request.Searching?.FirstOrDefault(s => 
-            s.Field?.ToLower() == "name" || s.Field?.ToLower() == "search" || s.Field?.ToLower() == "code" || s.Field?.ToLower() == "username")?.Value;
+            s.Field?.ToLower() == "name" || s.Field?.ToLower() == "search" || s.Field?.ToLower() == "code" || s.Field?.ToLower() == "username")?.Value?.ToString();
 
         // Extract advanced filters (exclude basic search fields)
         var filters = request.Searching?.Where(s => 

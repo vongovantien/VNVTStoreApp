@@ -38,6 +38,9 @@
   --accent-hover: #4338ca;
   /* indigo-700 */
   --accent-foreground: #ffffff;
+  
+  --error: #ef4444;
+  /* red-500 */
 }
 
 [data-theme="dark"] {
@@ -86,6 +89,10 @@ body {
   line-height: 1.6;
 }
 
+button {
+  cursor: pointer;
+}
+
 /* Smooth transitions */
 a,
 button,
@@ -118,6 +125,10 @@ textarea,
   background-color: var(--bg-tertiary);
 }
 
+.bg-accent-primary {
+  background-color: var(--accent-primary);
+}
+
 .text-primary {
   color: var(--text-primary);
 }
@@ -136,6 +147,14 @@ textarea,
 
 .border {
   border-color: var(--border-color);
+}
+
+.text-error {
+  color: var(--error);
+}
+
+.bg-error {
+  background-color: var(--error);
 }
 
 .border-b {

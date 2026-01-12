@@ -15,6 +15,8 @@ import {
 import { ProductCard } from '@/components/common/ProductCard';
 import { Button } from '@/components/ui';
 import { useProducts, useCategories } from '@/hooks/useProducts';
+import { useQuery } from '@tanstack/react-query';
+import { promotionService, type Promotion } from '@/services/promotionService';
 
 import { HOME_BANNERS, BRAND_PARTNERS, FLASH_SALE_TIMES } from '@/data/homeData';
 import { formatCurrency } from '@/utils/format';
@@ -48,13 +50,59 @@ export const HomePage = () => {
 
   const featuredProducts = products.slice(0, 8);
   const newProducts = products.slice(0, 4);
-  const saleProducts = products.filter((p) => p.price > 0).slice(0, 4);
+  // Fetch flash sales
+  const { data: flashSales } = useQuery({
+    queryKey: ['flash-sales'],
+    queryFn: () => promotionService.getFlashSales(),
+  });
+
+  const flashSaleProductCodes = flashSales?.data?.flatMap((p: Promotion) => p.productCodes || []) || [];
+  
+  // Fetch flash sale products
+  const { data: flashSaleProductsData } = useProducts({
+      pageIndex: 1,
+      pageSize: 20,
+      ids: flashSaleProductCodes,
+      enabled: flashSaleProductCodes.length > 0
+  });
+
+  const saleProducts = flashSaleProductsData?.products || [];
+
+  // Countdown Timer Logic
+  const [timeLeft, setTimeLeft] = useState<{hours: number, minutes: number, seconds: number}>({ hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    if (!flashSales?.data || flashSales.data.length === 0) return;
+    
+    // Find the soonest ending flash sale
+    const activeFlashSale = flashSales.data?.find((p: Promotion) => p.isActive && new Date(p.endDate) > new Date());
+    if(!activeFlashSale) return;
+
+    const targetDate = new Date(activeFlashSale.endDate).getTime();
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        clearInterval(timer);
+        return;
+      }
+
+      setTimeLeft({
+        hours: Math.floor((distance / (1000 * 60 * 60))), // Total hours left
+        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((distance % (1000 * 60)) / 1000)
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [flashSales?.data]);
 
   // Auto slide
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HOME_BANNERS.length);
-
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -187,19 +235,21 @@ export const HomePage = () => {
       </section>
 
       {/* Flash Sale */}
+      {/* Flash Sale - Only show if we have active sales */}
+      {saleProducts.length > 0 && (
       <section className="py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
             <div className="flex items-center gap-4">
               <Zap className="text-yellow-400 animate-pulse" size={28} />
               <h2 className="text-xl md:text-2xl font-bold">{t('home.flashSale')}</h2>
-              <div className="flex gap-1">
-                {FLASH_SALE_TIMES.map((num, i) => (
-                  <span key={i} className="flex items-center">
-                    <span className="px-2 py-1 bg-error rounded font-bold">{num}</span>
-                    {i < 2 && <span className="mx-1">:</span>}
-                  </span>
-                ))}
+              {/* Dynamic Countdown */}
+              <div className="flex gap-2 font-mono text-lg font-bold">
+                 <div className="bg-error px-2 py-1 rounded">{String(timeLeft.hours).padStart(2, '0')}</div>
+                 <span className="self-center">:</span>
+                 <div className="bg-error px-2 py-1 rounded">{String(timeLeft.minutes).padStart(2, '0')}</div>
+                 <span className="self-center">:</span>
+                 <div className="bg-error px-2 py-1 rounded">{String(timeLeft.seconds).padStart(2, '0')}</div>
               </div>
             </div>
             <Link
@@ -217,6 +267,7 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Featured Products */}
       <section className="py-12">

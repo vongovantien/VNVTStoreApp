@@ -35,6 +35,15 @@ jobs:
       # Removed --no-build to ensure Tests project is built before running
       run: dotnet test src/VNVTStore.Tests/VNVTStore.Tests.csproj --configuration Release --verbosity normal
 
+    - name: Publish API
+      run: dotnet publish src/VNVTStore.API/VNVTStore.API.csproj --configuration Release --output ${{ github.workspace }}/publish
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-app
+        path: ${{ github.workspace }}/publish
+
   frontend:
     name: Frontend (Build & Test)
     runs-on: ubuntu-latest
@@ -60,14 +69,6 @@ jobs:
 
     - name: Build
       run: npm run build
-    - name: Publish API
-      run: dotnet publish src/VNVTStore.API/VNVTStore.API.csproj --configuration Release --output ./publish
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: backend-app
-        path: ./VNVTStore.Backend/publish
 
   deploy-backend:
     name: Deploy Backend to Azure

@@ -14,18 +14,21 @@ builder.Services.AddApiServices(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+// Enable Swagger/Scalar in all environments for demo purposes
+app.UseSwagger(options =>
+{
+    options.RouteTemplate = "openapi/{documentName}.json";
+});
+app.MapScalarApiReference(options =>
+{
+    options.WithTitle("VNVTStore API")
+           .WithTheme(Scalar.AspNetCore.ScalarTheme.DeepSpace)
+           .WithDefaultHttpClient(Scalar.AspNetCore.ScalarTarget.CSharp, Scalar.AspNetCore.ScalarClient.HttpClient);
+});
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(options =>
-    {
-        options.RouteTemplate = "openapi/{documentName}.json";
-    });
-    app.MapScalarApiReference(options =>
-    {
-        options.WithTitle("VNVTStore API")
-               .WithTheme(Scalar.AspNetCore.ScalarTheme.DeepSpace)
-               .WithDefaultHttpClient(Scalar.AspNetCore.ScalarTarget.CSharp, Scalar.AspNetCore.ScalarClient.HttpClient);
-    });
+    // Dev specific middleware if any
 }
 
 app.UseHttpsRedirection();
@@ -45,5 +48,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/", () => "VNVTStore API is running! Access docs at /scalar/v1");
 
 app.Run();

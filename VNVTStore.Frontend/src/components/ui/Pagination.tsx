@@ -9,29 +9,41 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
   pageSizeOptions?: number[];
+  isLoading?: boolean;
 }
 
-/**
- * Generate page numbers to display with ellipsis
- */
-function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
-  // ... (existing code, unchange)
-  const pages: (number | string)[] = [];
+const getPageNumbers = (currentPage: number, totalPages: number) => {
+  const delta = 1;
+  const range = [];
+  const rangeWithDots = [];
+  let l;
 
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) pages.push(i);
-  } else {
-    pages.push(1);
-    if (currentPage > 3) pages.push('...');
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (currentPage < totalPages - 2) pages.push('...');
-    pages.push(totalPages);
+  range.push(1);
+
+  if (totalPages <= 1) return range;
+
+  for (let i = currentPage - delta; i <= currentPage + delta; i++) {
+    if (i < totalPages && i > 1) {
+      range.push(i);
+    }
   }
 
-  return pages;
-}
+  range.push(totalPages);
+
+  for (let i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
+};
 
 export const Pagination = ({
   currentPage,
@@ -41,6 +53,7 @@ export const Pagination = ({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = [10, 20, 50, 100],
+  isLoading = false,
 }: PaginationProps) => {
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
@@ -52,14 +65,14 @@ export const Pagination = ({
       <div className="flex flex-1 justify-between sm:hidden">
         <button
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          disabled={currentPage === 1 || isLoading}
           className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-primary px-4 py-2 text-sm font-medium text-secondary hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Trước
         </button>
         <button
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages}
+          disabled={currentPage >= totalPages || isLoading}
           className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-primary px-4 py-2 text-sm font-medium text-secondary hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Sau
@@ -70,14 +83,22 @@ export const Pagination = ({
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-secondary flex items-center gap-4">
-            <span>
-              Hiển thị{' '}
-              <span className="font-medium text-primary">{startItem}</span>
-              {' '}đến{' '}
-              <span className="font-medium text-primary">{endItem}</span>
-              {' '}trong{' '}
-              <span className="font-medium text-primary">{totalItems}</span>
-              {' '}kết quả
+            <span className="flex items-center gap-2">
+              {isLoading && (
+                <svg className="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              <span>
+                Hiển thị{' '}
+                <span className="font-medium text-primary">{startItem}</span>
+                {' '}đến{' '}
+                <span className="font-medium text-primary">{endItem}</span>
+                {' '}trong{' '}
+                <span className="font-medium text-primary">{totalItems}</span>
+                {' '}kết quả
+              </span>
             </span>
 
             {onPageSizeChange && (

@@ -53,45 +53,45 @@ export const CheckoutPage = () => {
 
   // Voucher Logic
   const [voucherCode, setVoucherCode] = useState('');
-  const [appliedVoucher, setAppliedVoucher] = useState<{code: string, discount: number, type: string} | null>(null);
+  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string, discount: number, type: string } | null>(null);
 
   const handleApplyVoucher = async () => {
-    if(!voucherCode.trim()) return;
+    if (!voucherCode.trim()) return;
     try {
-        const res = await import('@/services/promotionService').then(m => m.promotionService.getByCode(voucherCode));
-        if(res.success && res.data) {
-            const promo = res.data;
-            // Validate
-            const now = new Date();
-            if(!promo.isActive || new Date(promo.startDate) > now || new Date(promo.endDate) < now) {
-                toast.error(t('checkout.voucherExpired') || 'Mã giảm giá không hợp lệ hoặc đã hết hạn');
-                return;
-            }
-            if(promo.minOrderAmount && subtotal < promo.minOrderAmount) {
-                 toast.error(`${t('checkout.minOrderAmount') || 'Đơn hàng tối thiểu'}: ${formatCurrency(promo.minOrderAmount)}`);
-                 return;
-            }
-
-            // Calculate Discount
-            let discount = 0;
-            if(promo.discountType === 'PERCENTAGE') {
-                discount = subtotal * (promo.discountValue / 100);
-                if(promo.maxDiscountAmount) discount = Math.min(discount, promo.maxDiscountAmount);
-            } else {
-                discount = promo.discountValue;
-            }
-
-            setAppliedVoucher({
-                code: promo.code,
-                discount: discount,
-                type: promo.discountType
-            });
-            toast.success(t('checkout.voucherApplied') || 'Áp dụng mã giảm giá thành công');
-        } else {
-            toast.error(t('checkout.voucherInvalid') || 'Mã giảm giá không tồn tại');
+      const res = await import('@/services/promotionService').then(m => m.promotionService.getByCode(voucherCode));
+      if (res.success && res.data) {
+        const promo = res.data;
+        // Validate
+        const now = new Date();
+        if (!promo.isActive || new Date(promo.startDate) > now || new Date(promo.endDate) < now) {
+          toast.error(t('checkout.voucherExpired') || 'Mã giảm giá không hợp lệ hoặc đã hết hạn');
+          return;
         }
+        if (promo.minOrderAmount && subtotal < promo.minOrderAmount) {
+          toast.error(`${t('checkout.minOrderAmount') || 'Đơn hàng tối thiểu'}: ${formatCurrency(promo.minOrderAmount)}`);
+          return;
+        }
+
+        // Calculate Discount
+        let discount = 0;
+        if (promo.discountType === 'PERCENTAGE') {
+          discount = subtotal * (promo.discountValue / 100);
+          if (promo.maxDiscountAmount) discount = Math.min(discount, promo.maxDiscountAmount);
+        } else {
+          discount = promo.discountValue;
+        }
+
+        setAppliedVoucher({
+          code: promo.code,
+          discount: discount,
+          type: promo.discountType
+        });
+        toast.success(t('checkout.voucherApplied') || 'Áp dụng mã giảm giá thành công');
+      } else {
+        toast.error(t('checkout.voucherInvalid') || 'Mã giảm giá không tồn tại');
+      }
     } catch (e) {
-        toast.error(t('checkout.voucherError') || 'Lỗi kiểm tra mã giảm giá');
+      toast.error(t('checkout.voucherError') || 'Lỗi kiểm tra mã giảm giá');
     }
   };
 
@@ -111,7 +111,7 @@ export const CheckoutPage = () => {
         ward: formData.ward,
         note: formData.note,
         paymentMethod: paymentMethod,
-        promotionCode: appliedVoucher?.code
+        couponCode: appliedVoucher?.code
       };
 
       // 1. Create Order
@@ -124,7 +124,7 @@ export const CheckoutPage = () => {
         // 2. Process Payment
         try {
           // Use the ACTUAL final amount from backend response if available, else local calc
-          const totalAmount = orderRes.data.finalAmount || finalTotal; 
+          const totalAmount = orderRes.data.finalAmount || finalTotal;
           await paymentService.create({
             orderCode: orderCode,
             method: paymentMethod,
@@ -141,9 +141,10 @@ export const CheckoutPage = () => {
       } else {
         toast.error(orderRes.message || t('messages.orderError') || 'Đặt hàng thất bại');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Order failed', error);
-      toast.error(error?.message || t('messages.generalError') || 'Có lỗi xảy ra');
+      const msg = error instanceof Error ? error.message : t('messages.generalError') || 'Có lỗi xảy ra';
+      toast.error(msg);
     } finally {
       setIsProcessing(false);
     }
@@ -411,21 +412,21 @@ export const CheckoutPage = () => {
               <div className="space-y-2">
                 {/* Voucher Input */}
                 <div className="flex gap-2">
-                    <Input 
-                        placeholder={t('checkout.voucherPlaceholder') || 'Mã giảm giá'} 
-                        value={voucherCode}
-                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                        className="flex-1"
-                    />
-                    <Button size="sm" onClick={handleApplyVoucher} disabled={!voucherCode || !!appliedVoucher}>
-                        {t('common.apply')}
-                    </Button>
+                  <Input
+                    placeholder={t('checkout.voucherPlaceholder') || 'Mã giảm giá'}
+                    value={voucherCode}
+                    onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                    className="flex-1"
+                  />
+                  <Button size="sm" onClick={handleApplyVoucher} disabled={!voucherCode || !!appliedVoucher}>
+                    {t('common.apply')}
+                  </Button>
                 </div>
                 {appliedVoucher && (
-                    <div className="flex justify-between text-success text-sm items-center bg-success/10 p-2 rounded">
-                        <span>Voucher: <strong>{appliedVoucher.code}</strong></span>
-                        <button onClick={() => {setAppliedVoucher(null); setVoucherCode('');}} className="text-secondary hover:text-error">✕</button>
-                    </div>
+                  <div className="flex justify-between text-success text-sm items-center bg-success/10 p-2 rounded">
+                    <span>Voucher: <strong>{appliedVoucher.code}</strong></span>
+                    <button onClick={() => { setAppliedVoucher(null); setVoucherCode(''); }} className="text-secondary hover:text-error">✕</button>
+                  </div>
                 )}
 
                 <div className="flex justify-between mt-4">
@@ -438,13 +439,13 @@ export const CheckoutPage = () => {
                     {shippingFee === 0 ? t('cart.free') : formatCurrency(shippingFee)}
                   </span>
                 </div>
-                
+
                 {/* Discount Row */}
                 {discountAmount > 0 && (
-                <div className="flex justify-between text-success">
-                  <span>{t('cart.discount')}</span>
-                  <span>-{formatCurrency(discountAmount)}</span>
-                </div>
+                  <div className="flex justify-between text-success">
+                    <span>{t('cart.discount')}</span>
+                    <span>-{formatCurrency(discountAmount)}</span>
+                  </div>
                 )}
 
                 <hr />

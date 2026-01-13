@@ -485,15 +485,7 @@ export function DataTable<T extends object>({
 
       {/* Table Container */}
       <div className="bg-primary rounded-xl overflow-hidden shadow-sm border relative min-h-[400px]">
-        {/* Loading Overlay */}
-        {(isLoading || isFetching) && (
-          <div className="absolute inset-0 bg-primary/70 flex items-center justify-center z-10">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-              <span className="text-secondary text-sm">{t('common.loading')}</span>
-            </div>
-          </div>
-        )}
+
 
         {/* Error Overlay */}
         {showError && (
@@ -506,7 +498,7 @@ export function DataTable<T extends object>({
           </div>
         )}
 
-        <div className="overflow-x-auto">
+        <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-50 pointer-events-none")}>
           <table className="w-full">
             <thead className="bg-secondary border-b">
               {/* Main Header Row */}
@@ -589,6 +581,7 @@ export function DataTable<T extends object>({
           onPageChange={setCurrentPage}
           onPageSizeChange={handlePageSizeChange}
           pageSizeOptions={pageSizeOptions}
+          isLoading={isLoading || isFetching}
         />
       </div>
     </div>

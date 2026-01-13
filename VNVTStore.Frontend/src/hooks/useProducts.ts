@@ -113,7 +113,7 @@ export function useProducts(params: {
     const { enabled = true, ...searchParams } = params;
 
     // Build filters dynamically
-    const filters: { field: string; value: any; operator?: SearchCondition }[] = [];
+    const filters: { field: string; value: string | string[]; operator?: SearchCondition }[] = [];
 
     // 1. Generic/Dynamic params (excluding specific ones)
     Object.entries(searchParams).forEach(([key, value]) => {

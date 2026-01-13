@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { cartService } from '../cartService';
 import { apiClient } from '../api';
 
@@ -21,10 +21,10 @@ describe('cartService', () => {
         vi.clearAllMocks();
     });
 
-    const mockGet = apiClient.get as any;
-    const mockPost = apiClient.post as any;
-    const mockPut = apiClient.put as any;
-    const mockDelete = apiClient.delete as any;
+    const mockGet = apiClient.get as Mock;
+    const mockPost = apiClient.post as Mock;
+    const mockPut = apiClient.put as Mock;
+    const mockDelete = apiClient.delete as Mock;
 
     describe('getMyCart', () => {
         it('should call apiClient.get with correct endpoint', async () => {

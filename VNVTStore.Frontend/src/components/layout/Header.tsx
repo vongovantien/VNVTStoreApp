@@ -166,8 +166,8 @@ export const Header = memo(() => {
                   className={cn(
                     'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                     (i18n.language || 'vi').startsWith('vi')
-                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
                   )}
                 >
                   🇻🇳 Tiếng Việt
@@ -177,8 +177,8 @@ export const Header = memo(() => {
                   className={cn(
                     'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                     (i18n.language || 'en').startsWith('en')
-                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
                   )}
                 >
                   🇺🇸 English
@@ -279,36 +279,34 @@ export const Header = memo(() => {
             >
               {t('header.categoryMenu')}
             </Button>
-            <AnimatePresence>
-              {showCategories && (
-                <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 min-w-[800px] z-50 grid grid-cols-3 gap-6">
-                  {categories.filter(c => !c.parentCode).map((parent) => (
-                    <div key={parent.code} className="space-y-3">
-                      <Link
-                        to={`/products?category=${parent.code}`}
-                        onClick={() => setShowCategories(false)}
-                        className="font-bold text-base hover:text-indigo-600 block"
-                      >
-                        {parent.name}
-                      </Link>
-                      <ul className="space-y-2">
-                        {categories.filter(c => c.parentCode === parent.code).map((child) => (
-                          <li key={child.code}>
-                            <Link
-                              to={`/products?category=${child.code}`}
-                              onClick={() => setShowCategories(false)}
-                              className="text-sm text-secondary hover:text-primary block transition-colors"
-                            >
-                              {child.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </AnimatePresence>
+            {showCategories && (
+              <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overflow-y-auto overscroll-contain z-50 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {categories.filter(c => !c.parentCode).map((parent) => (
+                  <div key={parent.code} className="space-y-3">
+                    <Link
+                      to={`/products?category=${parent.code}`}
+                      onClick={() => setShowCategories(false)}
+                      className="font-bold text-base hover:text-indigo-600 block"
+                    >
+                      {parent.name}
+                    </Link>
+                    <ul className="space-y-2">
+                      {categories.filter(c => c.parentCode === parent.code).map((child) => (
+                        <li key={child.code}>
+                          <Link
+                            to={`/products?category=${child.code}`}
+                            onClick={() => setShowCategories(false)}
+                            className="text-sm text-secondary hover:text-primary block transition-colors"
+                          >
+                            {child.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Nav Links */}

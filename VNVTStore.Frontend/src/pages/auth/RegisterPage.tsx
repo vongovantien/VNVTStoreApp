@@ -56,8 +56,9 @@ export const RegisterPage = () => {
       } else {
         toast.error(response.message || 'Đăng ký thất bại');
       }
-    } catch (error: any) {
-      toast.error(error?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Đăng ký thất bại. Vui lòng thử lại.';
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

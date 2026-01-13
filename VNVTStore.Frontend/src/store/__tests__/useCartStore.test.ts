@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCartStore, useAuthStore } from '../index';
 import { cartService } from '@/services';
@@ -19,7 +19,7 @@ describe('useCartStore', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Reset stores
-        useCartStore.setState({ items: [], totalAmount: 0, isLoading: false, error: null } as any);
+        useCartStore.setState({ items: [], isLoading: false });
         useAuthStore.setState({ isAuthenticated: false, user: null, token: null });
     });
 
@@ -29,8 +29,8 @@ describe('useCartStore', () => {
 
         const mockCartItems = [{ productCode: 'P1', quantity: 2, unitPrice: 100, totalPrice: 200 }];
         const mockResponse = { success: true, data: mockCartItems };
-        (cartService.getMyCart as any).mockResolvedValue(mockResponse);
-        (cartService.mapToFrontend as any).mockReturnValue(mockCartItems);
+        (cartService.getMyCart as Mock).mockResolvedValue(mockResponse);
+        (cartService.mapToFrontend as Mock).mockReturnValue(mockCartItems);
 
         const { result } = renderHook(() => useCartStore());
 
@@ -58,16 +58,16 @@ describe('useCartStore', () => {
     it('addItem should call service when authenticated', async () => {
         act(() => useAuthStore.setState({ isAuthenticated: true }));
 
-        const mockProduct = { id: 'P1', name: 'Test', price: 100, image: 'img.jpg' } as any;
+        const mockProduct = { id: 'P1', name: 'Test', price: 100, image: 'img.jpg' };
         const mockResponse = { success: true, data: [] };
-        (cartService.addToCart as any).mockResolvedValue(mockResponse);
-        (cartService.getMyCart as any).mockResolvedValue({ success: true, data: [] });
-        (cartService.mapToFrontend as any).mockReturnValue([]);
+        (cartService.addToCart as Mock).mockResolvedValue(mockResponse);
+        (cartService.getMyCart as Mock).mockResolvedValue({ success: true, data: [] });
+        (cartService.mapToFrontend as Mock).mockReturnValue([]);
 
         const { result } = renderHook(() => useCartStore());
 
         await act(async () => {
-            await result.current.addItem(mockProduct, 1);
+            await result.current.addItem(mockProduct as any, 1);
         });
 
         expect(cartService.addToCart).toHaveBeenCalledWith(expect.objectContaining({ productCode: 'P1', quantity: 1 }));

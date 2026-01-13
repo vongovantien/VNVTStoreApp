@@ -37,6 +37,17 @@ public static class DependencyInjection
         services.AddScoped<ICouponService, CouponService>();
         services.AddHttpContextAccessor();
 
+        var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
+        if (allowedOrigins == null || allowedOrigins.Length == 0)
+        {
+             allowedOrigins = new[] { 
+                "http://localhost:5173", 
+                "http://localhost:5174", 
+                "http://localhost:5175", 
+                "http://localhost:5176",
+                "https://scalar.com"
+             };
+        }
         // Add JWT Settings
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 

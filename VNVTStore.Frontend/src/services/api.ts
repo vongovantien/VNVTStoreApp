@@ -229,10 +229,17 @@ class ApiClient {
 
       // The backend returns ApiResponse<T>
       return response.data as ApiResponse<T>;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Unify error format for frontend consumption
-      const msg = error.response?.data?.message || (error instanceof Error ? error.message : 'Unknown error');
-      const statusCode = error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      let msg = 'Unknown error';
+      let statusCode: number = HttpStatus.INTERNAL_SERVER_ERROR;
+
+      if (axios.isAxiosError(error)) {
+        msg = error.response?.data?.message || (error.message as string);
+        statusCode = error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      } else if (error instanceof Error) {
+        msg = error.message;
+      }
 
       return {
         success: false,

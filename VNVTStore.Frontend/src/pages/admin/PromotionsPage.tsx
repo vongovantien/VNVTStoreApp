@@ -196,15 +196,29 @@ export const PromotionsPage = () => {
 
   // Handler Wrappers
   const handleCreate = async (data: any) => {
-    // Map data if needed
-    await createMutation.mutateAsync(data);
+    // Sanitizing nulls to undefined to match CreatePromotionRequest
+    const cleanData: CreatePromotionRequest = {
+      ...data,
+      minOrderAmount: data.minOrderAmount ?? undefined,
+      maxDiscountAmount: data.maxDiscountAmount ?? undefined,
+      usageLimit: data.usageLimit ?? undefined,
+      productCodes: data.productCodes ?? undefined,
+    };
+    await createMutation.mutateAsync(cleanData);
   };
 
   const handleUpdate = async (data: any) => {
     if (!editingPromotion) return;
+    const cleanData: UpdatePromotionRequest = {
+      ...data,
+      minOrderAmount: data.minOrderAmount ?? undefined,
+      maxDiscountAmount: data.maxDiscountAmount ?? undefined,
+      usageLimit: data.usageLimit ?? undefined,
+      productCodes: data.productCodes ?? undefined,
+    };
     await updateMutation.mutateAsync({
-      id: editingPromotion.code, // Map code to id for generic hook
-      data: data
+      id: editingPromotion.code,
+      data: cleanData
     });
   };
 

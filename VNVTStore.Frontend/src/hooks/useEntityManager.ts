@@ -42,32 +42,32 @@ export const useEntityManager = <T, CreateDto = Partial<T>, UpdateDto = Partial<
             toast.success(translations?.createSuccess || t('common.createSuccess'));
             setIsFormOpen(false);
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             toast.error(error?.message || translations?.createError || t('common.createError'));
         },
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: any; data: UpdateDto }) => service.update(id, data),
+        mutationFn: ({ id, data }: { id: string | number; data: UpdateDto }) => service.update(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey });
             toast.success(translations?.updateSuccess || t('common.updateSuccess'));
             setIsFormOpen(false);
             setEditingItem(null);
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             toast.error(error?.message || translations?.updateError || t('common.updateError'));
         },
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id: any) => service.delete(id),
+        mutationFn: (id: string | number) => service.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey });
             toast.success(translations?.deleteSuccess || t('common.deleteSuccess'));
             setItemToDelete(null);
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             toast.error(error?.message || translations?.deleteError || t('common.deleteError'));
         },
     });

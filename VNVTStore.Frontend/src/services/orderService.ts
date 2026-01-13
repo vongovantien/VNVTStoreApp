@@ -41,7 +41,7 @@ export interface CreateOrderRequest {
     ward: string;
     note?: string;
     paymentMethod: string;
-    promotionCode?: string;
+    couponCode?: string;
 }
 
 export interface UpdateOrderRequest {
@@ -51,6 +51,7 @@ export interface UpdateOrderRequest {
 
 // ============ Service ============
 import { SearchParams } from './baseService';
+import apiClient from './api'; // Import apiClient directly
 
 const baseService = createEntityService<OrderDto, CreateOrderRequest, UpdateOrderRequest>({
     endpoint: API_ENDPOINTS.ORDERS.BASE,
@@ -58,7 +59,15 @@ const baseService = createEntityService<OrderDto, CreateOrderRequest, UpdateOrde
 
 export const orderService = {
     ...baseService,
-    getMyOrders: (params: SearchParams) => baseService.search(params)
+    getMyOrders: (params: SearchParams) => baseService.search(params),
+    // Override create to send raw DTO (not wrapped in PostObject, as expected by OrdersController)
+    create: async (data: CreateOrderRequest) => {
+        const response = await apiClient.post<OrderDto>(API_ENDPOINTS.ORDERS.BASE, data);
+        if (!response.success) {
+            throw new Error(response.message || 'Create failed');
+        }
+        return response;
+    }
 };
 
 export default orderService;

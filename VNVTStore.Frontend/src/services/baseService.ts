@@ -26,7 +26,7 @@ export interface SearchParams {
     searchField?: string;
     sortBy?: string;
     sortDesc?: boolean;
-    filters?: Array<{ field: string; value: string; operator?: SearchCondition }>;
+    filters?: Array<{ field: string; value: string | number | boolean | null | Array<string | number>; operator?: SearchCondition }>;
 }
 
 // ============ HTTP Methods (internal) ============

@@ -36,9 +36,17 @@ export const ImportModal = ({
     accept: {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       'application/vnd.ms-excel': ['.xls'],
+      'text/csv': ['.csv'],
     },
     maxFiles: 1,
   });
+
+  // Calculate dynamic URL if not absolute
+  const effectiveTemplateUrl = templateUrl?.startsWith('http') 
+    ? templateUrl 
+    : templateUrl?.startsWith('/') 
+        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5178/api/v1'}${templateUrl}` // Simplified logic, ideally use API_BASE_URL constant
+        : templateUrl;
 
   const handleImport = async () => {
     if (!file) return;
@@ -134,7 +142,7 @@ export const ImportModal = ({
                  {t('import.selectFile', 'Select File')}
                </Button>
                <p className="text-xs text-secondary mt-4">
-                 {t('import.acceptedFormats', 'Accepted files: .xls, .xlsx')}
+                 {t('import.acceptedFormats', 'Accepted files: .xls, .xlsx, .csv')}
                </p>
             </>
           )}
@@ -149,7 +157,7 @@ export const ImportModal = ({
              </p>
              {templateUrl && (
                  <a 
-                    href={templateUrl} 
+                    href={effectiveTemplateUrl} 
                     download 
                     className="inline-flex items-center gap-1 text-primary hover:underline font-medium"
                     onClick={(e) => e.stopPropagation()} // Prevent modal close if inside generic container (not here but good practice)

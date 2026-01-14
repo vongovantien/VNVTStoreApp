@@ -87,11 +87,16 @@ export const useCartStore = create<CartState>()(
                         size: options?.size,
                         color: options?.color
                     });
+                    if (!res.success) {
+                        throw new Error(res.message || 'Add to cart failed');
+                    }
+
                     if (res.success && res.data) {
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
                 } catch (error) {
                     console.error('Add to cart failed', error);
+                    throw error;
                 } finally {
                     set({ isLoading: false });
                 }
@@ -133,6 +138,10 @@ export const useCartStore = create<CartState>()(
 
                 try {
                     const res = await cartService.updateCartItem({ itemCode: itemId, quantity });
+                    if (!res.success) {
+                        throw new Error(res.message || 'Update quantity failed');
+                    }
+
                     if (res.success && res.data) {
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
@@ -177,6 +186,27 @@ interface AuthState {
     setTokens: (token: string, refreshToken: string) => void;
 }
 
+// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
+const authStorage = {
+    getItem: (name: string) => {
+        return localStorage.getItem(name) || sessionStorage.getItem(name);
+    },
+    setItem: (name: string, value: string) => {
+        const isRemember = localStorage.getItem('vnvt-remember') === 'true';
+        if (isRemember) {
+            localStorage.setItem(name, value);
+            sessionStorage.removeItem(name);
+        } else {
+            sessionStorage.setItem(name, value);
+            localStorage.removeItem(name);
+        }
+    },
+    removeItem: (name: string) => {
+        localStorage.removeItem(name);
+        sessionStorage.removeItem(name);
+    },
+};
+
 export const useAuthStore = create<AuthState>()(
     persist(
         (set, get) => ({
@@ -217,7 +247,7 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'vnvt-auth',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => authStorage),
         }
     )
 );

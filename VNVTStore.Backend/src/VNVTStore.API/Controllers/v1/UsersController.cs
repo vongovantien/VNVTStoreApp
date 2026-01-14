@@ -65,7 +65,7 @@ public class UsersController : BaseApiController
     /// <summary>
     /// Get all users (Admin only)
     /// </summary>
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAllUsers(
         [FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber,
@@ -85,7 +85,7 @@ public class UsersController : BaseApiController
     /// <summary>
     /// Search users (Admin only)
     /// </summary>
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     [HttpPost("search")]
     public async Task<IActionResult> Search([FromBody] RequestDTO request)
     {

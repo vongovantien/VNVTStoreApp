@@ -29,7 +29,7 @@ public partial class TblCartItem
     {
         return new TblCartItem
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            Code = $"CRI{Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper()}",
             CartCode = cartCode,
             ProductCode = productCode,
             Quantity = quantity,

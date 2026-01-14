@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Phone, Mail, User, Send, Check } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
+import SharedImage from '@/components/common/Image';
 import { quoteService } from '@/services';
 import { useProduct } from '@/hooks';
 
@@ -189,11 +190,13 @@ export const QuoteRequestPage = () => {
               <h2 className="font-bold mb-4">{t('quote.productInfo')}</h2>
 
               <div className="flex gap-4 mb-4">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
+                <div className="w-24 h-24 bg-white rounded-lg border p-2 flex-shrink-0">
+                  <SharedImage
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
                 <div>
                   <h3 className="font-semibold line-clamp-2">{product.name}</h3>
                   <p className="text-sm text-tertiary">{product.category}</p>

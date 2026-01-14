@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FileText, Calendar, ChevronRight, Phone } from 'lucide-react';
+import SharedImage from '@/components/common/Image';
+import { Button, Badge } from '@/components/ui';
 import { formatDate, formatCurrency } from '@/utils/format';
 import { quoteService, type QuoteDto } from '@/services/quoteService';
 // import { QuoteRequest } from '@/types'; // Remove or unused
@@ -67,11 +70,11 @@ const QuotesContent = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <img
-              src={quote.productImage || 'https://via.placeholder.com/50'}
+          <div className="flex gap-4 mb-4">
+            <SharedImage
+              src={quote.productImage}
               alt={quote.productName}
-              className="w-16 h-16 object-cover rounded bg-secondary/10"
+              className="w-16 h-16 object-cover rounded-md"
             />
             <div className="flex-1 min-w-0">
               <p className="text-base font-medium truncate text-color-primary">{quote.productName}</p>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Minus, Plus, X, ShoppingBag, ArrowRight, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui';
+import SharedImage from '@/components/common/Image';
 import { useCartStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
 
@@ -67,7 +68,7 @@ export const CartPage = () => {
                 {/* Product */}
                 <div className="md:col-span-6 flex gap-4">
                   <Link to={`/product/${item.product.id}`} className="flex-shrink-0">
-                    <img
+                    <SharedImage
                       src={item.product.image}
                       alt={item.product.name}
                       className="w-20 h-20 object-cover rounded-lg"

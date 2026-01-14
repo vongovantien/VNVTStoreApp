@@ -54,15 +54,17 @@ const StatCard = ({ title, value, change, icon: Icon, color }: StatCardProps) =>
 export const DashboardPage = () => {
   const { t, i18n } = useTranslation();
 
-  const { data: statsResponse } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: () => dashboardService.getStats(),
-    staleTime: 30000,
-  });
+
 
   // Fetch recent orders
   const { data: ordersData, isLoading: ordersLoading } = useAdminOrders({ pageIndex: 1, pageSize: 5 });
   const recentOrders = ordersData?.orders || [];
+
+  const { data: statsResponse, isLoading: statsLoading, isError: statsError } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: () => dashboardService.getStats(),
+    staleTime: 30000,
+  });
 
   const stats = statsResponse?.success && statsResponse?.data ? statsResponse.data : {
     totalRevenue: 0,
@@ -86,33 +88,45 @@ export const DashboardPage = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title={t('admin.stats.revenue')}
-          value={formatCurrency(stats.totalRevenue)}
-          change={stats.revenueChange}
-          icon={DollarSign}
-          color="bg-gradient-to-r from-green-500 to-emerald-500"
-        />
-        <StatCard
-          title={t('admin.stats.orders')}
-          value={stats.totalOrders.toLocaleString()}
-          change={stats.ordersChange}
-          icon={ShoppingBag}
-          color="bg-gradient-to-r from-blue-500 to-cyan-500"
-        />
-        <StatCard
-          title={t('admin.stats.customers')}
-          value={stats.totalCustomers.toLocaleString()}
-          change={stats.customersChange}
-          icon={Users}
-          color="bg-gradient-to-r from-purple-500 to-pink-500"
-        />
-        <StatCard
-          title={t('admin.stats.products')}
-          value={stats.totalProducts}
-          icon={Package}
-          color="bg-gradient-to-r from-orange-500 to-amber-500"
-        />
+        {statsLoading ? (
+           Array(4).fill(0).map((_, i) => (
+             <div key={i} className="bg-primary rounded-xl p-6 h-32 animate-pulse" />
+           ))
+        ) : statsError ? (
+           <div className="col-span-4 p-4 bg-red-50 text-red-500 rounded-xl">
+             Failed to load dashboard statistics. Please try again.
+           </div>
+        ) : (
+          <>
+            <StatCard
+              title={t('admin.stats.revenue')}
+              value={formatCurrency(stats.totalRevenue)}
+              change={stats.revenueChange}
+              icon={DollarSign}
+              color="bg-gradient-to-r from-green-500 to-emerald-500"
+            />
+            <StatCard
+              title={t('admin.stats.orders')}
+              value={stats.totalOrders.toLocaleString()}
+              change={stats.ordersChange}
+              icon={ShoppingBag}
+              color="bg-gradient-to-r from-blue-500 to-cyan-500"
+            />
+            <StatCard
+              title={t('admin.stats.customers')}
+              value={stats.totalCustomers.toLocaleString()}
+              change={stats.customersChange}
+              icon={Users}
+              color="bg-gradient-to-r from-purple-500 to-pink-500"
+            />
+            <StatCard
+              title={t('admin.stats.products')}
+              value={stats.totalProducts}
+              icon={Package}
+              color="bg-gradient-to-r from-orange-500 to-amber-500"
+            />
+          </>
+        )}
       </div>
 
       {/* Charts & Tables Row */}

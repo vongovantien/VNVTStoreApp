@@ -49,6 +49,7 @@ export interface DataTableProps<T extends object> {
   onDelete?: (item: T) => void;
   onBulkDelete?: (items: T[]) => void;
   onRefresh?: () => void;
+  onImport?: () => void; // Added onImport
 
   // Pagination (external control)
   currentPage?: number;
@@ -101,6 +102,7 @@ export function DataTable<T extends object>({
   onEdit,
   onDelete,
   onRefresh,
+  onImport, // Added onImport
   currentPage: externalPage,
   totalPages: externalTotalPages,
   totalItems: externalTotalItems,
@@ -385,6 +387,7 @@ export function DataTable<T extends object>({
               onSearchClick={() => advancedFilterDefs ? setShowFilters(!showFilters) : setShowSearch(!showSearch)}
               onReset={handleReset}
               onExport={handleExport}
+              onImport={onImport} // Pass onImport
               isSearchActive={advancedFilterDefs ? showFilters : showSearch}
               selectedCount={selectedIds.size}
               searchRef={searchButtonRef}

@@ -33,29 +33,38 @@ export interface UpdateCartItemRequest {
 }
 
 // ============ Mapper ============
+// ============ Mapper ============
 function mapCartDtoToCartItems(dto: CartDto): CartItem[] {
     if (!dto || !dto.cartItems) return [];
 
-    return dto.cartItems.map(item => ({
-        id: item.code, // Unique ID for cart item
-        quantity: item.quantity,
-        size: item.size,
-        color: item.color,
-        product: {
-            id: item.productCode,
-            name: item.productName,
-            price: item.price,
-            image: item.productImage || 'https://picsum.photos/seed/product/400/400',
-            slug: item.productCode.toLowerCase(), // Missing from DTO, verify if needed
-            description: '', // Missing
-            category: '', // Missing
-            categoryId: '',
-            stock: 99, // Unknown from Cart DTO, assumes available
-            rating: 0,
-            reviewCount: 0,
-            createdAt: new Date().toISOString()
-        } as Product
-    }));
+    return dto.cartItems.map(item => {
+        // Handle potential PascalCase or different naming from backend
+        const rawItem = item as any;
+        const productName = item.productName || rawItem.ProductName || 'Unknown Product';
+        const productPrice = item.price || rawItem.ProductPrice || rawItem.Price || 0;
+        const productImage = item.productImage || rawItem.ProductImage || 'https://picsum.photos/seed/product/400/400';
+
+        return {
+            id: item.code || rawItem.Code,
+            quantity: item.quantity || rawItem.Quantity,
+            size: item.size || rawItem.Size,
+            color: item.color || rawItem.Color,
+            product: {
+                id: item.productCode || rawItem.ProductCode,
+                name: productName,
+                price: productPrice,
+                image: productImage,
+                slug: (item.productCode || rawItem.ProductCode || '').toLowerCase(),
+                description: '',
+                category: '',
+                categoryId: '',
+                stock: 99,
+                rating: 0,
+                reviewCount: 0,
+                createdAt: new Date().toISOString()
+            } as Product
+        };
+    });
 }
 
 // ============ Service ============
@@ -65,7 +74,8 @@ export const cartService = {
     },
 
     async addToCart(data: AddToCartRequest): Promise<ApiResponse<CartDto>> {
-        return apiClient.post<CartDto>('/carts', data);
+        console.log('Sending AddToCart request to /carts/items', data);
+        return apiClient.post<CartDto>('/carts/items', data);
     },
 
     async updateCartItem(data: UpdateCartItemRequest): Promise<ApiResponse<CartDto>> {

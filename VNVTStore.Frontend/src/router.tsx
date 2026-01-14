@@ -46,6 +46,7 @@ const AdminBanners = lazy(() => import('@/pages/admin/BannersPage'));
 
 // Error pages
 import ErrorBoundary from '@/components/common/ErrorBoundary';
+import ProtectedRoute from '@/components/common/ProtectedRoute';
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Router configuration
@@ -183,9 +184,11 @@ const router = createBrowserRouter([
           {
             path: 'account/*',
             element: (
-              <Suspense fallback={<PageLoader />}>
-                <AccountPage />
-              </Suspense>
+              <ProtectedRoute>
+                <Suspense fallback={<PageLoader />}>
+                   <AccountPage />
+                </Suspense>
+              </ProtectedRoute>
             ),
           },
         ],

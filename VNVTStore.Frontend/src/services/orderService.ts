@@ -10,7 +10,8 @@ export interface OrderItemDto {
     productCode: string;
     productName: string;
     productImage: string;
-    price: number;
+    priceAtOrder: number;
+    discountAmount: number;
     quantity: number;
 }
 

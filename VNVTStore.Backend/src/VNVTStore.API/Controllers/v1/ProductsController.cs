@@ -29,19 +29,19 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
     public override Task<IActionResult> Get(string code) => base.Get(code);
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public override Task<IActionResult> Create([FromBody] RequestDTO<CreateProductDto> request) => base.Create(request);
 
     [HttpPut("{code}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public override Task<IActionResult> Update(string code, [FromBody] RequestDTO<UpdateProductDto> request) => base.Update(code, request);
 
     [HttpDelete("{code}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public override Task<IActionResult> Delete(string code) => base.Delete(code);
 
     [HttpPost("import")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Import(IFormFile file)
     {
@@ -56,6 +56,15 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
         
         var result = await Mediator.Send(new ImportProductsCommand(memoryStream));
         return HandleResult(result);
+    }
+
+    [HttpGet("template")]
+    [AllowAnonymous]
+    public IActionResult GetTemplate()
+    {
+        var csv = "Name,Price,CategoryCode,StockQuantity,Code,Description,Color,Size,Material,Voltage,Power,Weight,CostPrice\nSample Product,100000,CAT001,10,,Description here,Red,L,Cotton,220V,100W,0.5,80000";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        return File(bytes, "text/csv", "products_template.csv");
     }
 
     protected override IRequest<Result<PagedResult<ProductDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)

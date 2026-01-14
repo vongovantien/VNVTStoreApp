@@ -18,9 +18,12 @@ import {
   Scale,
   Globe,
   Bell,
+  LayoutDashboard,
+  Package,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { Button } from '@/components/ui';
+import { Button, ConfirmDialog } from '@/components/ui';
 import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast } from '@/store';
 import { signalRService } from '@/services/signalrService';
 import { useClickOutside } from '@/hooks';
@@ -35,6 +38,19 @@ export const Header = memo(() => {
   const [showCategories, setShowCategories] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowUserMenu(false);
+    setMobileMenuOpen(false);
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    setShowLogoutConfirm(false);
+    window.location.href = '/';
+  };
 
 
   const categoriesRef = useClickOutside<HTMLDivElement>(() => setShowCategories(false));
@@ -309,25 +325,25 @@ export const Header = memo(() => {
                           <p className="text-xs text-secondary truncate">{user?.email}</p>
                         </div>
                         {user?.role === 'Admin' && (
-                           <Link to="/admin" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                           <Link to="/admin" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                            <LayoutDashboard size={16} className="text-tertiary" />
                             {t('common.adminDashboard') || 'Admin Dashboard'}
                           </Link>
                         )}
-                        <Link to="/account" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                        <Link to="/account" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                          <User size={16} className="text-tertiary" />
                           {t('common.account')}
                         </Link>
-                        <Link to="/account/orders" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                        <Link to="/account/orders" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                          <Package size={16} className="text-tertiary" />
                           {t('account.orders')}
                         </Link>
                         <hr className="my-2" />
                         <button
-                          onClick={() => {
-                            logout();
-                            setShowUserMenu(false);
-                            window.location.href = '/'; 
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                          onClick={handleLogoutClick}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md transition-colors"
                         >
+                          <LogOut size={16} />
                           {t('common.logout')}
                         </button>
                       </>
@@ -516,11 +532,7 @@ export const Header = memo(() => {
                       fullWidth 
                       variant="outline" 
                       className="text-red-500 border-red-200 hover:bg-red-50"
-                      onClick={() => { 
-                        logout(); 
-                        setMobileMenuOpen(false); 
-                        window.location.href = '/'; 
-                      }}
+                      onClick={handleLogoutClick}
                     >
                       {t('common.logout')}
                     </Button>
@@ -540,6 +552,16 @@ export const Header = memo(() => {
           </>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title={t('common.logout')}
+        message={t('messages.logoutConfirmMessage') || 'Are you sure you want to log out?'}
+        confirmText={t('common.logout')}
+        cancelText={t('common.cancel')}
+      />
     </>
   );
 });

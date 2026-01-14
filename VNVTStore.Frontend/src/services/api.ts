@@ -1,5 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { useAuthStore } from '@/store';
+
+// Circular dependency fix: Inject store instead of importing it directly
+let authStore: any = null;
+export const injectStore = (store: any) => {
+  authStore = store;
+};
 
 /**
  * API Configuration and Axios Instance
@@ -84,7 +89,7 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request Interceptor: Attach Token
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const { token } = useAuthStore.getState();
+    const token = authStore?.getState()?.token;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`; // Use standard 'Bearer' prefix
     }
@@ -128,7 +133,7 @@ axiosInstance.interceptors.response.use(
           // Special handling for Login/Refresh endpoints to avoid infinite loops
           if (originalRequest.url?.includes('auth/login') || originalRequest.url?.includes('auth/refresh-token')) {
             console.error("Phiên đăng nhập hết hạn hoặc không hợp lệ.");
-            useAuthStore.getState().logout();
+            authStore?.getState()?.logout();
             return Promise.reject(error);
           }
 
@@ -150,7 +155,9 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-              const { token, refreshToken, setTokens } = useAuthStore.getState();
+              const state = authStore?.getState();
+              if (!state) throw new Error('Store not initialized');
+              const { token, refreshToken, setTokens } = state;
 
               if (!token || !refreshToken) {
                 // No tokens to refresh, just logout
@@ -177,7 +184,7 @@ axiosInstance.interceptors.response.use(
               }
             } catch (err) {
               processQueue(err, null);
-              useAuthStore.getState().logout();
+              authStore?.getState()?.logout();
               return Promise.reject(err);
             } finally {
               isRefreshing = false;
@@ -227,8 +234,20 @@ class ApiClient {
         ...options
       });
 
-      // The backend returns ApiResponse<T>
-      return response.data as ApiResponse<T>;
+      const responseData = response.data;
+
+      // Global Validation: Ensure response matches ApiResponse<T> (ResponseDTO) structure
+      if (responseData && typeof responseData === 'object' && 'success' in responseData) {
+        return responseData as ApiResponse<T>;
+      }
+
+      // If response is not a valid DTO (e.g. raw HTML or unexpected JSON), treat as error
+      return {
+        success: false,
+        message: 'Invalid API Response Format', // Or localized message
+        data: null,
+        statusCode: response.status
+      };
     } catch (error: unknown) {
       // Unify error format for frontend consumption
       let msg = 'Unknown error';

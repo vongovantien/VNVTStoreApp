@@ -46,7 +46,7 @@ describe('cartService', () => {
 
             const result = await cartService.addToCart(item);
 
-            expect(mockPost).toHaveBeenCalledWith('/carts', item);
+            expect(mockPost).toHaveBeenCalledWith('/carts/items', item);
             expect(result).toBe(mockResponse);
         });
     });

@@ -1,5 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Package, Calendar, ChevronRight, MapPin } from 'lucide-react';
+import SharedImage from '@/components/common/Image';
+import { Button, Badge } from '@/components/ui';
 import { formatDate, formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { orderService, type OrderDto } from '@/services/orderService';
 
@@ -46,11 +50,16 @@ const OrdersContent = () => {
           <div className="space-y-2 mb-4">
              {order.orderItems?.map((item, index) => (
               <div key={index} className="flex items-center gap-3">
-                 <img
-                  src={item.productImage || 'https://via.placeholder.com/50'}
-                  alt={item.productName}
-                  className="w-12 h-12 object-cover rounded"
-                />
+                <div className="flex -space-x-2 overflow-hidden">
+                  {order.orderItems.slice(0, 3).map((item, i) => (
+                    <SharedImage
+                      key={i}
+                      src={item.productImage}
+                      alt={item.productName}
+                      className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
+                    />
+                  ))}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{item.productName}</p>
                   <p className="text-xs text-tertiary">x{item.quantity}</p>

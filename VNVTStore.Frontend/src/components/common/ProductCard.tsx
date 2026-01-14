@@ -75,12 +75,16 @@ export const ProductCard = memo(
     );
 
     const handleAddToCart = useCallback(
-      (e: React.MouseEvent) => {
+      async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
         if (hasFixedPrice && !isOutOfStock) {
-          addToCart(product);
-          toast.success(`${product.name} đã được thêm vào giỏ hàng`);
+          try {
+            await addToCart(product);
+            toast.success(`${product.name} đã được thêm vào giỏ hàng`);
+          } catch (error) {
+            toast.error(t('product.addToCartError') || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
+          }
         }
       },
       [hasFixedPrice, isOutOfStock, product, addToCart, toast]

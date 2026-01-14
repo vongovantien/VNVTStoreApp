@@ -58,7 +58,7 @@ public class PromotionsController : BaseApiController<PromotionDto, CreatePromot
     }
     
     [HttpPost("import")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Import(IFormFile file)
     {

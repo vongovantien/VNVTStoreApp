@@ -26,7 +26,7 @@ public partial class TblCart
     {
         return new TblCart
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            Code = $"CRT{Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper()}",
             UserCode = userCode,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,

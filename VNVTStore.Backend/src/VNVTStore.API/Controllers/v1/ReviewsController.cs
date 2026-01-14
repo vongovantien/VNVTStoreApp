@@ -73,7 +73,7 @@ public class ReviewsController : BaseApiController<ReviewDto, CreateReviewDto, U
     /// Get all reviews (Admin moderation)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public async Task<IActionResult> GetAllReviews([FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber, [FromQuery] int pageSize = AppConstants.Paging.DefaultPageSize, [FromQuery] bool? isApproved = null)
     {
         var result = await Mediator.Send(new GetAllReviewsQuery(pageIndex, pageSize, isApproved));
@@ -84,7 +84,7 @@ public class ReviewsController : BaseApiController<ReviewDto, CreateReviewDto, U
     /// Approve a review (Admin)
     /// </summary>
     [HttpPost("{code}/approve")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public async Task<IActionResult> ApproveReview(string code)
     {
         var result = await Mediator.Send(new ApproveReviewCommand(code));
@@ -95,7 +95,7 @@ public class ReviewsController : BaseApiController<ReviewDto, CreateReviewDto, U
     /// Reject a review (Admin)
     /// </summary>
     [HttpPost("{code}/reject")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public async Task<IActionResult> RejectReview(string code)
     {
         var result = await Mediator.Send(new RejectReviewCommand(code));

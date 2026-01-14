@@ -26,21 +26,21 @@ public class BannerController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public async Task<IActionResult> CreateBanner([FromBody] CreateBannerDto dto)
     {
         return HandleResult<BannerDto>(await Mediator.Send(new CreateCommand<CreateBannerDto, BannerDto>(dto)));
     }
 
     [HttpPut("{code}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public async Task<IActionResult> UpdateBanner(string code, [FromBody] UpdateBannerDto dto)
     {
         return HandleResult<BannerDto>(await Mediator.Send(new UpdateCommand<UpdateBannerDto, BannerDto>(code, dto)));
     }
 
     [HttpDelete("{code}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public async Task<IActionResult> DeleteBanner(string code)
     {
         return HandleDelete(await Mediator.Send(new DeleteCommand<TblBanner>(code)));

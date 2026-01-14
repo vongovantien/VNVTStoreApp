@@ -21,7 +21,29 @@ export interface DashboardStatsDto {
 // ============ Service ============
 export const dashboardService = {
     async getStats(): Promise<ApiResponse<DashboardStatsDto>> {
-        return apiClient.get<DashboardStatsDto>(API_ENDPOINTS.DASHBOARD.STATS);
+        const response = await apiClient.get<any>(API_ENDPOINTS.DASHBOARD.STATS);
+
+        console.log('Dashboard Stats Raw Response:', response);
+
+        // Manual mapping to handle potential PascalCase from backend
+        if (response.success && response.data) {
+            const data = response.data;
+            // Handle case where data might be nested or have different structure
+            console.log('Dashboard Stats Data:', data);
+
+            const mappedData: DashboardStatsDto = {
+                totalRevenue: data.totalRevenue ?? data.TotalRevenue ?? 0,
+                totalOrders: data.totalOrders ?? data.TotalOrders ?? 0,
+                totalProducts: data.totalProducts ?? data.TotalProducts ?? 0,
+                totalCustomers: data.totalCustomers ?? data.TotalCustomers ?? 0,
+                revenueChange: data.revenueChange ?? data.RevenueChange ?? 0,
+                ordersChange: data.ordersChange ?? data.OrdersChange ?? 0,
+                customersChange: data.customersChange ?? data.CustomersChange ?? 0,
+                pendingQuotes: data.pendingQuotes ?? data.PendingQuotes ?? 0,
+            };
+            return { ...response, data: mappedData };
+        }
+        return response as ApiResponse<DashboardStatsDto>;
     }
 };
 

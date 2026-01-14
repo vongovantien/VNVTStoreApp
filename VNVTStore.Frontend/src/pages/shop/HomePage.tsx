@@ -13,6 +13,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { ProductCard } from '@/components/common/ProductCard';
+import SharedImage from '@/components/common/Image';
 import { Button } from '@/components/ui';
 import { useProducts, useCategories } from '@/hooks/useProducts';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +28,6 @@ import { formatCurrency } from '@/utils/format';
 
 
 import { SectionHeader } from '@/components/common/SectionHeader';
-import Image from '@/components/common/Image';
 
 // ============ Component ============
 
@@ -216,7 +216,7 @@ export const HomePage = () => {
                   className="group bg-primary rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-lg transition-all border border-transparent hover:border-primary"
                 >
                   <div className="w-24 h-24 rounded-full overflow-hidden bg-secondary/20 group-hover:scale-110 transition-transform">
-                    <Image
+                    <SharedImage
                       src={cat.imageUrl}
                       alt={cat.name}
                       className="w-full h-full object-cover"
@@ -371,7 +371,7 @@ export const HomePage = () => {
                   >
                     {index + 1}
                   </span>
-                  <Image
+                  <SharedImage
                     src={product.image}
                     alt={product.name}
                     className="w-14 h-14 object-cover rounded-lg"

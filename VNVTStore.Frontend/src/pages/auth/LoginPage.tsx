@@ -39,6 +39,13 @@ export const LoginPage = () => {
       if (response.success && response.data) {
         const { token, refreshToken, user } = response.data;
 
+        // Handle Remember Me preference
+        if (formData.remember) {
+            localStorage.setItem('vnvt-remember', 'true');
+        } else {
+            localStorage.removeItem('vnvt-remember');
+        }
+
         login(
           {
             id: user.code,

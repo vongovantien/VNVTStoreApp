@@ -432,7 +432,7 @@ export const OrdersPage = () => {
                       <p className="font-medium text-sm">{item.productName}</p>
                       <p className="text-xs text-tertiary">Số lượng: {item.quantity}</p>
                     </div>
-                    <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                    <p className="font-medium">{formatCurrency(item.priceAtOrder * item.quantity)}</p>
                   </div>
                 ))}
               </div>

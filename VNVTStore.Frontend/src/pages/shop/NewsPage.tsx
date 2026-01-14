@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowRight, Clock } from 'lucide-react';
+import { Calendar, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui';
+import SharedImage from '@/components/common/Image';
 
 const newsItems = [
     {
@@ -73,10 +75,10 @@ export const NewsPage = () => {
                             className="bg-primary rounded-2xl overflow-hidden shadow-lg group"
                         >
                             <div className="relative h-48 overflow-hidden">
-                                <img
+                                <SharedImage
                                     src={news.image}
                                     alt={news.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                                 <div className="absolute top-4 left-4">
                                     <span className="bg-primary/90 backdrop-blur px-3 py-1 rounded-full text-xs font-medium">

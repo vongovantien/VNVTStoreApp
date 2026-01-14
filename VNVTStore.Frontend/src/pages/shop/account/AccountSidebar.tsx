@@ -10,10 +10,19 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '@/store';
+import { ConfirmDialog } from '@/components/ui';
+import { useState } from 'react';
 
 const AccountSidebar = () => {
   const { t } = useTranslation();
   const { logout, user } = useAuthStore();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const confirmLogout = () => {
+    logout();
+    setShowLogoutConfirm(false);
+    window.location.href = '/';
+  };
 
   const menuItems = [
     { path: '/account', icon: User, label: t('account.profile'), end: true },
@@ -61,13 +70,22 @@ const AccountSidebar = () => {
 
         {/* Logout */}
         <button
-          onClick={logout}
+          onClick={() => setShowLogoutConfirm(true)}
           className="flex items-center gap-3 px-4 py-3 w-full mt-4 pt-4 border-t text-error hover:bg-error/10 rounded-lg transition-colors"
         >
           <LogOut size={20} />
           <span>{t('common.logout')}</span>
         </button>
       </div>
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title={t('common.logout')}
+        message={t('messages.logoutConfirmMessage') || 'Are you sure you want to log out?'}
+        confirmText={t('common.logout')}
+        cancelText={t('common.cancel')}
+      />
     </aside>
   );
 };

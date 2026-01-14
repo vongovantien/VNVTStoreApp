@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui';
+import SharedImage from '@/components/common/Image';
 import { useCartStore, useUIStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
 
@@ -76,7 +77,7 @@ export const CartDrawer = memo(() => {
                       onClick={() => setCartOpen(false)}
                       className="flex-shrink-0"
                     >
-                      <img
+                      <SharedImage
                         src={item.product.image}
                         alt={item.product.name}
                         className="w-20 h-20 object-cover rounded-lg"

@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Edit2, Trash2, Eye, Star, Plus } from 'lucide-react';
+import { Edit2, Trash2, Eye, Star, Plus, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Dropdown, DropdownItem } from '@/components/ui/Dropdown';
 import { formatCurrency } from '@/utils/format';
 import { ProductForm, ProductFormData } from './forms/ProductForm';
 import {
@@ -176,31 +177,73 @@ export const ProductsPage = () => {
       id: 'actions',
       header: t('common.fields.action'),
       accessor: (product) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500"
-            title={t('common.actions.view')}
+        <Dropdown
+          trigger={
+            <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 transition-colors">
+              <MoreHorizontal size={20} />
+            </button>
+          }
+          width="w-56"
+        >
+          <DropdownItem
+            icon={<Eye size={16} />}
             onClick={() => handleOpenView(product)}
           >
-            <Eye size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600"
-            title={t('common.actions.edit')}
-            onClick={() => {
-              openEdit(product);
-            }}
+            {t('common.actions.view') || 'View'}
+          </DropdownItem>
+          
+          <DropdownItem
+            icon={<Edit3 size={16} />}
+            onClick={() => openEdit(product)}
           >
-            <Edit2 size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors text-rose-600"
-            title={t('common.actions.delete')}
+            {t('common.actions.edit') || 'Edit'}
+          </DropdownItem>
+
+          <DropdownItem
+            icon={<Copy size={16} />}
+            onClick={() => toast.info('Duplicate feature coming soon')}
+          >
+            Duplicate
+          </DropdownItem>
+
+          <DropdownItem
+            icon={<Archive size={16} />}
+            onClick={() => toast.info('Archive feature coming soon')}
+          >
+            Archive
+          </DropdownItem>
+
+          <DropdownItem
+            icon={<FolderInput size={16} />}
+            onClick={() => toast.info('Move feature coming soon')}
+          >
+            Move
+          </DropdownItem>
+          
+          <DropdownItem
+            icon={<Share2 size={16} />}
+            onClick={() => toast.info('Share feature coming soon')}
+          >
+            Share
+          </DropdownItem>
+
+          <DropdownItem
+            icon={<Heart size={16} />}
+            onClick={() => toast.info('Favorite feature coming soon')}
+          >
+            Add to favorites
+          </DropdownItem>
+
+          <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
+
+          <DropdownItem
+            variant="danger"
+            icon={<Trash2 size={16} />}
             onClick={() => confirmDelete(product)}
           >
-            <Trash2 size={16} />
-          </button>
-        </div>
+            {t('common.actions.delete') || 'Delete'}
+          </DropdownItem>
+        </Dropdown>
       ),
       className: 'text-center',
       headerClassName: 'text-center'
@@ -290,6 +333,7 @@ export const ProductsPage = () => {
   // Override cancelDelete to clear local state too
   const handleCancelDelete = () => {
     cancelDelete(); // from hook
+    setShowBulkConfirm(false);
     setSelectedIds(new Set());
   };
 
@@ -297,16 +341,6 @@ export const ProductsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('common.modules.products')}</h1>
-        <div className="flex gap-2">
-
-            <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
-                Import Excel
-            </Button>
-            <Button onClick={() => openCreate()}>
-                <Plus size={20} className="mr-2" />
-                {t('admin.actions.create') || 'Create'}
-            </Button>
-        </div>
       </div>
 
       <ImportModal 
@@ -314,7 +348,7 @@ export const ProductsPage = () => {
         onClose={() => setIsImportModalOpen(false)}
         onImport={handleImportProduct}
         title={t('common.importData', 'Import Products')}
-        templateUrl="/templates/products_template.xlsx"
+        templateUrl="/products/template"
       />
 
       <DataTable
@@ -323,6 +357,8 @@ export const ProductsPage = () => {
         keyField="id"
         isLoading={isLoading}
         isFetching={isFetching}
+        onAdd={() => openCreate()}
+        onImport={() => setIsImportModalOpen(true)}
         error={isError ? (error as Error) : null}
 
         // Sorting
@@ -405,7 +441,7 @@ export const ProductsPage = () => {
             price: editingProduct.price,
             categoryId: editingProduct.categoryId,
             stock: editingProduct.stock,
-            image: editingProduct.images?.[0], // adapt
+            image: editingProduct.images?.[0],
             color: editingProduct.color,
             power: editingProduct.power,
             voltage: editingProduct.voltage,
@@ -516,7 +552,7 @@ export const ProductsPage = () => {
 
       {/* Delete Confirmation */}
       <ConfirmDialog
-        isOpen={!!productToDelete || selectedToDelete.length > 0}
+        isOpen={!!productToDelete || showBulkConfirm}
         onClose={handleCancelDelete}
         onConfirm={handleDelete}
         title={t('common.actions.delete')}

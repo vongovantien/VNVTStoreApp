@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Scale, X, ShoppingCart, Check, Minus } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useCompareStore, useCartStore } from '@/store';
+import SharedImage from '@/components/common/Image';
 import { formatCurrency } from '@/utils/format';
 
 export const ComparePage = () => {
@@ -54,7 +55,7 @@ export const ComparePage = () => {
                         <X size={14} />
                       </button>
                       <Link to={`/product/${product.id}`}>
-                        <img
+                        <SharedImage
                           src={product.image}
                           alt={product.name}
                           className="w-32 h-32 object-cover rounded-lg mx-auto mb-3"

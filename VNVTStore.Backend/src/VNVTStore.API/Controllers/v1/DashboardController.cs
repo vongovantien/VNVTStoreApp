@@ -5,7 +5,7 @@ using VNVTStore.Application.Dashboard.Queries;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[Authorize(Roles = "admin")]
+[Authorize(Roles = "admin,Admin")]
 public class DashboardController : BaseApiController
 {
     public DashboardController(IMediator mediator) : base(mediator)

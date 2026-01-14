@@ -16,8 +16,8 @@ public class CategoriesController : BaseApiController<CategoryDto, CreateCategor
     {
     }
 
-    protected override IRequest<Result<PagedResult<CategoryDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
-        => new GetPagedQuery<CategoryDto>(pageIndex, pageSize, search, sort, filters);
+    protected override IRequest<Result<PagedResult<CategoryDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<CategoryDto>(pageIndex, pageSize, search, sort, filters, fields);
 
     protected override IRequest<Result<CategoryDto>> CreateGetByCodeQuery(string code)
         => new GetByCodeQuery<CategoryDto>(code);

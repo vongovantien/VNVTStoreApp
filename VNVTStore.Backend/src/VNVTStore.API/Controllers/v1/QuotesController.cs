@@ -25,8 +25,8 @@ public class QuotesController : BaseApiController<QuoteDto, CreateQuoteDto, Upda
     }
 
     // Abstract methods implementation
-    protected override IRequest<Result<PagedResult<QuoteDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
-        => new GetPagedQuery<QuoteDto>(pageIndex, pageSize, search, sort, filters);
+    protected override IRequest<Result<PagedResult<QuoteDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<QuoteDto>(pageIndex, pageSize, search, sort, filters, fields);
 
     protected override IRequest<Result<QuoteDto>> CreateGetByCodeQuery(string code)
         => new GetByCodeQuery<QuoteDto>(code);

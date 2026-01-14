@@ -138,7 +138,7 @@ public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : Bas
             s.Field?.ToLower() != "name" && s.Field?.ToLower() != "search" && s.Field?.ToLower() != "code"
         ).ToList();
 
-        var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, search, request.SortDTO, filters));
+        var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, search, request.SortDTO, filters, request.Fields));
         return HandleResult(result);
     }
 
@@ -190,7 +190,7 @@ public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : Bas
     }
 
     // Abstract factory methods to create specific MediatR requests
-    protected abstract IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters);
+    protected abstract IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null);
     protected abstract IRequest<Result<TResponse>> CreateGetByCodeQuery(string code);
     protected abstract IRequest<Result<TResponse>> CreateCreateCommand(TCreateDto dto);
     protected abstract IRequest<Result<TResponse>> CreateUpdateCommand(string code, TUpdateDto dto);

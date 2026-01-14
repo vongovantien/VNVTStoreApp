@@ -102,8 +102,8 @@ public class ReviewsController : BaseApiController<ReviewDto, CreateReviewDto, U
         return HandleDelete(result);
     }
 
-    protected override IRequest<Result<PagedResult<ReviewDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
-        => new GetPagedQuery<ReviewDto>(pageIndex, pageSize, search, sort, filters);
+    protected override IRequest<Result<PagedResult<ReviewDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<ReviewDto>(pageIndex, pageSize, search, sort, filters, fields);
 
     protected override IRequest<Result<ReviewDto>> CreateGetByCodeQuery(string code)
         => new GetByCodeQuery<ReviewDto>(code);

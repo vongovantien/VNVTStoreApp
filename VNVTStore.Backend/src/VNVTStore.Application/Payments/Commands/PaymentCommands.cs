@@ -1,17 +1,18 @@
 using MediatR;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.Payments.Commands;
 
 public record ProcessPaymentCommand(
-    string OrderCode,
-    string PaymentMethod,
-    decimal Amount
+    string orderCode,
+    PaymentMethod paymentMethod,
+    decimal amount
 ) : IRequest<Result<PaymentDto>>;
 
 public record UpdatePaymentStatusCommand(
-    string PaymentCode,
-    string Status, // Pending, Completed, Failed
-    string? TransactionId
+    string paymentCode,
+    PaymentStatus status,
+    string? transactionId
 ) : IRequest<Result<PaymentDto>>;

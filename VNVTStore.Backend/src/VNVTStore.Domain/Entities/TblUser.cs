@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Domain.Entities;
 
@@ -27,7 +26,7 @@ public partial class TblUser
 
     public string? Phone { get; private set; }
 
-    public string? Role { get; private set; }
+    public UserRole Role { get; private set; }
 
     public DateTime? CreatedAt { get; private set; }
 
@@ -52,7 +51,7 @@ public partial class TblUser
     public virtual ICollection<TblQuote> TblQuotes { get; private set; }
 
     // Factory method to create a new user (Rich Domain Model)
-    public static TblUser Create(string username, string email, string passwordHash, string? fullName, string role)
+    public static TblUser Create(string username, string email, string passwordHash, string? fullName, UserRole role)
     {
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username cannot be empty", nameof(username));
         if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email cannot be empty", nameof(email));
@@ -60,6 +59,7 @@ public partial class TblUser
 
         var user = new TblUser
         {
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
             Username = username,
             Email = email,
             PasswordHash = passwordHash,
@@ -73,10 +73,10 @@ public partial class TblUser
         return user;
     }
     
-    public void UpdateProfile(string fullName, string phone, string email)
+    public void UpdateProfile(string? fullName, string? phone, string? email)
     {
-        FullName = fullName;
-        Phone = phone;
+        FullName = fullName ?? FullName;
+        Phone = phone ?? Phone;
         // Business rule: Email change might require verification or check, but for now we allow update.
         if (!string.IsNullOrWhiteSpace(email))
         {

@@ -30,36 +30,37 @@ import { cn } from '@/utils/cn';
 import { Button, Input, ConfirmDialog } from '@/components/ui';
 import { ToastContainer } from '@/components/ui/Toast';
 import { useUIStore, useAuthStore } from '@/store';
+import { UserRole } from '@/types';
 
 // Navigation items
 const navGroups = [
   {
     title: 'Core',
     items: [
-      { path: '/admin', icon: LayoutDashboard, label: 'admin.dashboard', end: true },
-      { path: '/admin/orders', icon: ShoppingCart, label: 'admin.orders' },
-      { path: '/admin/customers', icon: Users, label: 'admin.customers' },
+      { path: '/admin', icon: LayoutDashboard, label: 'common.modules.dashboard', end: true },
+      { path: '/admin/orders', icon: ShoppingCart, label: 'common.modules.orders' },
+      { path: '/admin/customers', icon: Users, label: 'common.modules.customers' },
     ]
   },
   {
     title: 'Inventory',
     items: [
-      { path: '/admin/categories', icon: Folder, label: 'admin.categories' },
-      { path: '/admin/products', icon: Package, label: 'admin.products' },
-      { path: '/admin/suppliers', icon: Building2, label: 'admin.suppliers' },
+      { path: '/admin/categories', icon: Folder, label: 'common.modules.categories' },
+      { path: '/admin/products', icon: Package, label: 'common.modules.products' },
+      { path: '/admin/suppliers', icon: Building2, label: 'common.modules.suppliers' },
     ]
   },
   {
     title: 'Marketing',
     items: [
-      { path: '/admin/quotes', icon: FileText, label: 'admin.quotes' },
+      { path: '/admin/quotes', icon: FileText, label: 'common.modules.quotes' },
       // Add Coupons/FlashSale when available
     ]
   },
   {
     title: 'System',
     items: [
-      { path: '/admin/settings', icon: Settings, label: 'admin.settings' },
+      { path: '/admin/settings', icon: Settings, label: 'common.modules.settings' },
     ]
   }
 ];
@@ -110,7 +111,9 @@ export const AdminLayout = () => {
     };
   }, [showLangMenu, showUserMenu]);
 
-  if (!isAuthenticated || !user || user.role !== 'admin') {
+
+
+  if (!isAuthenticated || !user || user.role !== UserRole.ADMIN) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
@@ -135,7 +138,7 @@ export const AdminLayout = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 h-screen bg-gray-900 text-white transition-all duration-300',
+          'fixed left-0 top-0 z-40 h-screen bg-gray-900 text-white transition-all duration-300 flex flex-col',
           sidebarCollapsed ? 'w-20' : 'w-64',
           'hidden lg:block'
         )}
@@ -164,7 +167,7 @@ export const AdminLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-6">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
           {navGroups.map((group, index) => (
             <div key={index}>
               {!sidebarCollapsed && (

@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Eye, Star } from 'lucide-react';
+import { Edit2, Trash2, Eye, Star } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { formatCurrency } from '@/utils/format';
 import { ProductForm, ProductFormData } from './forms/ProductForm';
@@ -57,7 +57,6 @@ export const ProductsPage = () => {
     isFormOpen,
     editingItem: editingProduct,
     itemToDelete: productToDelete,
-    isLoading: isSubmitting,
     isDeleting,
     openCreate,
     openEdit,
@@ -85,7 +84,7 @@ export const ProductsPage = () => {
   const columns: DataTableColumn<Product>[] = [
     {
       id: 'name',
-      header: t('admin.columns.name'),
+      header: t('common.fields.name'),
       accessor: (product) => (
         <div className="flex items-center gap-3">
           <img
@@ -103,12 +102,12 @@ export const ProductsPage = () => {
     },
     {
       id: 'category',
-      header: t('admin.columns.category'),
+      header: t('common.fields.category'),
       accessor: 'category',
     },
     {
       id: 'price',
-      header: t('admin.columns.price'),
+      header: t('common.fields.price'),
       accessor: (product) => (
         product.price > 0 ? (
           <span className="font-semibold text-rose-600">{formatCurrency(product.price)}</span>
@@ -122,7 +121,7 @@ export const ProductsPage = () => {
     },
     {
       id: 'stock',
-      header: t('admin.columns.stock'),
+      header: t('common.fields.stock'),
       accessor: (product) => (
         <span className={product.stock > 10 ? 'text-emerald-600 font-medium' : product.stock > 0 ? 'text-amber-600 font-medium' : 'text-rose-600 font-medium'}>
           {product.stock}
@@ -134,7 +133,7 @@ export const ProductsPage = () => {
     },
     {
       id: 'rating',
-      header: t('admin.columns.rating'),
+      header: t('common.fields.rating'),
       accessor: (product) => (
         <div className="flex items-center justify-center gap-1 text-sm">
           <Star size={16} className="text-amber-400 fill-amber-400" />
@@ -146,7 +145,7 @@ export const ProductsPage = () => {
     },
     {
       id: 'status',
-      header: t('admin.columns.status'),
+      header: t('common.fields.status'),
       accessor: (product) => (
         <Badge
           color={product.isActive !== false ? 'success' : 'error'}
@@ -161,19 +160,19 @@ export const ProductsPage = () => {
     },
     {
       id: 'actions',
-      header: t('admin.columns.action'),
+      header: t('common.fields.action'),
       accessor: (product) => (
         <div className="flex items-center justify-center gap-2">
           <button
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500"
-            title={t('admin.actions.view')}
+            title={t('common.actions.view')}
             onClick={() => handleOpenView(product)}
           >
             <Eye size={16} />
           </button>
           <button
             className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600"
-            title="Sửa"
+            title={t('common.actions.edit')}
             onClick={() => {
               openEdit(product);
             }}
@@ -182,7 +181,7 @@ export const ProductsPage = () => {
           </button>
           <button
             className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors text-rose-600"
-            title="Xóa"
+            title={t('common.actions.delete')}
             onClick={() => confirmDelete(product)}
           >
             <Trash2 size={16} />
@@ -231,10 +230,6 @@ export const ProductsPage = () => {
         material: data.material,
         size: data.size,
       });
-      // Success handled by hook, but invalidating queries etc.
-      // Hook handles toast and invalidation.
-      // We might need to map data correctly.
-      // The hook's createMutation expects CreateDto.
     } catch (err) {
       // Error handled by hook
     }
@@ -287,7 +282,7 @@ export const ProductsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.products')}</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('common.modules.products')}</h1>
       </div>
 
       <DataTable
@@ -324,37 +319,37 @@ export const ProductsPage = () => {
         advancedFilterDefs={[
           {
             id: 'name',
-            label: t('admin.columns.name'),
+            label: t('common.fields.name'),
             type: 'text',
             placeholder: t('admin.placeholders.searchProduct') || 'Tên sản phẩm...'
           },
           {
             id: 'category',
-            label: t('admin.columns.category'),
+            label: t('common.fields.category'),
             type: 'text',
-            placeholder: t('admin.columns.category')
+            placeholder: t('common.fields.category')
           },
           {
             id: 'price',
-            label: t('admin.columns.price'),
+            label: t('common.fields.price'),
             type: 'number',
             placeholder: 'Giá từ...'
           },
           {
             id: 'stock',
-            label: t('admin.columns.stock'),
+            label: t('common.fields.stock'),
             type: 'number',
             placeholder: 'Tồn kho từ...'
           },
           {
             id: 'rating',
-            label: t('admin.columns.rating'),
+            label: t('common.fields.rating'),
             type: 'number',
             placeholder: 'Đánh giá từ...'
           },
           {
             id: 'status',
-            label: t('admin.columns.status'),
+            label: t('common.fields.status'),
             type: 'select',
             options: [
               { value: 'active', label: t('common.status.active') },
@@ -370,7 +365,7 @@ export const ProductsPage = () => {
       <Modal
         isOpen={isFormOpen}
         onClose={closeForm}
-        title={editingProduct ? t('admin.actions.edit') : t('admin.actions.create')}
+        title={editingProduct ? t('common.actions.edit') : t('common.actions.create')}
         size="3xl"
       >
         <ProductForm
@@ -397,7 +392,7 @@ export const ProductsPage = () => {
       <Modal
         isOpen={!!viewingProduct}
         onClose={() => setViewingProduct(null)}
-        title={t('admin.actions.view') + ' ' + t('admin.products')}
+        title={t('common.actions.view') + ' ' + t('common.modules.products')}
         size="lg"
       >
         {viewingProduct && (
@@ -425,27 +420,27 @@ export const ProductsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2">{t('admin.columns.info')}</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2">{t('common.fields.info')}</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between py-1 border-b border-dashed">
-                    <span className="text-slate-500">{t('admin.columns.stock')}</span>
+                    <span className="text-slate-500">{t('common.fields.stock')}</span>
                     <span className="font-medium">{viewingProduct.stock}</span>
                   </div>
                   {viewingProduct.material && (
                     <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('admin.columns.material')}</span>
+                      <span className="text-slate-500">{t('common.fields.material')}</span>
                       <span className="font-medium">{viewingProduct.material}</span>
                     </div>
                   )}
                   {viewingProduct.size && (
                     <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('admin.columns.size')}</span>
+                      <span className="text-slate-500">{t('common.fields.size')}</span>
                       <span className="font-medium">{viewingProduct.size}</span>
                     </div>
                   )}
                   {viewingProduct.color && (
                     <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('admin.columns.color')}</span>
+                      <span className="text-slate-500">{t('common.fields.color')}</span>
                       <span className="font-medium">{viewingProduct.color}</span>
                     </div>
                   )}
@@ -453,17 +448,17 @@ export const ProductsPage = () => {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2">{t('admin.columns.specs')}</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2">{t('common.fields.specs')}</h3>
                 <div className="space-y-2 text-sm">
                   {viewingProduct.voltage && (
                     <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('admin.columns.voltage')}</span>
+                      <span className="text-slate-500">{t('common.fields.voltage')}</span>
                       <span className="font-medium">{viewingProduct.voltage}</span>
                     </div>
                   )}
                   {viewingProduct.power && (
                     <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('admin.columns.power')}</span>
+                      <span className="text-slate-500">{t('common.fields.power')}</span>
                       <span className="font-medium">{viewingProduct.power}</span>
                     </div>
                   )}
@@ -473,7 +468,7 @@ export const ProductsPage = () => {
 
             {viewingProduct.description && (
               <div>
-                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2 mb-2">{t('admin.columns.description')}</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2 mb-2">{t('common.fields.description')}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-40 overflow-y-auto">
                   {viewingProduct.description}
                 </p>
@@ -482,7 +477,7 @@ export const ProductsPage = () => {
 
             <div className="flex justify-end pt-4">
               <Button onClick={() => setViewingProduct(null)}>
-                {t('common.close')}
+                {t('common.actions.close')}
               </Button>
             </div>
           </div>
@@ -490,14 +485,13 @@ export const ProductsPage = () => {
       </Modal>
 
       {/* Delete Confirmation */}
-      {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!productToDelete || selectedToDelete.length > 0}
         onClose={handleCancelDelete}
         onConfirm={handleDelete}
-        title={t('admin.actions.delete')}
+        title={t('common.actions.delete')}
         message={t('common.confirmDelete', { count: selectedToDelete.length > 0 ? selectedToDelete.length : 1 })}
-        confirmText={t('common.delete')}
+        confirmText={t('common.actions.delete')}
         variant="danger"
         isLoading={isDeleting}
       />

@@ -8,6 +8,7 @@ using VNVTStore.Application.Payments.Queries;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.Payments.Handlers;
 
@@ -39,25 +40,18 @@ public class PaymentHandlers :
 
     public async Task<Result<PaymentDto>> Handle(ProcessPaymentCommand request, CancellationToken cancellationToken)
     {
-        var order = await _orderRepository.GetByCodeAsync(request.OrderCode, cancellationToken);
+        var order = await _orderRepository.GetByCodeAsync(request.orderCode, cancellationToken);
         if (order == null)
-            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Order, request.OrderCode));
+            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Order, request.orderCode));
 
         if (order.UserCode != _currentUser.UserCode)
             return Result.Failure<PaymentDto>(Error.Forbidden("Cannot pay for another user's order"));
 
-        var payment = new TblPayment
-        {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-            OrderCode = request.OrderCode,
-            Method = request.PaymentMethod,
-            Amount = request.Amount,
-            Status = PaymentStatus.Pending.ToString(),
-            PaymentDate = DateTime.Now
-        };
-
-        // Simulate external payment processing here if needed
-        // For COD, it remains Pending. For online, it might wait for callback.
+        var payment = TblPayment.Create(
+            request.orderCode,
+            request.amount,
+            request.paymentMethod
+        );
 
         await _paymentRepository.AddAsync(payment, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
@@ -67,24 +61,19 @@ public class PaymentHandlers :
 
     public async Task<Result<PaymentDto>> Handle(UpdatePaymentStatusCommand request, CancellationToken cancellationToken)
     {
-        var payment = await _paymentRepository.GetByCodeAsync(request.PaymentCode, cancellationToken);
+        var payment = await _paymentRepository.GetByCodeAsync(request.paymentCode, cancellationToken);
         if (payment == null)
-            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Payment, request.PaymentCode));
+            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Payment, request.paymentCode));
 
-        payment.Status = request.Status;
-        if (request.TransactionId != null)
-        {
-            // Assuming there's a TransactionId field or simulate notes
-            // payment.TransactionId = request.TransactionId; 
-        }
+        payment.UpdateStatus(request.status, request.transactionId);
         
         // Update Order status if payment completed
-        if (request.Status == PaymentStatus.Completed.ToString())
+        if (request.status == PaymentStatus.Completed)
         {
             var order = await _orderRepository.GetByCodeAsync(payment.OrderCode!, cancellationToken);
             if (order != null)
             {
-                order.UpdateStatus(OrderStatus.Paid.ToString()); // Or "Processing"
+                order.UpdateStatus(OrderStatus.Paid); 
                 _orderRepository.Update(order);
             }
         }
@@ -98,13 +87,13 @@ public class PaymentHandlers :
     public async Task<Result<PaymentDto>> Handle(GetPaymentByOrderQuery request, CancellationToken cancellationToken)
     {
         var payment = await _paymentRepository.AsQueryable()
-            .FirstOrDefaultAsync(p => p.OrderCode == request.OrderCode, cancellationToken);
+            .FirstOrDefaultAsync(p => p.OrderCode == request.orderCode, cancellationToken);
 
         if (payment == null)
-            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Payment, request.OrderCode));
+            return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Payment, request.orderCode));
 
         // Check ownership via order
-        var order = await _orderRepository.GetByCodeAsync(request.OrderCode, cancellationToken);
+        var order = await _orderRepository.GetByCodeAsync(request.orderCode, cancellationToken);
         if (order == null || order.UserCode != _currentUser.UserCode)
              return Result.Failure<PaymentDto>(Error.Forbidden("Cannot view payment of another user"));
 

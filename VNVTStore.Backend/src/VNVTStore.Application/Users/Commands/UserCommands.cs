@@ -5,14 +5,14 @@ using VNVTStore.Application.DTOs;
 namespace VNVTStore.Application.Users.Commands;
 
 public record UpdateProfileCommand(
-    string UserCode,
-    string? FullName,
-    string? Phone,
-    string? Email
+    string userCode,
+    string? fullName,
+    string? phone,
+    string? email
 ) : IRequest<Result<UserDto>>;
 
 public record ChangePasswordCommand(
-    string UserCode,
-    string CurrentPassword,
-    string NewPassword
+    string userCode,
+    string currentPassword,
+    string newPassword
 ) : IRequest<Result<bool>>;

@@ -66,7 +66,6 @@ public partial class TblProduct
     {
          return new TblProduct
          {
-             Code = Guid.NewGuid().ToString("N").Substring(0, 10),
              Name = name,
              Price = price,
              StockQuantity = stock,

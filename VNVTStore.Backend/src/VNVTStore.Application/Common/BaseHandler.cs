@@ -126,7 +126,8 @@ public abstract class BaseHandler<TEntity> where TEntity : class
         CancellationToken cancellationToken,
         Expression<Func<TEntity, bool>>? predicate = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? includes = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        List<string>? fields = null)
     {
         var query = Repository.AsQueryable();
 
@@ -140,6 +141,9 @@ public abstract class BaseHandler<TEntity> where TEntity : class
 
         if (orderBy != null)
             query = orderBy(query);
+
+        if (fields != null && fields.Any())
+            query = QueryHelper.ApplySelection(query, fields);
 
         var items = await query
             .Skip((pageIndex - 1) * pageSize)

@@ -38,8 +38,8 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
     [Authorize(Roles = "admin")]
     public override Task<IActionResult> Delete(string code) => base.Delete(code);
 
-    protected override IRequest<Result<PagedResult<ProductDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
-        => new GetPagedQuery<ProductDto>(pageIndex, pageSize, search, sort, filters);
+    protected override IRequest<Result<PagedResult<ProductDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<ProductDto>(pageIndex, pageSize, search, sort, filters, fields);
 
     protected override IRequest<Result<ProductDto>> CreateGetByCodeQuery(string code)
         => new GetByCodeQuery<ProductDto>(code);

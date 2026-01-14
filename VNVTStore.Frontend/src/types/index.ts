@@ -52,9 +52,9 @@ export interface CartItem {
 
 // ============ User Types ============
 export enum UserRole {
-    ADMIN = 'admin',
-    CUSTOMER = 'customer',
-    STAFF = 'staff'
+    ADMIN = 'Admin',
+    CUSTOMER = 'Customer',
+    STAFF = 'Staff'
 }
 
 export interface User {

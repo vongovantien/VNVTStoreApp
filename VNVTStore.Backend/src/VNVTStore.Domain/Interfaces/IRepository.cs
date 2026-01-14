@@ -24,4 +24,5 @@ public interface IRepository<T> where T : class
     IQueryable<T> AsQueryable();
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
     Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+    Task ReloadAsync(T entity, CancellationToken cancellationToken = default);
 }

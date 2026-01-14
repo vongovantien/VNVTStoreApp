@@ -64,8 +64,8 @@ public class AddressesController : BaseApiController<AddressDto, CreateAddressDt
         return Ok(ApiResponse<string>.Ok(MessageConstants.Get(MessageConstants.Updated)));
     }
 
-    protected override IRequest<Result<PagedResult<AddressDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
-        => new GetPagedQuery<AddressDto>(pageIndex, pageSize, search, sort, filters);
+    protected override IRequest<Result<PagedResult<AddressDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<AddressDto>(pageIndex, pageSize, search, sort, filters, fields);
 
     protected override IRequest<Result<AddressDto>> CreateGetByCodeQuery(string code)
         => new GetByCodeQuery<AddressDto>(code);

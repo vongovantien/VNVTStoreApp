@@ -5,25 +5,44 @@ namespace VNVTStore.Domain.Entities;
 
 public partial class TblOrderItem
 {
-    public string Code { get; set; } = null!;
+    private TblOrderItem() { }
 
-    public string OrderCode { get; set; } = null!;
+    public string Code { get; private set; } = null!;
 
-    public string? ProductCode { get; set; }
+    public string OrderCode { get; private set; } = null!;
 
-    public int Quantity { get; set; }
+    public string? ProductCode { get; private set; }
 
-    public string? Size { get; set; }
+    public int Quantity { get; private set; }
 
-    public string? Color { get; set; }
+    public string? Size { get; private set; }
 
-    public decimal PriceAtOrder { get; set; }
+    public string? Color { get; private set; }
 
-    public decimal? DiscountAmount { get; set; }
+    public decimal PriceAtOrder { get; private set; }
 
-    public virtual TblOrder OrderCodeNavigation { get; set; } = null!;
+    public decimal? DiscountAmount { get; private set; }
 
-    public virtual TblProduct? ProductCodeNavigation { get; set; }
+    public virtual TblOrder OrderCodeNavigation { get; private set; } = null!;
 
-    public virtual ICollection<TblReview> TblReviews { get; set; } = new List<TblReview>();
+    public virtual TblProduct? ProductCodeNavigation { get; private set; }
+
+    public virtual ICollection<TblReview> TblReviews { get; private set; } = new List<TblReview>();
+
+    public static TblOrderItem Create(string productCode, int quantity, decimal priceAtOrder, string? size, string? color)
+    {
+        if (quantity <= 0) throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+        if (priceAtOrder < 0) throw new ArgumentException("Price cannot be negative.", nameof(priceAtOrder));
+
+        return new TblOrderItem
+        {
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            ProductCode = productCode,
+            Quantity = quantity,
+            PriceAtOrder = priceAtOrder,
+            Size = size,
+            Color = color,
+            DiscountAmount = 0
+        };
+    }
 }

@@ -32,6 +32,13 @@ export interface OrderDto {
     shippingAddress?: string;
 }
 
+export interface GuestCartItemDto {
+    productCode: string;
+    quantity: number;
+    size?: string;
+    color?: string;
+}
+
 export interface CreateOrderRequest {
     fullName: string;
     phone: string;
@@ -42,6 +49,7 @@ export interface CreateOrderRequest {
     note?: string;
     paymentMethod: string;
     couponCode?: string;
+    items?: GuestCartItemDto[];
 }
 
 export interface UpdateOrderRequest {

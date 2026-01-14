@@ -19,10 +19,14 @@ export const formatNumber = (num: number): string => {
  * Format date in Vietnamese locale
  */
 export const formatDate = (
-    dateString: string | Date,
+    dateString: string | Date | undefined | null,
     options?: Intl.DateTimeFormatOptions
 ): string => {
+    if (!dateString) return '';
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    // Check for valid date
+    if (isNaN(date.getTime())) return '';
+
     return date.toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: 'long',

@@ -36,10 +36,10 @@ public class UserHandlers :
 
     public async Task<Result<UserDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByCodeAsync(request.UserCode, cancellationToken);
+        var user = await _userRepository.GetByCodeAsync(request.userCode, cancellationToken);
         
         if (user == null)
-            return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.UserCode));
+            return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.userCode));
 
         return Result.Success(_mapper.Map<UserDto>(user));
     }
@@ -48,42 +48,42 @@ public class UserHandlers :
     {
         var query = _userRepository.AsQueryable();
 
-        if (!string.IsNullOrEmpty(request.Search))
+        if (!string.IsNullOrEmpty(request.search))
         {
             query = query.Where(u => 
-                u.Username.Contains(request.Search) ||
-                u.Email.Contains(request.Search) ||
-                (u.FullName != null && u.FullName.Contains(request.Search)));
+                u.Username.Contains(request.search) ||
+                u.Email.Contains(request.search) ||
+                (u.FullName != null && u.FullName.Contains(request.search)));
         }
 
-        if (!string.IsNullOrEmpty(request.Role))
+        if (request.role.HasValue)
         {
-            query = query.Where(u => u.Role == request.Role);
+            query = query.Where(u => u.Role == request.role.Value);
         }
 
         // Apply advanced filters
-        query = QueryHelper.ApplyFilters(query, request.Filters);
+        query = QueryHelper.ApplyFilters(query, request.filters);
 
         var totalItems = await query.CountAsync(cancellationToken);
 
         // Sort
-        if (request.Sort != null && !string.IsNullOrEmpty(request.Sort.SortBy))
+        if (request.sort != null && !string.IsNullOrEmpty(request.sort.SortBy))
         {
             // Simple manual sort for common fields to avoid reflection/dynamic linq complexity
             // Ideally should use a helper or Dynamic Linq
-            switch (request.Sort.SortBy.ToLower())
+            switch (request.sort.SortBy.ToLower())
             {
                 case "fullname":
-                    query = request.Sort.SortDescending ? query.OrderByDescending(u => u.FullName) : query.OrderBy(u => u.FullName);
+                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.FullName) : query.OrderBy(u => u.FullName);
                     break;
                 case "email":
-                    query = request.Sort.SortDescending ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email);
+                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email);
                     break;
                 case "createdat":
-                    query = request.Sort.SortDescending ? query.OrderByDescending(u => u.CreatedAt) : query.OrderBy(u => u.CreatedAt);
+                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.CreatedAt) : query.OrderBy(u => u.CreatedAt);
                     break;
                  case "role":
-                    query = request.Sort.SortDescending ? query.OrderByDescending(u => u.Role) : query.OrderBy(u => u.Role);
+                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.Role) : query.OrderBy(u => u.Role);
                     break;
                 default:
                     query = query.OrderByDescending(u => u.CreatedAt);
@@ -96,8 +96,8 @@ public class UserHandlers :
         }
 
         var items = await query
-            .Skip((request.PageIndex - 1) * request.PageSize)
-            .Take(request.PageSize)
+            .Skip((request.pageIndex - 1) * request.pageSize)
+            .Take(request.pageSize)
             .ToListAsync(cancellationToken);
 
         var dtos = _mapper.Map<List<UserDto>>(items);
@@ -106,17 +106,17 @@ public class UserHandlers :
 
     public async Task<Result<UserDto>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByCodeAsync(request.UserCode, cancellationToken);
+        var user = await _userRepository.GetByCodeAsync(request.userCode, cancellationToken);
 
         if (user == null)
-            return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.UserCode));
+            return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.userCode));
 
         // Update fields if provided
         // Use Domain Method for validation and encapsulation
         user.UpdateProfile(
-            request.FullName ?? user.FullName, 
-            request.Phone ?? user.Phone, 
-            request.Email ?? user.Email);
+            request.fullName, 
+            request.phone, 
+            request.email);
         _userRepository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -125,17 +125,17 @@ public class UserHandlers :
 
     public async Task<Result<bool>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByCodeAsync(request.UserCode, cancellationToken);
+        var user = await _userRepository.GetByCodeAsync(request.userCode, cancellationToken);
 
         if (user == null)
-            return Result.Failure<bool>(Error.NotFound(MessageConstants.User, request.UserCode));
+            return Result.Failure<bool>(Error.NotFound(MessageConstants.User, request.userCode));
 
         // Verify current password
-        if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+        if (!_passwordHasher.Verify(request.currentPassword, user.PasswordHash))
             return Result.Failure<bool>(Error.Validation(MessageConstants.CurrentPasswordIncorrect));
 
         // Update password using Domain Method
-        user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
+        user.UpdatePassword(_passwordHasher.Hash(request.newPassword));
         
         _userRepository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);

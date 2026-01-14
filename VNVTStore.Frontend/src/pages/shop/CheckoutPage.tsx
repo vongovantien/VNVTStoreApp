@@ -3,56 +3,65 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText } from 'lucide-react';
 import { Button, Input, Select, Modal } from '@/components/ui';
-import { useCartStore, useAuthStore } from '@/store';
+import CustomImage from '@/components/common/Image';
+import { useCartStore, useAuthStore, useToast } from '@/store'; // Consolidated import
 import { formatCurrency } from '@/utils/format';
 import { orderService, type CreateOrderRequest } from '@/services/orderService';
-import { paymentService } from '@/services/paymentService'; // Added import
+import { paymentService } from '@/services/paymentService';
 import { PaymentMethod } from '@/constants';
-import { useToast } from '@/store'; // Added useToast
+import { useCheckoutStore } from '@/store/checkoutStore';
 
 export const CheckoutPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const toast = useToast(); // Added toast hook
+  const toast = useToast();
   const { items, getTotal, clearCart, fetchCart } = useCartStore();
   const { user, isAuthenticated } = useAuthStore();
+  
+  // Store hooks
+  const { 
+    step, setStep, 
+    formData, setFormData, 
+    paymentMethod, setPaymentMethod, 
+    voucherCode, setVoucherCode,
+    resetCheckout 
+  } = useCheckoutStore();
+
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !isGuestCheckout) {
       setShowLoginModal(true);
     } else {
       setShowLoginModal(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isGuestCheckout]);
+  
+  // Sync user info to form if empty
+  useEffect(() => {
+     if (isAuthenticated && user && !formData.fullName) {
+         setFormData({
+             fullName: user.fullName || '',
+             phone: user.phone || '',
+             email: user.email || ''
+         });
+     }
+  }, [isAuthenticated, user]);
 
-  const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState<string>(PaymentMethod.COD);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const subtotal = getTotal();
   const shippingFee = subtotal >= 500000 ? 0 : 30000;
   const total = subtotal + shippingFee;
 
-  const [formData, setFormData] = useState({
-    fullName: user?.fullName || '',
-    phone: user?.phone || '',
-    email: user?.email || '',
-    address: '',
-    city: '',
-    district: '',
-    ward: '',
-    note: '',
-  });
-
   // Pre-fill if user has address (Logic omitted for brevity, could use userService.getMyAddresses())
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData({ [field]: value });
   };
 
   // Voucher Logic
-  const [voucherCode, setVoucherCode] = useState('');
   const [appliedVoucher, setAppliedVoucher] = useState<{ code: string, discount: number, type: string } | null>(null);
 
   const handleApplyVoucher = async () => {
@@ -102,6 +111,15 @@ export const CheckoutPage = () => {
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
+      // Validation
+      if (!formData.fullName || !formData.phone || !formData.address || !formData.city || !formData.district) {
+        toast.error(t('validation.required') || 'Vui lòng điền đầy đủ thông tin giao hàng');
+        setIsProcessing(false);
+        // User is already at Step 3 (Review), if data is missing, they should manually go back or we just show error.
+        // removing setStep(1) as per user request "don't jump back".
+        return;
+      }
+
       const orderData: CreateOrderRequest = {
         fullName: formData.fullName,
         phone: formData.phone,
@@ -111,7 +129,13 @@ export const CheckoutPage = () => {
         ward: formData.ward,
         note: formData.note,
         paymentMethod: paymentMethod,
-        couponCode: appliedVoucher?.code
+        couponCode: appliedVoucher?.code,
+        items: !isAuthenticated ? items.map(item => ({
+          productCode: item.product.id,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color
+        })) : undefined
       };
 
       // 1. Create Order
@@ -120,6 +144,8 @@ export const CheckoutPage = () => {
       if (orderRes.success && orderRes.data) {
         const orderCode = orderRes.data.code;
         toast.success(t('messages.orderSuccess') || 'Đặt hàng thành công!');
+        
+        resetCheckout(); // RESET STORE
 
         // 2. Process Payment
         try {
@@ -136,8 +162,12 @@ export const CheckoutPage = () => {
         }
 
         // 3. Clear Cart & Redirect
-        await fetchCart();
-        navigate('/account/orders?success=true');
+        if (isAuthenticated) {
+          await fetchCart();
+        } else {
+          await clearCart();
+        }
+        navigate(`/order-success?code=${orderCode}`);
       } else {
         toast.error(orderRes.message || t('messages.orderError') || 'Đặt hàng thất bại');
       }
@@ -220,6 +250,7 @@ export const CheckoutPage = () => {
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
                     leftIcon={<User size={18} />}
                     required
+                    isRequired
                   />
                   <Input
                     label={t('checkout.phone')}
@@ -228,6 +259,7 @@ export const CheckoutPage = () => {
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     leftIcon={<Phone size={18} />}
                     required
+                    isRequired
                   />
                   <div className="md:col-span-2">
                     <Input
@@ -239,28 +271,32 @@ export const CheckoutPage = () => {
                       leftIcon={<Mail size={18} />}
                     />
                   </div>
-                  <Select
-                    label={t('checkout.city')}
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    options={[
-                      { value: '', label: 'Chọn Tỉnh/Thành phố' },
-                      { value: 'hcm', label: 'TP. Hồ Chí Minh' },
-                      { value: 'hn', label: 'Hà Nội' },
-                      { value: 'dn', label: 'Đà Nẵng' },
-                    ]}
-                  />
-                  <Select
-                    label={t('checkout.district')}
-                    value={formData.district}
-                    onChange={(e) => handleInputChange('district', e.target.value)}
-                    options={[
-                      { value: '', label: 'Chọn Quận/Huyện' },
-                      { value: 'q1', label: 'Quận 1' },
-                      { value: 'q3', label: 'Quận 3' },
-                      { value: 'q7', label: 'Quận 7' },
-                    ]}
-                  />
+                    <Select
+                      label={t('checkout.city')}
+                      value={formData.city}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      options={[
+                        { value: '', label: 'Chọn Tỉnh/Thành phố' },
+                        { value: 'hcm', label: 'TP. Hồ Chí Minh' },
+                        { value: 'hn', label: 'Hà Nội' },
+                        { value: 'dn', label: 'Đà Nẵng' },
+                      ]}
+                      required
+                      isRequired
+                    />
+                    <Select
+                      label={t('checkout.district')}
+                      value={formData.district}
+                      onChange={(e) => handleInputChange('district', e.target.value)}
+                      options={[
+                        { value: '', label: 'Chọn Quận/Huyện' },
+                        { value: 'q1', label: 'Quận 1' },
+                        { value: 'q3', label: 'Quận 3' },
+                        { value: 'q7', label: 'Quận 7' },
+                      ]}
+                      required
+                      isRequired
+                    />
                   <div className="md:col-span-2">
                     <Input
                       label={t('checkout.address')}
@@ -269,6 +305,7 @@ export const CheckoutPage = () => {
                       onChange={(e) => handleInputChange('address', e.target.value)}
                       leftIcon={<MapPin size={18} />}
                       required
+                      isRequired
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -283,7 +320,13 @@ export const CheckoutPage = () => {
                 </div>
 
                 <div className="mt-6 flex justify-end">
-                  <Button size="lg" onClick={() => setStep(2)}>
+                  <Button size="lg" onClick={() => {
+                    if (!formData.fullName || !formData.phone || !formData.address || !formData.city || !formData.district) {
+                      toast.error(t('validation.required') || 'Vui lòng điền đầy đủ thông tin giao hàng');
+                      return;
+                    }
+                    setStep(2);
+                  }}>
                     {t('checkout.continue')}
                   </Button>
                 </div>
@@ -359,11 +402,13 @@ export const CheckoutPage = () => {
                 <div className="space-y-3 mb-6">
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4">
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
+                        <CustomImage
+                          src={item.product.image}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                       <div className="flex-1">
                         <p className="font-medium line-clamp-1">{item.product.name}</p>
                         <p className="text-sm text-tertiary">x{item.quantity}</p>
@@ -393,11 +438,13 @@ export const CheckoutPage = () => {
               <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-3 text-sm">
-                    <img
-                      src={item.product.image}
-                      alt={item.product.name}
-                      className="w-12 h-12 object-cover rounded"
-                    />
+                    <div className="w-12 h-12 rounded overflow-hidden bg-secondary flex-shrink-0">
+                      <CustomImage
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{item.product.name}</p>
                       <p className="text-tertiary">x{item.quantity}</p>
@@ -471,9 +518,9 @@ export const CheckoutPage = () => {
         closeOnEsc={false}
         footer={
           <div className="flex gap-4 w-full justify-end">
-            <Link to="/cart">
-              <Button variant="ghost">{t('common.back')}</Button>
-            </Link>
+            <Button variant="ghost" onClick={() => setIsGuestCheckout(true)}>
+              {t('checkout.guestCheckout') || 'Mua hàng không cần đăng nhập'}
+            </Button>
             <Link to="/register" state={{ from: '/checkout' }}>
               <Button variant="outline">{t('auth.register')}</Button>
             </Link>

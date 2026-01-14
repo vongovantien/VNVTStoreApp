@@ -79,6 +79,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-y: scroll; /* Force vertical scrollbar space */
 }
 
 body {
@@ -87,6 +88,7 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 button {
@@ -208,23 +210,20 @@ textarea:focus {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  display: block !important;
+  width: 8px !important;
+  height: 8px !important;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: transparent;
+  background-color: var(--bg-tertiary);
   border-radius: 4px;
-}
-
-::-webkit-scrollbar-button {
-  height: 6px;
-  width: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: var(--text-tertiary);
   border-radius: 4px;
+  border: 2px solid var(--bg-tertiary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -270,9 +269,9 @@ textarea:focus {
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+/* .no-scrollbar::-webkit-scrollbar { */
+  /* display: none; */ /* Disabled to resolve hidden scrollbar issue */
+/* } */
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {

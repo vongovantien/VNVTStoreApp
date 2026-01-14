@@ -1,16 +1,17 @@
 using MediatR;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.Users.Queries;
 
-public record GetUserProfileQuery(string UserCode) : IRequest<Result<UserDto>>;
+public record GetUserProfileQuery(string userCode) : IRequest<Result<UserDto>>;
 
 public record GetAllUsersQuery(
-    int PageIndex = 1,
-    int PageSize = 10,
-    string? Search = null,
-    string? Role = null,
-    SortDTO? Sort = null,
-    List<SearchDTO>? Filters = null
+    int pageIndex = 1,
+    int pageSize = 10,
+    string? search = null,
+    UserRole? role = null,
+    SortDTO? sort = null,
+    List<SearchDTO>? filters = null
 ) : IRequest<Result<PagedResult<UserDto>>>;

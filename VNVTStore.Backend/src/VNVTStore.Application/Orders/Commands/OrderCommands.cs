@@ -1,12 +1,13 @@
 using MediatR;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.Orders.Commands;
 
-public record CreateOrderCommand(string UserCode, CreateOrderDto Dto) : IRequest<Result<OrderDto>>;
-public record UpdateOrderStatusCommand(string OrderCode, string Status) : IRequest<Result<OrderDto>>;
-public record CancelOrderCommand(string UserCode, string OrderCode, string Reason) : IRequest<Result<bool>>;
+public record CreateOrderCommand(string? userCode, CreateOrderDto dto) : IRequest<Result<OrderDto>>;
+public record UpdateOrderStatusCommand(string orderCode, OrderStatus status) : IRequest<Result<OrderDto>>;
+public record CancelOrderCommand(string userCode, string orderCode, string reason) : IRequest<Result<bool>>;
 
 public class CreateOrderDto
 {
@@ -19,5 +20,15 @@ public class CreateOrderDto
     public string? Ward { get; set; }
     public string? Note { get; set; }
     public string? CouponCode { get; set; }
-    public string PaymentMethod { get; set; } = "COD"; // COD, VNPay, etc.
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.COD;
+    public List<OrderCreationItemDto>? Items { get; set; } // For Guest Checkout
+    public string? CartCode { get; set; } // For Cart Checkout
+}
+
+public class OrderCreationItemDto
+{
+    public string ProductCode { get; set; } = null!;
+    public int Quantity { get; set; }
+    public string? Size { get; set; }
+    public string? Color { get; set; }
 }

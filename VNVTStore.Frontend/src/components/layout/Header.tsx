@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui';
-import { useCartStore, useWishlistStore, useUIStore, useCompareStore } from '@/store';
+import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore } from '@/store';
 import { useClickOutside } from '@/hooks';
 import { useCategories } from '@/hooks/useProducts';
 
@@ -45,6 +45,7 @@ export const Header = memo(() => {
   const wishlistCount = useWishlistStore((state) => state.items.length);
   const compareCount = useCompareStore((state) => state.items.length);
   const { theme, toggleTheme, setCartOpen } = useUIStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
 
   // Manual click outside handler for language menu
   useEffect(() => {
@@ -149,43 +150,39 @@ export const Header = memo(() => {
                 }}
               >
                 <Globe size={20} />
-                <span className="text-xs ml-1 uppercase">{(i18n.language || 'vi').substring(0, 2)}</span>
-              </Button>
+                    <span className="text-xs ml-1 uppercase">{i18n.language}</span>
+                </Button>
+              
+              {showLangMenu && (
+                <div
+                  ref={langDropdownRef}
+                  className="absolute top-full right-0 mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-1 min-w-[140px] z-[9999]"
+                >
+                  <button
+                    onClick={() => changeLanguage('vi')}
+                    className={cn(
+                      'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
+                      (i18n.language || 'vi').startsWith('vi')
+                        ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                        : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
+                    )}
+                  >
+                    <span className="text-xs font-semibold uppercase text-tertiary">VN</span> Tiếng Việt
+                  </button>
+                  <button
+                    onClick={() => changeLanguage('en')}
+                    className={cn(
+                      'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
+                      (i18n.language || 'en').startsWith('en')
+                        ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                        : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
+                    )}
+                  >
+                    <span className="text-xs font-semibold uppercase text-tertiary">US</span> English
+                  </button>
+                </div>
+              )}
             </div>
-            {showLangMenu && createPortal(
-              <div
-                ref={langDropdownRef}
-                className="fixed bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-1 min-w-[140px] z-[9999]"
-                style={{
-                  top: langMenuRef.current ? langMenuRef.current.getBoundingClientRect().bottom + 8 : 0,
-                  left: langMenuRef.current ? langMenuRef.current.getBoundingClientRect().left : 0,
-                }}
-              >
-                <button
-                  onClick={() => changeLanguage('vi')}
-                  className={cn(
-                    'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                    (i18n.language || 'vi').startsWith('vi')
-                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
-                  )}
-                >
-                  🇻🇳 Tiếng Việt
-                </button>
-                <button
-                  onClick={() => changeLanguage('en')}
-                  className={cn(
-                    'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                    (i18n.language || 'en').startsWith('en')
-                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                      : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
-                  )}
-                >
-                  🇺🇸 English
-                </button>
-              </div>,
-              document.body
-            )}
 
             {/* Theme Toggle */}
             <Button variant="ghost" size="sm" onClick={toggleTheme}>
@@ -227,7 +224,7 @@ export const Header = memo(() => {
             </Button>
 
             {/* User Menu */}
-            <div className="relative hidden lg:block" ref={userMenuRef}>
+            <div className="relative hidden lg:block z-20" ref={userMenuRef}>
               <Button variant="ghost" size="sm" onClick={() => setShowUserMenu(!showUserMenu)}>
                 <User size={20} />
                 <ChevronDown size={14} />
@@ -238,21 +235,47 @@ export const Header = memo(() => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full right-0 mt-2 bg-primary rounded-lg shadow-xl border p-2 min-w-[180px] z-50"
+                    className="absolute top-full right-0 mt-2 bg-primary rounded-lg shadow-xl border p-2 min-w-[200px] z-50"
                   >
-                    <Link to="/login" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                      {t('common.login')}
-                    </Link>
-                    <Link to="/register" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                      {t('common.register')}
-                    </Link>
-                    <hr className="my-2" />
-                    <Link to="/account" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                      {t('common.account')}
-                    </Link>
-                    <Link to="/account/orders" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                      {t('account.orders')}
-                    </Link>
+                    {isAuthenticated ? (
+                      <>
+                        <div className="px-4 py-2 border-b mb-2">
+                          <p className="font-bold text-sm truncate">{user?.fullName || 'User'}</p>
+                          <p className="text-xs text-secondary truncate">{user?.email}</p>
+                        </div>
+                        {user?.role === 'Admin' && (
+                           <Link to="/admin" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                            {t('common.adminDashboard') || 'Admin Dashboard'}
+                          </Link>
+                        )}
+                        <Link to="/account" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                          {t('common.account')}
+                        </Link>
+                        <Link to="/account/orders" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                          {t('account.orders')}
+                        </Link>
+                        <hr className="my-2" />
+                        <button
+                          onClick={() => {
+                            logout();
+                            setShowUserMenu(false);
+                            window.location.href = '/'; 
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                        >
+                          {t('common.logout')}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/login" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                          {t('common.login')}
+                        </Link>
+                        <Link to="/register" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
+                          {t('common.register')}
+                        </Link>
+                      </>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -280,7 +303,7 @@ export const Header = memo(() => {
               {t('header.categoryMenu')}
             </Button>
             {showCategories && (
-              <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overflow-y-auto overscroll-contain z-50 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overscroll-contain z-[999] grid grid-cols-1 md:grid-cols-3 gap-6">
                 {categories.filter(c => !c.parentCode).map((parent) => (
                   <div key={parent.code} className="space-y-3">
                     <Link
@@ -422,12 +445,29 @@ export const Header = memo(() => {
 
                 {/* Auth buttons */}
                 <div className="flex gap-2 pt-4 border-t">
-                  <Button fullWidth onClick={() => { setMobileMenuOpen(false); window.location.href = '/login'; }}>
-                    {t('common.login')}
-                  </Button>
-                  <Button fullWidth variant="outline" onClick={() => { setMobileMenuOpen(false); window.location.href = '/register'; }}>
-                    {t('common.register')}
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button 
+                      fullWidth 
+                      variant="outline" 
+                      className="text-red-500 border-red-200 hover:bg-red-50"
+                      onClick={() => { 
+                        logout(); 
+                        setMobileMenuOpen(false); 
+                        window.location.href = '/'; 
+                      }}
+                    >
+                      {t('common.logout')}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button fullWidth onClick={() => { setMobileMenuOpen(false); window.location.href = '/login'; }}>
+                        {t('common.login')}
+                      </Button>
+                      <Button fullWidth variant="outline" onClick={() => { setMobileMenuOpen(false); window.location.href = '/register'; }}>
+                        {t('common.register')}
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

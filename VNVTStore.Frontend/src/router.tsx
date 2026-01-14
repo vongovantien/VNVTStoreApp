@@ -18,6 +18,7 @@ const ProductsPage = lazy(() => import('@/pages/shop/ProductsPage'));
 const ProductDetailPage = lazy(() => import('@/pages/shop/ProductDetailPage'));
 const CartPage = lazy(() => import('@/pages/shop/CartPage'));
 const CheckoutPage = lazy(() => import('@/pages/shop/CheckoutPage'));
+const OrderSuccessPage = lazy(() => import('@/pages/shop/OrderSuccessPage'));
 const QuoteRequestPage = lazy(() => import('@/pages/shop/QuoteRequestPage'));
 const WishlistPage = lazy(() => import('@/pages/shop/WishlistPage'));
 const ComparePage = lazy(() => import('@/pages/shop/ComparePage'));
@@ -95,6 +96,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <CheckoutPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'order-success',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <OrderSuccessPage />
               </Suspense>
             ),
           },

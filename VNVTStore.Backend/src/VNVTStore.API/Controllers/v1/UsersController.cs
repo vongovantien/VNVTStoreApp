@@ -8,6 +8,9 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Users.Commands;
 using VNVTStore.Application.Users.Queries;
 
+using VNVTStore.Application.Users.Queries;
+using VNVTStore.Domain.Enums;
+
 namespace VNVTStore.API.Controllers.v1;
 
 public class UsersController : BaseApiController
@@ -70,7 +73,13 @@ public class UsersController : BaseApiController
         [FromQuery] string? search = null,
         [FromQuery] string? role = null)
     {
-        var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, role));
+        UserRole? userRole = null;
+        if (!string.IsNullOrEmpty(role) && Enum.TryParse<UserRole>(role, true, out var parsedRole))
+        {
+            userRole = parsedRole;
+        }
+
+        var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, userRole));
         return HandleResult(result);
     }
     /// <summary>

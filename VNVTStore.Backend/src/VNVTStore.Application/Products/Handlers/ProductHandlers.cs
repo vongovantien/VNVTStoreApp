@@ -35,7 +35,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             request.PageSize,
             cancellationToken,
             predicate: p => (p.IsActive == true) && 
-                           (string.IsNullOrWhiteSpace(request.Search) || p.Name.Contains(request.Search) || (p.Description != null && p.Description.Contains(request.Search))) &&
+                           (string.IsNullOrWhiteSpace(request.Search) || p.Name.Contains(request.Search) || p.Code.Contains(request.Search) || (p.Sku != null && p.Sku.Contains(request.Search))) &&
                            (string.IsNullOrWhiteSpace(categoryCode) || p.CategoryCode == categoryCode),
             includes: q => QueryHelper.ApplyFilters(
                 q.Include(p => p.CategoryCodeNavigation).Include(p => p.TblProductImages), 
@@ -54,7 +54,8 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                     return q.OrderByDescending(p => p.CreatedAt);
                 }
                 return q.OrderByDescending(p => p.CreatedAt);
-            });
+            },
+            fields: request.Fields);
     }
 
     // Explicit handler for GetProductsQuery - delegates to the generic handler
@@ -74,49 +75,78 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
     public async Task<Result<ProductDto>> Handle(CreateCommand<CreateProductDto, ProductDto> request, CancellationToken cancellationToken)
     {
-        var dto = request.Dto;
-
-        if (!string.IsNullOrWhiteSpace(dto.Sku))
+        await UnitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            var existingSku = await Repository.FindAsync(p => p.Sku == dto.Sku, cancellationToken);
-            if (existingSku != null)
-                return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", dto.Sku));
+            var dto = request.Dto;
+
+            if (!string.IsNullOrWhiteSpace(dto.Sku))
+            {
+                var existingSku = await Repository.FindAsync(p => p.Sku == dto.Sku, cancellationToken);
+                if (existingSku != null)
+                {
+                    await UnitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", dto.Sku));
+                }
+            }
+
+            var sku = string.IsNullOrWhiteSpace(dto.Sku) 
+                ? $"SKU{DateTime.Now.Ticks.ToString().Substring(10)}" 
+                : dto.Sku;
+
+            var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, sku);
+            
+            // Ensure other fields are set if needed via new methods or just accept defaults for now
+            // product.SetAttributes(dto.Color, dto.Size...); // If I added this
+
+            await Repository.AddAsync(product, cancellationToken);
+            await UnitOfWork.CommitAsync(cancellationToken);
+            await UnitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return Result.Success(Mapper.Map<ProductDto>(product));
         }
-
-        var sku = string.IsNullOrWhiteSpace(dto.Sku) 
-            ? $"SKU{DateTime.Now.Ticks.ToString().Substring(10)}" 
-            : dto.Sku;
-
-        var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, sku);
-        
-        // Ensure other fields are set if needed via new methods or just accept defaults for now
-        // product.SetAttributes(dto.Color, dto.Size...); // If I added this
-
-        await Repository.AddAsync(product, cancellationToken);
-        await UnitOfWork.CommitAsync(cancellationToken);
-
-        return Result.Success(Mapper.Map<ProductDto>(product));
+        catch (Exception)
+        {
+            await UnitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<Result<ProductDto>> Handle(UpdateCommand<UpdateProductDto, ProductDto> request, CancellationToken cancellationToken)
     {
-        var product = await Repository.GetByCodeAsync(request.Code, cancellationToken);
-        if (product == null)
-            return Result.Failure<ProductDto>(Error.NotFound(MessageConstants.Product, request.Code));
-
-        if (!string.IsNullOrWhiteSpace(request.Dto.Sku) && request.Dto.Sku != product.Sku)
+        await UnitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            var existingSku = await Repository.FindAsync(p => p.Sku == request.Dto.Sku && p.Code != request.Code, cancellationToken);
-            if (existingSku != null)
-                return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", request.Dto.Sku));
+            var product = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+            if (product == null)
+            {
+                await UnitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<ProductDto>(Error.NotFound(MessageConstants.Product, request.Code));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Dto.Sku) && request.Dto.Sku != product.Sku)
+            {
+                var existingSku = await Repository.FindAsync(p => p.Sku == request.Dto.Sku && p.Code != request.Code, cancellationToken);
+                if (existingSku != null)
+                {
+                    await UnitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", request.Dto.Sku));
+                }
+            }
+
+            product.UpdateInfo(request.Dto.Name, request.Dto.Price ?? 0, request.Dto.Description, request.Dto.CategoryCode);
+            
+            Repository.Update(product);
+            await UnitOfWork.CommitAsync(cancellationToken);
+            await UnitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return Result.Success(Mapper.Map<ProductDto>(product));
         }
-
-        product.UpdateInfo(request.Dto.Name, request.Dto.Price ?? 0, request.Dto.Description, request.Dto.CategoryCode);
-        
-        Repository.Update(product);
-        await UnitOfWork.CommitAsync(cancellationToken);
-
-        return Result.Success(Mapper.Map<ProductDto>(product));
+        catch (Exception)
+        {
+            await UnitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<Result> Handle(DeleteCommand<TblProduct> request, CancellationToken cancellationToken)

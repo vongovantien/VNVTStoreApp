@@ -8,16 +8,6 @@ using VNVTStore.Application.Promotions.Queries;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using VNVTStore.Application.Common;
-using VNVTStore.Application.Constants;
-using VNVTStore.Application.DTOs;
-using VNVTStore.Application.Promotions.Queries;
-using VNVTStore.Application.Interfaces;
-using VNVTStore.Domain.Entities; // For TblPromotion marker
-
 namespace VNVTStore.API.Controllers.v1;
 
 public class PromotionsController : BaseApiController<PromotionDto, CreatePromotionDto, UpdatePromotionDto>
@@ -30,9 +20,9 @@ public class PromotionsController : BaseApiController<PromotionDto, CreatePromot
     }
 
     // Factory methods for Generic Base Controller
-    protected override IRequest<Result<PagedResult<PromotionDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
+    protected override IRequest<Result<PagedResult<PromotionDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
     {
-        return new GetPagedQuery<PromotionDto>(pageIndex, pageSize, search, sort, filters);
+        return new GetPagedQuery<PromotionDto>(pageIndex, pageSize, search, sort, filters, fields);
     }
 
     protected override IRequest<Result<PromotionDto>> CreateGetByCodeQuery(string code)

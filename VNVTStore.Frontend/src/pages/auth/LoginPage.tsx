@@ -52,8 +52,14 @@ export const LoginPage = () => {
         );
 
         toast.success(t('messages.loginSuccess'));
+        
         // Redirect to admin if admin role, otherwise to original destination
-        navigate(user.role === UserRole.ADMIN ? '/admin' : from, { replace: true });
+        // backend returns PascalCase 'Admin', Enum is 'Admin'
+        if (user.role === UserRole.ADMIN) { 
+            navigate('/admin', { replace: true });
+        } else {
+            navigate(from, { replace: true });
+        }
       } else {
         toast.error(response.message || t('messages.loginError'));
         setError(response.message || 'Tên đăng nhập hoặc mật khẩu không đúng');

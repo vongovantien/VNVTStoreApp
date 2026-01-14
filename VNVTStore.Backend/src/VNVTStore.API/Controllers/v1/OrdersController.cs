@@ -7,6 +7,8 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Orders.Commands;
 using VNVTStore.Application.Orders.Queries;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.API.Controllers;
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.API.Controllers.v1;
 
@@ -25,11 +27,23 @@ public class OrdersController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<OrderDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
     {
-        var result = await Mediator.Send(new CreateOrderCommand(GetUserCode(), dto));
+        string? userCode = null;
+        try 
+        {
+             userCode = _currentUser.UserCode;
+        }
+        catch {}
+
+        var result = await Mediator.Send(new CreateOrderCommand(userCode, dto));
+
+        if (result.IsFailure)
+        {
+            return HandleError(result.Error!);
+        }
 
         return HandleCreated(
             result,
@@ -43,7 +57,11 @@ public class OrdersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<PagedResult<OrderDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyOrders([FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber, [FromQuery] int pageSize = AppConstants.Paging.DefaultPageSize, [FromQuery] string? status = null)
     {
-        var result = await Mediator.Send(new GetMyOrdersQuery(GetUserCode(), pageIndex, pageSize, status));
+        OrderStatus? orderStatus = null;
+        if (Enum.TryParse<OrderStatus>(status, true, out var parsedStatus)) 
+            orderStatus = parsedStatus;
+
+        var result = await Mediator.Send(new GetMyOrdersQuery(GetUserCode(), pageIndex, pageSize, orderStatus));
         return HandleResult(result, MessageConstants.Get(MessageConstants.OrderRetrieved));
     }
 
@@ -65,17 +83,10 @@ public class OrdersController : BaseApiController
         return HandleResult(result, MessageConstants.Get(MessageConstants.OrderCancelled));
     }
 
-
-    
-    // ... wait, I cannot easily extend the Controller without updating the Application layer.
-    // I will revert to a simple mapping for now and update the Query next.
-    
-    // Let's implement the mapping logic, assuming I WILL update the Query in the next step.
-    
     [HttpPost("search")]
     public async Task<IActionResult> SearchOrders([FromBody] RequestDTO request)
     {
-        string? status = null;
+        OrderStatus? status = null;
         string? search = null;
         
         // Extract filters
@@ -94,15 +105,16 @@ public class OrdersController : BaseApiController
         // Generic search term
         if (filters.ContainsKey("all")) search = filters["all"];
         if (filters.ContainsKey("search")) search = filters["search"];
-        if (filters.ContainsKey("status")) status = filters["status"];
+        if (filters.ContainsKey("status") && Enum.TryParse<OrderStatus>(filters["status"], true, out var parsedStatus)) 
+            status = parsedStatus;
 
-        // Construct Query with Dictionary for advanced filters
+        // Construct Query with Dictionary for advanced filtering
         var query = new GetAllOrdersQuery(
             request.PageIndex ?? AppConstants.Paging.DefaultPageNumber,
             request.PageSize ?? AppConstants.Paging.DefaultPageSize,
             status,
             search,
-            filters // Passing the whole dictionary for advanced filtering
+            filters 
         );
 
         var result = await Mediator.Send(query);

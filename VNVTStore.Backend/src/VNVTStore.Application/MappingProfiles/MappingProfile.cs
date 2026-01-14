@@ -13,7 +13,7 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         // User mappings
-        CreateMap<TblUser, UserDto>().ReverseMap();
+        CreateMap<TblUser, UserDto>();
 
         // Banner mappings
         CreateMap<TblBanner, BannerDto>().ReverseMap();
@@ -47,12 +47,10 @@ public class MappingProfile : Profile
 
         // Order mappings
         CreateMap<TblOrder, OrderDto>()
-            .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.TblOrderItems))
-            .ReverseMap();
+            .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.TblOrderItems));
         
         CreateMap<TblOrderItem, OrderItemDto>()
-            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductCodeNavigation != null ? src.ProductCodeNavigation.Name : null))
-            .ReverseMap();
+            .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductCodeNavigation != null ? src.ProductCodeNavigation.Name : null));
 
         // Cart mappings
         CreateMap<TblCart, CartDto>()
@@ -65,7 +63,7 @@ public class MappingProfile : Profile
             .ReverseMap();
 
         // Address mappings
-        CreateMap<TblAddress, AddressDto>().ReverseMap();
+        CreateMap<TblAddress, AddressDto>();
 
         // Review mappings
         CreateMap<TblReview, ReviewDto>()
@@ -81,7 +79,7 @@ public class MappingProfile : Profile
 
 
         // Payment mappings
-        CreateMap<TblPayment, PaymentDto>().ReverseMap();
+        CreateMap<TblPayment, PaymentDto>();
 
         // Supplier mappings
         CreateMap<TblSupplier, SupplierDto>().ReverseMap();
@@ -104,10 +102,10 @@ public class MappingProfile : Profile
     CreateMap<UpdateCategoryDto, TblCategory>()
         .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-    // Address Create/Update
-    CreateMap<CreateAddressDto, TblAddress>();
-    CreateMap<UpdateAddressDto, TblAddress>()
-            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+    // Address Create/Update - Handled by factory methods in AddressHandlers
+    // CreateMap<CreateAddressDto, TblAddress>();
+    // CreateMap<UpdateAddressDto, TblAddress>()
+    //         .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
     // Review Create/Update
     CreateMap<CreateReviewDto, TblReview>();

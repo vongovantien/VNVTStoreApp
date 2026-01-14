@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VNVTStore.Domain.Entities;
-
+using VNVTStore.Domain.Enums;
 using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.Infrastructure.Persistence;
@@ -47,6 +48,22 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public virtual DbSet<TblUser> TblUsers { get; set; }
 
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>()
+            .HaveColumnType("timestamp with time zone")
+            .HaveConversion<UtcDateTimeConverter>();
+
+        configurationBuilder.Properties<DateTime?>()
+            .HaveColumnType("timestamp with time zone")
+            .HaveConversion<UtcNullableDateTimeConverter>();
+
+        configurationBuilder.Properties<OrderStatus>().HaveConversion<EnumLowerCaseConverter<OrderStatus>>();
+        configurationBuilder.Properties<UserRole>().HaveConversion<EnumLowerCaseConverter<UserRole>>();
+        configurationBuilder.Properties<PaymentStatus>().HaveConversion<EnumLowerCaseConverter<PaymentStatus>>();
+        configurationBuilder.Properties<PaymentMethod>().HaveConversion<EnumLowerCaseConverter<PaymentMethod>>();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -507,4 +524,29 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}
+
+// Custom Value Converter for Lowercase Enums
+public class EnumLowerCaseConverter<TEnum> : ValueConverter<TEnum, string> where TEnum : struct, Enum
+{
+    public EnumLowerCaseConverter() : base(
+        v => v.ToString().ToLower(),
+        v => Enum.Parse<TEnum>(v, true))
+    { }
+}
+
+public class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
+{
+    public UtcDateTimeConverter() : base(
+        v => v.ToUniversalTime(),
+        v => DateTime.SpecifyKind(v, DateTimeKind.Utc))
+    { }
+}
+
+public class UtcNullableDateTimeConverter : ValueConverter<DateTime?, DateTime?>
+{
+    public UtcNullableDateTimeConverter() : base(
+        v => v.HasValue ? v.Value.ToUniversalTime() : v,
+        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v)
+    { }
 }

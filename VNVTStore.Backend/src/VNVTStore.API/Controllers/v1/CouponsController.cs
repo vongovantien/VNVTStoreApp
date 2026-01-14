@@ -34,8 +34,8 @@ public class CouponsController : BaseApiController<CouponDto, CreateCouponDto, C
         return HandleResult(result);
     }
 
-    protected override IRequest<Result<PagedResult<CouponDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters)
-        => new GetPagedQuery<CouponDto>(pageIndex, pageSize, search, sort, filters);
+    protected override IRequest<Result<PagedResult<CouponDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<CouponDto>(pageIndex, pageSize, search, sort, filters, fields);
 
     protected override IRequest<Result<CouponDto>> CreateGetByCodeQuery(string code)
         => new GetByCodeQuery<CouponDto>(code);

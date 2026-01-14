@@ -218,4 +218,72 @@ public class OrderHandlersTests
         Assert.Equal(10, product.StockQuantity); // 8 + 2
         Assert.Equal("Cancelled", order.Status);
     }
+
+    [Fact]
+    public async Task CreateOrder_GuestWithItems_CreatesOrder()
+    {
+        // Arrange
+        string? userCode = null;
+        var product = CreateTestProduct("P1", "Item", 10, 100);
+        
+        // Mock Guest User "GUEST_USER" in Repo
+        var guestUser = new TblUser { Code = "GUEST_USER", UserName = "Guest" };
+        var activeUsers = new List<TblUser> { guestUser };
+        // We need to mock TblUser repo if it's used? 
+        // OrderHandlers checks _userRepo? No, it uses shadow user logic in OrderHandlers itself or inside CreateOrder logic?
+        // Checking OrderHandlers logic: it tries to assign "GUEST_USER" if userCode is null.
+        
+        // Setup Product Repo
+        _productRepoMock.Setup(r => r.GetByIdAsync("P1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+
+        _orderRepoMock.Setup(r => r.AddAsync(It.IsAny<TblOrder>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _uowMock.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        _mapperMock.Setup(m => m.Map<OrderDto>(It.IsAny<TblOrder>())).Returns(new OrderDto());
+
+        // Create Guest Payload
+        var guestItems = new List<GuestCartItemDto>
+        {
+            new GuestCartItemDto { ProductCode = "P1", Quantity = 1 }
+        };
+
+        var cmd = new CreateOrderCommand(userCode, new CreateOrderDto 
+        { 
+            Address = "123 Guest St", 
+            City = "Guest City", 
+            PaymentMethod = "COD",
+            Items = guestItems 
+        });
+
+        // Act
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        _cartServiceMock.Verify(c => c.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _productRepoMock.Verify(p => p.Update(product), Times.Once);
+        Assert.Equal(9, product.StockQuantity);
+    }
+
+    [Fact]
+    public async Task CreateOrder_GuestWithoutItems_ReturnsFailure()
+    {
+        // Arrange
+        string? userCode = null;
+        var cmd = new CreateOrderCommand(userCode, new CreateOrderDto 
+        { 
+            Address = "123 Guest St", 
+            City = "Guest City", 
+            PaymentMethod = "COD",
+            Items = null // No items provided
+        });
+
+        // Act
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Contains("CartEmpty", result.Error!.Message);
+    }
 }

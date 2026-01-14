@@ -11,7 +11,7 @@ using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Application.Addresses.Handlers;
 
-public class AddressHandlers : BaseHandler<TblAddress>,
+public class AddressHandlers : 
     IRequestHandler<CreateCommand<CreateAddressDto, AddressDto>, Result<AddressDto>>,
     IRequestHandler<UpdateCommand<UpdateAddressDto, AddressDto>, Result<AddressDto>>,
     IRequestHandler<DeleteCommand<TblAddress>, Result>,
@@ -19,38 +19,59 @@ public class AddressHandlers : BaseHandler<TblAddress>,
     IRequestHandler<GetAllQuery<AddressDto>, Result<IEnumerable<AddressDto>>>,
     IRequestHandler<GetByCodeQuery<AddressDto>, Result<AddressDto>>
 {
+    private readonly IRepository<TblAddress> _addressRepository;
     private readonly ICurrentUser _currentUser;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
     public AddressHandlers(
         IRepository<TblAddress> addressRepository,
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : base(addressRepository, unitOfWork, mapper)
+        IMapper mapper)
     {
+        _addressRepository = addressRepository;
         _currentUser = currentUser;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<Result<AddressDto>> Handle(CreateCommand<CreateAddressDto, AddressDto> request, CancellationToken cancellationToken)
     {
+        var userCode = _currentUser.UserCode;
+        if (string.IsNullOrEmpty(userCode))
+            return Result.Failure<AddressDto>(Error.Unauthorized());
+
         // If setting as default, reset others
         if (request.Dto.IsDefault)
         {
-            await ResetOtherDefaultsInternal(_currentUser.UserCode!, null, cancellationToken);
+            await ResetOtherDefaultsInternal(userCode, null, cancellationToken);
         }
 
-        return await CreateAsync<CreateAddressDto, AddressDto>(
-            request.Dto,
-            cancellationToken,
-            a => {
-                a.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
-                a.CreatedAt = DateTime.Now;
-                if (string.IsNullOrEmpty(a.Country)) a.Country = "Vietnam";
-            });
+        var address = new TblAddress.Builder()
+            .WithUser(userCode)
+            .AtLocation(
+                request.Dto.AddressLine!,
+                request.Dto.City,
+                request.Dto.State,
+                request.Dto.PostalCode,
+                request.Dto.Country)
+            .Build();
+
+        if (request.Dto.IsDefault)
+        {
+             address.SetAsDefault();
+        }
+
+        await _addressRepository.AddAsync(address, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success(_mapper.Map<AddressDto>(address));
     }
 
     public async Task<Result<AddressDto>> Handle(UpdateCommand<UpdateAddressDto, AddressDto> request, CancellationToken cancellationToken)
     {
-        var address = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var address = await _addressRepository.GetByCodeAsync(request.Code, cancellationToken);
         if (address == null)
             return Result.Failure<AddressDto>(Error.NotFound(MessageConstants.Address, request.Code));
 
@@ -63,16 +84,26 @@ public class AddressHandlers : BaseHandler<TblAddress>,
             await ResetOtherDefaultsInternal(userCode!, request.Code, cancellationToken);
         }
 
-        return await UpdateAsync<UpdateAddressDto, AddressDto>(
-            request.Code,
-            request.Dto,
-            MessageConstants.Address,
-            cancellationToken);
+        address.Update(
+            new AddressDetails(
+                request.Dto.AddressLine ?? address.AddressLine,
+                request.Dto.City ?? address.City,
+                request.Dto.State ?? address.State,
+                request.Dto.PostalCode ?? address.PostalCode,
+                request.Dto.Country ?? address.Country
+            ),
+            request.Dto.IsDefault
+        );
+
+        _addressRepository.Update(address);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success(_mapper.Map<AddressDto>(address));
     }
 
     public async Task<Result> Handle(DeleteCommand<TblAddress> request, CancellationToken cancellationToken)
     {
-        var address = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var address = await _addressRepository.GetByCodeAsync(request.Code, cancellationToken);
         if (address == null)
             return Result.Failure(Error.NotFound(MessageConstants.Address, request.Code));
 
@@ -80,12 +111,15 @@ public class AddressHandlers : BaseHandler<TblAddress>,
         if (address.UserCode != userCode)
             return Result.Failure(Error.Forbidden("Cannot delete another user's address"));
 
-        return await DeleteAsync(request.Code, MessageConstants.Address, cancellationToken, softDelete: false);
+        _addressRepository.Delete(address);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success();
     }
 
     public async Task<Result> Handle(SetDefaultAddressCommand request, CancellationToken cancellationToken)
     {
-        var address = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var address = await _addressRepository.GetByCodeAsync(request.Code, cancellationToken);
         if (address == null)
             return Result.Failure(Error.NotFound(MessageConstants.Address, request.Code));
 
@@ -94,39 +128,46 @@ public class AddressHandlers : BaseHandler<TblAddress>,
 
         await ResetOtherDefaultsInternal(_currentUser.UserCode!, request.Code, cancellationToken);
 
-        address.IsDefault = true;
-        Repository.Update(address);
-        await UnitOfWork.CommitAsync(cancellationToken);
+        address.SetAsDefault();
+        _addressRepository.Update(address);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         return Result.Success();
     }
 
     public async Task<Result<IEnumerable<AddressDto>>> Handle(GetAllQuery<AddressDto> request, CancellationToken cancellationToken)
     {
-        var addresses = await Repository.AsQueryable()
+        var addresses = await _addressRepository.AsQueryable()
             .Where(a => a.UserCode == _currentUser.UserCode)
             .OrderByDescending(a => a.IsDefault)
             .ThenByDescending(a => a.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return Result.Success(Mapper.Map<IEnumerable<AddressDto>>(addresses));
+        return Result.Success(_mapper.Map<IEnumerable<AddressDto>>(addresses));
     }
 
     public async Task<Result<AddressDto>> Handle(GetByCodeQuery<AddressDto> request, CancellationToken cancellationToken)
     {
-        return await GetByCodeAsync<AddressDto>(request.Code, MessageConstants.Address, cancellationToken);
+        var address = await _addressRepository.GetByCodeAsync(request.Code, cancellationToken);
+        if (address == null)
+            return Result.Failure<AddressDto>(Error.NotFound(MessageConstants.Address, request.Code));
+
+        if (address.UserCode != _currentUser.UserCode)
+            return Result.Failure<AddressDto>(Error.Forbidden("Cannot view another user's address"));
+
+        return Result.Success(_mapper.Map<AddressDto>(address));
     }
 
     private async Task ResetOtherDefaultsInternal(string userCode, string? currentAddressCode, CancellationToken cancellationToken)
     {
-        var existingAddresses = await Repository.FindAllAsync(
+        var existingAddresses = await _addressRepository.FindAllAsync(
             a => a.UserCode == userCode && a.IsDefault == true && (currentAddressCode == null || a.Code != currentAddressCode), 
             cancellationToken);
             
         foreach (var addr in existingAddresses)
         {
-            addr.IsDefault = false;
-            Repository.Update(addr);
+            addr.UnsetDefault();
+            _addressRepository.Update(addr);
         }
     }
 }

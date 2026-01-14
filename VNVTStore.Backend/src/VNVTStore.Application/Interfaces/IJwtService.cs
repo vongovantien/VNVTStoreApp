@@ -1,3 +1,5 @@
+using VNVTStore.Domain.Enums;
+
 namespace VNVTStore.Application.Interfaces;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace VNVTStore.Application.Interfaces;
 /// </summary>
 public interface IJwtService
 {
-    string GenerateToken(string userCode, string username, string email, string? role);
+    string GenerateToken(string userCode, string username, string email, UserRole role);
     string GenerateRefreshToken();
     System.Security.Claims.ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
 }

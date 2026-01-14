@@ -98,4 +98,9 @@ public class Repository<T> : IRepository<T> where T : class
         
         return await _dbSet.CountAsync(predicate, cancellationToken);
     }
+
+    public virtual async Task ReloadAsync(T entity, CancellationToken cancellationToken = default)
+    {
+        await _context.Entry(entity).ReloadAsync(cancellationToken);
+    }
 }

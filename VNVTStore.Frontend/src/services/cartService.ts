@@ -61,7 +61,7 @@ function mapCartDtoToCartItems(dto: CartDto): CartItem[] {
 // ============ Service ============
 export const cartService = {
     async getMyCart(): Promise<ApiResponse<CartDto>> {
-        return apiClient.get<CartDto>('/carts/my-cart');
+        return apiClient.get<CartDto>('/carts');
     },
 
     async addToCart(data: AddToCartRequest): Promise<ApiResponse<CartDto>> {

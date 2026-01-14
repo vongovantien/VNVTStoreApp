@@ -24,7 +24,7 @@ export const CartDrawer = memo(() => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-black/50 z-[150]"
             onClick={() => setCartOpen(false)}
           />
 
@@ -34,7 +34,7 @@ export const CartDrawer = memo(() => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-primary z-50 flex flex-col shadow-2xl"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-primary z-[150] flex flex-col shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b">
@@ -92,6 +92,20 @@ export const CartDrawer = memo(() => {
                       >
                         {item.product.name}
                       </Link>
+                      {(item.size || item.color) && (
+                        <div className="flex flex-wrap gap-2 mt-1 text-xs text-secondary">
+                          {item.size && (
+                            <span className="bg-tertiary/20 px-1.5 py-0.5 rounded border">
+                              {t('product.size') || 'Size'}: {item.size}
+                            </span>
+                          )}
+                          {item.color && (
+                            <span className="bg-tertiary/20 px-1.5 py-0.5 rounded border">
+                              {t('product.color') || 'Color'}: {item.color}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-error font-bold mt-1">
                         {formatCurrency(item.product.price)}
                       </p>

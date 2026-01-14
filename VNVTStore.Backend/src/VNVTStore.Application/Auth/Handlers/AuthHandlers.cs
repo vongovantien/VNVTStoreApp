@@ -6,7 +6,7 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
-
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.Auth.Handlers;
 
@@ -32,22 +32,22 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
     public async Task<Result<UserDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
         // Check if username exists
-        var existingUser = await _repository.FindAsync(u => u.Username == request.Username, cancellationToken);
+        var existingUser = await _repository.FindAsync(u => u.Username == request.username, cancellationToken);
         if (existingUser != null)
             return Result.Failure<UserDto>(Error.Conflict(MessageConstants.UsernameExists));
 
         // Check if email exists
-        existingUser = await _repository.FindAsync(u => u.Email == request.Email, cancellationToken);
+        existingUser = await _repository.FindAsync(u => u.Email == request.email, cancellationToken);
         if (existingUser != null)
             return Result.Failure<UserDto>(Error.Conflict(MessageConstants.EmailInUse));
 
         // Use Rich Domain Model Factory
         var user = TblUser.Create(
-            request.Username, 
-            request.Email, 
-            _passwordHasher.Hash(request.Password), 
-            request.FullName, 
-            request.Email.Contains("admin") ? "admin" : "customer"
+            request.username, 
+            request.email, 
+            _passwordHasher.Hash(request.password), 
+            request.fullName, 
+            request.email.Contains("admin") ? UserRole.Admin : UserRole.Customer
         );
 
         await _repository.AddAsync(user, cancellationToken);
@@ -81,9 +81,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
 
     public async Task<Result<AuthResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await _repository.FindAsync(u => u.Username == request.Username || u.Email == request.Username, cancellationToken);
+        var user = await _repository.FindAsync(u => u.Username == request.username || u.Email == request.username, cancellationToken);
         
-        if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (user == null || !_passwordHasher.Verify(request.password, user.PasswordHash))
         {
             return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
         }

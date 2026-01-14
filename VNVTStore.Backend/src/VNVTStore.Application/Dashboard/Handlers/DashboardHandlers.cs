@@ -4,6 +4,7 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.Dashboard.Queries;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.Dashboard.Handlers;
 
@@ -26,8 +27,8 @@ public class DashboardHandlers :
 
     public async Task<Result<DashboardStatsDto>> Handle(GetDashboardStatsQuery request, CancellationToken cancellationToken)
     {
-        var now = DateTime.Now;
-        var thisMonthStart = new DateTime(now.Year, now.Month, 1);
+        var now = DateTime.UtcNow;
+        var thisMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var lastMonthStart = thisMonthStart.AddMonths(-1);
 
         // This month orders
@@ -55,18 +56,18 @@ public class DashboardHandlers :
 
         var totalProducts = await _productRepository.CountAsync(p => p.IsActive == true, cancellationToken);
 
-        var totalCustomers = await _userRepository.CountAsync(u => u.Role == "customer", cancellationToken);
+        var totalCustomers = await _userRepository.CountAsync(u => u.Role == UserRole.Customer, cancellationToken);
         
         // Customers this month
         var thisMonthCustomers = await _userRepository.CountAsync(
-            u => u.Role == "customer" && u.CreatedAt >= thisMonthStart, cancellationToken);
+            u => u.Role == UserRole.Customer && u.CreatedAt >= thisMonthStart, cancellationToken);
         var lastMonthCustomers = await _userRepository.CountAsync(
-            u => u.Role == "customer" && u.CreatedAt >= lastMonthStart && u.CreatedAt < thisMonthStart, cancellationToken);
+            u => u.Role == UserRole.Customer && u.CreatedAt >= lastMonthStart && u.CreatedAt < thisMonthStart, cancellationToken);
         var customersChange = lastMonthCustomers > 0 
             ? ((decimal)(thisMonthCustomers - lastMonthCustomers) / lastMonthCustomers * 100) 
             : 0;
 
-        var pendingOrders = await _orderRepository.CountAsync(o => o.Status == "Pending", cancellationToken);
+        var pendingOrders = await _orderRepository.CountAsync(o => o.Status == OrderStatus.Pending, cancellationToken);
 
         return Result.Success(new DashboardStatsDto
         {

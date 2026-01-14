@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using VNVTStore.Application.MappingProfiles;
+using VNVTStore.Application.Strategies;
+using VNVTStore.Domain.Strategies;
 
 namespace VNVTStore.Application;
 
@@ -16,7 +18,8 @@ public static class DependencyInjection
         // Add MediatR - tự động register tất cả handlers trong Assembly
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
-        // Add Localization Service
+        // Registry Strategies
+        services.AddSingleton<IShippingStrategy, StandardShippingStrategy>();
 
         return services;
     }

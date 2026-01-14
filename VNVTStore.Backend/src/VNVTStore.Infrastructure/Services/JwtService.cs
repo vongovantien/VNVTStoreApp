@@ -5,6 +5,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using VNVTStore.Application.Interfaces;
 
+using VNVTStore.Domain.Enums;
+
 namespace VNVTStore.Infrastructure.Services;
 
 /// <summary>
@@ -30,11 +32,11 @@ public class JwtService : IJwtService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(string userCode, string username, string email, string? role)
+    public string GenerateToken(string userCode, string username, string email, UserRole role)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
-        var expiry = DateTime.Now.AddMinutes(_jwtSettings.ExpirationInMinutes);
+        var expiry = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes);
 
         var claims = new List<Claim>
         {
@@ -44,10 +46,8 @@ public class JwtService : IJwtService
             new Claim("userCode", userCode)
         };
 
-        if (!string.IsNullOrEmpty(role))
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
+        // Always add role
+        claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {

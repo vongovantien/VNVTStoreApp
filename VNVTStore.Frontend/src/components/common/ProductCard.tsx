@@ -129,7 +129,7 @@ export const ProductCard = memo(
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-              {product.isNew && <Badge color="success" className="absolute top-2 left-2">{t('product.new')}</Badge>}
+              {product.isNew && <Badge color="error" className="absolute top-2 left-2">{t('product.new')}</Badge>}
               {hasDiscount && <Badge color="error" className="absolute top-2 left-2">{`-${product.discount}%`}</Badge>}
             </div>
           </Link>
@@ -218,7 +218,7 @@ export const ProductCard = memo(
 
             {/* Badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1">
-              {product.isNew && <Badge color="success" size="sm">{t('product.new')}</Badge>}
+              {product.isNew && <Badge color="error" size="sm">{t('product.new')}</Badge>}
               {hasDiscount && <Badge color="error" size="sm">{`-${product.discount}%`}</Badge>}
               {!hasFixedPrice && <Badge color="primary" size="sm">{t('product.contactForPrice')}</Badge>}
             </div>

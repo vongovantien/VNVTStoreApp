@@ -66,6 +66,7 @@ public partial class TblProduct
     {
          return new TblProduct
          {
+             Code = Guid.NewGuid().ToString("N").Substring(0, 10), // Generate Code
              Name = name,
              Price = price,
              StockQuantity = stock,
@@ -95,5 +96,23 @@ public partial class TblProduct
     public void RestoreStock(int quantity)
     {
         StockQuantity += quantity;
+    }
+
+    public void UpdateFromImport(string name, decimal price, int? stock, string? categoryCode, string? sku, string? description, bool? isActive, decimal? weight, string? color, string? power, string? voltage, string? material, string? size, string? supplierCode)
+    {
+        Name = name;
+        Price = price;
+        StockQuantity = stock;
+        CategoryCode = categoryCode;
+        Sku = sku;
+        Description = description;
+        if (isActive.HasValue) IsActive = isActive.Value;
+        Weight = weight;
+        Color = color;
+        Power = power;
+        Voltage = voltage;
+        Material = material;
+        Size = size;
+        SupplierCode = supplierCode;
     }
 }

@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICouponService, CouponService>();
+        services.AddTransient<INotificationService, NotificationService>();
         services.AddHttpContextAccessor();
 
         var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();

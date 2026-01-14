@@ -18,7 +18,7 @@ export interface PaymentDto {
 
 export interface CreatePaymentRequest {
     orderCode: string;
-    method: string;
+    paymentMethod: string;
     amount: number;
 }
 

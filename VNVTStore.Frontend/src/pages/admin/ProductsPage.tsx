@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Edit2, Trash2, Eye, Star } from 'lucide-react';
+import { Edit2, Trash2, Eye, Star, Plus } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { formatCurrency } from '@/utils/format';
 import { ProductForm, ProductFormData } from './forms/ProductForm';
@@ -12,6 +12,7 @@ import { productService, type CreateProductRequest, type UpdateProductRequest } 
 import { useToast } from '@/store';
 import type { Product } from '@/types';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { ImportModal } from '@/components/common/ImportModal';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
 
 // Types for sorting
@@ -30,6 +31,19 @@ export const ProductsPage = () => {
   // Sorting
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
+
+  // Import
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const handleImportProduct = async (file: File) => {
+    try {
+        await productService.import(file);
+        toast.success(t('common.importSuccess') || 'Import successful');
+        refetch();
+    } catch (error) {
+        toast.error(t('common.importError') || 'Import failed');
+        throw error; // Let modal handle error state if needed
+    }
+  };
 
   // Fetch API
   const {
@@ -283,7 +297,25 @@ export const ProductsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('common.modules.products')}</h1>
+        <div className="flex gap-2">
+
+            <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+                Import Excel
+            </Button>
+            <Button onClick={() => openCreate()}>
+                <Plus size={20} className="mr-2" />
+                {t('admin.actions.create') || 'Create'}
+            </Button>
+        </div>
       </div>
+
+      <ImportModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImportProduct}
+        title={t('common.importData', 'Import Products')}
+        templateUrl="/templates/products_template.xlsx"
+      />
 
       <DataTable
         columns={columns}
@@ -304,8 +336,6 @@ export const ProductsPage = () => {
         totalItems={totalItems}
         pageSize={pageSize}
         onPageChange={setCurrentPage}
-
-        onAdd={() => { openCreate(); }}
         onView={handleOpenView}
         onEdit={(product) => { openEdit(product); }}
         onDelete={(product) => confirmDelete(product)}

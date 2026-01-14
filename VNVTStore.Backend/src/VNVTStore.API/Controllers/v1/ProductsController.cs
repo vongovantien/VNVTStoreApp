@@ -10,6 +10,8 @@ using VNVTStore.Application.Products.Queries;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 
+using VNVTStore.Application.Products.Commands;
+
 namespace VNVTStore.API.Controllers.v1;
 
 public class ProductsController : BaseApiController<ProductDto, CreateProductDto, UpdateProductDto>
@@ -37,6 +39,24 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
     [HttpDelete("{code}")]
     [Authorize(Roles = "admin")]
     public override Task<IActionResult> Delete(string code) => base.Delete(code);
+
+    [HttpPost("import")]
+    [Authorize(Roles = "admin")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Import(IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest("File is empty");
+        // Create a memory stream to copy the file content because the request stream might not be seekable or might close
+        // MiniExcel might need a seekable stream or just reads it. 
+        // Safest is to copy to MemoryStream if file is small, or pass directly. 
+        // Using MemoryStream to be safe and independent of Request stream lifetime if async takes long.
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+        
+        var result = await Mediator.Send(new ImportProductsCommand(memoryStream));
+        return HandleResult(result);
+    }
 
     protected override IRequest<Result<PagedResult<ProductDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
         => new GetPagedQuery<ProductDto>(pageIndex, pageSize, search, sort, filters, fields);

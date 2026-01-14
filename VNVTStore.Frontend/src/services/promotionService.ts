@@ -85,5 +85,16 @@ export const promotionService = {
     getFlashSales: async () => {
         const response = await apiClient.get<ApiResponse<Promotion[]>>('/promotions/flash-sale');
         return response.data;
+    },
+
+    import: async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await apiClient.post<ApiResponse<number>>('/promotions/import', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
     }
 };

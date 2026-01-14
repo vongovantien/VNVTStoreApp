@@ -4,6 +4,7 @@
 */
 
 import { createEntityService, API_ENDPOINTS } from './baseService';
+import apiClient, { ApiResponse } from './api';
 
 // ============ Types ============
 export interface ProductImageDto {
@@ -77,10 +78,24 @@ export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
 }
 
 // ============ Services ============
-export const productService = createEntityService<ProductDto, CreateProductRequest, UpdateProductRequest>({
-    endpoint: API_ENDPOINTS.PRODUCTS.BASE,
-    resourceName: 'Product'
-});
+export const productService = {
+    ...createEntityService<ProductDto, CreateProductRequest, UpdateProductRequest>({
+        endpoint: API_ENDPOINTS.PRODUCTS.BASE,
+        resourceName: 'Product'
+    }),
+    import: async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        // Note: Using explicit endpoint or base endpoint + /import
+        // Base endpoint is /products. Import is /products/import
+        const response = await apiClient.post<ApiResponse<number>>(`${API_ENDPOINTS.PRODUCTS.BASE}/import`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    }
+};
 
 export const categoryService = createEntityService<CategoryDto, CreateCategoryRequest, UpdateCategoryRequest>({
     endpoint: API_ENDPOINTS.CATEGORIES.BASE,

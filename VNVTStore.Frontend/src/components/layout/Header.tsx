@@ -17,10 +17,12 @@ import {
   MessageCircle,
   Scale,
   Globe,
+  Bell,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui';
-import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore } from '@/store';
+import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast } from '@/store';
+import { signalRService } from '@/services/signalrService';
 import { useClickOutside } from '@/hooks';
 import { useCategories } from '@/hooks/useProducts';
 
@@ -46,6 +48,31 @@ export const Header = memo(() => {
   const compareCount = useCompareStore((state) => state.items.length);
   const { theme, toggleTheme, setCartOpen } = useUIStore();
   const { user, isAuthenticated, logout } = useAuthStore();
+  const { unreadCount, notifications, addNotification, markAllRead } = useNotificationStore();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useClickOutside<HTMLDivElement>(() => setShowNotifications(false));
+
+  const { info } = useToast();
+
+  useEffect(() => {
+    // Start SignalR
+    const initSignalR = async () => {
+        try {
+            await signalRService.startConnection();
+            signalRService.on('ReceiveOrderNotification', (message) => {
+                addNotification(message);
+                info(`${t('common.newOrder')}: ${message}`);
+            });
+        } catch (error) {
+            console.error('SignalR failed', error);
+        }
+    };
+    initSignalR();
+
+    return () => {
+        signalRService.off('ReceiveOrderNotification', () => {});
+    };
+  }, [addNotification, info, t]);
 
   // Manual click outside handler for language menu
   useEffect(() => {
@@ -81,7 +108,8 @@ export const Header = memo(() => {
   };
 
   return (
-    <header className="sticky top-0 z-[100] bg-primary shadow-sm border-b transition-colors duration-200">
+    <>
+      <header className="bg-primary transition-colors duration-200 relative z-[101]">
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-slate-300 text-xs py-2">
         <div className="container mx-auto px-4 flex justify-between items-center">
@@ -183,6 +211,43 @@ export const Header = memo(() => {
                 </div>
               )}
             </div>
+
+            {/* Notifications - Only for Admin or Logged in? For now everyone or Admin */}
+            {user?.role === 'Admin' && (
+                <div className="relative" ref={notificationRef}>
+                    <Button variant="ghost" size="sm" className="relative" onClick={() => { setShowNotifications(!showNotifications); markAllRead(); }}>
+                        <Bell size={20} />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </Button>
+                    {showNotifications && (
+                        <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-[50]">
+                            <div className="p-3 border-b font-medium text-sm flex justify-between items-center">
+                                <span>{t('header.notifications') || 'Notifications'}</span>
+                                <span className="text-xs text-secondary cursor-pointer hover:text-primary" onClick={() => setShowNotifications(false)}>Close</span>
+                            </div>
+                            <div className="max-h-64 overflow-y-auto">
+                                {notifications.length === 0 ? (
+                                    <div className="p-4 text-center text-sm text-secondary">
+                                        No new notifications
+                                    </div>
+                                ) : (
+                                    <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+                                        {notifications.map((notif, idx) => (
+                                            <li key={idx} className="p-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                                {notif}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Theme Toggle */}
             <Button variant="ghost" size="sm" onClick={toggleTheme}>
@@ -289,8 +354,9 @@ export const Header = memo(() => {
         </div>
       </div>
 
+      </header>
       {/* Navigation */}
-      <nav className="hidden lg:block border-b bg-primary transition-colors duration-200">
+      <nav className="hidden lg:block border-b bg-primary transition-colors duration-200 sticky top-0 z-[100] shadow-md">
         <div className="container mx-auto px-4 flex items-center gap-6">
           {/* Categories Dropdown */}
           <div className="relative" ref={categoriesRef}>
@@ -373,7 +439,7 @@ export const Header = memo(() => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-50"
+              className="fixed inset-0 bg-black/50 z-[1001]"
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
@@ -381,7 +447,7 @@ export const Header = memo(() => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween' }}
-              className="fixed top-0 right-0 bottom-0 w-80 max-w-full bg-primary z-50 overflow-y-auto"
+              className="fixed top-0 right-0 bottom-0 w-80 max-w-full bg-primary z-[1002] overflow-y-auto"
             >
               <div className="flex items-center justify-between p-4 border-b">
                 <span className="font-bold text-lg">Menu</span>
@@ -474,7 +540,7 @@ export const Header = memo(() => {
           </>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 });
 

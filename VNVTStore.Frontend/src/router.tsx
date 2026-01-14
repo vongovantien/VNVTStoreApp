@@ -131,6 +131,14 @@ const router = createBrowserRouter([
               </Suspense>
             ),
           },
+          {
+            path: 'promotions',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <PromotionsPage />
+              </Suspense>
+            ),
+          },
 
           {
             path: 'news',

@@ -31,6 +31,7 @@ public class OrderHandlers :
     private readonly IMediator _mediator; // For publishing events
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly INotificationService _notificationService;
 
     public OrderHandlers(
         IRepository<TblOrder> orderRepository,
@@ -41,7 +42,8 @@ public class OrderHandlers :
         IShippingStrategy shippingStrategy, // Strategy Injection
         IMediator mediator,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper,
+        INotificationService notificationService) // New injection
     {
         _orderRepository = orderRepository;
         _cartService = cartService;
@@ -52,6 +54,7 @@ public class OrderHandlers :
         _mediator = mediator;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _notificationService = notificationService;
     }
 
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -205,6 +208,9 @@ public class OrderHandlers :
             await _mediator.Publish(new OrderCreatedEvent(order, userCode, request.dto.CartCode), cancellationToken);
             
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            // Send Real-time Notification
+            await _notificationService.SendAsync("ReceiveOrderNotification", $"New Order Received: {order.Code} - {order.TotalAmount:C}");
 
             return Result.Success(_mapper.Map<OrderDto>(order));
         }

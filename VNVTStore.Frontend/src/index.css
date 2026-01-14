@@ -88,7 +88,7 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
-  overflow-x: hidden;
+  line-height: 1.6;
 }
 
 button {
@@ -264,8 +264,7 @@ textarea:focus {
 /* Container */
 .container {
   max-width: 100%;
-  overflow-x: hidden;
-  /* Prevent horizontal overflow */
+  /* overflow-x: hidden removed to fix sticky positioning */
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

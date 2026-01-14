@@ -364,6 +364,36 @@ if (typeof window !== 'undefined') {
     }
 }
 
+// ============ Notification Store ============
+interface NotificationState {
+    notifications: string[];
+    unreadCount: number;
+    addNotification: (message: string) => void;
+    markAllRead: () => void;
+    clearNotifications: () => void;
+}
+
+export const useNotificationStore = create<NotificationState>()(
+    persist(
+        (set, get) => ({
+            notifications: [],
+            unreadCount: 0,
+            addNotification: (message) => {
+                set((state) => ({
+                    notifications: [message, ...state.notifications],
+                    unreadCount: state.unreadCount + 1,
+                }));
+            },
+            markAllRead: () => set({ unreadCount: 0 }),
+            clearNotifications: () => set({ notifications: [], unreadCount: 0 }),
+        }),
+        {
+            name: 'vnvt-notifications',
+            storage: createJSONStorage(() => localStorage),
+        }
+    )
+);
+
 // Re-export toast store
 export { useToastStore, useToast } from './toastStore';
 export type { Toast, ToastType } from './toastStore';

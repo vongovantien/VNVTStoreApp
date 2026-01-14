@@ -1,2 +1,0 @@
-   1:7>D:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.API\Controllers\v1\PaymentsController.cs(23,32): error CS1503: Argument 2: cannot convert from 'string' to 'VNVTStore.Domain.Enums.PaymentMethod' [D:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.API\VNVTStore.API.csproj]
-   1:7>D:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.API\Controllers\v1\PaymentsController.cs(35,34): error CS1503: Argument 2: cannot convert from 'string' to 'VNVTStore.Domain.Enums.PaymentStatus' [D:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.API\VNVTStore.API.csproj]

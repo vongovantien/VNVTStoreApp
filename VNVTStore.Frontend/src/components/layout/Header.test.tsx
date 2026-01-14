@@ -14,7 +14,7 @@ vi.mock('react-i18next', () => ({
     }),
 }));
 
-// Mock stores
+// Mock Stores
 vi.mock('@/store', () => ({
     useCartStore: () => ({ getItemCount: () => 0 }),
     useWishlistStore: () => ({ items: [] }),
@@ -24,6 +24,27 @@ vi.mock('@/store', () => ({
         toggleTheme: vi.fn(),
         setCartOpen: vi.fn(),
     }),
+    useAuthStore: () => ({
+        user: { role: 'Customer' },
+        isAuthenticated: true,
+        logout: vi.fn(),
+    }),
+    useNotificationStore: () => ({
+        unreadCount: 0,
+        notifications: [],
+        addNotification: vi.fn(),
+        markAllRead: vi.fn(),
+    }),
+    useToast: () => ({ info: vi.fn() }),
+}));
+
+// Mock SignalR
+vi.mock('@/services/signalrService', () => ({
+    signalRService: {
+        startConnection: vi.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
+    },
 }));
 
 // Mock ResizeObserver for framer-motion

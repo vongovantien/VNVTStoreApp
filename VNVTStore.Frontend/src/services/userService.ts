@@ -3,7 +3,8 @@
  * Uses only baseService CRUD methods
  */
 
-import { createEntityService, API_ENDPOINTS } from './baseService';
+import { createEntityService } from './baseService';
+import { API_ENDPOINTS } from '@/constants';
 
 // ============ User Types ============
 export interface UserProfileDto {
@@ -11,7 +12,7 @@ export interface UserProfileDto {
     username: string;
     email: string;
     fullName: string;
-    phoneNumber: string;
+    phone: string;
     avatar?: string;
     role: string;
     createdAt: string;
@@ -19,7 +20,7 @@ export interface UserProfileDto {
 
 export interface UpdateProfileRequest {
     fullName?: string;
-    phoneNumber?: string;
+    phone?: string;
     email?: string;
 }
 
@@ -33,24 +34,20 @@ export interface ChangePasswordRequest {
 export interface AddressDto {
     code: string;
     userCode?: string;
-    fullName: string;
-    phone: string;
-    category: string;
-    street: string;
-    ward: string;
-    district: string;
+    addressLine: string;
     city: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
     isDefault: boolean;
 }
 
 export interface CreateAddressRequest {
-    fullName: string;
-    phone: string;
-    category: string;
-    street: string;
-    ward: string;
-    district: string;
-    city: string;
+    addressLine: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
     isDefault: boolean;
 }
 
@@ -68,6 +65,7 @@ export const userService = {
     ...baseService,
     getProfile: () => apiClient.get<UserProfileDto>(`${API_ENDPOINTS.USERS.BASE}/profile`),
     updateProfile: (data: UpdateProfileRequest) => apiClient.put<UserProfileDto>(`${API_ENDPOINTS.USERS.BASE}/profile`, data),
+    changePassword: (data: ChangePasswordRequest) => apiClient.post<boolean>(`${API_ENDPOINTS.USERS.BASE}/change-password`, data),
     getMyAddresses: async () => {
         const res = await apiClient.post<PagedResult<AddressDto>>(`${API_ENDPOINTS.ADDRESSES.BASE}/search`, { PageIndex: 1, PageSize: 100 });
         return { ...res, data: res.data?.items || [] };

@@ -8,6 +8,8 @@ using VNVTStore.Application.Promotions.Queries;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 
+using VNVTStore.Application.Promotions.Commands;
+
 namespace VNVTStore.API.Controllers.v1;
 
 public class PromotionsController : BaseApiController<PromotionDto, CreatePromotionDto, UpdatePromotionDto>
@@ -52,6 +54,20 @@ public class PromotionsController : BaseApiController<PromotionDto, CreatePromot
     public async Task<IActionResult> GetFlashSales()
     {
         var result = await Mediator.Send(new GetFlashSaleQuery());
+        return HandleResult(result);
+    }
+    
+    [HttpPost("import")]
+    [Authorize(Roles = "admin")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Import(IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest("File is empty");
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+        
+        var result = await Mediator.Send(new ImportPromotionsCommand(memoryStream));
         return HandleResult(result);
     }
 }

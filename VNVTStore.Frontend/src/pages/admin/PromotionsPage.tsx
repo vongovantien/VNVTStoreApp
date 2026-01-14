@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Edit2, Trash2, Eye, Tag, Clock } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
@@ -20,6 +20,7 @@ import {
 import { promotionService, Promotion, CreatePromotionRequest, UpdatePromotionRequest } from '@/services/promotionService';
 import { useQuery } from '@tanstack/react-query';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { ImportModal } from '@/components/common/ImportModal';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
 import { useToast } from '@/store';
 
@@ -45,6 +46,19 @@ export const PromotionsPage = () => {
   // Sorting
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
+
+  // Import
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const handleImportPromotion = async (file: File) => {
+    try {
+        await promotionService.import(file);
+        toast.success(t('common.importSuccess') || 'Import successful');
+        refetch();
+    } catch (error) {
+        toast.error(t('common.importError') || 'Import failed');
+        throw error;
+    }
+  };
 
   // Fetch API
   const {
@@ -248,7 +262,25 @@ export const PromotionsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.promotions')}</h1>
+        <div className="flex gap-2">
+
+            <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+                Import Excel
+            </Button>
+            <Button onClick={() => openCreate()}>
+                <Plus size={20} className="mr-2" />
+                {t('admin.actions.create')}
+            </Button>
+        </div>
       </div>
+
+      <ImportModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImportPromotion}
+        title={t('common.importData', 'Import Promotions')}
+        templateUrl="/templates/promotions_template.xlsx"
+      />
 
       <DataTable
         columns={columns}
@@ -267,8 +299,7 @@ export const PromotionsPage = () => {
         externalSortField={sortField}
         externalSortDir={sortDir}
         onExternalSort={(f, d) => { setSortField(f); setSortDir(d as any); }}
-
-        onAdd={openCreate}
+        
         onEdit={openEdit}
         onDelete={confirmDelete}
         onView={setViewingPromotion}

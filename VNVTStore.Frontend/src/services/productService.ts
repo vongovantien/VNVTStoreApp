@@ -43,14 +43,18 @@ export interface CreateProductRequest {
     costPrice?: number;
     categoryCode?: string;
     stockQuantity?: number;
-    stock?: number; // Added to support legacy or partial mapping if needed
+    stock?: number;
     sku?: string;
     weight?: number;
+    supplierCode?: string;
+    brand?: string;
     color?: string;
     power?: string;
     voltage?: string;
     material?: string;
     size?: string;
+    images?: string[];
+    isActive?: boolean;
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {
@@ -70,7 +74,9 @@ export interface CategoryDto {
 export interface CreateCategoryRequest {
     name: string;
     description?: string;
+    imageUrl?: string;
     parentCode?: string;
+    isActive?: boolean;
 }
 
 export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {

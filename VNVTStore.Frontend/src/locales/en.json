@@ -13,7 +13,7 @@
     "save": "Save",
     "search": "Search",
     "viewAll": "View All",
-    "all": "All",
+    "refresh": "Refresh",
     "actions": {
         "save": "Save",
         "cancel": "Cancel",
@@ -30,8 +30,38 @@
         "reset": "Reset",
         "refresh": "Refresh",
         "deleteAll": "Delete all",
-        "export": "Export"
+        "export": "Export",
+        "import": "Import",
+        "duplicate": "Duplicate",
+        "archive": "Archive",
+        "move": "Move",
+        "share": "Share",
+        "addToFavorites": "Add to favorites",
+        "none": "None"
     },
+    "placeholders": {
+        "search": "Search...",
+        "searchProduct": "Product Name...",
+        "priceFrom": "Price from...",
+        "stockFrom": "Stock from...",
+        "ratingFrom": "Rating from...",
+        "productName": "Enter product name...",
+        "selectCategory": "Select category",
+        "brand": "Brand",
+        "exampleColor": "e.g. White...",
+        "exampleMaterial": "e.g. PVC Plastic...",
+        "examplePower": "e.g. 50W...",
+        "exampleVoltage": "e.g. 220V...",
+        "exampleSize": "e.g. Ø20mm...",
+        "productDescription": "Detailed product description..."
+    },
+    "messages": {
+        "checkQuotesPage": "Please check the Quotes page for details.",
+        "featureComingSoon": "Feature coming soon",
+        "importSuccess": "Import successful",
+        "importError": "Import failed"
+    },
+    "info": "General Info",
     "fields": {
         "name": "Name",
         "email": "Email",
@@ -55,7 +85,9 @@
         "size": "Size",
         "color": "Color",
         "voltage": "Voltage",
-        "power": "Power"
+        "power": "Power",
+        "priceAndStock": "Price & Stock",
+        "specifications": "Specifications"
     },
     "status": {
       "active": "Active",
@@ -99,7 +131,18 @@
     "updateError": "Update failed",
     "deleteError": "Delete failed",
     "columnsVisible": "Columns Visible",
-    "columns": "Columns"
+    "columns": "Columns",
+    "importData": "Import Data"
+  },
+  "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "showing": "Showing",
+      "to": "to",
+      "of": "of",
+      "results": "results",
+      "rowsPerPage": "rows/page",
+      "display": "Display"
   },
   "admin": {
     "products": "Products",
@@ -111,6 +154,30 @@
     "dashboard": "Dashboard",
     "quotes": "Quotes",
     "settings": "Settings",
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "customers": "Customers",
+      "categories": "Categories",
+      "products": "Products",
+      "suppliers": "Suppliers",
+      "quotes": "Quotes",
+      "settings": "Settings",
+      "core": "Core",
+      "inventory": "Inventory",
+      "marketing": "Marketing",
+      "system": "System"
+    },
+    "subtitles": {
+      "dashboard": "System Overview",
+      "orders": "Manage Orders",
+      "customers": "Manage Customers",
+      "categories": "Manage Product Categories",
+      "products": "Manage Products List",
+      "suppliers": "Manage Suppliers",
+      "quotes": "Manage Quote Requests",
+      "settings": "System Configuration"
+    },
     "stats": {
       "revenue": "Revenue",
       "orders": "Orders",
@@ -169,7 +236,12 @@
       "material": "Material",
       "power": "Power",
       "voltage": "Voltage",
-      "size": "Size"
+      "size": "Size",
+      "link": "Link",
+      "priority": "Priority",
+      "usageLimit": "Usage Limit",
+      "type": "Type",
+      "title": "Title"
     },
     "filters": {
       "allStatus": "All Status",
@@ -185,11 +257,21 @@
       "processing": "Processing",
       "shipping": "Shipping",
       "delivered": "Delivered",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "active": "Active",
+      "inactive": "Inactive",
+      "quoted": "Quoted",
+      "closed": "Closed"
     },
+    "statusHint": "Enable to make account active",
     "placeholders": {
       "searchCustomer": "Search Customer...",
-      "searchOrderCode": "Search Order Code..."
+      "searchOrderCode": "Search Order Code...",
+      "searchProductCustomer": "Search by product, customer...",
+      "searchTitle": "Search title...",
+      "searchNameCode": "Search by Name/Code...",
+      "enterPrice": "Enter price...",
+      "enterNote": "Note for customer..."
     },
     "actions": {
       "edit": "Edit",
@@ -197,14 +279,22 @@
       "view": "View",
       "create": "Create",
       "update": "Update",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "quote": "Quote",
+      "updatePrice": "Update Price",
+      "closeDeal": "Close Deal",
+      "sendQuote": "Send Quote"
     },
     "validation": {
       "required": "This field is required",
       "minLength": "Please enter at least {{min}} characters",
       "minNumber": "Value must be greater than or equal to {{min}}",
       "integer": "Please enter an integer",
-      "positive": "Value must be positive"
+      "positive": "Value must be positive",
+      "productNameMin": "Product name must be at least 3 characters",
+      "categoryRequired": "Please select a category",
+      "priceMin": "Price cannot be negative",
+      "stockMin": "Stock cannot be negative"
     }
   },
   "header": {

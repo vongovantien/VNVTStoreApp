@@ -4,9 +4,14 @@ import { ChevronUp, ChevronDown, Loader2, AlertCircle, Filter, X } from 'lucide-
 import { Pagination, Button } from '@/components/ui';
 import { AdminToolbar } from '@/components/admin/AdminToolbar';
 import { ColumnVisibility } from '@/components/admin/ColumnVisibility';
-import { TableToolbar } from '@/pages/admin/components/TableToolbar';
+import { TableActions } from '@/components/ui';
+import { ImportModal } from '@/components/common/ImportModal';
+
+// ... (existing imports)
+import { TableToolbar } from '@/components/admin';
 import { AdvancedFilter, type FilterDef } from '@/components/common/AdvancedFilter';
-import { exportToCSV } from '@/utils/export';
+import { useExport } from '@/hooks/useExport';
+import { exportToExcel, type ExportColumn } from '@/utils/export';
 import { cn } from '@/utils/cn';
 
 // ============ Types ============
@@ -19,7 +24,7 @@ export interface DataTableColumn<T> {
   headerClassName?: string;
 }
 
-export interface DataTableProps<T extends object> {
+export interface DataTableProps<T extends Record<string, any>> {
   // Data
   columns: DataTableColumn<T>[];
   data: T[];
@@ -36,6 +41,8 @@ export interface DataTableProps<T extends object> {
   searchPlaceholder?: string;
   searchOptions?: { label: string; value: string }[];
   exportFilename?: string;
+  exportColumns?: ExportColumn<T>[];
+  onExportAllData?: () => Promise<T[]>; // Fetch all data for export
   enableColumnVisibility?: boolean;
 
   // Advanced Filter
@@ -44,12 +51,14 @@ export interface DataTableProps<T extends object> {
 
   // Actions
   onAdd?: () => void;
-  onView?: (item: T) => void; // Added onView
+  onView?: (item: T) => void;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   onBulkDelete?: (items: T[]) => void;
   onRefresh?: () => void;
-  onImport?: () => void; // Added onImport
+  onImport?: (file: File) => Promise<void>; // Changed to receive file for internal modal
+  importTemplateUrl?: string;
+  importTitle?: string;
 
   // Pagination (external control)
   currentPage?: number;
@@ -63,6 +72,7 @@ export interface DataTableProps<T extends object> {
   // Custom rendering
   emptyMessage?: string;
   rowClassName?: (row: T, index: number) => string;
+  renderRowActions?: (item: T) => React.ReactNode; // New prop for custom actions
 
   // Sorting (external control - optional)
   externalSortField?: string;
@@ -76,13 +86,14 @@ export interface DataTableProps<T extends object> {
   // Selection (external control - optional)
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
+  enableSelection?: boolean;
 
   // Reset
   onReset?: () => void;
 }
 
 // ============ DataTable Component ============
-export function DataTable<T extends object>({
+function DataTableInner<T extends Record<string, any>>({
   columns,
   data,
   keyField,
@@ -91,9 +102,11 @@ export function DataTable<T extends object>({
   error = null,
   showToolbar = true,
   title,
-  searchPlaceholder = 'Tìm kiếm...',
+  searchPlaceholder,
   searchOptions = [],
   exportFilename = 'export',
+  exportColumns,
+  onExportAllData,
   enableColumnVisibility = true,
   advancedFilterDefs,
   onAdvancedSearch,
@@ -102,7 +115,9 @@ export function DataTable<T extends object>({
   onEdit,
   onDelete,
   onRefresh,
-  onImport, // Added onImport
+  onImport,
+  importTemplateUrl,
+  importTitle,
   currentPage: externalPage,
   totalPages: externalTotalPages,
   totalItems: externalTotalItems,
@@ -121,23 +136,26 @@ export function DataTable<T extends object>({
   selectedIds: externalSelectedIds,
   onSelectionChange,
   onBulkDelete,
+  enableSelection = true,
+  renderRowActions // Destructure new prop
 }: DataTableProps<T>) {
   const { t } = useTranslation();
 
   // Default empty message with translation fallback
   const finalEmptyMessage = emptyMessage || t('common.noData');
 
+
   // ============ Internal State ============
   const [searchQuery, setSearchQuery] = useState('');
   const [searchField, setSearchField] = useState('all');
   const [showSearch, setShowSearch] = useState(true);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
-  // Selection State (controlled or uncontrolled)
   // Selection State (controlled or uncontrolled)
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const selectedIds = externalSelectedIds || internalSelectedIds;
 
-  const setSelectedIds = (update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+  const setSelectedIds = useCallback((update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
     let newIds: Set<string>;
     if (typeof update === 'function') {
       newIds = update(selectedIds);
@@ -150,11 +168,14 @@ export function DataTable<T extends object>({
     } else {
       setInternalSelectedIds(newIds);
     }
-  };
+  }, [selectedIds, onSelectionChange]);
 
   // Advanced Filter State
   const [showFilters, setShowFilters] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
+
+  // Export Hook
+  const { isExporting, exportData } = useExport<T>();
 
   // Column Visibility State (internal)
   const [internalVisibleColumns, setInternalVisibleColumns] = useState<string[]>(
@@ -260,10 +281,37 @@ export function DataTable<T extends object>({
   const totalPages = isExternalPagination ? (externalTotalPages || 1) : internalTotalPages;
   const totalItems = isExternalPagination ? (externalTotalItems || sortedData.length) : sortedData.length;
 
-  // Filter columns based on visibility
+  // Filter columns based on visibility AND append actions column if needed
   const visibleColumnDefs = useMemo(() => {
-    return columns.filter(col => visibleColIds.includes(col.id));
-  }, [columns, visibleColIds]);
+    const cols = columns.filter(col => visibleColIds.includes(col.id));
+    
+    // Check if we need to add an actions column
+    const hasActions = onView || onEdit || onDelete || renderRowActions;
+    // Check if actions column already exists to avoid duplication if passed manually
+    const hasExplicitActionsCol = cols.some(c => c.id === 'actions');
+
+    if (hasActions && !hasExplicitActionsCol) {
+      // Create a new array to avoid mutating the original prop if it was reused
+      const newCols = [...cols];
+      newCols.push({
+        id: 'actions',
+        header: t('common.fields.action') || 'Action', // Translation fallback
+        accessor: (row: T) => (
+          <TableActions
+            onView={onView ? () => onView(row) : undefined}
+            onEdit={onEdit ? () => onEdit(row) : undefined}
+            onDelete={onDelete ? () => onDelete(row) : undefined}
+            customActions={renderRowActions ? renderRowActions(row) : undefined}
+          />
+        ),
+        className: 'text-center',
+        headerClassName: 'text-center'
+      });
+      return newCols;
+    }
+
+    return cols;
+  }, [columns, visibleColIds, onView, onEdit, onDelete, renderRowActions, t]);
 
   // ============ Handlers ============
   const handleSort = useCallback((columnId: string) => {
@@ -286,7 +334,7 @@ export function DataTable<T extends object>({
     } else {
       setSelectedIds(new Set());
     }
-  }, [displayData, keyField]);
+  }, [displayData, keyField, setSelectedIds]);
 
   const handleSelectRow = useCallback((key: string) => {
     setSelectedIds(prev => {
@@ -295,19 +343,21 @@ export function DataTable<T extends object>({
       else next.add(key);
       return next;
     });
-  }, []);
+  }, [setSelectedIds]);
 
   const handleExport = useCallback(() => {
-    exportToCSV(sortedData, exportFilename);
-  }, [sortedData, exportFilename]);
+      // If onExportAllData is provided, fetch all data first
+      const dataToExport = onExportAllData ? onExportAllData() : sortedData;
+      exportData(dataToExport, exportFilename, exportColumns);
+  }, [sortedData, exportFilename, exportColumns, onExportAllData, exportData]);
 
   const handleReset = useCallback(() => {
     setSearchQuery('');
     setSearchField('all');
     setSelectedIds(new Set());
-    setAdvancedFilters({}); // Fix: Clear advanced filters
-    if (onReset) onReset(); // Call external reset
-    if (onAdvancedSearch) onAdvancedSearch({}); // Fix: Notify parent
+    setAdvancedFilters({}); 
+    if (onReset) onReset(); 
+    if (onAdvancedSearch) onAdvancedSearch({}); 
     if (!isExternalSort) {
       setInternalSortField(null);
       setInternalSortDir('asc');
@@ -315,7 +365,7 @@ export function DataTable<T extends object>({
     if (!isExternalPagination) {
       setInternalPage(1);
     }
-  }, [isExternalSort, isExternalPagination, onAdvancedSearch, onReset]);
+  }, [isExternalSort, isExternalPagination, onAdvancedSearch, onReset, setSelectedIds]);
 
   // Get selected item for edit/delete
   const getSelectedItem = useCallback((): T | null => {
@@ -351,20 +401,20 @@ export function DataTable<T extends object>({
     if (showFilters && searchButtonRef.current && containerRef.current) {
       const btnRect = searchButtonRef.current.getBoundingClientRect();
       const containerRect = containerRef.current.getBoundingClientRect();
-      // Position left to match the button's left, relative to container
       setPopupLeft(btnRect.left - containerRect.left);
     }
   }, [showFilters]);
 
   // ============ Render ============
   return (
-    <div className="flex flex-col gap-4 relative" ref={containerRef}>
+    <>
+    <div className="bg-white dark:bg-slate-800 border shadow-sm rounded-xl relative flex flex-col" ref={containerRef}>
       {/* Toolbar */}
       {showToolbar && (
-        <>
-          <div className="flex justify-between items-center gap-4 bg-white dark:bg-slate-800 p-2 rounded-lg border shadow-sm">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700">
             <AdminToolbar
               onAdd={onAdd}
+              onRefresh={onRefresh}
               onViewDetails={onView ? () => {
                 const item = getSelectedItem();
                 if (item) onView(item);
@@ -382,13 +432,12 @@ export function DataTable<T extends object>({
                   onBulkDelete(items);
                 }
               } : undefined}
-              // If advanced filters are defined, the search button opens the filter panel
-              // Otherwise, it toggles the standard search bar
               onSearchClick={() => advancedFilterDefs ? setShowFilters(!showFilters) : setShowSearch(!showSearch)}
               onReset={handleReset}
               onExport={handleExport}
-              onImport={onImport} // Pass onImport
+              onImport={onImport ? () => setIsImportOpen(true) : undefined}
               isSearchActive={advancedFilterDefs ? showFilters : showSearch}
+              isExporting={isExporting}
               selectedCount={selectedIds.size}
               searchRef={searchButtonRef}
               className="w-full"
@@ -401,22 +450,14 @@ export function DataTable<T extends object>({
                 />
               )}
             </AdminToolbar>
-          </div>
-
-          {/* TableToolbar removed as per user request to use Advanced Search Popup only */}
-        </>
+        </div>
       )}
 
-      {/* Floating Filter Panel - Restored & Enhanced */}
+      {/* Floating Filter Panel */}
       {advancedFilterDefs && showFilters && (
         <div
           className="fixed inset-x-4 top-24 z-[100] md:absolute md:top-16 md:w-[600px] md:inset-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-left max-h-[80vh] overflow-y-auto"
           style={{
-            // Only apply dynamic left positioning on desktop (md and up)
-            // We use a CSS variable or media query check in JS, but simple way is to rely on classes for mobile and style for desktop reference if needed.
-            // However, getting screen width in JS is cleaner for the style conditional.
-            // Simplification: We'll stick to classes for mobile (fixed) and use the style for desktop but override it via media query if possible?
-            // React styles override classes. We need to conditionally apply the style object.
             ...(window.innerWidth >= 768 ? { left: popupLeft > 0 ? popupLeft : '230px' } : {})
           }}
         >
@@ -434,7 +475,7 @@ export function DataTable<T extends object>({
                       value={advancedFilters[def.id] || ''}
                       onChange={(e) => setAdvancedFilters(prev => ({ ...prev, [def.id]: e.target.value }))}
                     >
-                      <option value="">{t('common.all') || 'Tất cả'}</option>
+                      <option value="">{t('common.all')}</option>
                       {def.options?.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
@@ -464,14 +505,13 @@ export function DataTable<T extends object>({
               }}
             >
               <Filter size={16} />
-              {t('common.apply') || 'Tìm kiếm'}
+              {t('common.actions.apply')}
             </button>
             <button
               className="px-5 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white font-medium shadow-md transition-all flex items-center gap-2"
               onClick={() => setShowFilters(false)}
             >
-              <X size={16} />
-              {t('common.close') || 'Đóng'}
+              {t('common.actions.close')}
             </button>
             <button
               className="px-4 py-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 font-medium transition-all"
@@ -480,19 +520,18 @@ export function DataTable<T extends object>({
                 if (onAdvancedSearch) onAdvancedSearch({});
               }}
             >
-              {t('common.reset') || 'Làm mới'}
+              {t('common.actions.reset')}
             </button>
           </div>
         </div>
       )}
 
       {/* Table Container */}
-      <div className="bg-primary rounded-xl overflow-hidden shadow-sm border relative min-h-[400px]">
-
+      <div className="relative min-h-[400px] flex-1">
 
         {/* Error Overlay */}
         {showError && (
-          <div className="absolute inset-0 bg-primary flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 backdrop-blur-sm">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
               <h3 className="font-semibold mb-2">{t('messages.error')}</h3>
@@ -500,43 +539,60 @@ export function DataTable<T extends object>({
             </div>
           </div>
         )}
-
-        <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-50 pointer-events-none")}>
+        {/* Table Container with Loading Overlay */}
+        <div className="relative">
+          {/* Centered Loading Overlay */}
+          {(isLoading || isFetching) && (
+            <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 z-10 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-secondary">{t('common.loading', 'Đang tải...')}</span>
+              </div>
+            </div>
+          )}
+          <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-60")}>
           <table className="w-full">
-            <thead className="bg-secondary border-b">
+            <thead className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-gray-700">
               {/* Main Header Row */}
               <tr>
                 {/* Selection Checkbox */}
-                <th className="px-4 py-3 w-12">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300"
-                  />
-                </th>
+                {enableSelection && (
+                  <th className="px-4 py-3 w-12">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 focus:ring-primary"
+                    />
+                  </th>
+                )}
 
                 {visibleColumnDefs.map(column => (
                   <th
                     key={column.id}
                     className={cn(
-                      "px-4 py-3 text-left text-sm font-semibold",
-                      column.sortable && "cursor-pointer hover:bg-secondary/80 select-none",
+                      "px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-gray-300",
+                      column.sortable && "cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 select-none transition-colors",
                       column.headerClassName
                     )}
                     onClick={column.sortable ? () => handleSort(column.id) : undefined}
                   >
-                    {column.header}
-                    {column.sortable && <SortIcon columnId={column.id} />}
+                    <div className="flex items-center gap-1">
+                      {column.header}
+                      {column.sortable && <SortIcon columnId={column.id} />}
+                    </div>
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {displayData.length === 0 && !isLoading ? (
                 <tr>
-                  <td colSpan={visibleColumnDefs.length + 1} className="px-4 py-12 text-center text-secondary">
-                    {finalEmptyMessage}
+                  <td colSpan={visibleColumnDefs.length + (enableSelection ? 1 : 0)} className="px-4 py-12 text-center text-secondary">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                       <span className="text-slate-400 text-lg">¯\_(ツ)_/¯</span>
+                       <p>{finalEmptyMessage}</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -548,22 +604,24 @@ export function DataTable<T extends object>({
                     <tr
                       key={rowKey}
                       className={cn(
-                        "border-b last:border-0 hover:bg-secondary/50 transition-colors",
-                        isSelected && "bg-blue-50 dark:bg-blue-900/20",
+                        "hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors",
+                        isSelected && "bg-blue-50/50 dark:bg-blue-900/20",
                         rowClassName?.(row, index)
                       )}
                     >
-                      <td className="px-4 py-4">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelectRow(rowKey)}
-                          className="w-4 h-4 rounded border-gray-300"
-                        />
-                      </td>
+                      {enableSelection && (
+                        <td className="px-4 py-4">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(rowKey)}
+                            className="w-4 h-4 rounded border-gray-300 focus:ring-primary"
+                          />
+                        </td>
+                      )}
 
                       {visibleColumnDefs.map(column => (
-                        <td key={column.id} className={cn("px-4 py-4", column.className)}>
+                        <td key={column.id} className={cn("px-4 py-4 text-sm", column.className)}>
                           {getCellValue(row, column)}
                         </td>
                       ))}
@@ -574,21 +632,38 @@ export function DataTable<T extends object>({
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={handlePageSizeChange}
-          pageSizeOptions={pageSizeOptions}
-          isLoading={isLoading || isFetching}
-        />
       </div>
+      
+       {/* Pagination */}
+       <div className="border-t border-gray-100 dark:border-gray-700 p-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            isLoading={isLoading || isFetching}
+          />
+       </div>
+
     </div>
+    </div>
+
+    {/* Import Modal */}
+    {onImport && (
+      <ImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onImport={onImport}
+        title={importTitle || t('common.importData')}
+        templateUrl={importTemplateUrl}
+      />
+    )}
+    </>
   );
 }
 
+export const DataTable = React.memo(DataTableInner) as typeof DataTableInner;
 export default DataTable;

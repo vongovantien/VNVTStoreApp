@@ -13,7 +13,7 @@
     "save": "Lưu",
     "search": "Tìm kiếm",
     "viewAll": "Xem tất cả",
-    "all": "Tất cả",
+    "refresh": "Làm mới",
     "actions": {
         "save": "Lưu",
         "cancel": "Hủy",
@@ -30,8 +30,38 @@
         "reset": "Đặt lại",
         "refresh": "Làm mới",
         "deleteAll": "Xóa tất cả",
-        "export": "Xuất"
+        "export": "Xuất",
+        "import": "Nhập dữ liệu",
+        "duplicate": "Nhân bản",
+        "archive": "Lưu trữ",
+        "move": "Di chuyển",
+        "share": "Chia sẻ",
+        "addToFavorites": "Thêm vào yêu thích",
+        "none": "Không"
     },
+    "placeholders": {
+        "search": "Tìm kiếm...",
+        "searchProduct": "Tên sản phẩm...",
+        "priceFrom": "Giá từ...",
+        "stockFrom": "Tồn kho từ...",
+        "ratingFrom": "Đánh giá từ...",
+        "productName": "Nhập tên sản phẩm...",
+        "selectCategory": "Chọn danh mục",
+        "brand": "Thương hiệu",
+        "exampleColor": "VD: Trắng...",
+        "exampleMaterial": "VD: Nhựa PVC...",
+        "examplePower": "VD: 50W...",
+        "exampleVoltage": "VD: 220V...",
+        "exampleSize": "VD: Ø20mm...",
+        "productDescription": "Mô tả chi tiết sản phẩm..."
+    },
+    "messages": {
+        "checkQuotesPage": "Vui lòng kiểm tra trang Báo giá để xem chi tiết.",
+        "featureComingSoon": "Tính năng đang được phát triển",
+        "importSuccess": "Nhập dữ liệu thành công",
+        "importError": "Nhập dữ liệu thất bại"
+    },
+    "info": "Thông tin chung",
     "fields": {
         "name": "Tên",
         "email": "Email",
@@ -55,7 +85,9 @@
         "size": "Kích thước",
         "color": "Màu sắc",
         "voltage": "Điện áp",
-        "power": "Công suất"
+        "power": "Công suất",
+        "priceAndStock": "Giá & Tồn kho",
+        "specifications": "Thông số kỹ thuật"
     },
     "status": {
       "active": "Hoạt động",
@@ -99,7 +131,18 @@
     "updateError": "Cập nhật thất bại",
     "deleteError": "Xóa thất bại",
     "columnsVisible": "Cột hiển thị",
-    "columns": "Cột"
+    "columns": "Cột",
+    "importData": "Nhập dữ liệu"
+  },
+  "pagination": {
+      "previous": "Trước",
+      "next": "Sau",
+      "showing": "Hiển thị",
+      "to": "đến",
+      "of": "trong",
+      "results": "kết quả",
+      "rowsPerPage": "dòng/trang",
+      "display": "Hiển thị"
   },
   "admin": {
     "products": "Sản phẩm",
@@ -111,6 +154,32 @@
     "dashboard": "Tổng quan",
     "quotes": "Báo giá",
     "settings": "Cài đặt",
+    "sidebar": {
+      "dashboard": "Tổng quan",
+      "orders": "Đơn hàng",
+      "customers": "Khách hàng",
+      "categories": "Danh mục",
+      "products": "Sản phẩm",
+      "suppliers": "Nhà cung cấp",
+      "quotes": "Báo giá",
+      "settings": "Cài đặt",
+      "core": "Quản lý chung",
+      "inventory": "Kho hàng",
+      "marketing": "Marketing",
+      "system": "Hệ thống"
+    },
+    "subtitles": {
+      "dashboard": "Tổng quan hệ thống",
+      "orders": "Quản lý đơn hàng",
+      "customers": "Quản lý thông tin khách hàng",
+      "categories": "Quản lý danh mục sản phẩm",
+      "products": "Quản lý danh sách sản phẩm",
+      "suppliers": "Quản lý nhà cung cấp",
+      "quotes": "Quản lý yêu cầu báo giá",
+      "settings": "Cấu hình hệ thống",
+      "banners": "Quản lý banner quảng cáo",
+      "promotions": "Quản lý chương trình khuyến mãi"
+    },
     "stats": {
       "revenue": "Doanh thu",
       "orders": "Đơn hàng",
@@ -169,7 +238,16 @@
       "material": "Chất liệu",
       "power": "Công suất",
       "voltage": "Điện áp",
-      "size": "Kích thước"
+      "size": "Kích thước",
+      "finalAmount": "Thành tiền",
+      "shippingFee": "Phí vận chuyển",
+      "discount": "Giảm giá",
+      "note": "Ghi chú",
+      "link": "Liên kết",
+      "priority": "Ưu tiên",
+      "usageLimit": "Giới hạn sử dụng",
+      "type": "Loại",
+      "title": "Tiêu đề"
     },
     "filters": {
       "allStatus": "Tất cả trạng thái",
@@ -184,11 +262,21 @@
       "processing": "Đang xử lý",
       "shipping": "Đang giao",
       "delivered": "Đã giao",
-      "cancelled": "Đã hủy"
+      "cancelled": "Đã hủy",
+      "active": "Hoạt động",
+      "inactive": "Ngưng hoạt động",
+      "quoted": "Đã báo giá",
+      "closed": "Đã chốt"
     },
+    "statusHint": "Bật để tài khoản hoạt động",
     "placeholders": {
       "searchCustomer": "Tìm kiếm khách hàng...",
-      "searchOrderCode": "Tìm kiếm mã đơn hàng..."
+      "searchOrderCode": "Tìm kiếm mã đơn hàng...",
+      "searchProductCustomer": "Tìm theo sản phẩm, khách hàng...",
+      "searchTitle": "Tìm kiếm tiêu đề...",
+      "searchNameCode": "Tìm theo Tên/Mã...",
+      "enterPrice": "Nhập giá báo...",
+      "enterNote": "Ghi chú cho khách hàng..."
     },
     "actions": {
       "edit": "Sửa",
@@ -196,14 +284,22 @@
       "view": "Xem",
       "create": "Tạo mới",
       "update": "Cập nhật",
-      "cancel": "Hủy"
+      "cancel": "Hủy",
+      "quote": "Báo giá",
+      "updatePrice": "Cập nhật giá",
+      "closeDeal": "Chốt",
+      "sendQuote": "Gửi báo giá"
     },
     "validation": {
       "required": "Vui lòng nhập thông tin",
       "minLength": "Vui lòng nhập ít nhất {{min}} ký tự",
       "minNumber": "Giá trị phải lớn hơn hoặc bằng {{min}}",
       "integer": "Vui lòng nhập số nguyên",
-      "positive": "Giá trị phải là số dương"
+      "positive": "Giá trị phải là số dương",
+      "productNameMin": "Tên sản phẩm phải có ít nhất 3 ký tự",
+      "categoryRequired": "Vui lòng chọn danh mục",
+      "priceMin": "Giá không được âm",
+      "stockMin": "Tồn kho không được âm"
     }
   },
   "header": {

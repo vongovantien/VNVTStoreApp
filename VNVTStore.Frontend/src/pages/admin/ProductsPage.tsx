@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit2, Trash2, Eye, Star, Plus, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { Dropdown, DropdownItem } from '@/components/ui/Dropdown';
 import { formatCurrency } from '@/utils/format';
 import { ProductForm, ProductFormData } from './forms/ProductForm';
@@ -13,7 +13,7 @@ import { productService, type CreateProductRequest, type UpdateProductRequest } 
 import { useToast } from '@/store';
 import type { Product } from '@/types';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
-import { ImportModal } from '@/components/common/ImportModal';
+import { AdminPageHeader } from '@/components/admin';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
 
 // Types for sorting
@@ -34,14 +34,13 @@ export const ProductsPage = () => {
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
 
   // Import
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const handleImportProduct = async (file: File) => {
     try {
         await productService.import(file);
-        toast.success(t('common.importSuccess') || 'Import successful');
+        toast.success(t('common.messages.importSuccess') || 'Import successful');
         refetch();
     } catch (error) {
-        toast.error(t('common.importError') || 'Import failed');
+        toast.error(t('common.messages.importError') || 'Import failed');
         throw error; // Let modal handle error state if needed
     }
   };
@@ -64,8 +63,8 @@ export const ProductsPage = () => {
   });
 
   const products: Product[] = productsData?.products || [];
-  const totalPages: number = productsData?.totalPages || 1;
   const totalItems: number = productsData?.totalItems || 0;
+  const totalPages: number = Math.ceil(totalItems / pageSize) || 1;
 
   // Mutations and State via useEntityManager
   const {
@@ -127,7 +126,7 @@ export const ProductsPage = () => {
         product.price > 0 ? (
           <span className="font-semibold text-rose-600">{formatCurrency(product.price)}</span>
         ) : (
-          <Badge color="primary" size="sm">Liên hệ</Badge>
+          <Badge color="primary" size="sm">{t('common.contact')}</Badge>
         )
       ),
       className: 'text-right',
@@ -172,82 +171,8 @@ export const ProductsPage = () => {
       ),
       className: 'text-center',
       headerClassName: 'text-center'
-    },
-    {
-      id: 'actions',
-      header: t('common.fields.action'),
-      accessor: (product) => (
-        <Dropdown
-          trigger={
-            <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 transition-colors">
-              <MoreHorizontal size={20} />
-            </button>
-          }
-          width="w-56"
-        >
-          <DropdownItem
-            icon={<Eye size={16} />}
-            onClick={() => handleOpenView(product)}
-          >
-            {t('common.actions.view') || 'View'}
-          </DropdownItem>
-          
-          <DropdownItem
-            icon={<Edit3 size={16} />}
-            onClick={() => openEdit(product)}
-          >
-            {t('common.actions.edit') || 'Edit'}
-          </DropdownItem>
-
-          <DropdownItem
-            icon={<Copy size={16} />}
-            onClick={() => toast.info('Duplicate feature coming soon')}
-          >
-            Duplicate
-          </DropdownItem>
-
-          <DropdownItem
-            icon={<Archive size={16} />}
-            onClick={() => toast.info('Archive feature coming soon')}
-          >
-            Archive
-          </DropdownItem>
-
-          <DropdownItem
-            icon={<FolderInput size={16} />}
-            onClick={() => toast.info('Move feature coming soon')}
-          >
-            Move
-          </DropdownItem>
-          
-          <DropdownItem
-            icon={<Share2 size={16} />}
-            onClick={() => toast.info('Share feature coming soon')}
-          >
-            Share
-          </DropdownItem>
-
-          <DropdownItem
-            icon={<Heart size={16} />}
-            onClick={() => toast.info('Favorite feature coming soon')}
-          >
-            Add to favorites
-          </DropdownItem>
-
-          <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
-
-          <DropdownItem
-            variant="danger"
-            icon={<Trash2 size={16} />}
-            onClick={() => confirmDelete(product)}
-          >
-            {t('common.actions.delete') || 'Delete'}
-          </DropdownItem>
-        </Dropdown>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
     }
+
   ];
 
   // Handlers
@@ -281,11 +206,18 @@ export const ProductsPage = () => {
         price: data.price,
         categoryCode: data.categoryId,
         stock: data.stock,
+        costPrice: data.costPrice,
+        sku: data.sku,
+        weight: data.weight,
+        supplierCode: data.supplierCode,
+        brand: data.brand,
         color: data.color,
         power: data.power,
         voltage: data.voltage,
         material: data.material,
         size: data.size,
+        images: data.images,
+        isActive: data.isActive,
       });
     } catch (err) {
       // Error handled by hook
@@ -303,11 +235,18 @@ export const ProductsPage = () => {
           price: data.price,
           categoryCode: data.categoryId,
           stockQuantity: data.stock,
+          costPrice: data.costPrice,
+          sku: data.sku,
+          weight: data.weight,
+          supplierCode: data.supplierCode,
+          brand: data.brand,
           color: data.color,
           power: data.power,
           voltage: data.voltage,
           material: data.material,
           size: data.size,
+          images: data.images,
+          isActive: data.isActive,
         },
       });
     } catch (err) {
@@ -334,21 +273,14 @@ export const ProductsPage = () => {
   const handleCancelDelete = () => {
     cancelDelete(); // from hook
     setShowBulkConfirm(false);
-    setSelectedIds(new Set());
+    // Don't clear selection on cancel - user may want to keep their selection
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('common.modules.products')}</h1>
-      </div>
-
-      <ImportModal 
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        onImport={handleImportProduct}
-        title={t('common.importData', 'Import Products')}
-        templateUrl="/products/template"
+      <AdminPageHeader
+        title="common.modules.products"
+        subtitle="admin.subtitles.products"
       />
 
       <DataTable
@@ -358,7 +290,10 @@ export const ProductsPage = () => {
         isLoading={isLoading}
         isFetching={isFetching}
         onAdd={() => openCreate()}
-        onImport={() => setIsImportModalOpen(true)}
+        onRefresh={() => refetch()}
+        onImport={handleImportProduct}
+        importTemplateUrl="/products/template"
+        importTitle={t('common.importData')}
         error={isError ? (error as Error) : null}
 
         // Sorting
@@ -387,7 +322,7 @@ export const ProductsPage = () => {
             id: 'name',
             label: t('common.fields.name'),
             type: 'text',
-            placeholder: t('admin.placeholders.searchProduct') || 'Tên sản phẩm...'
+            placeholder: t('common.placeholders.searchProduct')
           },
           {
             id: 'category',
@@ -399,19 +334,19 @@ export const ProductsPage = () => {
             id: 'price',
             label: t('common.fields.price'),
             type: 'number',
-            placeholder: 'Giá từ...'
+            placeholder: t('common.placeholders.priceFrom')
           },
           {
             id: 'stock',
             label: t('common.fields.stock'),
             type: 'number',
-            placeholder: 'Tồn kho từ...'
+            placeholder: t('common.placeholders.stockFrom')
           },
           {
             id: 'rating',
             label: t('common.fields.rating'),
             type: 'number',
-            placeholder: 'Đánh giá từ...'
+            placeholder: t('common.placeholders.ratingFrom')
           },
           {
             id: 'status',
@@ -424,6 +359,23 @@ export const ProductsPage = () => {
           }
         ]}
         exportFilename="products_export"
+        exportColumns={[
+          { key: 'id', label: t('admin.columns.code'), width: 15 },
+          { key: 'name', label: t('admin.columns.name'), width: 30 },
+          { key: 'category', label: t('admin.columns.category'), width: 20 },
+          { key: 'price', label: t('admin.columns.price'), width: 15 },
+          { key: 'stock', label: t('admin.columns.stock'), width: 12 },
+          { key: 'color', label: t('admin.columns.color'), width: 12 },
+          { key: 'material', label: t('admin.columns.material'), width: 15 },
+          { key: 'power', label: t('admin.columns.power'), width: 12 },
+          { key: 'voltage', label: t('admin.columns.voltage'), width: 12 },
+          { key: 'size', label: t('admin.columns.size'), width: 15 },
+          { key: 'isActive', label: t('admin.columns.status'), width: 12 },
+        ]}
+        onExportAllData={async () => {
+          const response = await productService.search({ pageIndex: 1, pageSize: 10000 });
+          return (response.data?.items || []) as unknown as Product[];
+        }}
         enableColumnVisibility={true}
       />
 
@@ -441,7 +393,7 @@ export const ProductsPage = () => {
             price: editingProduct.price,
             categoryId: editingProduct.categoryId,
             stock: editingProduct.stock,
-            image: editingProduct.images?.[0],
+            images: editingProduct.images || [],
             color: editingProduct.color,
             power: editingProduct.power,
             voltage: editingProduct.voltage,

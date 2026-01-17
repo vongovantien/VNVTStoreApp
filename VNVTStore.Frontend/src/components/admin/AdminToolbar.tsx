@@ -10,7 +10,9 @@ import {
   Upload,
   Printer,
   HelpCircle,
-  Trash2
+  Trash2,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import React from 'react';
 import { cn } from '@/utils/cn';
@@ -31,7 +33,9 @@ interface AdminToolbarProps {
   // Removed onCheck
 
   onSearchClick?: () => void;
+  onRefresh?: () => void;
   onReset?: () => void;
+
 
   onImport?: () => void;
   onExport?: () => void;
@@ -41,6 +45,7 @@ interface AdminToolbarProps {
 
   // States
   isSearchActive?: boolean;
+  isExporting?: boolean;
   selectedCount?: number;
   className?: string;
   searchRef?: React.Ref<HTMLButtonElement>;
@@ -74,12 +79,14 @@ export const AdminToolbar = ({
   onDelete,
   // onCheck removed
   onSearchClick,
+  onRefresh,
   onReset,
   onImport,
   onExport,
   // onPrint removed
   // onHelp removed
   isSearchActive,
+  isExporting = false,
   selectedCount = 0,
   className,
   searchRef,
@@ -126,7 +133,8 @@ export const AdminToolbar = ({
           title="Search"
           className={isSearchActive ? "bg-blue-100 dark:bg-blue-900/30" : ""}
         />
-        <BlueItem icon={<RotateCcw size={18} className="stroke-[2.5]" />} onClick={onReset} title="Refresh/Reset" />
+        <BlueItem icon={<RefreshCw size={18} className="stroke-[2.5]" />} onClick={onRefresh} disabled={!onRefresh} title="Refresh Data" />
+        <BlueItem icon={<RotateCcw size={18} className="stroke-[2.5]" />} onClick={onReset} title="Reset Filters" />
       </div>
 
       <div className="h-6 w-px bg-gray-200 dark:bg-slate-600 mx-2" />
@@ -134,7 +142,12 @@ export const AdminToolbar = ({
       {/* Group 3: File Ops */}
       <div className="flex items-center gap-1">
         <BlueItem icon={<Download size={20} className="stroke-[2.5]" />} onClick={onImport} title="Import" />
-        <BlueItem icon={<Upload size={20} className="stroke-[2.5]" />} onClick={onExport} title="Export" />
+        <BlueItem 
+          icon={isExporting ? <Loader2 size={20} className="stroke-[2.5] animate-spin" /> : <Upload size={20} className="stroke-[2.5]" />} 
+          onClick={!isExporting ? onExport : undefined} 
+          disabled={isExporting}
+          title={isExporting ? "Đang xuất..." : "Export"} 
+        />
       </div>
 
       {children && (

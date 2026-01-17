@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, Phone, ShoppingBag, Eye, Edit, Trash2 } from 'lucide-react';
-import { Button, Modal, Badge } from '@/components/ui';
+import { Mail, Phone, ShoppingBag, Eye, Edit, Trash2, Plus, Users } from 'lucide-react';
+import { Button, Modal, Badge, ConfirmDialog, TableActions, Input, Select, Switch } from '@/components/ui';
+import { useToast } from '@/store';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager } from '@/hooks';
 import { customerService, type CustomerDto, type CreateCustomerRequest, type UpdateCustomerRequest } from '@/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
 
 export const CustomersPage = () => {
@@ -38,11 +40,116 @@ export const CustomersPage = () => {
   const totalCount = customerResponse?.data?.totalItems || PaginationDefaults.TOTAL_ITEMS;
   const totalPages = Math.ceil(totalCount / pageSize) || PaginationDefaults.TOTAL_PAGES;
 
-  // Entity Manager (Mutations only)
-  const manager = useEntityManager<CustomerDto, CreateCustomerRequest, UpdateCustomerRequest>({
+  // Entity Manager
+  const {
+      isFormOpen,
+      editingItem: editingCustomer,
+      itemToDelete: customerToDelete,
+      isLoading: isSubmitting,
+      isDeleting,
+      openCreate,
+      openEdit,
+      closeForm,
+      confirmDelete,
+      cancelDelete,
+      create: createCustomer,
+      update: updateCustomer,
+      delete: deleteCustomer
+  } = useEntityManager<CustomerDto, CreateCustomerRequest, UpdateCustomerRequest>({
     service: customerService,
-    queryKey: ['customers'],
+    queryKey: ['customers', pageIndex, pageSize, sortField, sortDir, filters], // Include fetch dependencies to invalidate properly
   });
+
+  const toast = useToast();
+  // Bulk Delete State
+  const [itemsToDelete, setItemsToDelete] = useState<CustomerDto[] | null>(null);
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (codes: string[]) => customerService.deleteMultiple(codes),
+    onSuccess: () => {
+      toast.success(t('common.deleteSuccess'));
+      setItemsToDelete(null);
+      refetch();
+    },
+    onError: (err: any) => {
+      toast.error(err.message || t('common.deleteError'));
+    }
+  });
+
+  const handleBulkDelete = (items: CustomerDto[]) => {
+    setItemsToDelete(items);
+  };
+
+  const confirmBulkDelete = () => {
+    if (itemsToDelete) {
+      bulkDeleteMutation.mutate(itemsToDelete.map(i => i.code));
+    }
+  };
+
+  // Form State
+  const [formData, setFormData] = useState({
+      username: '',
+      email: '',
+      password: '',
+      fullName: '',
+      phone: '',
+      role: 'customer',
+      isActive: true,
+  });
+
+  const resetForm = () => setFormData({
+      username: '',
+      email: '',
+      password: '',
+      fullName: '',
+      phone: '',
+      role: 'customer',
+      isActive: true,
+  });
+
+  const handleOpenCreate = () => {
+      resetForm();
+      openCreate();
+  };
+
+  const handleOpenEdit = (customer: CustomerDto) => {
+      setFormData({
+          username: customer.username || '',
+          email: customer.email,
+          password: '', // Don't fill password on edit
+          fullName: customer.fullName || '',
+          phone: customer.phone || '', // Map phone or phoneNumber depending on DTO (we standardized to phone)
+          role: customer.role || 'customer',
+          isActive: customer.isActive
+      });
+      openEdit(customer);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      
+      if (editingCustomer) {
+          updateCustomer(editingCustomer.code, {
+              fullName: formData.fullName,
+              email: formData.email,
+              phone: formData.phone,
+              role: formData.role,
+              isActive: formData.isActive,
+              password: formData.password || undefined // Only send if set
+          });
+      } else {
+          createCustomer({
+              username: formData.username,
+              email: formData.email,
+              password: formData.password, // Required for create
+              fullName: formData.fullName,
+              phone: formData.phone,
+              role: formData.role,
+              isActive: formData.isActive
+          });
+      }
+  };
+
 
   const columns: DataTableColumn<CustomerDto>[] = [
     {
@@ -70,10 +177,10 @@ export const CustomersPage = () => {
             <Mail size={14} className="text-blue-400" />
             {customer.email}
           </p>
-          {customer.phoneNumber && (
+          {customer.phone && (
             <p className="text-sm flex items-center gap-2 text-slate-500 dark:text-slate-500">
               <Phone size={14} className="text-slate-400" />
-              {customer.phoneNumber}
+              {customer.phone}
             </p>
           )}
         </div>
@@ -81,7 +188,7 @@ export const CustomersPage = () => {
     },
     {
       id: 'role',
-      header: "Role", // ToDo: Localize
+      header: "Role",
       accessor: (customer) => (
         <Badge color={customer.role === 'admin' ? 'error' : 'info'}>{customer.role}</Badge>
       ),
@@ -93,7 +200,7 @@ export const CustomersPage = () => {
       header: t('admin.columns.status'),
       accessor: (customer) => (
         <Badge color={customer.isActive ? 'success' : 'secondary'}>
-          {customer.isActive ? t('status.active') : t('status.inactive')}
+          {customer.isActive ? t('admin.status.active') : t('admin.status.inactive')}
         </Badge>
       ),
       className: 'text-center',
@@ -105,37 +212,7 @@ export const CustomersPage = () => {
       accessor: (customer) => <span className="text-slate-500">{formatDate(customer.createdAt)}</span>,
       sortable: true
     },
-    {
-      id: 'action',
-      header: t('admin.columns.action'),
-      accessor: (customer) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500"
-            onClick={() => setSelectedCustomer(customer)}
-            title={t('admin.actions.view')}
-          >
-            <Eye size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600"
-            onClick={() => manager.openEdit(customer)}
-            title={t('admin.actions.edit')}
-          >
-            <Edit size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-red-500"
-            onClick={() => manager.confirmDelete(customer)}
-            title={t('admin.actions.delete')}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
-    }
+
   ];
 
   const handleSort = (field: string, dir: 'asc' | 'desc') => {
@@ -158,13 +235,21 @@ export const CustomersPage = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.customers')}</h1>
+      <AdminPageHeader
+        title="admin.sidebar.customers"
+        subtitle="admin.subtitles.customers"
+      />
 
       <DataTable
         columns={columns}
         data={items}
         keyField="code"
         isLoading={isLoading}
+        onBulkDelete={handleBulkDelete}
+        onView={(customer) => setSelectedCustomer(customer)}
+        onEdit={handleOpenEdit}
+        onDelete={confirmDelete}
+        onAdd={handleOpenCreate} // Enable Add button
 
         // Sorting
         externalSortField={sortField}
@@ -187,7 +272,7 @@ export const CustomersPage = () => {
             type: 'text',
           },
           {
-            id: 'phoneNumber',
+            id: 'phone',
             label: t('admin.columns.phone') || 'Số điện thoại',
             type: 'text',
           },
@@ -213,6 +298,10 @@ export const CustomersPage = () => {
         // Visibility
         enableColumnVisibility={true}
         exportFilename="customers_export"
+        onExportAllData={async () => {
+          const response = await customerService.search({ pageIndex: 1, pageSize: 10000 });
+          return (response.data?.items || []) as unknown as CustomerDto[];
+        }}
         emptyMessage={t('common.noResults')}
       />
 
@@ -232,9 +321,12 @@ export const CustomersPage = () => {
               <div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">{selectedCustomer.fullName}</h2>
                 <p className="text-slate-500">{selectedCustomer.email}</p>
-                <Badge color={selectedCustomer.isActive ? 'success' : 'secondary'} className="mt-1">
-                  {selectedCustomer.isActive ? t('status.active') : t('status.inactive')}
-                </Badge>
+                <div className="flex items-center gap-2 mt-1">
+                    <Badge color={selectedCustomer.isActive ? 'success' : 'secondary'}>
+                    {selectedCustomer.isActive ? t('admin.status.active') : t('admin.status.inactive')}
+                    </Badge>
+                     <Badge color={selectedCustomer.role === 'admin' ? 'error' : 'info'}>{selectedCustomer.role}</Badge>
+                </div>
               </div>
             </div>
 
@@ -245,10 +337,10 @@ export const CustomersPage = () => {
                   <Mail size={16} className="text-blue-500" />
                   {selectedCustomer.email}
                 </p>
-                {selectedCustomer.phoneNumber && (
+                {selectedCustomer.phone && (
                   <p className="flex items-center gap-2">
                     <Phone size={16} className="text-slate-400" />
-                    {selectedCustomer.phoneNumber}
+                    {selectedCustomer.phone}
                   </p>
                 )}
                 <p className="flex items-center gap-2">
@@ -267,92 +359,120 @@ export const CustomersPage = () => {
                 Email
               </Button>
             </div>
+             <div className="flex justify-end pt-4">
+              <Button onClick={() => setSelectedCustomer(null)} variant="outline">
+                {t('common.close')}
+              </Button>
+            </div>
           </div>
         )}
       </Modal>
 
 
-      {/* Customer Edit Modal */}
+      {/* Customer Create/Edit Modal */}
       <Modal
-        isOpen={manager.isFormOpen}
-        onClose={manager.closeForm}
-        title={t('admin.actions.edit') + ' ' + t('admin.columns.customer')}
-        size="md"
+        isOpen={isFormOpen}
+        onClose={closeForm}
+        title={editingCustomer ? t('admin.actions.edit') + ' ' + t('admin.columns.customer') : t('admin.actions.create') + ' ' + t('admin.columns.customer')}
+        size="lg"
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const updates: any = {
-              isActive: formData.get('isActive') === 'true',
-              // Add other fields if needed, e.g. role if backend supports it
-            };
-            // If backend supports role update via update endpoint
-            // check CustomerDto structure.
-            // For now just Status as it is common.
-            if (manager.editingItem) {
-              manager.updateMutation.mutate({
-                id: manager.editingItem.code,
-                data: updates
-              });
-            }
-          }}
-          className="space-y-4"
-        >
-          {manager.editingItem && (
-            <>
-              <div>
-                <label className="block text-sm font-medium mb-1">{t('admin.columns.customer')}</label>
-                <input className="w-full px-3 py-2 border rounded-md bg-slate-100 text-slate-500" disabled value={manager.editingItem.fullName || manager.editingItem.username} />
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {!editingCustomer && (
+                <Input
+                    label="Username *"
+                    value={formData.username}
+                    onChange={e => setFormData({...formData, username: e.target.value})}
+                    required
+                    placeholder="Enter username"
+                />
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <Input
+                    label={t('admin.columns.customer') + ' (Full Name)'}
+                    value={formData.fullName}
+                    onChange={e => setFormData({...formData, fullName: e.target.value})}
+                    placeholder="Enter full name"
+                />
+                 <Input
+                    label="Email *"
+                    type="email"
+                    value={formData.email}
+                    onChange={e => setFormData({...formData, email: e.target.value})}
+                    required
+                    placeholder="Enter email"
+                />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Status</label>
-                <select
-                  name="isActive"
-                  defaultValue={String(manager.editingItem.isActive)}
-                  className="w-full px-3 py-2 border rounded-md dark:bg-slate-800 dark:border-slate-700"
-                >
-                  <option value="true">{t('status.active')}</option>
-                  <option value="false">{t('status.inactive')}</option>
-                </select>
-              </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <Input
+                    label={t('admin.columns.phone')}
+                    value={formData.phone}
+                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    placeholder="Enter phone number"
+                />
+                 <Select
+                    label="Role"
+                    value={formData.role}
+                    onChange={e => setFormData({...formData, role: e.target.value})}
+                    options={[
+                        { value: 'customer', label: 'Customer' },
+                        { value: 'admin', label: 'Admin' },
+                        { value: 'staff', label: 'Staff' }
+                    ]}
+                />
+            </div>
 
-              <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={manager.closeForm}>
-                  {t('common.cancel')}
+             <Input
+                label={editingCustomer ? "New Password (Optional)" : "Password *"}
+                type="password"
+                value={formData.password}
+                onChange={e => setFormData({...formData, password: e.target.value})}
+                required={!editingCustomer}
+                placeholder={editingCustomer ? "Leave blank to keep current" : "Enter password"}
+            />
+
+                <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
+                     <Switch
+                        label={t('admin.columns.status')}
+                        description={t('admin.statusHint', 'Bật để tài khoản hoạt động')}
+                        checked={formData.isActive}
+                        onChange={(checked) => setFormData({...formData, isActive: checked})}
+                     />
+                </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={closeForm}>
+                    {t('common.cancel')}
                 </Button>
-                <Button type="submit" isLoading={manager.isLoading}>
-                  {t('common.save')}
+                <Button type="submit" isLoading={isSubmitting}>
+                    {editingCustomer ? t('common.save') : t('common.create')}
                 </Button>
-              </div>
-            </>
-          )}
+            </div>
         </form>
       </Modal>
 
       {/* Delete Confirmation */}
-      <Modal
-        isOpen={!!manager.itemToDelete}
-        onClose={manager.cancelDelete}
+      <ConfirmDialog
+        isOpen={!!customerToDelete}
+        onClose={cancelDelete}
         title={t('admin.actions.delete')}
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p>{t('messages.confirmDelete')}</p>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={manager.cancelDelete}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              className="bg-red-600 hover:bg-red-700 text-white"
-              onClick={() => manager.itemToDelete && manager.delete(manager.itemToDelete.code)}
-            >
-              {t('common.delete')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        message={t('messages.confirmDelete')}
+        confirmText={t('common.delete')}
+        onConfirm={() => customerToDelete && deleteCustomer(customerToDelete.code)}
+        isLoading={isDeleting}
+      />
+      
+      {/* Bulk Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={!!itemsToDelete}
+        onClose={() => setItemsToDelete(null)}
+        onConfirm={confirmBulkDelete}
+        title={t('admin.actions.delete')}
+        message={t('common.confirmDelete', { count: itemsToDelete?.length || 0 })}
+        confirmText={t('common.delete')}
+        isLoading={bulkDeleteMutation.isPending}
+      />
     </div>
   );
 };

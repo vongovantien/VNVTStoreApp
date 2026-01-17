@@ -37,7 +37,7 @@ public class ImportProductsHandler : IRequestHandler<ImportProductsCommand, Resu
 
                 if (!string.IsNullOrEmpty(dto.Code))
                 {
-                    product = await _productRepository.AsQueryable().FirstOrDefaultAsync(p => p.Code == dto.Code, cancellationToken);
+                    product = await _productRepository.GetByCodeAsync(dto.Code, cancellationToken);
                 }
 
                 if (product != null)
@@ -47,7 +47,7 @@ public class ImportProductsHandler : IRequestHandler<ImportProductsCommand, Resu
                 }
                 else
                 {
-                    product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, dto.Sku);
+                    product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, dto.Sku, null, dto.Weight, dto.SupplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
                     product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Sku, dto.Description, dto.IsActive, dto.Weight, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size, dto.SupplierCode);
                     await _productRepository.AddAsync(product, cancellationToken);
                 }

@@ -10,7 +10,7 @@ export interface CustomerDto {
     username?: string;
     email: string;
     fullName: string;
-    phoneNumber?: string;
+    phone?: string; // Renamed from phoneNumber
     address?: string;
     city?: string;
     district?: string;
@@ -27,18 +27,19 @@ export interface CreateCustomerRequest {
     email: string;
     password?: string;
     fullName: string;
-    phoneNumber?: string;
+    phone?: string; // Renamed from phoneNumber
     role?: string;
+    isActive?: boolean;
 }
 
 export interface UpdateCustomerRequest {
     fullName?: string;
-    phoneNumber?: string;
-    address?: string;
-    city?: string;
-    district?: string;
-    ward?: string;
+    phone?: string; // Renamed from phoneNumber
+    email?: string;
+    role?: string;
     isActive?: boolean;
+    password?: string;
+    // Address fields removed as they belong to AddressService or need separate handling
 }
 
 // ============ Service ============

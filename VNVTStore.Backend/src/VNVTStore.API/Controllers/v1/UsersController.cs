@@ -9,6 +9,7 @@ using VNVTStore.Application.Users.Commands;
 using VNVTStore.Application.Users.Queries;
 
 using VNVTStore.Application.Users.Queries;
+using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.API.Controllers.v1;
@@ -63,6 +64,17 @@ public class UsersController : BaseApiController
     }
 
     /// <summary>
+    /// Create new user (Admin only)
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = "admin,Admin")]
+    public async Task<IActionResult> Create([FromBody] CreateUserDto dto)
+    {
+        var result = await Mediator.Send(new CreateCommand<CreateUserDto, UserDto>(dto));
+        return HandleResult(result);
+    }
+
+    /// <summary>
     /// Get all users (Admin only)
     /// </summary>
     [Authorize(Roles = "admin,Admin")]
@@ -104,6 +116,17 @@ public class UsersController : BaseApiController
 
         var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, null, request.SortDTO, filters));
         return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Delete multiple users (Admin only)
+    /// </summary>
+    [HttpPost("delete-multiple")]
+    [Authorize(Roles = "admin,Admin")]
+    public async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
+    {
+        var result = await Mediator.Send(new DeleteMultipleCommand<TblUser>(codes));
+        return HandleDelete(result);
     }
 }
 

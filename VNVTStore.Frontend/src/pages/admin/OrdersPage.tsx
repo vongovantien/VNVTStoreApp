@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Eye, Truck, Check, X, Printer, Package, ChevronUp, ChevronDown, Loader2, Download, Trash2 } from 'lucide-react';
-import { Button, Badge, Modal, Pagination, ConfirmDialog } from '@/components/ui';
+import { Button, Badge, Modal, Pagination, ConfirmDialog, TableActions } from '@/components/ui';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
 import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/utils/format';
 import { orderService, type OrderDto, type OrderItemDto } from '@/services/orderService';
-import { AdminToolbar } from '@/components/admin/AdminToolbar';
-import { ColumnVisibility } from '@/components/admin/ColumnVisibility';
+import { AdminToolbar, ColumnVisibility, TableToolbar, AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';
-import { TableToolbar } from './components/TableToolbar';
-import { exportToCSV } from '@/utils/export';
+import { exportToExcel } from '@/utils/export';
 import { DataTableColumn } from '@/components/common/DataTable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -122,82 +120,6 @@ export const OrdersPage = () => {
       header: t('admin.columns.date'),
       accessor: (row) => <span className="text-secondary text-sm">{formatDate(row.createdAt)}</span>,
       sortable: true
-    },
-    {
-      id: 'action',
-      header: t('admin.columns.action'),
-      className: 'text-center',
-      headerClassName: 'text-center',
-      accessor: (order) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            className="p-2 hover:bg-secondary rounded-lg transition-colors"
-            onClick={() => setSelectedOrder(order)}
-            title="Xem chi tiết"
-          >
-            <Eye size={16} />
-          </button>
-
-          {/* Workflow Actions */}
-          {order.status === 'pending' && (
-            <button
-              className="p-2 hover:bg-success/10 rounded-lg transition-colors"
-              title="Xác nhận đơn"
-              onClick={() => updateStatus(order.code, 'confirmed')}
-            >
-              <Check size={16} className="text-success" />
-            </button>
-          )}
-
-          {order.status === 'confirmed' && (
-            <button
-              className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
-              title="Giao hàng"
-              onClick={() => updateStatus(order.code, 'shipping')}
-            >
-              <Truck size={16} className="text-primary" />
-            </button>
-          )}
-
-          {order.status === 'shipping' && (
-            <button
-              className="p-2 hover:bg-success/10 rounded-lg transition-colors"
-              title="Đã giao"
-              onClick={() => updateStatus(order.code, 'delivered')}
-            >
-              <Package size={16} className="text-success" />
-            </button>
-          )}
-
-          {order.status === 'delivered' && (
-            <button
-              className="p-2 hover:bg-secondary rounded-lg transition-colors"
-              title="In hóa đơn"
-              onClick={handlePrintInvoice}
-            >
-              <Printer size={16} className="text-secondary" />
-            </button>
-          )}
-
-          {order.status === 'pending' && (
-            <button
-              className="p-2 hover:bg-error/10 rounded-lg transition-colors"
-              title="Hủy đơn"
-              onClick={() => updateStatus(order.code, 'cancelled')}
-            >
-              <X size={16} className="text-error" />
-            </button>
-          )}
-
-          <button
-            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors text-rose-600"
-            title={t('admin.actions.delete')}
-            onClick={() => setOrderToDelete(order)}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      )
     }
   ];
 
@@ -260,20 +182,23 @@ export const OrdersPage = () => {
     }
   };
 
-  const handleExport = () => {
-    exportToCSV(sortedOrders, 'orders_export');
+  const handleExport = async () => {
+    await exportToExcel(sortedOrders, 'orders_export');
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">{t('admin.orders')}</h1>
-        <div className="flex items-center gap-2">
-          <Badge color="warning">{orders.filter(o => o.status === 'pending').length} chờ xác nhận</Badge>
-          <Badge color="info">{orders.filter(o => o.status === 'shipping').length} đang giao</Badge>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="admin.sidebar.orders"
+        subtitle="admin.subtitles.orders"
+        rightSection={
+          <div className="flex items-center gap-2">
+            <Badge color="warning">{orders.filter(o => o.status === 'pending').length} chờ xác nhận</Badge>
+            <Badge color="info">{orders.filter(o => o.status === 'shipping').length} đang giao</Badge>
+          </div>
+        }
+      />
 
 
 
@@ -286,8 +211,81 @@ export const OrdersPage = () => {
         onView={(order) => setSelectedOrder(order)}
         onEdit={(order) => setSelectedOrder(order)} // Map Edit to View for now as Order Edit is complex
         onDelete={(order) => setOrderToDelete(order)}
+        renderRowActions={(order) => (
+          <>
+            {order.status === 'pending' && (
+              <button
+                className="p-1.5 hover:bg-success/10 rounded transition-colors text-success"
+                title="Xác nhận đơn"
+                onClick={() => updateStatus(order.code, 'confirmed')}
+              >
+                <Check size={18} />
+              </button>
+            )}
+  
+            {order.status === 'confirmed' && (
+              <button
+                className="p-1.5 hover:bg-primary/10 rounded transition-colors text-primary"
+                title="Giao hàng"
+                onClick={() => updateStatus(order.code, 'shipping')}
+              >
+                <Truck size={18} />
+              </button>
+            )}
+  
+            {order.status === 'shipping' && (
+              <button
+                className="p-1.5 hover:bg-success/10 rounded transition-colors text-success"
+                title="Đã giao"
+                onClick={() => updateStatus(order.code, 'delivered')}
+              >
+                <Package size={18} />
+              </button>
+            )}
+  
+            {order.status === 'delivered' && (
+              <button
+                className="p-1.5 hover:bg-secondary rounded transition-colors text-secondary"
+                title="In hóa đơn"
+                onClick={handlePrintInvoice}
+              >
+                <Printer size={18} />
+              </button>
+            )}
+  
+            {order.status === 'pending' && (
+              <button
+                className="p-1.5 hover:bg-error/10 rounded transition-colors text-error"
+                title="Hủy đơn"
+                onClick={() => updateStatus(order.code, 'cancelled')}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </>
+        )}
         onReset={handleReset}
         exportFilename="orders_export"
+        exportColumns={[
+          { key: 'code', label: t('admin.columns.orderCode'), width: 15 },
+          { key: 'shippingName', label: t('admin.columns.customer'), width: 20 },
+          { key: 'shippingPhone', label: t('admin.columns.phone'), width: 15 },
+          { key: 'shippingAddress', label: t('admin.columns.address'), width: 30 },
+          { key: 'totalAmount', label: t('admin.columns.total'), width: 15 },
+          { key: 'finalAmount', label: t('admin.columns.finalAmount'), width: 15 },
+          { key: 'shippingFee', label: t('admin.columns.shippingFee'), width: 12 },
+          { key: 'discountAmount', label: t('admin.columns.discount'), width: 12 },
+          { key: 'status', label: t('admin.columns.status'), width: 15 },
+          { key: 'paymentMethod', label: t('admin.columns.paymentMethod'), width: 18 },
+          { key: 'paymentStatus', label: t('admin.columns.payment'), width: 15 },
+          { key: 'createdAt', label: t('admin.columns.date'), width: 18 },
+          { key: 'note', label: t('admin.columns.note'), width: 25 },
+        ]}
+        onExportAllData={async () => {
+          const response = await orderService.search({ pageIndex: 1, pageSize: 10000 });
+          return response.data?.items || [];
+        }}
+        enableSelection={false}
 
         // Search & Filter
         onAdvancedSearch={handleAdvancedSearch}

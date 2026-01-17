@@ -44,4 +44,11 @@ public class SuppliersController : BaseApiController<SupplierDto, CreateSupplier
 
     protected override IRequest<Result> CreateDeleteCommand(string code)
         => new DeleteCommand<TblSupplier>(code);
+
+    [HttpPost("delete-multiple")]
+    public async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
+    {
+        var result = await Mediator.Send(new DeleteMultipleCommand<TblSupplier>(codes));
+        return HandleDelete(result);
+    }
 }

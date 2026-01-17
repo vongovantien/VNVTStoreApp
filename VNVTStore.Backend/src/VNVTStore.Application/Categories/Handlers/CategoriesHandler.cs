@@ -14,6 +14,7 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
     IRequestHandler<CreateCommand<CreateCategoryDto, CategoryDto>, Result<CategoryDto>>,
     IRequestHandler<UpdateCommand<UpdateCategoryDto, CategoryDto>, Result<CategoryDto>>,
     IRequestHandler<DeleteCommand<TblCategory>, Result>,
+    IRequestHandler<DeleteMultipleCommand<TblCategory>, Result>,
     IRequestHandler<GetByCodeQuery<CategoryDto>, Result<CategoryDto>>
 {
     private readonly IRepository<TblProduct> _productRepository;
@@ -65,10 +66,7 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
     public async Task<Result> Handle(DeleteCommand<TblCategory> request, CancellationToken cancellationToken)
     {
         // Check if category has products
-        var productCount = await _productRepository
-            .AsQueryable()
-            .Where(p => p.CategoryCode == request.Code)
-            .CountAsync(cancellationToken);
+        var productCount = await _productRepository.CountAsync(p => p.CategoryCode == request.Code, cancellationToken);
 
         if (productCount > 0)
         {
@@ -78,6 +76,20 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
         }
 
         return await DeleteAsync(request.Code, MessageConstants.Category, cancellationToken, softDelete: false);
+    }
+
+    public async Task<Result> Handle(DeleteMultipleCommand<TblCategory> request, CancellationToken cancellationToken)
+    {
+        // Check for active products
+        // We construct the query effectively selecting the CategoryCodes that are "blocked" (in use by active products)
+        var blockedCodesQuery = _productRepository.AsQueryable()
+            .Where(p => request.Codes.Contains(p.CategoryCode) && p.IsActive == true)
+            .Select(p => p.CategoryCode!); // Nullable check?
+
+        var checkResult = await CheckBlockingDependenciesAsync(blockedCodesQuery, "products", cancellationToken);
+        if (checkResult.IsFailure) return checkResult;
+
+        return await DeleteMultipleAsync(request.Codes, MessageConstants.Category, cancellationToken);
     }
 
     public async Task<Result<CategoryDto>> Handle(GetByCodeQuery<CategoryDto> request, CancellationToken cancellationToken)

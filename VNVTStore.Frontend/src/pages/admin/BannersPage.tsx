@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, Edit2, Trash2, ExternalLink } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from '@/hooks/useBanners';
 import { BannerForm, BannerFormData } from './forms/BannerForm';
 import { useToast } from '@/store';
 import { BannerDto } from '@/services/bannerService';
 import { formatDate } from '@/utils/format';
+import { AdminPageHeader } from '@/components/admin';
 
 const BannersPage = () => {
   const { t } = useTranslation();
@@ -48,7 +49,7 @@ const BannersPage = () => {
   const columns: DataTableColumn<BannerDto>[] = [
     {
       id: 'title',
-      header: t('admin.columns.title') || 'Title',
+      header: t('admin.columns.title'),
       accessor: (banner) => (
         <div>
           <p className="font-medium text-slate-800 dark:text-slate-100">{banner.title}</p>
@@ -59,7 +60,7 @@ const BannersPage = () => {
     },
     {
       id: 'link',
-      header: 'Link',
+      header: t('admin.columns.link'),
       accessor: (banner) => banner.linkUrl ? (
         <a
           href={banner.linkUrl}
@@ -67,13 +68,13 @@ const BannersPage = () => {
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline flex items-center gap-1 text-sm"
         >
-          {banner.linkText || 'Link'} <ExternalLink size={12} />
+          {banner.linkText || t('admin.columns.link')} <ExternalLink size={12} />
         </a>
       ) : <span className="text-slate-400">-</span>,
     },
     {
       id: 'priority',
-      header: t('admin.columns.priority') || 'Priority',
+      header: t('admin.columns.priority'),
       accessor: 'priority',
       className: 'text-center',
       headerClassName: 'text-center'
@@ -94,41 +95,11 @@ const BannersPage = () => {
     },
     {
       id: 'createdAt',
-      header: t('admin.columns.createdAt') || 'Created At',
+      header: t('admin.columns.createdAt'),
       accessor: (banner) => <span className="text-slate-500">{formatDate(banner.createdAt)}</span>,
       sortable: true
     },
-    {
-      id: 'actions',
-      header: t('admin.columns.action'),
-      accessor: (banner) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500"
-            title={t('admin.actions.view')}
-            onClick={() => setViewingBanner(banner)}
-          >
-            <Eye size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600"
-            title={t('admin.actions.edit')}
-            onClick={() => openEdit(banner)}
-          >
-            <Edit2 size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors text-rose-600"
-            title={t('admin.actions.delete')}
-            onClick={() => setBannerToDelete(banner)}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
-    }
+
   ];
 
   const handleCreate = (data: BannerFormData) => {
@@ -189,9 +160,10 @@ const BannersPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.banners') || 'Banners'}</h1>
-      </div>
+      <AdminPageHeader
+        title="admin.banners"
+        subtitle="admin.subtitles.banners"
+      />
 
       <DataTable
         columns={columns}
@@ -208,20 +180,21 @@ const BannersPage = () => {
         advancedFilterDefs={[
           {
             id: 'title',
-            label: 'Title',
+            label: t('admin.columns.title'),
             type: 'text',
-            placeholder: 'Search title...'
+            placeholder: t('admin.placeholders.searchTitle')
           },
           {
             id: 'status',
-            label: 'Status',
+            label: t('admin.columns.status'),
             type: 'select',
             options: [
-              { value: 'active', label: 'Active' },
-              { value: 'inactive', label: 'Inactive' }
+              { value: 'active', label: t('common.status.active') },
+              { value: 'inactive', label: t('common.status.inactive') }
             ]
           }
         ]}
+
 
         // Pagination
         currentPage={currentPage}
@@ -232,6 +205,7 @@ const BannersPage = () => {
 
         // Actions
         onAdd={() => { setEditingBanner(null); setIsFormOpen(true); }}
+        onRefresh={() => refetch()}
         onView={(item) => setViewingBanner(item)}
         onEdit={openEdit}
         onDelete={(item) => setBannerToDelete(item)}

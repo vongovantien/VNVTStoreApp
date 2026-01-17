@@ -1,11 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities
 {
     [Table("Banner")]
-    public class TblBanner
+    public class TblBanner : IEntity
     {
         [Key]
         [MaxLength(10)]
@@ -27,7 +28,8 @@ namespace VNVTStore.Domain.Entities
         
         public int Priority { get; set; } = 0;
         
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
+        public string? ModifiedType { get; set; }
     }
 }

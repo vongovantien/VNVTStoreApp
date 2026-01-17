@@ -19,6 +19,15 @@ public class DashboardStatsDto
     public decimal CustomersChange { get; set; }
     public int PendingOrders { get; set; }
     public int PendingQuotes { get; set; }
+    public List<TopProductDto> TopProducts { get; set; } = new();
+    public List<RevenueChartItem> RevenueChart { get; set; } = new();
+}
+
+public class TopProductDto
+{
+    public string Name { get; set; } = string.Empty;
+    public int Sales { get; set; }
+    public decimal Revenue { get; set; }
 }
 
 public class RevenueChartItem

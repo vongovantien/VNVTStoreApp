@@ -41,3 +41,8 @@ public record UpdateCommand<TDto, TResponse>(string Code, TDto Dto) : IRequest<R
 /// Phải có TMarker để MediatR phân biệt được handler của từng entity (TMarker thường là Entity type)
 /// </summary>
 public record DeleteCommand<TMarker>(string Code) : IRequest<Result>;
+
+/// <summary>
+/// Base Command cho Delete Multiple operations - REUSABLE
+/// </summary>
+public record DeleteMultipleCommand<TMarker>(List<string> Codes) : IRequest<Result>;

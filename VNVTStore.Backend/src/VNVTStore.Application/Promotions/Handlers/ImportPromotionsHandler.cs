@@ -33,7 +33,7 @@ public class ImportPromotionsHandler : IRequestHandler<ImportPromotionsCommand, 
             {
                 if (string.IsNullOrEmpty(dto.Code)) continue;
 
-                var existing = await _promotionRepository.AsQueryable().FirstOrDefaultAsync(p => p.Code == dto.Code, cancellationToken);
+                var existing = await _promotionRepository.GetByCodeAsync(dto.Code, cancellationToken);
                 if (existing != null)
                 {
                     // Update

@@ -60,6 +60,8 @@ public static class MessageConstants
     public const string CouponLimitReached = "Coupon.LimitReached";
     public const string CategoryHasProducts = "Category.HasProducts";
 
+    public const string RequireLoginOrGuestInfo = "Auth.RequireLoginOrGuestInfo";
+    
     private static readonly Dictionary<string, Dictionary<string, string>> Messages = new()
     {
         ["vi"] = new()
@@ -110,7 +112,8 @@ public static class MessageConstants
             [CouponNotActive] = "Mã giảm giá không hoạt động",
             [CouponExpired] = "Mã giảm giá đã hết hạn hoặc chưa bắt đầu",
             [CouponLimitReached] = "Mã giảm giá đã hết lượt sử dụng",
-            [CategoryHasProducts] = "Không thể xóa danh mục '{0}' vì đang có {1} sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước."
+            [CategoryHasProducts] = "Không thể xóa danh mục '{0}' vì đang có {1} sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.",
+            [RequireLoginOrGuestInfo] = "Vui lòng đăng nhập hoặc điền thông tin liên hệ."
         },
         ["en"] = new()
         {
@@ -160,7 +163,8 @@ public static class MessageConstants
             [CouponNotActive] = "Coupon is not active",
             [CouponExpired] = "Coupon has expired or not yet started",
             [CouponLimitReached] = "Coupon usage limit reached",
-            [CategoryHasProducts] = "Cannot delete category '{0}' because it has {1} products. Please move products to another category first."
+            [CategoryHasProducts] = "Cannot delete category '{0}' because it has {1} products. Please move products to another category first.",
+            [RequireLoginOrGuestInfo] = "Please login or provide contact information."
         }
     };
 

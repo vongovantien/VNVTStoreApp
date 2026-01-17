@@ -18,6 +18,9 @@ public partial class TblOrderItem
     public string? Size { get; private set; }
 
     public string? Color { get; private set; }
+    
+    public string? ProductName { get; private set; }
+    public string? ProductImage { get; private set; }
 
     public decimal PriceAtOrder { get; private set; }
 
@@ -29,7 +32,7 @@ public partial class TblOrderItem
 
     public virtual ICollection<TblReview> TblReviews { get; private set; } = new List<TblReview>();
 
-    public static TblOrderItem Create(string productCode, int quantity, decimal priceAtOrder, string? size, string? color)
+    public static TblOrderItem Create(string productCode, string productName, string? productImage, int quantity, decimal priceAtOrder, string? size, string? color)
     {
         if (quantity <= 0) throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
         if (priceAtOrder < 0) throw new ArgumentException("Price cannot be negative.", nameof(priceAtOrder));
@@ -38,6 +41,8 @@ public partial class TblOrderItem
         {
             Code = Guid.NewGuid().ToString("N").Substring(0, 10),
             ProductCode = productCode,
+            ProductName = productName,
+            ProductImage = productImage,
             Quantity = quantity,
             PriceAtOrder = priceAtOrder,
             Size = size,

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Edit2, Trash2, Eye, Tag, Clock } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { PromotionForm } from './forms/PromotionForm';
 import {
@@ -23,6 +23,7 @@ import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { ImportModal } from '@/components/common/ImportModal';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
 import { useToast } from '@/store';
+import { AdminPageHeader } from '@/components/admin';
 
 // We need a hook to fetch promotions compatible with DataTable
 const usePromotions = (params: any) => {
@@ -158,7 +159,7 @@ export const PromotionsPage = () => {
     },
     {
       id: 'usage',
-      header: 'Usage Limit',
+      header: t('admin.columns.usageLimit'),
       accessor: (p) => p.usageLimit ?? '∞',
       className: 'text-center',
       headerClassName: 'text-center'
@@ -178,34 +179,7 @@ export const PromotionsPage = () => {
       className: 'text-center',
       headerClassName: 'text-center'
     },
-    {
-      id: 'actions',
-      header: t('admin.columns.action'),
-      accessor: (p) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500"
-            onClick={() => setViewingPromotion(p)}
-          >
-            <Eye size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors text-blue-600"
-            onClick={() => openEdit(p)}
-          >
-            <Edit2 size={16} />
-          </button>
-          <button
-            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors text-rose-600"
-            onClick={() => confirmDelete(p)}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
-    }
+
   ];
 
   // Handler Wrappers
@@ -260,26 +234,9 @@ export const PromotionsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('admin.promotions')}</h1>
-        <div className="flex gap-2">
-
-            <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
-                Import Excel
-            </Button>
-            <Button onClick={() => openCreate()}>
-                <Plus size={20} className="mr-2" />
-                {t('admin.actions.create')}
-            </Button>
-        </div>
-      </div>
-
-      <ImportModal 
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        onImport={handleImportPromotion}
-        title={t('common.importData', 'Import Promotions')}
-        templateUrl="/templates/promotions_template.xlsx"
+      <AdminPageHeader
+        title="admin.promotions"
+        subtitle="admin.subtitles.promotions"
       />
 
       <DataTable
@@ -289,6 +246,11 @@ export const PromotionsPage = () => {
         isLoading={isLoading}
         isFetching={isFetching}
         error={isError ? (error as Error) : null}
+        onAdd={() => openCreate()}
+        onRefresh={() => refetch()}
+        onImport={handleImportPromotion}
+        importTemplateUrl="/templates/promotions_template.xlsx" 
+
 
         currentPage={currentPage}
         totalPages={totalPages}
@@ -315,9 +277,9 @@ export const PromotionsPage = () => {
           setCurrentPage(1);
         }}
         advancedFilterDefs={[
-          { id: 'search', label: 'Search', type: 'text', placeholder: 'Search by Name/Code...' },
-          { id: 'type', label: 'Type', type: 'select', options: [{ value: 'voucher', label: 'Voucher' }, { value: 'flash_sale', label: 'Flash Sale' }] },
-          { id: 'isActive', label: 'Status', type: 'select', options: [{ value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }] }
+          { id: 'search', label: t('common.search'), type: 'text', placeholder: t('admin.placeholders.searchNameCode') },
+          { id: 'type', label: t('admin.columns.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('admin.types.flashSale') }] },
+          { id: 'isActive', label: t('admin.columns.status'), type: 'select', options: [{ value: 'true', label: t('common.status.active') }, { value: 'false', label: t('common.status.inactive') }] }
         ]}
       />
 

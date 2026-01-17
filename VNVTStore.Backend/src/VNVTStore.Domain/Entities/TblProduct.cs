@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblProduct
+public partial class TblProduct : IEntity
 {
     private TblProduct() 
     {
@@ -14,7 +15,7 @@ public partial class TblProduct
         TblQuotes = new List<TblQuote>();
     }
 
-    public string Code { get; private set; } = null!;
+    public string Code { get; set; } = null!;
 
     public string Name { get; private set; } = null!;
 
@@ -42,9 +43,13 @@ public partial class TblProduct
 
     public string? Size { get; private set; }
 
-    public bool? IsActive { get; private set; }
+    public bool IsActive { get; set; }
 
-    public DateTime? CreatedAt { get; private set; }
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public string? ModifiedType { get; set; }
 
     public string? SupplierCode { get; private set; }
 
@@ -62,27 +67,52 @@ public partial class TblProduct
 
     public virtual ICollection<TblQuote> TblQuotes { get; private set; }
 
-    public static TblProduct Create(string name, decimal price, int stock, string? categoryCode, string? sku)
+    public static TblProduct Create(string name, decimal price, int stock, string? categoryCode, string? sku, decimal? costPrice, 
+        decimal? weight, string? supplierCode, string? color, string? power, string? voltage, string? material, string? size)
     {
          return new TblProduct
          {
-             Code = Guid.NewGuid().ToString("N").Substring(0, 10), // Generate Code
+             Code = Guid.NewGuid().ToString("N").Substring(0, 10),
              Name = name,
              Price = price,
              StockQuantity = stock,
              CategoryCode = categoryCode,
              Sku = sku,
+             CostPrice = costPrice,
+             Weight = weight, 
+             SupplierCode = supplierCode,
+             Color = color,
+             Power = power,
+             Voltage = voltage,
+             Material = material,
+             Size = size,
              IsActive = true,
-             CreatedAt = DateTime.UtcNow
+             CreatedAt = DateTime.UtcNow,
+             UpdatedAt = DateTime.UtcNow // Initialize UpdatedAt
          };
     }
 
-    public void UpdateInfo(string name, decimal price, string? description, string? categoryCode)
+    public void UpdateInfo(string name, decimal price, string? description, string? categoryCode, decimal? costPrice, int? stockQuantity,
+        decimal? weight, string? supplierCode, string? color, string? power, string? voltage, string? material, string? size, string? sku)
     {
         Name = name;
         Price = price;
         Description = description;
         CategoryCode = categoryCode;
+        CostPrice = costPrice;
+        if (stockQuantity.HasValue) StockQuantity = stockQuantity.Value;
+        
+        // New fields
+        Weight = weight;
+        SupplierCode = supplierCode;
+        Color = color;
+        Power = power;
+        Voltage = voltage;
+        Material = material;
+        Size = size;
+        Sku = sku;
+        
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void DeductStock(int quantity)
@@ -91,11 +121,13 @@ public partial class TblProduct
              throw new InvalidOperationException($"Insufficient stock for product {Name}.");
         
         StockQuantity -= quantity;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void RestoreStock(int quantity)
     {
         StockQuantity += quantity;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void UpdateFromImport(string name, decimal price, int? stock, string? categoryCode, string? sku, string? description, bool? isActive, decimal? weight, string? color, string? power, string? voltage, string? material, string? size, string? supplierCode)
@@ -114,5 +146,6 @@ public partial class TblProduct
         Material = material;
         Size = size;
         SupplierCode = supplierCode;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

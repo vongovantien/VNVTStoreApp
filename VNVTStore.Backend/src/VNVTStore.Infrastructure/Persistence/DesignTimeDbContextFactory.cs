@@ -12,17 +12,22 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
     public ApplicationDbContext CreateDbContext(string[] args)
     {
         // Tìm đường dẫn đến appsettings.json trong API project
-        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "VNVTStore.API");
-        
+        var currentDir = Directory.GetCurrentDirectory();
+        var basePath = Path.Combine(currentDir, "src", "VNVTStore.API");
         if (!Directory.Exists(basePath))
         {
-            basePath = Directory.GetCurrentDirectory();
+             basePath = Path.Combine(currentDir, "..", "VNVTStore.API");
+        }
+        if (!Directory.Exists(basePath))
+        {
+             basePath = currentDir;
         }
 
         var configuration = new ConfigurationBuilder()
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile("appsettings.Development.json", optional: true)
+            .AddUserSecrets("526b9549-5cbc-4fb6-9535-1fdcf3c7e6e4")
             .Build();
 
         var connectionString = configuration.GetConnectionString("DefaultConnection");

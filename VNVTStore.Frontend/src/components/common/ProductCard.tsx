@@ -54,6 +54,19 @@ export const ProductCard = memo(
     const hasDiscount = product.discount && product.discount > 0;
     const isLowStock = product.stock <= 5 && product.stock > 0;
     const isOutOfStock = product.stock === 0;
+    
+    // Calculate isNew based on createdAt within NEW_PRODUCT_DAYS, or use product.isNew if provided
+    const NEW_PRODUCT_DAYS = 7;
+    const isNew = useMemo(() => {
+      if (product.isNew) return true;
+      if (product.createdAt) {
+        const createdDate = new Date(product.createdAt);
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - NEW_PRODUCT_DAYS);
+        return createdDate >= cutoffDate;
+      }
+      return false;
+    }, [product.isNew, product.createdAt]);
 
     // Handlers with useCallback for memoization
     const handleWishlistToggle = useCallback(
@@ -133,7 +146,7 @@ export const ProductCard = memo(
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-              {product.isNew && <Badge color="error" className="absolute top-2 left-2">{t('product.new')}</Badge>}
+              {isNew && <Badge color="error" className="absolute top-2 left-2">{t('product.new')}</Badge>}
               {hasDiscount && <Badge color="error" className="absolute top-2 left-2">{`-${product.discount}%`}</Badge>}
             </div>
           </Link>
@@ -222,7 +235,7 @@ export const ProductCard = memo(
 
             {/* Badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1">
-              {product.isNew && <Badge color="error" size="sm">{t('product.new')}</Badge>}
+              {isNew && <Badge color="error" size="sm">{t('product.new')}</Badge>}
               {hasDiscount && <Badge color="error" size="sm">{`-${product.discount}%`}</Badge>}
               {!hasFixedPrice && <Badge color="primary" size="sm">{t('product.contactForPrice')}</Badge>}
             </div>

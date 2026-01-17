@@ -17,8 +17,30 @@ public class UserDto : IBaseDto
     public string? FullName { get; set; }
     public string? Phone { get; set; }
     public string? Role { get; set; }
+    public bool IsActive { get; set; } // Ensure IsActive is exposed
     public DateTime? CreatedAt { get; set; }
     public string? Token { get; set; }
+}
+
+public class CreateUserDto
+{
+    public string Username { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string Password { get; set; } = null!;
+    public string? FullName { get; set; }
+    public string? Phone { get; set; }
+    public string? Role { get; set; }
+    public bool IsActive { get; set; } = true;
+}
+
+public class UpdateUserDto
+{
+    public string? FullName { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public string? Role { get; set; }
+    public bool? IsActive { get; set; }
+    public string? Password { get; set; } // Optional: Admin resetting password
 }
 
 public class AuthResponseDto
@@ -64,6 +86,7 @@ public class CreateProductDto
     public int? StockQuantity { get; set; }
     public string? Sku { get; set; }
     public decimal? Weight { get; set; }
+    public string? SupplierCode { get; set; } // Added
     public string? Color { get; set; }
     public string? Power { get; set; }
     public string? Voltage { get; set; }
@@ -72,6 +95,7 @@ public class CreateProductDto
     public string? Brand { get; set; }
     public bool IsNew { get; set; }
     public bool IsFeatured { get; set; }
+    public List<string>? Images { get; set; }
 }
 
 public class UpdateProductDto
@@ -84,6 +108,7 @@ public class UpdateProductDto
     public int? StockQuantity { get; set; }
     public string? Sku { get; set; }
     public decimal? Weight { get; set; }
+    public string? SupplierCode { get; set; } // Added
     public string? Color { get; set; }
     public string? Power { get; set; }
     public string? Voltage { get; set; }
@@ -93,6 +118,7 @@ public class UpdateProductDto
     public string? Brand { get; set; }
     public bool? IsNew { get; set; }
     public bool? IsFeatured { get; set; }
+    public List<string>? Images { get; set; }
 }
 
 public class ProductImageDto
@@ -377,8 +403,12 @@ public class QuoteDto : IBaseDto
     public decimal? QuotedPrice { get; set; }
     public string? AdminNote { get; set; }
     public string Status { get; set; } = null!;
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
+    
+    public string? CustomerName { get; set; }
+    public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
 }
 
 public class CreateQuoteDto

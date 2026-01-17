@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface PaginationProps {
   currentPage: number;
@@ -55,6 +56,7 @@ export const Pagination = ({
   pageSizeOptions = [10, 20, 50, 100],
   isLoading = false,
 }: PaginationProps) => {
+  const { t } = useTranslation();
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
   const pages = getPageNumbers(currentPage, totalPages);
@@ -68,14 +70,14 @@ export const Pagination = ({
           disabled={currentPage === 1 || isLoading}
           className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-primary px-4 py-2 text-sm font-medium text-secondary hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Trước
+          {t('pagination.previous')}
         </button>
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages || isLoading}
           className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-primary px-4 py-2 text-sm font-medium text-secondary hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sau
+          {t('pagination.next')}
         </button>
       </div>
 
@@ -91,19 +93,19 @@ export const Pagination = ({
                 </svg>
               )}
               <span>
-                Hiển thị{' '}
+                {t('pagination.showing')}{' '}
                 <span className="font-medium text-primary">{startItem}</span>
-                {' '}đến{' '}
+                {' '}{t('pagination.to')}{' '}
                 <span className="font-medium text-primary">{endItem}</span>
-                {' '}trong{' '}
+                {' '}{t('pagination.of')}{' '}
                 <span className="font-medium text-primary">{totalItems}</span>
-                {' '}kết quả
+                {' '}{t('pagination.results')}
               </span>
             </span>
 
             {onPageSizeChange && (
               <span className="flex items-center gap-2 ml-4 border-l pl-4 border-gray-300 dark:border-gray-600">
-                <span className="hidden lg:inline">Hiển thị</span>
+                <span className="hidden lg:inline">{t('pagination.display')}</span>
                 <select
                   value={pageSize}
                   onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -113,7 +115,7 @@ export const Pagination = ({
                     <option key={size} value={size}>{size}</option>
                   ))}
                 </select>
-                <span className="hidden lg:inline">dòng/trang</span>
+                <span className="hidden lg:inline">{t('pagination.rowsPerPage')}</span>
               </span>
             )}
           </p>
@@ -126,7 +128,7 @@ export const Pagination = ({
               disabled={currentPage === 1}
               className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-secondary focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="sr-only">Trang trước</span>
+              <span className="sr-only">{t('pagination.previous')}</span>
               <ChevronLeft size={20} />
             </button>
 
@@ -168,7 +170,7 @@ export const Pagination = ({
               disabled={currentPage >= totalPages}
               className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-secondary focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="sr-only">Trang sau</span>
+              <span className="sr-only">{t('pagination.next')}</span>
               <ChevronRight size={20} />
             </button>
           </nav>

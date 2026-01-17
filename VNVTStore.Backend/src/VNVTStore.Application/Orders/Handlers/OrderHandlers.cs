@@ -103,7 +103,9 @@ public class OrderHandlers :
                 {
                      if (string.IsNullOrEmpty(dtoItem.ProductCode)) continue;
                      
-                     var product = await _productRepository.GetByCodeAsync(dtoItem.ProductCode, cancellationToken);
+                     var product = await _productRepository.AsQueryable()
+                         .Include(p => p.TblProductImages)
+                         .FirstOrDefaultAsync(p => p.Code == dtoItem.ProductCode, cancellationToken);
                      if (product == null) continue;
 
                      itemsToProcess.Add(new ProcessableOrderItem(
@@ -142,6 +144,8 @@ public class OrderHandlers :
 
                 orderItems.Add(TblOrderItem.Create(
                     item.ProductCode!,
+                    item.ProductCodeNavigation.Name,
+                    item.ProductCodeNavigation.TblProductImages?.FirstOrDefault()?.ImageUrl,
                     item.Quantity,
                     item.ProductCodeNavigation.Price,
                     item.Size,

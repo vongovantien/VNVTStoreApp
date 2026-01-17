@@ -13,6 +13,8 @@ public partial class TblOrder
 
     public string UserCode { get; private set; } = null!;
 
+    public string? ModifiedType { get; private set; }
+
     public DateTime? OrderDate { get; private set; }
 
     public decimal TotalAmount { get; private set; }

@@ -10,4 +10,8 @@ public class CreateQuoteCommand : IRequest<ApiResponse<QuoteDto>>
     public string ProductCode { get; set; } = null!;
     public int Quantity { get; set; }
     public string? Note { get; set; }
+    
+    public string? CustomerName { get; set; }
+    public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
 }

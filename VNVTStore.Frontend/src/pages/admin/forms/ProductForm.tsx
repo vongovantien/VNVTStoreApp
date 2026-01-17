@@ -4,31 +4,35 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X } from 'lucide-react';
-import { Button, Input, Select } from '@/components/ui';
+import { Button, Input, Select, NumberInput, Switch } from '@/components/ui';
 import { useState } from 'react';
-import { useCategories } from '@/hooks';
+import { useCategories, useSuppliers } from '@/hooks';
+import { uploadService } from '@/services/uploadService';
 
-// Schema Definition
-const productSchema = z.object({
-  name: z.string().min(3, 'Tên sản phẩm phải có ít nhất 3 ký tự'),
-  categoryId: z.string().min(1, 'Vui lòng chọn danh mục'),
-  price: z.number().min(0, 'Giá không được âm'),
-  originalPrice: z.number().min(0, 'Giá gốc không được âm').optional(),
-  stock: z.number().int().min(0, 'Tồn kho không được âm'),
+const productSchemaBase = z.object({
+  name: z.string(),
+  categoryId: z.string(),
+  price: z.number(),
+  costPrice: z.number().optional(),
+  stock: z.number().int(),
   description: z.string().optional(),
   brand: z.string().optional(),
-  image: z.string().optional(),
+  sku: z.string().optional(),
+  weight: z.number().optional(),
+  supplierCode: z.string().optional(),
+  images: z.array(z.string()).optional(),
   color: z.string().optional(),
   power: z.string().optional(),
   voltage: z.string().optional(),
   material: z.string().optional(),
   size: z.string().optional(),
+  isActive: z.boolean().optional(),
 });
 
-export type ProductFormData = z.infer<typeof productSchema>;
+export type ProductFormData = z.infer<typeof productSchemaBase>;
 
 interface ProductFormProps {
-  initialData?: ProductFormData & { id?: string };
+  initialData?: ProductFormData & { id?: string; productImages?: { imageUrl: string, isPrimary: boolean }[] };
   onSubmit: (data: ProductFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -36,115 +40,170 @@ interface ProductFormProps {
 
 export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: ProductFormProps) => {
   const { t } = useTranslation();
+  const productSchema = z.object({
+    name: z.string().min(3, t('admin.validation.productNameMin') || 'Tên sản phẩm phải có ít nhất 3 ký tự'),
+    categoryId: z.string().min(1, t('admin.validation.categoryRequired') || 'Vui lòng chọn danh mục'),
+    price: z.number().min(0, t('admin.validation.priceMin') || 'Giá không được âm'),
+    costPrice: z.number().min(0, t('admin.validation.priceMin') || 'Giá vốn không được âm').optional(),
+    stock: z.number().int().min(0, t('admin.validation.stockMin') || 'Tồn kho không được âm'),
+    description: z.string().optional(),
+    brand: z.string().optional(),
+    sku: z.string().optional(),
+    weight: z.number().optional(),
+    supplierCode: z.string().optional(),
+    images: z.array(z.string()).optional(),
+    color: z.string().optional(),
+    power: z.string().optional(),
+    voltage: z.string().optional(),
+    material: z.string().optional(),
+    size: z.string().optional(),
+    isActive: z.boolean().optional(),
+  });
+
   const {
     register,
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: '',
+     name: '',
       categoryId: '',
       price: 0,
-      originalPrice: 0,
+
       stock: 0,
       description: '',
       brand: '',
-      image: '',
+      sku: '',
+      weight: 0,
+      supplierCode: '',
       color: '',
       power: '',
       voltage: '',
       material: '',
       size: '',
+      isActive: true,
       ...initialData,
+      // @ts-ignore
+      costPrice: initialData?.costPrice ?? initialData?.originalPrice ?? 0,
+      images: initialData?.images || initialData?.productImages?.map(img => img.imageUrl) || [],
     },
   });
 
-  const [previewImage, setPreviewImage] = useState<string | null>(initialData?.image || null);
+  const [previewImages, setPreviewImages] = useState<string[]>(initialData?.images || initialData?.productImages?.map(img => img.imageUrl) || []);
+  const [isUploading, setIsUploading] = useState(false);
   const { data: categories = [] } = useCategories();
+  const { data: suppliers = [] } = useSuppliers();
 
   const categoryOptions = categories.map((c) => ({
     value: c.code,
     label: c.name,
   }));
+  
+  const supplierOptions = suppliers.map((s) => ({
+    value: s.code,
+    label: s.name,
+  }));
 
-  const onDrop = (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      // Create a fake URL for preview (in real app, upload to Cloudinary here)
-      const url = URL.createObjectURL(file);
-      setPreviewImage(url);
-      setValue('image', url, { shouldValidate: true });
+  const onDrop = async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      try {
+        setIsUploading(true);
+        
+        // Create instant local previews using blob URLs
+        const localPreviews = acceptedFiles.map(file => URL.createObjectURL(file));
+        const currentImages = watch('images') || [];
+        setPreviewImages([...currentImages, ...localPreviews]);
+        
+        // Upload files and get actual URLs
+        const newUrls: string[] = [];
+        for (const file of acceptedFiles) {
+           const url = await uploadService.upload(file);
+           newUrls.push(url);
+        }
+        
+        // Replace local previews with actual URLs
+        const updatedImages = [...currentImages, ...newUrls];
+        setValue('images', updatedImages, { shouldValidate: true });
+        setPreviewImages(updatedImages);
+        
+        // Cleanup blob URLs
+        localPreviews.forEach(url => URL.revokeObjectURL(url));
+      } catch (error) {
+        console.error("Upload failed", error);
+        // Revert to original images on error
+        setPreviewImages(watch('images') || []);
+      } finally {
+        setIsUploading(false);
+      }
     }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    const currentImages = watch('images') || [];
+    const updatedImages = currentImages.filter((_, index) => index !== indexToRemove);
+    setValue('images', updatedImages, { shouldValidate: true });
+    setPreviewImages(updatedImages);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': [] },
-    maxFiles: 1,
   });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-12 gap-8">
-        {/* Left Column: Image Upload & Preview */}
         <div className="col-span-12 md:col-span-4 space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('admin.columns.image')}</label>
+            <div className="flex justify-between items-center">
+               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('admin.columns.image')}</label>
+               <span className="text-xs text-gray-400">({previewImages.length} images)</span>
+            </div>
+            
+            {previewImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                {previewImages.map((imgUrl, index) => (
+                  <div key={index} className="relative aspect-square group border rounded-lg overflow-hidden">
+                    <img src={imgUrl} alt={`Product ${index}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={12} />
+                    </button>
+                    {index === 0 && <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-0.5">Primary</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors aspect-square relative bg-gray-50 dark:bg-slate-900 ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 hover:border-primary'
-                }`}
+              className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors aspect-square relative bg-gray-50 dark:bg-slate-900 ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 hover:border-primary'}`}
             >
               <input {...getInputProps()} />
-              {previewImage ? (
-                <div className="relative w-full h-full group">
-                  <img
-                    src={previewImage || undefined}
-                    alt="Preview"
-                    className="w-full h-full object-contain rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewImage(null);
-                      setValue('image', '');
-                    }}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mx-auto mb-3">
-                    <Upload size={24} className="text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('messages.dragDropImage') || 'Tải ảnh lên'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    PNG, JPG, WEBP (Max 5MB)
-                  </p>
-                </div>
-              )}
+              <div className="text-center p-4">
+                 <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mx-auto mb-3">
+                   <Upload size={24} className="text-indigo-600 dark:text-indigo-400" />
+                 </div>
+                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                   {isUploading ? "Uploading..." : t('messages.dragDropImage')}
+                 </p>
+                 <p className="text-xs text-gray-500">
+                   PNG, JPG, WEBP (Max 5MB)
+                 </p>
+               </div>
             </div>
-            {errors.image && <p className="text-xs text-red-500">{errors.image.message}</p>}
+            {errors.images && <p className="text-xs text-red-500">{errors.images.message}</p>}
           </div>
-
-          {/* Description moved to bottom of left col for better balance if needed, or keep at bottom of main form. 
-              Let's put Description here if it's short, or keep it wide. 
-              Actually, let's keep Description at the bottom full width, but put Brand here perhaps? 
-              No, let's stick to the plan: Image on left, fields on right.
-          */}
         </div>
 
-        {/* Right Column: Form Fields */}
         <div className="col-span-12 md:col-span-8 space-y-6">
-          {/* Section 1: General Info */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b pb-2">
               {t('common.info')}
@@ -156,7 +215,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                   label={t('admin.columns.name')}
                   {...register('name')}
                   error={errors.name?.message}
-                  placeholder="Nhập tên sản phẩm..."
+                  placeholder={t('common.placeholders.productName')}
                   isRequired
                 />
               </div>
@@ -171,7 +230,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                     value={field.value}
                     onChange={field.onChange}
                     error={errors.categoryId?.message}
-                    placeholder="Chọn danh mục"
+                    placeholder={t('common.placeholders.selectCategory')}
                     isRequired
                   />
                 )}
@@ -181,74 +240,145 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 label={t('admin.columns.brand')}
                 {...register('brand')}
                 error={errors.brand?.message}
-                placeholder="Thương hiệu"
+                placeholder={t('common.placeholders.brand')}
+              />
+
+              <Input
+                label="SKU"
+                {...register('sku')}
+                error={errors.sku?.message}
+                placeholder="SKU Code"
+              />
+              
+              <Controller
+                name="supplierCode"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label={t('admin.columns.supplier') || "Supplier"}
+                    options={supplierOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.supplierCode?.message}
+                    placeholder={t('common.placeholders.selectSupplier') || "Select Supplier"}
+                  />
+                )}
               />
             </div>
           </div>
 
-          {/* Section 2: Pricing & Inventory */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b pb-2">
-              {t('common.priceAndStock')}
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
-              <Input
-                label={t('admin.columns.price')}
-                type="number"
-                {...register('price', { valueAsNumber: true })}
-                error={errors.price?.message}
-                placeholder="0"
-                isRequired
-              />
-              <Input
-                label={t('admin.columns.originalPrice')}
-                type="number"
-                {...register('originalPrice', { valueAsNumber: true })}
-                error={errors.originalPrice?.message}
-                placeholder="0"
-              />
-              <Input
-                label={t('admin.columns.stock')}
-                type="number"
-                {...register('stock', { valueAsNumber: true })}
-                error={errors.stock?.message}
-                placeholder="0"
-                isRequired
-              />
-            </div>
-          </div>
-
-          {/* Section 3: Specifications (New Attributes) */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b pb-2">
-              {t('common.specifications')}
+              {t('common.fields.priceAndStock')}
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              <Input label={t('admin.columns.color')} {...register('color')} placeholder="VD: Trắng..." />
-              <Input label={t('admin.columns.material')} {...register('material')} placeholder="VD: Nhựa PVC..." />
+              <Controller
+                name="price"
+                control={control}
+                render={({ field }) => (
+                  <NumberInput
+                    label={t('admin.columns.price')}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.price?.message}
+                    placeholder="0"
+                    isRequired
+                    min={0}
+                  />
+                )}
+              />
+              <Controller
+                name="costPrice"
+                control={control}
+                render={({ field }) => (
+                  <NumberInput
+                    label={t('admin.columns.costPrice') || "Cost Price"}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.costPrice?.message}
+                    placeholder="0"
+                    min={0}
+                  />
+                )}
+              />
+              <Controller
+                name="stock"
+                control={control}
+                render={({ field }) => (
+                  <NumberInput
+                    label={t('admin.columns.stock')}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.stock?.message}
+                    placeholder="0"
+                    isRequired
+                    min={0}
+                  />
+                )}
+              />
+               <Controller
+                name="weight"
+                control={control}
+                render={({ field }) => (
+                  <NumberInput
+                    label={t('admin.columns.weight') || "Weight (kg)"}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.weight?.message}
+                    placeholder="0"
+                    min={0}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b pb-2">
+              {t('common.fields.specifications')}
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <Input label={t('admin.columns.color')} {...register('color')} placeholder={t('common.placeholders.exampleColor')} />
+              <Input label={t('admin.columns.material')} {...register('material')} placeholder={t('common.placeholders.exampleMaterial')} />
             </div>
             <div className="grid grid-cols-3 gap-4">
-              <Input label={t('admin.columns.power')} {...register('power')} placeholder="VD: 50W..." />
-              <Input label={t('admin.columns.voltage')} {...register('voltage')} placeholder="VD: 220V..." />
-              <Input label={t('admin.columns.size')} {...register('size')} placeholder="VD: Ø20mm..." />
+              <Input label={t('admin.columns.power')} {...register('power')} placeholder={t('common.placeholders.examplePower')} />
+              <Input label={t('admin.columns.voltage')} {...register('voltage')} placeholder={t('common.placeholders.exampleVoltage')} />
+              <Input label={t('admin.columns.size')} {...register('size')} placeholder={t('common.placeholders.exampleSize')} />
             </div>
           </div>
         </div>
 
-        {/* Footer: Description (Full Width) */}
+        {/* Status Toggle */}
+        <div className="col-span-12">
+          <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
+            <Controller
+              name="isActive"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  label={t('admin.columns.status')}
+                  description={t('admin.statusHint', 'Bật để hiển thị sản phẩm trên cửa hàng')}
+                  checked={field.value ?? true}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </div>
+        </div>
+
         <div className="col-span-12 space-y-2">
           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             {t('admin.columns.description')}
           </label>
           <textarea
             className="w-full min-h-[100px] px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-slate-900 transition-all resize-y text-sm"
-            placeholder="Mô tả chi tiết sản phẩm..."
+            placeholder={t('common.placeholders.productDescription')}
             {...register('description')}
           />
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex justify-end gap-3 pt-6 border-t mt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           {t('common.cancel')}

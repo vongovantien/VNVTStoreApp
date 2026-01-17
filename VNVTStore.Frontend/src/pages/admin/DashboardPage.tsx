@@ -11,7 +11,7 @@ import {
   FileText,
   Loader2,
 } from 'lucide-react';
-import { RevenueChart } from './components/RevenueChart';
+import { RevenueChart, AdminPageHeader } from '@/components/admin';
 import { formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { dashboardService } from '@/services';
 import { useQuery } from '@tanstack/react-query';
@@ -60,7 +60,7 @@ export const DashboardPage = () => {
   const { data: ordersData, isLoading: ordersLoading } = useAdminOrders({ pageIndex: 1, pageSize: 5 });
   const recentOrders = ordersData?.orders || [];
 
-  const { data: statsResponse, isLoading: statsLoading, isError: statsError } = useQuery({
+  const { data: statsResponse, isLoading: statsLoading, isError: statsError, refetch } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: () => dashboardService.getStats(),
     staleTime: 30000,
@@ -79,12 +79,25 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('admin.dashboard')}</h1>
-        <p className="text-secondary">
-          {new Date().toLocaleDateString(i18n.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-      </div>
+      <AdminPageHeader
+        title="admin.sidebar.dashboard"
+        subtitle="admin.subtitles.dashboard"
+        rightSection={
+          <div className="flex items-center gap-3">
+            <p className="text-secondary font-medium hidden sm:block">
+              {new Date().toLocaleDateString(i18n.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+            <button
+              onClick={() => refetch()}
+              disabled={statsLoading}
+              className="p-2 hover:bg-secondary rounded-lg transition-colors text-primary"
+              title={t('common.refresh')}
+            >
+              <Loader2 size={20} className={statsLoading ? 'animate-spin' : ''} />
+            </button>
+          </div>
+        }
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -131,11 +144,11 @@ export const DashboardPage = () => {
 
       {/* Charts & Tables Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Chart Placeholder */}
+        {/* Revenue Chart */}
         <div className="lg:col-span-2 bg-primary rounded-xl p-6 shadow-sm border">
           <h2 className="font-bold mb-4">{t('admin.revenueChart')}</h2>
           <div className="h-64">
-            <RevenueChart />
+            <RevenueChart data={stats.revenueChart} />
           </div>
         </div>
 
@@ -143,11 +156,9 @@ export const DashboardPage = () => {
         <div className="bg-primary rounded-xl p-6">
           <h2 className="font-bold mb-4">{t('admin.topProducts')}</h2>
           <div className="space-y-4">
-            {[
-              { name: 'Máy lọc nước RO Kangaroo', sales: 128, revenue: 1150000000 },
-              { name: 'Máy giặt Samsung Inverter', sales: 95, revenue: 1187500000 },
-              { name: 'Nồi chiên không dầu Philips', sales: 210, revenue: 1047900000 },
-            ].map((product, index) => (
+            {(stats.topProducts || []).length === 0 ? (
+                 <p className="text-secondary text-sm">{t('common.noData')}</p>
+            ) : (stats.topProducts || []).map((product, index) => (
               <div key={index} className="flex items-center gap-3">
                 <span className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center font-bold text-sm">
                   {index + 1}
@@ -204,7 +215,7 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Pending Quotes */}
+        {/* Pending Quotes (Note: Currently we only show count, list is dummy or requires real fetch) */}
         <div className="bg-primary rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold flex items-center gap-2">
@@ -217,22 +228,9 @@ export const DashboardPage = () => {
               {t('common.viewAll')} <ArrowUpRight size={14} />
             </a>
           </div>
-          <div className="space-y-3">
-            {[
-              { customer: 'Công ty ABC', product: 'Điều hòa Daikin', date: '2 giờ trước' },
-              { customer: 'Nguyễn Văn B', product: 'Robot hút bụi Ecovacs', date: '5 giờ trước' },
-              { customer: 'Công ty XYZ', product: 'Máy lọc không khí', date: '1 ngày trước' },
-            ].map((quote, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 bg-secondary rounded-lg">
-                <FileText size={20} className="text-primary" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">{quote.customer}</p>
-                  <p className="text-sm text-tertiary truncate">{quote.product}</p>
-                </div>
-                <span className="text-xs text-tertiary">{quote.date}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-secondary">
+             {t('admin.messages.checkQuotesPage')}
+          </p>
         </div>
       </div>
     </div>

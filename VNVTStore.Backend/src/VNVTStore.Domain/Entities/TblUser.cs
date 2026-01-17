@@ -1,8 +1,9 @@
 ﻿using VNVTStore.Domain.Enums;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblUser
+public partial class TblUser : IEntity
 {
     private TblUser() 
     {
@@ -14,7 +15,7 @@ public partial class TblUser
         TblQuotes = new List<TblQuote>();
     }
 
-    public string Code { get; private set; } = null!;
+    public string Code { get; set; } = null!;
 
     public string Username { get; private set; } = null!;
 
@@ -28,13 +29,15 @@ public partial class TblUser
 
     public UserRole Role { get; private set; }
 
-    public DateTime? CreatedAt { get; private set; }
+    public DateTime? CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public DateTime? LastLogin { get; private set; }
 
-    public bool IsActive { get; private set; } = true;
+    public bool IsActive { get; set; } = true;
+
+    public string? ModifiedType { get; set; }
 
     public string? RefreshToken { get; private set; }
 
@@ -95,6 +98,12 @@ public partial class TblUser
     public void UpdateLastLogin()
     {
         LastLogin = DateTime.UtcNow;
+    }
+
+    public void UpdateRole(UserRole role)
+    {
+        Role = role;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void SetRefreshToken(string token, DateTime expiry)

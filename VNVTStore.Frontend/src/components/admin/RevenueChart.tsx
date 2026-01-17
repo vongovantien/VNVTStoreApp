@@ -9,22 +9,19 @@ import {
 } from 'recharts';
 import { formatCurrency } from '@/utils/format';
 
-const data = [
-  { name: 'T1', revenue: 40000000 },
-  { name: 'T2', revenue: 30000000 },
-  { name: 'T3', revenue: 20000000 },
-  { name: 'T4', revenue: 27800000 },
-  { name: 'T5', revenue: 18900000 },
-  { name: 'T6', revenue: 23900000 },
-  { name: 'T7', revenue: 34900000 },
-  { name: 'T8', revenue: 20000000 },
-  { name: 'T9', revenue: 27800000 },
-  { name: 'T10', revenue: 18900000 },
-  { name: 'T11', revenue: 23900000 },
-  { name: 'T12', revenue: 34900000 },
-];
+interface RevenueChartProps {
+  data?: { label: string; revenue: number; orderCount: number }[];
+}
 
-export const RevenueChart = () => {
+export const RevenueChart = ({ data = [] }: RevenueChartProps) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+        Chưa có dữ liệu
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -45,7 +42,7 @@ export const RevenueChart = () => {
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
           <XAxis
-            dataKey="name"
+            dataKey="label"
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 12, fill: '#64748b' }}

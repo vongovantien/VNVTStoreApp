@@ -3,7 +3,7 @@
  */
 
 export { apiClient, type ApiResponse, type PagedResult, type RequestDTO } from './api';
-export { productService, categoryService, type CategoryDto } from './productService';
+export { productService, categoryService, type CategoryDto, type CreateCategoryRequest, type UpdateCategoryRequest } from './productService';
 export { authService } from './authService';
 export { cartService, type CartDto } from './cartService';
 

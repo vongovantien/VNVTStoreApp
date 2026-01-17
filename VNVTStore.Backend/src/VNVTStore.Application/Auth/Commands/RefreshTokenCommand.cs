@@ -47,7 +47,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
              return Result.Failure<AuthResponseDto>(Error.Validation("Invalid token claims"));
         }
 
-        var user = await _repository.FindAsync(u => u.Code == userCode, cancellationToken);
+        var user = await _repository.GetByCodeAsync(userCode, cancellationToken);
 
         if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {

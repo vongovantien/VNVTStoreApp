@@ -5,6 +5,7 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Products.Queries;
 using VNVTStore.Domain.Entities;
+using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Application.Products.Handlers;
@@ -34,7 +35,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             request.PageIndex,
             request.PageSize,
             cancellationToken,
-            predicate: p => (p.IsActive == true) && 
+            predicate: p => (p.IsActive == true) && (p.ModifiedType != ModificationType.Delete.ToString()) &&
                            (string.IsNullOrWhiteSpace(request.Search) || p.Name.Contains(request.Search) || p.Code.Contains(request.Search) || (p.Sku != null && p.Sku.Contains(request.Search))) &&
                            (string.IsNullOrWhiteSpace(categoryCode) || p.CategoryCode == categoryCode),
             includes: q => QueryHelper.ApplyFilters(
@@ -66,7 +67,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
     public async Task<Result<ProductDto>> Handle(GetByCodeQuery<ProductDto> request, CancellationToken cancellationToken)
     {
-        return await GetByCodeAsync<ProductDto>(
+        return await GetByCodeIncludeChildrenAsync<ProductDto>(
             request.Code, 
             MessageConstants.Product, 
             cancellationToken,
@@ -82,7 +83,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
             if (!string.IsNullOrWhiteSpace(dto.Sku))
             {
-                var existingSku = await Repository.FindAsync(p => p.Sku == dto.Sku, cancellationToken);
+                var existingSku = await Repository.FindAsync(p => p.Sku == dto.Sku && p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
                 if (existingSku != null)
                 {
                     await UnitOfWork.RollbackTransactionAsync(cancellationToken);
@@ -94,8 +95,31 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 ? $"SKU{DateTime.Now.Ticks.ToString().Substring(10)}" 
                 : dto.Sku;
 
-            var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, sku);
+            var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, sku, dto.CostPrice, 
+                dto.Weight, dto.SupplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
             
+            if (dto.Images != null && dto.Images.Any())
+            {
+                int sortOrder = 1;
+                var newImages = dto.Images.Select(imgUrl => new TblProductImage
+                {
+                    Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                    ProductCode = product.Code,
+                    ImageUrl = imgUrl,
+                    IsPrimary = sortOrder == 1,
+                    SortOrder = sortOrder++
+                }).ToList();
+
+                if (product.TblProductImages is List<TblProductImage> imageList)
+                {
+                    imageList.AddRange(newImages);
+                }
+                else
+                {
+                    foreach (var img in newImages) product.TblProductImages.Add(img);
+                }
+            }
+
             // Ensure other fields are set if needed via new methods or just accept defaults for now
             // product.SetAttributes(dto.Color, dto.Size...); // If I added this
 
@@ -117,7 +141,10 @@ public class ProductHandlers : BaseHandler<TblProduct>,
         await UnitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            var product = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+            var product = await Repository.AsQueryable()
+                .Include(x => x.TblProductImages)
+                .FirstOrDefaultAsync(p => p.Code == request.Code && p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
+                
             if (product == null)
             {
                 await UnitOfWork.RollbackTransactionAsync(cancellationToken);
@@ -126,7 +153,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
             if (!string.IsNullOrWhiteSpace(request.Dto.Sku) && request.Dto.Sku != product.Sku)
             {
-                var existingSku = await Repository.FindAsync(p => p.Sku == request.Dto.Sku && p.Code != request.Code, cancellationToken);
+                var existingSku = await Repository.FindAsync(p => p.Sku == request.Dto.Sku && p.Code != request.Code && p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
                 if (existingSku != null)
                 {
                     await UnitOfWork.RollbackTransactionAsync(cancellationToken);
@@ -134,7 +161,43 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 }
             }
 
-            product.UpdateInfo(request.Dto.Name, request.Dto.Price ?? 0, request.Dto.Description, request.Dto.CategoryCode);
+            product.UpdateInfo(request.Dto.Name ?? product.Name, request.Dto.Price ?? product.Price, request.Dto.Description ?? product.Description, 
+                request.Dto.CategoryCode ?? product.CategoryCode, request.Dto.CostPrice ?? product.CostPrice, request.Dto.StockQuantity ?? product.StockQuantity,
+                request.Dto.Weight ?? product.Weight, request.Dto.SupplierCode ?? product.SupplierCode, request.Dto.Color ?? product.Color, 
+                request.Dto.Power ?? product.Power, request.Dto.Voltage ?? product.Voltage, request.Dto.Material ?? product.Material, 
+                request.Dto.Size ?? product.Size, request.Dto.Sku ?? product.Sku);
+
+            if (request.Dto.Images != null && request.Dto.Images.Any())
+            {
+                 // Remove existing
+                product.TblProductImages.Clear();
+
+                // Add new
+                int sortOrder = 1;
+                var newImages = request.Dto.Images.Select(imgUrl => new TblProductImage
+                {
+                    Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                    ProductCode = product.Code,
+                    ImageUrl = imgUrl,
+                    IsPrimary = sortOrder == 1, 
+                    SortOrder = sortOrder++
+                }).ToList();
+
+                if (product.TblProductImages is List<TblProductImage> imageList)
+                {
+                    imageList.AddRange(newImages);
+                }
+                else
+                {
+                    foreach (var img in newImages) product.TblProductImages.Add(img);
+                }
+            }
+            // If Images is empty list, it means remove all? Or if null, do nothing?
+            // If user deletes all images, frontend sends empty array.
+            else if (request.Dto.Images != null && !request.Dto.Images.Any())
+            {
+                 product.TblProductImages.Clear();
+            }
             
             Repository.Update(product);
             await UnitOfWork.CommitAsync(cancellationToken);

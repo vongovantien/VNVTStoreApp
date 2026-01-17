@@ -9,6 +9,7 @@ import { createEntityService, API_ENDPOINTS } from './baseService';
 export interface QuoteDto {
     code: string;
     productCode: string;
+    userName?: string;
     productName?: string;
     productImage?: string;
     quantity: number;
@@ -16,6 +17,9 @@ export interface QuoteDto {
     status: string;
     quotedPrice?: number;
     createdAt: string;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
 }
 
 export interface CreateQuoteRequest {

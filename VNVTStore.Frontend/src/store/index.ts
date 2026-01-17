@@ -427,3 +427,4 @@ export const useNotificationStore = create<NotificationState>()(
 // Re-export toast store
 export { useToastStore, useToast } from './toastStore';
 export type { Toast, ToastType } from './toastStore';
+export * from './useSettings';

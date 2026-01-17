@@ -129,6 +129,17 @@ export function createEntityService<
             }
             return response;
         },
+
+        /**
+         * Delete multiple items
+         */
+        async deleteMultiple(codes: string[]): Promise<ApiResponse<void>> {
+            const response = await http.post<void>(`${endpoint}/delete-multiple`, codes);
+            if (!response.success) {
+                throw new Error(response.message || 'Bulk delete failed');
+            }
+            return response;
+        },
     };
 }
 

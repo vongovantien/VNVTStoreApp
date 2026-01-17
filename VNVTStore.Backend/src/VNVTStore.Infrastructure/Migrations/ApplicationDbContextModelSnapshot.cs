@@ -120,7 +120,7 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -137,6 +137,11 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("LinkUrl")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<int>("Priority")
                         .ValueGeneratedOnAdd()
@@ -240,6 +245,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValueSql("('CAT'::text || lpad((nextval('category_code_seq'::regclass))::text, 6, '0'::text))");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -248,10 +256,15 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("ImageURL");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -261,6 +274,9 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("ParentCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Code")
                         .HasName("TblCategory_pkey");
@@ -278,9 +294,23 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValueSql("('CPN'::text || lpad((nextval('coupon_code_seq'::regclass))::text, 6, '0'::text))");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
                     b.Property<string>("PromotionCode")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("UsageCount")
                         .ValueGeneratedOnAdd()
@@ -321,6 +351,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
 
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
                     b.Property<DateTime?>("OrderDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -330,6 +365,7 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<string>("Status")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -388,6 +424,12 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("ProductImage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProductName")
+                        .HasColumnType("text");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -432,6 +474,7 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Status")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -478,13 +521,18 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
                     b.Property<string>("Material")
                         .HasColumnType("text");
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -513,6 +561,9 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Property<string>("SupplierCode")
                         .HasColumnType("character varying");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Voltage")
                         .HasColumnType("text");
@@ -670,10 +721,27 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("AdminNote")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("CustomerEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("Note")
                         .HasColumnType("text");
@@ -703,7 +771,6 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserCode")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -733,10 +800,18 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<bool?>("IsApproved")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("OrderItemCode")
                         .HasMaxLength(100)
@@ -744,6 +819,9 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Property<int?>("Rating")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserCode")
                         .IsRequired()
@@ -787,6 +865,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -838,6 +921,11 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Add");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -854,6 +942,7 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Role")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -1069,8 +1158,6 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasOne("VNVTStore.Domain.Entities.TblUser", "UserCodeNavigation")
                         .WithMany("TblQuotes")
                         .HasForeignKey("UserCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("TblQuote_UserCode_fkey");
 
                     b.Navigation("ProductCodeNavigation");

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblSupplier
+public partial class TblSupplier : IEntity
 {
     public string Code { get; set; } = null!;
 
@@ -12,6 +13,8 @@ public partial class TblSupplier
     public string? ContactPerson { get; set; }
 
     public string? Email { get; set; }
+
+    public string? ModifiedType { get; set; }
 
     public string? Phone { get; set; }
 

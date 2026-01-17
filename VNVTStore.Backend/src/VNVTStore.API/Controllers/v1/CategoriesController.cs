@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VNVTStore.Application.Categories.Queries;
 
@@ -30,4 +31,12 @@ public class CategoriesController : BaseApiController<CategoryDto, CreateCategor
 
     protected override IRequest<Result> CreateDeleteCommand(string code)
         => new DeleteCommand<TblCategory>(code);
+
+    [HttpPost("delete-multiple")]
+    [Authorize(Roles = "admin,Admin")]
+    public async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
+    {
+        var result = await Mediator.Send(new DeleteMultipleCommand<TblCategory>(codes));
+        return HandleDelete(result);
+    }
 }

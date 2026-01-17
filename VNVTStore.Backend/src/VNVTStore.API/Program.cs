@@ -38,6 +38,8 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseCors("AllowedOrigins");
 
+app.UseStaticFiles();
+
 app.UseRateLimiter();
 
 // Add request localization middleware

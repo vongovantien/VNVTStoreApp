@@ -85,6 +85,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Priority).HasDefaultValue(0);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblAddress>(entity =>
@@ -183,6 +184,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.ParentCode)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("TblCategory_ParentCode_fkey");
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblCoupon>(entity =>
@@ -201,6 +203,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.PromotionCode)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("TblCoupon_PromotionCode_fkey");
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblOrder>(entity =>
@@ -240,6 +243,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(d => d.UserCodeNavigation).WithMany(p => p.TblOrders)
                 .HasForeignKey(d => d.UserCode)
                 .HasConstraintName("TblOrder_UserCode_fkey");
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblOrderItem>(entity =>
@@ -332,6 +336,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(d => d.SupplierCodeNavigation).WithMany()
                 .HasForeignKey(d => d.SupplierCode)
                 .OnDelete(DeleteBehavior.SetNull);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblProductImage>(entity =>
@@ -422,6 +427,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("TblReview_UserCode_fkey");
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblSupplier>(entity =>
@@ -440,6 +446,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Name).HasColumnType("character varying");
             entity.Property(e => e.Phone).HasColumnType("character varying");
             entity.Property(e => e.TaxCode).HasColumnType("character varying");
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblQuote>(entity =>
@@ -469,6 +476,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(d => d.ProductCodeNavigation).WithMany(p => p.TblQuotes)
                 .HasForeignKey(d => d.ProductCode)
                 .HasConstraintName("TblQuote_ProductCode_fkey");
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
 
@@ -499,6 +507,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Username).HasMaxLength(50);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("Add");
         });
         modelBuilder.HasSequence("address_code_seq");
         modelBuilder.HasSequence("cart_code_seq");

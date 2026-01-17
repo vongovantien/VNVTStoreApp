@@ -5,6 +5,7 @@ import { Button, Badge, Modal, Input } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { quoteService } from '@/services/quoteService';
 import type { QuoteRequest } from '@/types';
+import { AdminPageHeader } from '@/components/admin';
 
 import { useToast } from '@/store/toastStore';
 
@@ -40,9 +41,9 @@ export const QuotesPage = () => {
           quotedPrice: dto.quotedPrice,
           createdAt: dto.createdAt,
           customer: {
-            name: 'Unknown Customer',
-            email: '',
-            phone: ''
+            name: dto.customerName || dto.userName || 'Unknown Customer',
+            email: dto.customerEmail || '',
+            phone: dto.customerPhone || ''
           }
         }));
         setQuotes(mappedQuotes);
@@ -93,13 +94,15 @@ export const QuotesPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">{t('admin.quotes')}</h1>
-        <div className="flex items-center gap-2">
-          <Badge color="warning">{quotes.filter((q) => q.status === 'pending').length} chờ xử lý</Badge>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="admin.quotes"
+        subtitle="admin.subtitles.quotes"
+        rightSection={
+          <div className="flex items-center gap-2">
+            <Badge color="warning">{quotes.filter((q) => q.status === 'pending').length} {t('admin.status.pending')}</Badge>
+          </div>
+        }
+      />
 
       {/* Filters */}
       <div className="bg-primary rounded-xl p-4">
@@ -108,7 +111,7 @@ export const QuotesPage = () => {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
             <input
               type="text"
-              placeholder="Tìm theo sản phẩm, khách hàng..."
+              placeholder={t('admin.placeholders.searchProductCustomer')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-primary"
@@ -119,11 +122,11 @@ export const QuotesPage = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-2 border rounded-lg focus:outline-none focus:border-primary"
           >
-            <option value="all">Tất cả</option>
-            <option value="pending">Chờ báo giá</option>
-            <option value="quoted">Đã báo giá</option>
-            <option value="closed">Đã chốt</option>
-            <option value="cancelled">Đã hủy</option>
+            <option value="all">{t('admin.filters.allStatus')}</option>
+            <option value="pending">{t('admin.status.pending')}</option>
+            <option value="quoted">{t('admin.status.quoted')}</option>
+            <option value="closed">{t('admin.status.closed')}</option>
+            <option value="cancelled">{t('admin.status.cancelled')}</option>
           </select>
         </div>
       </div>
@@ -146,12 +149,12 @@ export const QuotesPage = () => {
                 }
               >
                 {quote.status === 'pending'
-                  ? 'Chờ báo giá'
+                  ? t('admin.status.pending')
                   : quote.status === 'quoted'
-                    ? 'Đã báo giá'
+                    ? t('admin.status.quoted')
                     : quote.status === 'closed'
-                      ? 'Đã chốt'
-                      : 'Đã hủy'}
+                      ? t('admin.status.closed')
+                      : t('admin.status.cancelled')}
               </Badge>
               <span className="text-xs text-tertiary">{formatDate(quote.createdAt)}</span>
             </div>
@@ -165,7 +168,7 @@ export const QuotesPage = () => {
               />
               <div>
                 <p className="font-semibold line-clamp-2">{quote.productName}</p>
-                <p className="text-sm text-tertiary">Số lượng: {quote.quantity}</p>
+                <p className="text-sm text-tertiary">{t('admin.columns.quantity')}: {quote.quantity}</p>
               </div>
             </div>
 
@@ -189,7 +192,7 @@ export const QuotesPage = () => {
             {/* Quoted Price */}
             {quote.quotedPrice && (
               <div className="mb-4 p-3 bg-success/10 rounded-lg text-center">
-                <p className="text-sm text-secondary">Giá đã báo</p>
+                <p className="text-sm text-secondary">{t('admin.quotes.quotedPrice')}</p>
                 <p className="text-xl font-bold text-success">{formatCurrency(quote.quotedPrice)}</p>
               </div>
             )}
@@ -199,7 +202,7 @@ export const QuotesPage = () => {
               {quote.status === 'pending' && (
                 <>
                   <Button size="sm" fullWidth onClick={() => handleQuote(quote)} leftIcon={<DollarSign size={16} />}>
-                    Báo giá
+                    {t('admin.actions.quote')}
                   </Button>
                   <Button size="sm" variant="ghost" className="text-error">
                     <X size={16} />
@@ -209,16 +212,16 @@ export const QuotesPage = () => {
               {quote.status === 'quoted' && (
                 <>
                   <Button size="sm" fullWidth variant="outline" onClick={() => handleQuote(quote)}>
-                    Cập nhật giá
+                    {t('admin.actions.updatePrice')}
                   </Button>
                   <Button size="sm" leftIcon={<Check size={16} />}>
-                    Chốt
+                    {t('admin.actions.closeDeal')}
                   </Button>
                 </>
               )}
               {(quote.status === 'closed' || quote.status === 'cancelled') && (
                 <Button size="sm" fullWidth variant="outline" leftIcon={<Eye size={16} />}>
-                  Xem chi tiết
+                  {t('admin.actions.view')}
                 </Button>
               )}
             </div>
@@ -233,17 +236,17 @@ export const QuotesPage = () => {
           setShowQuoteModal(false);
           setQuotePrice('');
         }}
-        title="Báo giá"
+        title={t('admin.actions.quote')}
         size="sm"
         footer={
           <div className="flex gap-3 justify-end">
             <Button variant="outline" onClick={() => setShowQuoteModal(false)}>
-              Hủy
+              {t('admin.actions.cancel')}
             </Button>
             <Button
               onClick={handleSubmitQuote}
             >
-              Gửi báo giá
+              {t('admin.actions.sendQuote')}
             </Button>
           </div>
         }
@@ -258,23 +261,23 @@ export const QuotesPage = () => {
               />
               <div>
                 <p className="font-semibold">{selectedQuote.productName}</p>
-                <p className="text-sm text-tertiary">Số lượng: {selectedQuote.quantity}</p>
+                <p className="text-sm text-tertiary">{t('admin.columns.quantity')}: {selectedQuote.quantity}</p>
               </div>
             </div>
 
             <Input
-              label="Giá báo (VNĐ)"
+              label={t('admin.columns.price') + ' (VNĐ)'}
               type="number"
-              placeholder="Nhập giá báo..."
+              placeholder={t('admin.placeholders.enterPrice')}
               value={quotePrice}
               onChange={(e) => setQuotePrice(e.target.value)}
               leftIcon={<DollarSign size={18} />}
             />
 
             <div>
-              <label className="block text-sm font-medium mb-2">Ghi chú</label>
+              <label className="block text-sm font-medium mb-2">{t('admin.columns.note')}</label>
               <textarea
-                placeholder="Ghi chú cho khách hàng..."
+                placeholder={t('admin.placeholders.enterNote')}
                 rows={3}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-primary resize-none"
               />

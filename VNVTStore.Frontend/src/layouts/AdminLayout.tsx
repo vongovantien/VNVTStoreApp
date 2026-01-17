@@ -25,6 +25,11 @@ import {
   FileKey,
   Folder,
   Building2,
+  ExternalLink,
+  AlertTriangle,
+  Command,
+  Home,
+  ChevronRight as BreadcrumbSeparator,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button, Input, ConfirmDialog } from '@/components/ui';
@@ -35,32 +40,32 @@ import { UserRole } from '@/types';
 // Navigation items
 const navGroups = [
   {
-    title: 'Core',
+    title: 'admin.sidebar.core',
     items: [
-      { path: '/admin', icon: LayoutDashboard, label: 'common.modules.dashboard', end: true },
-      { path: '/admin/orders', icon: ShoppingCart, label: 'common.modules.orders' },
-      { path: '/admin/customers', icon: Users, label: 'common.modules.customers' },
+      { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', end: true },
+      { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders' },
+      { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers' },
     ]
   },
   {
-    title: 'Inventory',
+    title: 'admin.sidebar.inventory',
     items: [
-      { path: '/admin/categories', icon: Folder, label: 'common.modules.categories' },
-      { path: '/admin/products', icon: Package, label: 'common.modules.products' },
-      { path: '/admin/suppliers', icon: Building2, label: 'common.modules.suppliers' },
+      { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories' },
+      { path: '/admin/products', icon: Package, label: 'admin.sidebar.products' },
+      { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers' },
     ]
   },
   {
-    title: 'Marketing',
+    title: 'admin.sidebar.marketing',
     items: [
-      { path: '/admin/quotes', icon: FileText, label: 'common.modules.quotes' },
+      { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes' },
       // Add Coupons/FlashSale when available
     ]
   },
   {
-    title: 'System',
+    title: 'admin.sidebar.system',
     items: [
-      { path: '/admin/settings', icon: Settings, label: 'common.modules.settings' },
+      { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings' },
     ]
   }
 ];
@@ -73,6 +78,8 @@ export const AdminLayout = () => {
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { theme, toggleTheme } = useUIStore();
   const { logout, user, isAuthenticated } = useAuthStore();
   const location = useLocation();
@@ -82,6 +89,45 @@ export const AdminLayout = () => {
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const userBtnRef = useRef<HTMLButtonElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Ctrl+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearchModal(true);
+      }
+      if (e.key === 'Escape') {
+        setShowSearchModal(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Focus search input when modal opens
+  useEffect(() => {
+    if (showSearchModal && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearchModal]);
+
+  // Generate breadcrumbs from current path
+  const getBreadcrumbs = () => {
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const crumbs: { label: string; path: string }[] = [];
+    
+    let currentPath = '';
+    for (const part of pathParts) {
+      currentPath += `/${part}`;
+      const label = part === 'admin' ? 'Dashboard' : t(`admin.sidebar.${part}`, t(`common.modules.${part}`, part.charAt(0).toUpperCase() + part.slice(1)));
+      crumbs.push({ label, path: currentPath });
+    }
+    return crumbs;
+  };
+
+  const breadcrumbs = getBreadcrumbs();
 
   // Click outside handler
   useEffect(() => {
@@ -110,7 +156,6 @@ export const AdminLayout = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showLangMenu, showUserMenu]);
-
 
 
   if (!isAuthenticated || !user || user.role !== UserRole.ADMIN) {
@@ -172,7 +217,7 @@ export const AdminLayout = () => {
             <div key={index}>
               {!sidebarCollapsed && (
                 <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  {group.title}
+                  {t(group.title)}
                 </div>
               )}
               <div className="space-y-1">
@@ -250,7 +295,7 @@ export const AdminLayout = () => {
                 {navGroups.map((group, index) => (
                   <div key={index}>
                     <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      {group.title}
+                      {t(group.title)}
                     </div>
                     <div className="space-y-1">
                       {group.items.map((item) => (
@@ -299,13 +344,55 @@ export const AdminLayout = () => {
               <Menu size={24} />
             </button>
 
-            {/* Search */}
-            <div className="hidden md:block flex-1 max-w-md ml-4">
-              <Input
-                placeholder="Tìm kiếm..."
-                leftIcon={<Search size={18} />}
-                size="sm"
-              />
+            {/* Breadcrumbs - Hidden on mobile */}
+            <div className="hidden lg:flex items-center gap-1 text-sm">
+              <Home size={14} className="text-tertiary" />
+              {breadcrumbs.map((crumb, index) => (
+                <div key={crumb.path} className="flex items-center gap-1">
+                  <BreadcrumbSeparator size={14} className="text-tertiary" />
+                  {index === breadcrumbs.length - 1 ? (
+                    <span className="font-medium text-primary">{crumb.label}</span>
+                  ) : (
+                    <NavLink to={crumb.path} className="text-secondary hover:text-primary transition-colors">
+                      {crumb.label}
+                    </NavLink>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Global Search with Ctrl+K */}
+            <div className="hidden md:block flex-1 max-w-sm mx-4">
+              <button
+                onClick={() => setShowSearchModal(true)}
+                className="w-full flex items-center gap-3 px-4 py-2 bg-secondary rounded-lg border border-transparent hover:border-indigo-500 transition-all group"
+              >
+                <Search size={18} className="text-tertiary group-hover:text-indigo-500" />
+                <span className="flex-1 text-left text-sm text-tertiary">{t('common.search', 'Tìm kiếm...')}</span>
+                <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-tertiary bg-primary rounded border">
+                  <Command size={10} /> K
+                </kbd>
+              </button>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="hidden lg:flex items-center gap-2 mr-2">
+              <button 
+                onClick={() => navigate('/admin/orders?status=pending')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+                title="Đơn hàng chờ xử lý"
+              >
+                <ShoppingCart size={14} />
+                <span>5</span>
+              </button>
+              <button 
+                onClick={() => navigate('/admin/products?stock=0')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                title="Sản phẩm hết hàng"
+              >
+                <AlertTriangle size={14} />
+                <span>2</span>
+              </button>
             </div>
 
             {/* Actions */}
@@ -360,6 +447,17 @@ export const AdminLayout = () => {
                 <Bell size={20} />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full" />
               </Button>
+
+              {/* View Store */}
+              <a 
+                href="/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+              >
+                <ExternalLink size={14} />
+                {t('admin.viewStore', 'Xem cửa hàng')}
+              </a>
 
               {/* User menu */}
               <div className="relative ml-4 pl-4 border-l">
@@ -443,6 +541,95 @@ export const AdminLayout = () => {
         confirmText={t('common.logout')}
         variant="danger"
       />
+
+      {/* Global Search Modal */}
+      <AnimatePresence>
+        {showSearchModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-[999]"
+              onClick={() => setShowSearchModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[1000] overflow-hidden"
+            >
+              {/* Search Header with Gradient */}
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur rounded-xl px-4 py-3">
+                  <Search size={20} className="text-white/80" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t('admin.searchPlaceholder', 'Tìm đơn hàng, sản phẩm, khách hàng...')}
+                    className="flex-1 bg-transparent outline-none text-white placeholder:text-white/60 text-sm font-medium"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchQuery.trim()) {
+                        setShowSearchModal(false);
+                        navigate(`/admin/products?search=${encodeURIComponent(searchQuery)}`);
+                      }
+                    }}
+                  />
+                  <kbd className="px-2 py-1 text-[10px] font-bold text-white/80 bg-white/20 rounded-lg">
+                    ESC
+                  </kbd>
+                </div>
+              </div>
+              
+              {/* Quick Links */}
+              <div className="p-4">
+                <p className="mb-3 text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                  ⚡ Truy cập nhanh
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button 
+                    onClick={() => { setShowSearchModal(false); navigate('/admin/orders'); }}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                      <ShoppingCart size={18} className="text-white" />
+                    </div>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Đơn hàng</span>
+                  </button>
+                  <button 
+                    onClick={() => { setShowSearchModal(false); navigate('/admin/products'); }}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                      <Package size={18} className="text-white" />
+                    </div>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Sản phẩm</span>
+                  </button>
+                  <button 
+                    onClick={() => { setShowSearchModal(false); navigate('/admin/customers'); }}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                      <Users size={18} className="text-white" />
+                    </div>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Khách hàng</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Footer hint */}
+              <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-400 flex items-center justify-between">
+                <span>Nhấn <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border text-[10px] mx-1">Enter</kbd> để tìm kiếm</span>
+                <span className="flex items-center gap-1">
+                  <Command size={10} /> + K để mở
+                </span>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -36,7 +36,6 @@ export const ImportModal = ({
     accept: {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       'application/vnd.ms-excel': ['.xls'],
-      'text/csv': ['.csv'],
     },
     maxFiles: 1,
   });
@@ -45,7 +44,7 @@ export const ImportModal = ({
   const effectiveTemplateUrl = templateUrl?.startsWith('http') 
     ? templateUrl 
     : templateUrl?.startsWith('/') 
-        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5178/api/v1'}${templateUrl}` // Simplified logic, ideally use API_BASE_URL constant
+        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5176/api/v1'}${templateUrl}` // Simplified logic, ideally use API_BASE_URL constant
         : templateUrl;
 
   const handleImport = async () => {
@@ -142,7 +141,7 @@ export const ImportModal = ({
                  {t('import.selectFile', 'Select File')}
                </Button>
                <p className="text-xs text-secondary mt-4">
-                 {t('import.acceptedFormats', 'Accepted files: .xls, .xlsx, .csv')}
+                 {t('import.acceptedFormats', 'Accepted files: .xls, .xlsx')}
                </p>
             </>
           )}

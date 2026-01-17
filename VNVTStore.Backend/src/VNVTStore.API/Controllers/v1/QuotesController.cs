@@ -17,6 +17,29 @@ public class QuotesController : BaseApiController<QuoteDto, CreateQuoteDto, Upda
     {
     }
 
+    [HttpPost]
+    [AllowAnonymous]
+    public override async Task<IActionResult> Create([FromBody] RequestDTO<CreateQuoteDto> request)
+    {
+        if (request.PostObject == null)
+            return BadRequest(new { message = MessageConstants.Get(MessageConstants.BadRequest) });
+            
+        var dto = request.PostObject;
+        var command = new Application.Quotes.Commands.CreateQuoteCommand
+        {
+            ProductCode = dto.ProductCode,
+            Quantity = dto.Quantity,
+            Note = dto.Note,
+            CustomerName = dto.CustomerName,
+            CustomerEmail = dto.CustomerEmail,
+            CustomerPhone = dto.CustomerPhone
+        };
+        var result = await Mediator.Send(command);
+        
+        if (result.Success) return Ok(result.Data);
+        return BadRequest(new { message = result.Message });
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetMyQuotes()
     {

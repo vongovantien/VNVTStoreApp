@@ -21,6 +21,7 @@ public class CartService : ICartService
         var cart = await _cartRepository.AsQueryable()
             .Include(c => c.TblCartItems)
             .ThenInclude(ci => ci.ProductCodeNavigation)
+                .ThenInclude(p => p.TblProductImages)
             .FirstOrDefaultAsync(c => c.UserCode == userCode, cancellationToken);
 
         if (cart == null)

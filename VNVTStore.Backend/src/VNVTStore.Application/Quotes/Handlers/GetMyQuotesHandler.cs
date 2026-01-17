@@ -46,7 +46,7 @@ public class GetMyQuotesHandler : IRequestHandler<GetMyQuotesQuery, ApiResponse<
                 Status = q.Status,
                 QuotedPrice = q.QuotedPrice,
                 AdminNote = q.AdminNote,
-                CreatedAt = q.CreatedAt,
+                CreatedAt = q.CreatedAt ?? DateTime.UtcNow,
                 UpdatedAt = q.UpdatedAt
             })
             .ToListAsync(cancellationToken);

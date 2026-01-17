@@ -16,6 +16,8 @@ export interface DashboardStatsDto {
     ordersChange?: number;
     customersChange?: number;
     pendingQuotes?: number;
+    topProducts?: { name: string; sales: number; revenue: number }[];
+    revenueChart?: { label: string; revenue: number; orderCount: number }[];
 }
 
 // ============ Service ============
@@ -40,6 +42,16 @@ export const dashboardService = {
                 ordersChange: data.ordersChange ?? data.OrdersChange ?? 0,
                 customersChange: data.customersChange ?? data.CustomersChange ?? 0,
                 pendingQuotes: data.pendingQuotes ?? data.PendingQuotes ?? 0,
+                topProducts: (data.topProducts ?? data.TopProducts ?? []).map((p: any) => ({
+                    name: p.name ?? p.Name,
+                    sales: p.sales ?? p.Sales,
+                    revenue: p.revenue ?? p.Revenue
+                })),
+                revenueChart: (data.revenueChart ?? data.RevenueChart ?? []).map((c: any) => ({
+                    label: c.label ?? c.Label,
+                    revenue: c.revenue ?? c.Revenue,
+                    orderCount: c.orderCount ?? c.OrderCount
+                })),
             };
             return { ...response, data: mappedData };
         }

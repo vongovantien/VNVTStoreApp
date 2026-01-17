@@ -61,3 +61,13 @@ public enum UserStatus
     Banned,
     Pending
 }
+
+/// <summary>
+/// Loại thay đổi bản ghi (Soft Delete)
+/// </summary>
+public enum ModificationType
+{
+    Create,
+    Update,
+    Delete
+}

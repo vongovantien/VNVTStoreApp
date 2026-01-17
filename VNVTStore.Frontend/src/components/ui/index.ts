@@ -8,3 +8,6 @@ export { Modal, type ModalProps, type ModalSize } from './Modal';
 export { Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard, type SkeletonProps } from './Skeleton';
 export { Pagination } from './Pagination';
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
+export { NumberInput, type NumberInputProps } from './NumberInput';
+export { TableActions } from './TableActions';
+export { Switch, FormSwitch, type SwitchProps, type FormSwitchProps } from './Switch';

@@ -13,6 +13,8 @@ export {
     productKeys,
 } from './useProducts';
 
+export { useSuppliers, useSuppliersList } from './useSuppliers';
+
 // Re-export order hooks
 export { useOrders, useAdminOrders, useUpdateOrderStatus } from './useOrders';
 

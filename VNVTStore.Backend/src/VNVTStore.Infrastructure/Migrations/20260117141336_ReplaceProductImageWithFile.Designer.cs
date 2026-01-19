@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VNVTStore.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using VNVTStore.Infrastructure.Persistence;
 namespace VNVTStore.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260117141336_ReplaceProductImageWithFile")]
+    partial class ReplaceProductImageWithFile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -353,14 +356,6 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<string>("MasterCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("MasterType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -384,6 +379,9 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<long>("Size")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("TblProductCode")
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -392,7 +390,7 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasKey("Code")
                         .HasName("TblFile_pkey");
 
-                    b.HasIndex(new[] { "MasterCode" }, "idx_file_mastercode");
+                    b.HasIndex("TblProductCode");
 
                     b.ToTable("TblFile", (string)null);
                 });
@@ -1068,6 +1066,13 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("PromotionCodeNavigation");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblFile", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", null)
+                        .WithMany("TblFiles")
+                        .HasForeignKey("TblProductCode");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblOrder", b =>
                 {
                     b.HasOne("VNVTStore.Domain.Entities.TblAddress", "AddressCodeNavigation")
@@ -1239,6 +1244,8 @@ namespace VNVTStore.Infrastructure.Migrations
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblProduct", b =>
                 {
                     b.Navigation("TblCartItems");
+
+                    b.Navigation("TblFiles");
 
                     b.Navigation("TblOrderItems");
 

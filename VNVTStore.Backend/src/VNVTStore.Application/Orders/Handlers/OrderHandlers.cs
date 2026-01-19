@@ -26,24 +26,26 @@ public class OrderHandlers :
     private readonly ICartService _cartService;
     private readonly IRepository<TblProduct> _productRepository;
     private readonly IRepository<TblAddress> _addressRepository;
-    private readonly IRepository<TblUser> _userRepository; // New injection
+    private readonly IRepository<TblUser> _userRepository; 
     private readonly IShippingStrategy _shippingStrategy;
-    private readonly IMediator _mediator; // For publishing events
+    private readonly IMediator _mediator; 
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly INotificationService _notificationService;
+    private readonly IApplicationDbContext _context;
 
     public OrderHandlers(
         IRepository<TblOrder> orderRepository,
         ICartService cartService,
         IRepository<TblProduct> productRepository,
         IRepository<TblAddress> addressRepository,
-        IRepository<TblUser> userRepository, // New injection
-        IShippingStrategy shippingStrategy, // Strategy Injection
+        IRepository<TblUser> userRepository,
+        IShippingStrategy shippingStrategy, 
         IMediator mediator,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        INotificationService notificationService) // New injection
+        INotificationService notificationService,
+        IApplicationDbContext context) 
     {
         _orderRepository = orderRepository;
         _cartService = cartService;
@@ -55,6 +57,7 @@ public class OrderHandlers :
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _notificationService = notificationService;
+        _context = context;
     }
 
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -69,24 +72,31 @@ public class OrderHandlers :
             }
 
             // 1. Get Items to Process (Common Structure)
-            List<ProcessableOrderItem> itemsToProcess;
+            List<ProcessableOrderItem> itemsToProcess = new();
             
             if (!string.IsNullOrEmpty(request.userCode))
             {
                 var cart = await _cartService.GetOrCreateCartAsync(userCode, cancellationToken);
                 if (cart == null || !cart.TblCartItems.Any())
                 {
-                     // Even if validation fails, we should rollback if we started anything? 
-                     // Here we haven't changed anything yet, but good practice.
                     await _unitOfWork.RollbackTransactionAsync(cancellationToken); 
                     return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CartEmpty));
                 }
+
+                // Batch fetch images
+                var productCodes = cart.TblCartItems.Select(c => c.ProductCode).Distinct().ToList();
+                var files = await _context.TblFiles
+                    .Where(f => productCodes.Contains(f.MasterCode) && f.MasterType == "Product")
+                    .ToListAsync(cancellationToken);
+                var fileMap = files.GroupBy(f => f.MasterCode).ToDictionary(g => g.Key, g => g.First().Path);
+
                 itemsToProcess = cart.TblCartItems.Select(ci => new ProcessableOrderItem(
                     ci.ProductCode,
                     ci.ProductCodeNavigation,
                     ci.Quantity,
                     ci.Size,
-                    ci.Color
+                    ci.Color,
+                    fileMap.ContainsKey(ci.ProductCode) ? fileMap[ci.ProductCode] : null
                 )).ToList();
             }
             else
@@ -104,16 +114,19 @@ public class OrderHandlers :
                      if (string.IsNullOrEmpty(dtoItem.ProductCode)) continue;
                      
                      var product = await _productRepository.AsQueryable()
-                         .Include(p => p.TblProductImages)
                          .FirstOrDefaultAsync(p => p.Code == dtoItem.ProductCode, cancellationToken);
                      if (product == null) continue;
+
+                     // Fetch image
+                     var file = await _context.TblFiles.FirstOrDefaultAsync(f => f.MasterCode == product.Code && f.MasterType == "Product", cancellationToken);
 
                      itemsToProcess.Add(new ProcessableOrderItem(
                          product.Code,
                          product,
                          dtoItem.Quantity,
                          dtoItem.Size,
-                         dtoItem.Color
+                         dtoItem.Color,
+                         file?.Path
                      ));
                 }
             }
@@ -145,7 +158,7 @@ public class OrderHandlers :
                 orderItems.Add(TblOrderItem.Create(
                     item.ProductCode!,
                     item.ProductCodeNavigation.Name,
-                    item.ProductCodeNavigation.TblProductImages?.FirstOrDefault()?.ImageUrl,
+                    item.ImageUrl,
                     item.Quantity,
                     item.ProductCodeNavigation.Price,
                     item.Size,
@@ -381,5 +394,5 @@ public class OrderHandlers :
         }
     }
 
-    private record ProcessableOrderItem(string ProductCode, TblProduct ProductCodeNavigation, int Quantity, string? Size, string? Color);
+    private record ProcessableOrderItem(string ProductCode, TblProduct ProductCodeNavigation, int Quantity, string? Size, string? Color, string? ImageUrl);
 }

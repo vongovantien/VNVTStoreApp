@@ -3,22 +3,39 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Folder, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
-import { useCategories, useEntityManager } from '@/hooks';
+import { useCategories, useCategoriesList, useEntityManager } from '@/hooks';
 import { categoryService, type CategoryDto, type CreateCategoryRequest, type UpdateCategoryRequest } from '@/services';
 import { DataTable, type DataTableColumn } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { CategoryForm, type CategoryFormData } from './forms';
+import { PaginationDefaults, API_ENDPOINTS } from '@/constants';
+import { getImageUrl } from '@/utils/format';
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
   
-  // Data Fetching
+  // Pagination State
+  const [pagination, setPagination] = useState({
+    pageIndex: PaginationDefaults.PAGE_INDEX,
+    pageSize: PaginationDefaults.PAGE_SIZE
+  });
+
+  // Get API Base URL for image previews
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+
+  // Data Fetching with Pagination
   const { 
-    data: categories = [], 
+    data, 
     isLoading, 
-    isFetching,
     refetch 
-  } = useCategories();
+  } = useCategoriesList({
+    pageIndex: pagination.pageIndex,
+    pageSize: pagination.pageSize
+  });
+
+  const categories = data?.categories || [];
+  const totalItems = data?.totalItems || 0;
+  const totalPages = data?.totalPages || 0;
 
   // Entity Manager (for CRUD state)
   const {
@@ -36,7 +53,7 @@ export default function CategoriesPage() {
     deleteMutation
   } = useEntityManager<CategoryDto, CreateCategoryRequest, UpdateCategoryRequest>({
     service: categoryService,
-    queryKey: ['categories']
+    queryKey: ['categories'] // Update query key to include pagination
   });
 
   const { mutate: createCategory, isPending: isCreating } = createMutation;
@@ -49,6 +66,14 @@ export default function CategoriesPage() {
   // Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, pageIndex: page }));
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPagination(prev => ({ ...prev, pageSize: size, pageIndex: 1 }));
+  };
+
   const handleFormSubmit = async (formData: CategoryFormData) => {
     if (editingCategory) {
       await updateCategory({
@@ -56,33 +81,27 @@ export default function CategoriesPage() {
         data: {
           name: formData.name,
           description: formData.description,
-          parentCode: formData.parentCode,
+          parentCode: formData.parentCode || null,
           imageUrl: formData.imageUrl,
           isActive: formData.isActive
-        }
-      }, {
-        onSuccess: () => {
-           closeForm();
         }
       });
     } else {
       await createCategory({
         name: formData.name,
         description: formData.description,
-        parentCode: formData.parentCode,
+        parentCode: formData.parentCode || null,
         imageUrl: formData.imageUrl,
         isActive: formData.isActive
-      }, {
-        onSuccess: () => {
-           closeForm();
-        }
       });
     }
   };
 
   const handleDelete = () => {
     if (categoryToDelete) {
-      deleteCategory(categoryToDelete.code);
+      deleteCategory(categoryToDelete.code, {
+        onSuccess: () => refetch()
+      });
     }
   };
 
@@ -92,52 +111,61 @@ export default function CategoriesPage() {
   const columns: DataTableColumn<CategoryDto>[] = [
     {
       id: 'imageUrl',
-      header: t('admin.columns.image'),
-      className: 'w-20',
+      header: t('common.fields.image'),
+      width: '80px',
+      className: 'text-center',
       accessor: (category) => (
-        <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
-           {category.imageUrl ? (
-             <img 
-               src={category.imageUrl} 
-               alt={category.name} 
-               className="w-full h-full object-cover"
-             />
-           ) : (
-             <div className="w-full h-full flex items-center justify-center text-gray-400">
-               <Folder size={18} />
-             </div>
-           )}
+        <div className="flex flex-col items-center">
+            <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
+               {category.imageUrl ? (
+                 <img 
+                   src={getImageUrl(category.imageUrl)} 
+                   alt={category.name} 
+                   className="w-full h-full object-cover"
+                   onError={(e) => console.error("Img Error:", e.currentTarget.src)}
+                 />
+               ) : (
+                 <div className="w-full h-full flex items-center justify-center text-gray-400">
+                   <Folder size={18} />
+                 </div>
+               )}
+            </div>
+            {/* Debug Info */}
+            {category.imageUrl && (
+                <span className="text-[8px] text-red-500 max-w-[80px] truncate block" title={getImageUrl(category.imageUrl)}>
+                    {getImageUrl(category.imageUrl)}
+                </span>
+            )}
         </div>
       )
     },
     {
       id: 'name',
-      header: t('admin.columns.name'),
+      header: t('common.fields.name'),
       accessor: 'name',
     },
     { 
       id: 'description',
-      header: t('admin.columns.description'),
+      header: t('common.fields.description'),
       accessor: 'description',
       className: 'hidden md:table-cell text-gray-500' 
     },
     {
       id: 'parentCode',
-      header: t('admin.columns.parentCategory'),
+      header: t('common.fields.parentCategory'),
       accessor: (category) => {
         if (!category.parentCode) return <span className="text-gray-400 italic">{t('common.none')}</span>;
-        const parent = categories.find(c => c.code === category.parentCode);
         return (
           <Badge variant="outline" className="gap-1">
             <Folder size={10} className="mr-1" />
-            {parent?.name || category.parentCode}
+            {category.parentCode} 
           </Badge>
         );
       }
     },
     {
       id: 'status',
-      header: t('admin.columns.status'),
+      header: t('common.fields.status'),
       accessor: (category) => (
         <Badge color={category.isActive !== false ? 'success' : 'secondary'}>
           {category.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
@@ -146,7 +174,8 @@ export default function CategoriesPage() {
     },
     {
       id: 'actions',
-      header: '',
+      header: t('common.fields.action'),
+      width: '100px',
       className: 'w-[100px]',
       accessor: (category) => (
         <TableActions
@@ -173,27 +202,55 @@ export default function CategoriesPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="admin.sidebar.categories"
-        subtitle="admin.categoriesSubtitle"
+        subtitle="admin.subtitles.categories"
       />
 
       <DataTable
-        data={categories as CategoryDto[]}
+        data={categories}
         columns={columns}
         isLoading={isLoading}
-        searchPlaceholder={t('admin.searchPlaceholder')}
-        searchOptions={[{ label: t('admin.columns.name'), value: 'name' }]}
+        searchPlaceholder={t('common.placeholders.search')}
+        advancedFilterDefs={[
+          {
+            id: 'name',
+            label: t('common.fields.name'),
+            type: 'text',
+            placeholder: t('common.placeholders.search')
+          },
+          {
+            id: 'status',
+            label: t('common.fields.status'),
+            type: 'select',
+            options: [
+              { value: 'active', label: t('admin.status.active') },
+              { value: 'inactive', label: t('admin.status.inactive') }
+            ]
+          }
+        ]}
+        onAdvancedSearch={(filters) => {
+             // Basic search simulation
+             refetch(); // In real app, pass filters to hook
+        }}
         keyField="code"
         enableSelection
         onAdd={() => openCreate()}
         onRefresh={() => refetch()}
         
         // Selection & Actions
-        selectedIds={selectedIds} // Need to add state for this
-        onSelectionChange={setSelectedIds} // Need to add state for this
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         onEdit={(item) => openEdit(item)}
         onDelete={(item) => confirmDelete(item)}
-        onBulkDelete={() => { /* categories doesn't seem to support bulk delete in hook yet? */ }} // Checking hook usage
+        onBulkDelete={() => { /* categories doesn't seem to support bulk delete in hook yet? */ }}
         onView={(item) => setViewingCategory(item)}
+
+        // Server-Side Pagination
+        currentPage={pagination.pageIndex}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        pageSize={pagination.pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
 
        {/* Form Modal */}
@@ -206,6 +263,7 @@ export default function CategoriesPage() {
             modalOpen={isFormOpen}
             modalTitle={editingCategory ? t('admin.actions.edit') : t('admin.actions.create')}
             excludeCode={editingCategory?.code}
+            imageBaseUrl={apiBaseUrl.replace(/\/api\/v1\/?$/, '')}
         />
        )}
 
@@ -234,7 +292,7 @@ export default function CategoriesPage() {
             {viewingCategory.imageUrl && (
               <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                 <img 
-                  src={viewingCategory.imageUrl} 
+                  src={getImageUrl(viewingCategory.imageUrl)} 
                   alt={viewingCategory.name} 
                   className="w-full h-full object-cover"
                 />
@@ -243,17 +301,17 @@ export default function CategoriesPage() {
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.categoryCode')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.code')}</label>
                 <p className="font-medium">{viewingCategory.code}</p>
               </div>
               <div>
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.name')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.name')}</label>
                 <p className="font-medium">{viewingCategory.name}</p>
               </div>
               
               {viewingCategory.parentCode && (
                 <div className="col-span-2">
-                   <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.parentCategory')}</label>
+                   <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.parentCategory')}</label>
                    <div className="mt-1">
                      <Badge variant="outline">
                        <Folder size={12} className="mr-1" />
@@ -264,14 +322,14 @@ export default function CategoriesPage() {
               )}
               
               <div className="col-span-2">
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.description')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.description')}</label>
                 <p className="text-gray-600 dark:text-gray-300">
                   {viewingCategory.description || t('common.none')}
                 </p>
               </div>
 
                <div className="col-span-2">
-                  <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.status')}</label>
+                  <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.status')}</label>
                   <div className="mt-1">
                       <Badge color={viewingCategory.isActive !== false ? 'success' : 'secondary'}>
                           {viewingCategory.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}

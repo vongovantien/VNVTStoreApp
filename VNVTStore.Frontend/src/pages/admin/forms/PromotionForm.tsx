@@ -7,6 +7,7 @@ import { Save, X } from 'lucide-react';
 import { Button, Input, Select } from '@/components/ui';
 import { CreatePromotionRequest } from '@/services/promotionService';
 import { useProducts } from '@/hooks';
+import { PaginationDefaults } from '@/constants';
 
 // Need a multi-select component for products. Using a simple select for now or custom?
 // Since we want "Reuse", we should check if we have a multi-select or use a simple one for now.
@@ -15,8 +16,8 @@ import { useProducts } from '@/hooks';
 // Let's us a simple implementation for now to stick to existing UI components.
 
 const promotionSchema = z.object({
-  code: z.string().min(3, 'Code must be at least 3 characters'),
-  name: z.string().min(3, 'Name must be at least 3 characters'),
+  code: z.string().min(3),
+  name: z.string().min(3),
   description: z.string().optional(),
   discountType: z.enum(['PERCENTAGE', 'AMOUNT', 'FIXED_PRICE']),
   discountValue: z.number().min(0),
@@ -71,7 +72,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
   // To avoid huge load, we might need search. For now load all (paginated default) or search?
   // Let's implement a simple product selector later or just input codes for reused MVP.
   // Actually, let's load first 100 products for selection.
-  const { data: productsData } = useProducts({ pageSize: 100, pageIndex: 1 });
+  const { data: productsData } = useProducts({ pageSize: 100, pageIndex: PaginationDefaults.PAGE_INDEX });
   const products = productsData?.products || [];
 
   const discountType = watch('discountType');
@@ -97,18 +98,18 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
         {/* Basic Info */}
         <div className="space-y-4">
           <Input
-            label={t('admin.columns.code')}
+            label={t('common.fields.code')}
             {...register('code')}
             error={errors.code?.message}
-            placeholder="SUMMER2024"
+            placeholder={t('common.placeholders.enterCode')}
             disabled={!!initialData?.code} // Code immutable on edit
           />
 
           <Input
-            label={t('admin.columns.name')}
+            label={t('common.fields.name')}
             {...register('name')}
             error={errors.name?.message}
-            placeholder="Summer Sale"
+            placeholder={t('common.placeholders.enterName')}
           />
 
           <Controller
@@ -116,7 +117,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             control={control}
             render={({ field }) => (
               <Select
-                label={t('admin.columns.discountType')}
+                label={t('common.fields.discountType')}
                 {...field}
                 options={[
                   { value: 'PERCENTAGE', label: 'Percentage (%)' },
@@ -129,7 +130,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
           />
 
           <Input
-            label={t('admin.columns.value')}
+            label={t('common.fields.value')}
             type="number"
             {...register('discountValue', { valueAsNumber: true })}
             error={errors.discountValue?.message}
@@ -140,20 +141,20 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
         {/* Limits & Dates */}
         <div className="space-y-4">
           <Input
-            label={t('admin.columns.minOrder')}
+            label={t('common.fields.minOrder')}
             type="number"
             {...register('minOrderAmount', { valueAsNumber: true })}
             error={errors.minOrderAmount?.message}
-            placeholder="0"
+            placeholder={t('common.placeholders.enterPrice')}
           />
 
           {discountType === 'PERCENTAGE' && (
             <Input
-              label={t('admin.columns.maxDiscount')}
+              label={t('common.fields.maxDiscount')}
               type="number"
               {...register('maxDiscountAmount', { valueAsNumber: true })}
               error={errors.maxDiscountAmount?.message}
-              placeholder="Max discount amount"
+              placeholder={t('common.placeholders.enterPrice')}
             />
           )}
 
@@ -163,7 +164,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
               control={control}
               render={({ field }) => (
                 <Input
-                  label={t('admin.columns.startDate')}
+                  label={t('common.fields.startDate')}
                   type="date"
                   value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
                   onChange={(e) => field.onChange(new Date(e.target.value))}
@@ -176,7 +177,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
               control={control}
               render={({ field }) => (
                 <Input
-                  label={t('admin.columns.endDate')}
+                  label={t('common.fields.endDate')}
                   type="date"
                   value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
                   onChange={(e) => field.onChange(new Date(e.target.value))}
@@ -187,11 +188,11 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
           </div>
 
           <Input
-            label={t('admin.columns.usageLimit')}
+            label={t('common.fields.usageLimit')}
             type="number"
             {...register('usageLimit', { valueAsNumber: true })}
             error={errors.usageLimit?.message}
-            placeholder="Unlimited"
+            placeholder={t('common.placeholders.enterQuantity')}
           />
         </div>
       </div>
@@ -199,7 +200,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
       {/* Description */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {t('admin.columns.description')}
+          {t('common.fields.description')}
         </label>
         <textarea
           {...register('description')}
@@ -211,11 +212,11 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
       {/* Product Selection for Flash Sales (Optional) */}
       <div className="border-t pt-4">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Applicable Products (Flash Sale)
+          {t('messages.selectProductsFlashSale')}
         </label>
         <div className="h-48 overflow-y-auto border rounded-md p-2 bg-gray-50 dark:bg-slate-900">
           {products.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center p-4">No products available</p>
+            <p className="text-gray-500 text-sm text-center p-4">{t('messages.noProductsAvailable')}</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {products.map(p => (
@@ -232,7 +233,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             </div>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-1">Select products to include in this promotion (effectively making it a Flash Sale for these items).</p>
+        <p className="text-xs text-gray-500 mt-1">{t('messages.selectProductsInfo')}</p>
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t">

@@ -42,7 +42,7 @@ export const PromotionsPage = () => {
   const [currentPage, setCurrentPage] = useState<number>(PaginationDefaults.PAGE_INDEX);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
-  const pageSize: number = PageSize.DEFAULT;
+  const [pageSize, setPageSize] = useState<number>(PaginationDefaults.PAGE_SIZE);
 
   // Sorting
   const [sortField, setSortField] = useState<string>('createdAt');
@@ -114,7 +114,7 @@ export const PromotionsPage = () => {
   const columns: DataTableColumn<Promotion>[] = [
     {
       id: 'code',
-      header: t('admin.columns.code'),
+      header: t('common.fields.code'),
       accessor: (p) => (
         <div className="flex flex-col">
           <span className="font-bold text-primary">{p.code}</span>
@@ -125,7 +125,7 @@ export const PromotionsPage = () => {
     },
     {
       id: 'type',
-      header: t('admin.columns.type'),
+      header: t('common.fields.type'),
       accessor: (p) => (
         <Badge variant="outline" className="flex items-center gap-1 w-fit">
           {p.productCodes && p.productCodes.length > 0 ? (
@@ -138,7 +138,7 @@ export const PromotionsPage = () => {
     },
     {
       id: 'discount',
-      header: t('admin.columns.discount'),
+      header: t('common.fields.discount'),
       accessor: (p) => (
         <div className="font-semibold text-rose-600">
           {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : formatCurrency(p.discountValue)}
@@ -148,7 +148,7 @@ export const PromotionsPage = () => {
     },
     {
       id: 'date',
-      header: t('admin.columns.date'),
+      header: t('common.fields.date'),
       accessor: (p) => (
         <div className="text-xs flex flex-col">
           <span>{formatDate(p.startDate)}</span>
@@ -159,14 +159,14 @@ export const PromotionsPage = () => {
     },
     {
       id: 'usage',
-      header: t('admin.columns.usageLimit'),
+      header: t('common.fields.usageLimit'),
       accessor: (p) => p.usageLimit ?? '∞',
       className: 'text-center',
       headerClassName: 'text-center'
     },
     {
       id: 'status',
-      header: t('admin.columns.status'),
+      header: t('common.fields.status'),
       accessor: (p) => (
         <Badge
           color={p.isActive ? 'success' : 'error'}
@@ -229,7 +229,7 @@ export const PromotionsPage = () => {
     setSearchQuery('');
     setSortField('createdAt');
     setSortDir(SortDirection.DESC);
-    refetch();
+
   };
 
   return (
@@ -257,6 +257,10 @@ export const PromotionsPage = () => {
         totalItems={totalItems}
         pageSize={pageSize}
         onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(PaginationDefaults.PAGE_INDEX);
+        }}
 
         externalSortField={sortField}
         externalSortDir={sortDir}
@@ -274,12 +278,12 @@ export const PromotionsPage = () => {
         onReset={handleReset}
         onAdvancedSearch={(filters) => {
           setAdvancedFilters(filters);
-          setCurrentPage(1);
+          setCurrentPage(PaginationDefaults.PAGE_INDEX);
         }}
         advancedFilterDefs={[
-          { id: 'search', label: t('common.search'), type: 'text', placeholder: t('admin.placeholders.searchNameCode') },
-          { id: 'type', label: t('admin.columns.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('admin.types.flashSale') }] },
-          { id: 'isActive', label: t('admin.columns.status'), type: 'select', options: [{ value: 'true', label: t('common.status.active') }, { value: 'false', label: t('common.status.inactive') }] }
+          { id: 'search', label: t('common.search'), type: 'text', placeholder: t('common.placeholders.search') },
+          { id: 'type', label: t('common.fields.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('admin.types.flashSale') }] },
+          { id: 'isActive', label: t('common.fields.status'), type: 'select', options: [{ value: 'true', label: t('common.status.active') }, { value: 'false', label: t('common.status.inactive') }] }
         ]}
       />
 

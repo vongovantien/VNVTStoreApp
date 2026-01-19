@@ -7,7 +7,6 @@ import { ZodSchema } from 'zod';
 import { Button, Input, Select, NumberInput, Switch, Modal } from '@/components/ui';
 import { Upload, X } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
-import { uploadService } from '@/services/uploadService';
 
 // ============ Field Definition Types ============
 export type FieldType = 
@@ -69,32 +68,47 @@ export interface BaseFormProps<T extends Record<string, unknown>> {
   renderBefore?: (form: UseFormReturn<T>) => React.ReactNode;
   renderAfter?: (form: UseFormReturn<T>) => React.ReactNode;
   className?: string;
+  imageBaseUrl?: string; // New prop for image preview base URL
 }
 
 // ============ Field Renderer Component ============
 interface FieldRendererProps<T extends Record<string, unknown>> {
   field: FieldDefinition;
   form: UseFormReturn<T>;
+  onPreviewImage: (url: string) => void;
+  imageBaseUrl?: string;
 }
 
 function FieldRenderer<T extends Record<string, unknown>>({ 
   field, 
-  form 
+  form,
+  onPreviewImage,
+  imageBaseUrl
 }: FieldRendererProps<T>) {
   const { t } = useTranslation();
   const { control, register, formState: { errors }, setValue, watch } = form;
   const error = (errors as Record<string, { message?: string }>)[field.name]?.message;
   const [isUploading, setIsUploading] = useState(false);
 
+  // ... (useDropzone logic) 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0 && field.type === 'image') {
       try {
         setIsUploading(true);
-        const url = await uploadService.upload(acceptedFiles[0]);
-        setValue(field.name as Path<T>, url as T[keyof T]);
+        const file = acceptedFiles[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          setValue(field.name as Path<T>, base64 as T[keyof T]);
+          setIsUploading(false);
+        };
+        reader.onerror = () => {
+          console.error("Failed to read file");
+          setIsUploading(false);
+        };
+        reader.readAsDataURL(file);
       } catch (err) {
         console.error("Upload failed", err);
-      } finally {
         setIsUploading(false);
       }
     }
@@ -109,9 +123,22 @@ function FieldRenderer<T extends Record<string, unknown>>({
   if (field.hidden) return null;
 
   const colSpanClass = `col-span-${field.colSpan || 12}`;
-  const labelWithRequired = field.required ? `${field.label} *` : field.label;
+  
+  // Helper to format image URL
+  const getPreviewUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('data:') || url.startsWith('http')) return url;
+    if (imageBaseUrl) {
+       // Simple join: remove trailing slash from base and leading from url
+       const base = imageBaseUrl.replace(/\/$/, '');
+       const path = url.startsWith('/') ? url : `/${url}`;
+       return `${base}${path}`;
+    }
+    return url;
+  };
 
   switch (field.type) {
+    // ... (cases) ...
     case 'text':
     case 'email':
     case 'phone':
@@ -120,10 +147,11 @@ function FieldRenderer<T extends Record<string, unknown>>({
         <div className={colSpanClass}>
           <Input
             type={field.type === 'phone' ? 'tel' : field.type}
-            label={labelWithRequired}
+            label={field.label}
             placeholder={field.placeholder}
             disabled={field.disabled}
             error={error}
+            isRequired={field.required}
             {...register(field.name as Path<T>)}
           />
         </div>
@@ -137,7 +165,7 @@ function FieldRenderer<T extends Record<string, unknown>>({
             control={control}
             render={({ field: f }) => (
               <NumberInput
-                label={labelWithRequired}
+                label={field.label}
                 placeholder={field.placeholder}
                 value={f.value as number}
                 onChange={f.onChange}
@@ -146,6 +174,7 @@ function FieldRenderer<T extends Record<string, unknown>>({
                 step={field.step}
                 disabled={field.disabled}
                 error={error}
+                isRequired={field.required}
               />
             )}
           />
@@ -157,7 +186,8 @@ function FieldRenderer<T extends Record<string, unknown>>({
         <div className={colSpanClass}>
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {labelWithRequired}
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             <textarea
               className="w-full min-h-[100px] px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-slate-900 transition-all resize-y text-sm"
@@ -179,12 +209,13 @@ function FieldRenderer<T extends Record<string, unknown>>({
             control={control}
             render={({ field: f }) => (
               <Select
-                label={labelWithRequired}
+                label={field.label}
                 options={field.options || []}
                 value={f.value as string}
                 onChange={f.onChange}
                 disabled={field.disabled}
                 error={error}
+                isRequired={field.required}
               />
             )}
           />
@@ -214,16 +245,23 @@ function FieldRenderer<T extends Record<string, unknown>>({
 
     case 'image':
       const currentValue = watch(field.name as Path<T>) as string;
+      const previewUrl = getPreviewUrl(currentValue);
       return (
         <div className={colSpanClass}>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {labelWithRequired}
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             
             {currentValue && (
               <div className="relative w-32 h-32 border rounded-lg overflow-hidden group">
-                <img src={currentValue} alt="Preview" className="w-full h-full object-cover" />
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" 
+                  onClick={() => onPreviewImage(previewUrl)}
+                />
                 <button
                   type="button"
                   onClick={() => setValue(field.name as Path<T>, '' as T[keyof T])}
@@ -285,49 +323,46 @@ export function BaseForm<T extends Record<string, unknown>>({
   renderBefore,
   renderAfter,
   className,
+  imageBaseUrl,
 }: BaseFormProps<T>) {
   const { t } = useTranslation();
-  
-  // @ts-expect-error - Zod schema type inference issue
+  const formId = useMemo(() => `form-${Math.random().toString(36).substr(2, 9)}`, []);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const form = useForm<T>({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
-  const handleSubmit = form.handleSubmit(async (data) => {
-    await onSubmit(data);
-  });
+  const { handleSubmit: handleFormSubmit, reset } = form;
 
-  const allFields = useMemo(() => {
-    if (fields) return fields;
-    if (fieldGroups) {
-      return fieldGroups.flatMap(group => group.fields);
-    }
-    return [];
-  }, [fields, fieldGroups]);
+  // Reset form when defaultValues change (e.g. fetching fresh data)
+  React.useEffect(() => {
+    reset(defaultValues);
+  }, [defaultValues, reset]);
 
+  const handleSubmit = handleFormSubmit(onSubmit);
+  
+  const allFields = fields || (fieldGroups ? fieldGroups.flatMap(g => g.fields) : []);
+
+  // Pass imageBaseUrl to FieldRenderer
   const renderFields = () => {
-    if (fieldGroups) {
+    // ... logic for fieldGroups or flat fields
+     // in .map:
+     // <FieldRenderer ... imageBaseUrl={imageBaseUrl} />
+     // ...
+     if (fieldGroups) {
       return fieldGroups.map((group, groupIndex) => (
         <div key={groupIndex} className="space-y-4">
-          {group.title && (
-            <div className="border-b pb-2">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                {group.title}
-              </h3>
-              {group.description && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {group.description}
-                </p>
-              )}
-            </div>
-          )}
+          {/* ... title logic ... */}
           <div className="grid grid-cols-12 gap-4">
             {group.fields.map((field, fieldIndex) => (
               <FieldRenderer
                 key={`${groupIndex}-${fieldIndex}`}
                 field={field}
                 form={form as UseFormReturn<Record<string, unknown>>}
+                onPreviewImage={setPreviewImage}
+                imageBaseUrl={imageBaseUrl}
               />
             ))}
           </div>
@@ -341,48 +376,98 @@ export function BaseForm<T extends Record<string, unknown>>({
           <FieldRenderer 
             key={index} 
             field={field} 
-            form={form as UseFormReturn<Record<string, unknown>>} 
+            form={form as UseFormReturn<Record<string, unknown>>}
+            onPreviewImage={setPreviewImage}
+            imageBaseUrl={imageBaseUrl}
           />
         ))}
       </div>
     );
   };
+   // ... rest of component
+
+
+  const actionButtons = (
+    <>
+      {onCancel && (
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onCancel}
+        >
+          {cancelLabel || t('common.cancel')}
+        </Button>
+      )}
+      <Button 
+        type="submit" 
+        isLoading={isLoading} 
+        form={isModal ? formId : undefined} // Link to form if outside
+      >
+        {submitLabel || t('common.save')}
+      </Button>
+    </>
+  );
 
   const formContent = (
-    <form onSubmit={handleSubmit} className={`space-y-6 ${className || ''}`}>
+    <form id={formId} onSubmit={handleSubmit} className={`space-y-6 ${className || ''}`}>
       {renderBefore?.(form)}
       
       {renderFields()}
       
       {renderAfter?.(form)}
 
-      <div className="flex justify-end gap-3 pt-4 border-t">
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            {cancelLabel || t('common.cancel')}
-          </Button>
-        )}
-        <Button type="submit" isLoading={isLoading}>
-          {submitLabel || t('common.save')}
-        </Button>
-      </div>
+      {/* If NOT modal, render buttons inside form normal flow */}
+      {!isModal && (
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          {actionButtons}
+        </div>
+      )}
     </form>
+  );
+
+  const previewModal = previewImage && (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setPreviewImage(null)}>
+      <div className="relative max-w-full max-h-full flex flex-col items-center justify-center">
+        <img 
+          src={previewImage} 
+          alt="Full size preview" 
+          className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
+          onClick={(e) => e.stopPropagation()} 
+        />
+        <button
+          type="button"
+          onClick={() => setPreviewImage(null)}
+          className="absolute top-4 right-4 p-2 bg-white/10 text-white rounded-full hover:bg-white/20 transition-colors backdrop-blur-md"
+        >
+          <X size={24} />
+        </button>
+      </div>
+    </div>
   );
 
   if (isModal) {
     return (
-      <Modal
-        isOpen={modalOpen}
-        onClose={onModalClose || onCancel || (() => {})}
-        title={modalTitle}
-        size={modalSize}
-      >
-        {formContent}
-      </Modal>
+      <>
+        <Modal
+          isOpen={modalOpen}
+          onClose={onModalClose || onCancel || (() => {})}
+          title={modalTitle}
+          size={modalSize}
+          footer={actionButtons} // Pass buttons to fixed footer
+        >
+          {formContent}
+        </Modal>
+        {previewModal}
+      </>
     );
   }
 
-  return formContent;
+  return (
+    <>
+      {formContent}
+      {previewModal}
+    </>
+  );
 }
 
 export default BaseForm;

@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\VNVTStore.Application\VNVTStore.Application.csproj" />
     <ProjectReference Include="..\VNVTStore.Domain\VNVTStore.Domain.csproj" />
+    <ProjectReference Include="..\VNVTStore.API\VNVTStore.API.csproj" />
   </ItemGroup>
 
 </Project>

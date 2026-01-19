@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Infrastructure.Persistence;
 
@@ -36,7 +37,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public virtual DbSet<TblProduct> TblProducts { get; set; }
 
-    public virtual DbSet<TblProductImage> TblProductImages { get; set; }
+
 
     public virtual DbSet<TblProductPromotion> TblProductPromotions { get; set; }
 
@@ -45,6 +46,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblReview> TblReviews { get; set; }
 
     public virtual DbSet<TblQuote> TblQuotes { get; set; }
+
+    public virtual DbSet<TblFile> TblFiles { get; set; }
 
     public virtual DbSet<TblUser> TblUsers { get; set; }
 
@@ -339,27 +342,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
-        modelBuilder.Entity<TblProductImage>(entity =>
-        {
-            entity.HasKey(e => e.Code).HasName("TblProductImage_pkey");
 
-            entity.ToTable("TblProductImage");
-
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('IMG'::text || lpad((nextval('productimage_code_seq'::regclass))::text, 6, '0'::text))");
-            entity.Property(e => e.AltText).HasMaxLength(255);
-            entity.Property(e => e.ImageUrl)
-                .HasMaxLength(255)
-                .HasColumnName("ImageURL");
-            entity.Property(e => e.IsPrimary).HasDefaultValue(false);
-            entity.Property(e => e.ProductCode).HasMaxLength(100);
-            entity.Property(e => e.SortOrder).HasDefaultValue(0);
-
-            entity.HasOne(d => d.ProductCodeNavigation).WithMany(p => p.TblProductImages)
-                .HasForeignKey(d => d.ProductCode)
-                .HasConstraintName("TblProductImage_ProductCode_fkey");
-        });
 
         modelBuilder.Entity<TblProductPromotion>(entity =>
         {
@@ -509,6 +492,34 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Username).HasMaxLength(50);
             entity.Property(e => e.ModifiedType).HasDefaultValue("Add");
         });
+
+        modelBuilder.Entity<TblFile>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblFile_pkey");
+
+            entity.ToTable("TblFile");
+
+            entity.HasIndex(e => e.MasterCode, "idx_file_mastercode"); // Add Index
+
+            entity.Property(e => e.Code)
+                .HasMaxLength(100)
+                .HasDefaultValueSql("('FIL'::text || lpad((nextval('file_code_seq'::regclass))::text, 6, '0'::text))");
+            entity.Property(e => e.FileName).HasMaxLength(255);
+            entity.Property(e => e.OriginalName).HasMaxLength(255);
+            entity.Property(e => e.Extension).HasMaxLength(10);
+            entity.Property(e => e.MimeType).HasMaxLength(100);
+            entity.Property(e => e.Path).HasMaxLength(500);
+            entity.Property(e => e.MasterCode).HasMaxLength(100); // Add MasterCode config
+            entity.Property(e => e.MasterType).HasMaxLength(50); // Add MasterType config
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+        });
         modelBuilder.HasSequence("address_code_seq");
         modelBuilder.HasSequence("cart_code_seq");
         modelBuilder.HasSequence("cartitem_code_seq");
@@ -518,18 +529,46 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.HasSequence("orderitem_code_seq");
         modelBuilder.HasSequence("payment_code_seq");
         modelBuilder.HasSequence("product_code_seq");
-        modelBuilder.HasSequence("productimage_code_seq");
+
         modelBuilder.HasSequence("productpromotion_code_seq");
         modelBuilder.HasSequence("promotion_code_seq");
         modelBuilder.HasSequence("review_code_seq");
         modelBuilder.HasSequence("quote_code_seq");
         modelBuilder.HasSequence("user_code_seq");
+        modelBuilder.HasSequence("user_code_seq");
         modelBuilder.HasSequence("banner_code_seq");
+        modelBuilder.HasSequence("file_code_seq");
 
 
 
 
         OnModelCreatingPartial(modelBuilder);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entries = ChangeTracker.Entries<IEntity>();
+
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity.CreatedAt == default)
+                {
+                    entry.Entity.CreatedAt = DateTime.UtcNow;
+                }
+                if (entry.Entity.UpdatedAt == default)
+                {
+                    entry.Entity.UpdatedAt = DateTime.UtcNow;
+                }
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

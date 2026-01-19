@@ -25,9 +25,9 @@ export const ProductsPage = () => {
 
   // State
   const [currentPage, setCurrentPage] = useState<number>(PaginationDefaults.PAGE_INDEX);
+  const [pageSize, setPageSize] = useState<number>(PaginationDefaults.PAGE_SIZE);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
-  const pageSize: number = PageSize.DEFAULT;
 
   // Sorting
   const [sortField, setSortField] = useState<SortField>('createdAt');
@@ -87,12 +87,113 @@ export const ProductsPage = () => {
 
   // Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const selectedToDelete = products.filter(p => selectedIds.has(p.id));
+  const selectedToDelete = products.filter(p => selectedIds.has(p.code));
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
   // View State
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const handleOpenView = (product: Product) => setViewingProduct(product);
+
+  // Handlers
+  const handleSort = (field: string, dir: 'asc' | 'desc') => {
+    setSortField(field as SortField);
+    setSortDir(dir as SortDirection);
+    setCurrentPage(PaginationDefaults.PAGE_INDEX);
+  };
+
+  const handleAdvancedSearch = (filters: Record<string, string>) => {
+    setAdvancedFilters(filters);
+    setCurrentPage(PaginationDefaults.PAGE_INDEX);
+    // Sync text search
+    setSearchQuery(filters.search || '');
+  };
+
+  const handleReset = () => {
+    setAdvancedFilters({});
+    setCurrentPage(PaginationDefaults.PAGE_INDEX);
+    setPageSize(PaginationDefaults.PAGE_SIZE);
+    setSearchQuery('');
+    setSortField('createdAt');
+    setSortDir(SortDirection.DESC);
+  };
+
+  const handleCreate = async (data: ProductFormData) => {
+    try {
+      await createMutation.mutateAsync({
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        categoryCode: data.categoryId,
+        stock: data.stock,
+        costPrice: data.costPrice,
+        sku: data.sku,
+        weight: data.weight,
+        supplierCode: data.supplierCode,
+        brand: data.brand,
+        color: data.color,
+        power: data.power,
+        voltage: data.voltage,
+        material: data.material,
+        size: data.size,
+        images: data.images,
+        isActive: data.isActive,
+      });
+    } catch (err) {
+      // Error handled by hook
+    }
+  };
+
+  const handleUpdate = async (data: ProductFormData) => {
+    if (!editingProduct) return;
+    try {
+      await updateMutation.mutateAsync({
+        id: editingProduct.code, 
+        data: {
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          categoryCode: data.categoryId,
+          stockQuantity: data.stock,
+          costPrice: data.costPrice,
+          sku: data.sku,
+          weight: data.weight,
+          supplierCode: data.supplierCode,
+          brand: data.brand,
+          color: data.color,
+          power: data.power,
+          voltage: data.voltage,
+          material: data.material,
+          size: data.size,
+          images: data.images,
+          isActive: data.isActive,
+        },
+      });
+    } catch (err) {
+      // Error handled by hook
+    }
+  };
+
+  const handleDelete = async () => {
+    if (productToDelete) {
+      deleteMutation.mutate(productToDelete.code);
+    } else if (selectedToDelete.length > 0) {
+      try {
+        await Promise.all(selectedToDelete.map(item => deleteMutation.mutateAsync(item.code)));
+        setSelectedIds(new Set()); // Clear selection
+        setShowBulkConfirm(false);
+        toast.success(t('common.deleteSuccess'));
+      } catch (err) {
+        // Errors handled by mutation individually
+      }
+    }
+  };
+
+  // Override cancelDelete to clear local state too
+  const handleCancelDelete = () => {
+    cancelDelete(); // from hook
+    setShowBulkConfirm(false);
+    // Don't clear selection on cancel - user may want to keep their selection
+  };
 
   // Column Definitions
   const columns: DataTableColumn<Product>[] = [
@@ -171,110 +272,22 @@ export const ProductsPage = () => {
       ),
       className: 'text-center',
       headerClassName: 'text-center'
+    },
+    {
+      id: 'actions',
+      header: t('common.fields.action'),
+      accessor: (product) => (
+        <TableActions
+          onView={() => handleOpenView(product)}
+          onEdit={() => openEdit(product)}
+          onDelete={() => confirmDelete(product)}
+        />
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center',
+      width: '100px'
     }
-
   ];
-
-  // Handlers
-  const handleSort = (field: string, dir: 'asc' | 'desc') => {
-    setSortField(field as SortField);
-    setSortDir(dir as SortDirection);
-    setCurrentPage(PaginationDefaults.PAGE_INDEX);
-  };
-
-  const handleAdvancedSearch = (filters: Record<string, string>) => {
-    setAdvancedFilters(filters);
-    setCurrentPage(PaginationDefaults.PAGE_INDEX);
-    // Sync text search
-    setSearchQuery(filters.search || '');
-  };
-
-  const handleReset = () => {
-    setAdvancedFilters({});
-    setCurrentPage(PaginationDefaults.PAGE_INDEX);
-    setSearchQuery('');
-    setSortField('createdAt');
-    setSortDir(SortDirection.DESC);
-    refetch(); // Force API refetch
-  };
-
-  const handleCreate = async (data: ProductFormData) => {
-    try {
-      await createMutation.mutateAsync({
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        categoryCode: data.categoryId,
-        stock: data.stock,
-        costPrice: data.costPrice,
-        sku: data.sku,
-        weight: data.weight,
-        supplierCode: data.supplierCode,
-        brand: data.brand,
-        color: data.color,
-        power: data.power,
-        voltage: data.voltage,
-        material: data.material,
-        size: data.size,
-        images: data.images,
-        isActive: data.isActive,
-      });
-    } catch (err) {
-      // Error handled by hook
-    }
-  };
-
-  const handleUpdate = async (data: ProductFormData) => {
-    if (!editingProduct) return;
-    try {
-      await updateMutation.mutateAsync({
-        id: editingProduct.id,
-        data: {
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          categoryCode: data.categoryId,
-          stockQuantity: data.stock,
-          costPrice: data.costPrice,
-          sku: data.sku,
-          weight: data.weight,
-          supplierCode: data.supplierCode,
-          brand: data.brand,
-          color: data.color,
-          power: data.power,
-          voltage: data.voltage,
-          material: data.material,
-          size: data.size,
-          images: data.images,
-          isActive: data.isActive,
-        },
-      });
-    } catch (err) {
-      // Error handled by hook
-    }
-  };
-
-  const handleDelete = async () => {
-    if (productToDelete) {
-      deleteMutation.mutate(productToDelete.id);
-    } else if (selectedToDelete.length > 0) {
-      try {
-        await Promise.all(selectedToDelete.map(item => deleteMutation.mutateAsync(item.id)));
-        setSelectedIds(new Set()); // Clear selection
-        setShowBulkConfirm(false);
-        toast.success(t('common.deleteSuccess'));
-      } catch (err) {
-        // Errors handled by mutation individually
-      }
-    }
-  };
-
-  // Override cancelDelete to clear local state too
-  const handleCancelDelete = () => {
-    cancelDelete(); // from hook
-    setShowBulkConfirm(false);
-    // Don't clear selection on cancel - user may want to keep their selection
-  };
 
   return (
     <div className="space-y-6">
@@ -286,7 +299,7 @@ export const ProductsPage = () => {
       <DataTable
         columns={columns}
         data={products}
-        keyField="id"
+        keyField="code"
         isLoading={isLoading}
         isFetching={isFetching}
         onAdd={() => openCreate()}
@@ -307,6 +320,10 @@ export const ProductsPage = () => {
         totalItems={totalItems}
         pageSize={pageSize}
         onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(PaginationDefaults.PAGE_INDEX);
+        }}
         onView={handleOpenView}
         onEdit={(product) => { openEdit(product); }}
         onDelete={(product) => confirmDelete(product)}
@@ -360,17 +377,17 @@ export const ProductsPage = () => {
         ]}
         exportFilename="products_export"
         exportColumns={[
-          { key: 'id', label: t('admin.columns.code'), width: 15 },
-          { key: 'name', label: t('admin.columns.name'), width: 30 },
-          { key: 'category', label: t('admin.columns.category'), width: 20 },
-          { key: 'price', label: t('admin.columns.price'), width: 15 },
-          { key: 'stock', label: t('admin.columns.stock'), width: 12 },
-          { key: 'color', label: t('admin.columns.color'), width: 12 },
-          { key: 'material', label: t('admin.columns.material'), width: 15 },
-          { key: 'power', label: t('admin.columns.power'), width: 12 },
-          { key: 'voltage', label: t('admin.columns.voltage'), width: 12 },
-          { key: 'size', label: t('admin.columns.size'), width: 15 },
-          { key: 'isActive', label: t('admin.columns.status'), width: 12 },
+          { key: 'code', label: t('common.fields.code'), width: 15 },
+          { key: 'name', label: t('common.fields.name'), width: 30 },
+          { key: 'category', label: t('common.fields.category'), width: 20 },
+          { key: 'price', label: t('common.fields.price'), width: 15 },
+          { key: 'stock', label: t('common.fields.stock'), width: 12 },
+          { key: 'color', label: t('common.fields.color'), width: 12 },
+          { key: 'material', label: t('common.fields.material'), width: 15 },
+          { key: 'power', label: t('common.fields.power'), width: 12 },
+          { key: 'voltage', label: t('common.fields.voltage'), width: 12 },
+          { key: 'size', label: t('common.fields.size'), width: 15 },
+          { key: 'isActive', label: t('common.fields.status'), width: 12 },
         ]}
         onExportAllData={async () => {
           const response = await productService.search({ pageIndex: 1, pageSize: 10000 });
@@ -385,6 +402,8 @@ export const ProductsPage = () => {
         onClose={closeForm}
         title={editingProduct ? t('common.actions.edit') : t('common.actions.create')}
         size="3xl"
+        // Force unmount on close to reset form state
+        // key={isFormOpen ? 'open' : 'closed'} 
       >
         <ProductForm
           initialData={editingProduct ? {

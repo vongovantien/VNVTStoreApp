@@ -1,4 +1,5 @@
 using VNVTStore.Application.Common;
+using VNVTStore.Application.Common.Models;
 
 namespace VNVTStore.Application.Interfaces;
 
@@ -7,7 +8,11 @@ namespace VNVTStore.Application.Interfaces;
 /// </summary>
 public interface IImageUploadService
 {
-    Task<Result<string>> UploadImageAsync(Stream imageStream, string fileName, string folder = "products");
-    Task<Result<IEnumerable<string>>> UploadImagesAsync(IEnumerable<(Stream Stream, string FileName)> images, string folder = "products");
+    Task<Result<FileDto>> UploadImageAsync(Stream imageStream, string fileName, string folder = "products");
+    Task<Result<IEnumerable<FileDto>>> UploadImagesAsync(IEnumerable<(Stream Stream, string FileName)> images, string folder = "products");
+    
+    Task<Result<FileDto>> UploadBase64Async(string base64Content, string fileName, string folder = "products");
+    Task<Result<IEnumerable<FileDto>>> UploadBase64ImagesAsync(IEnumerable<(string Base64Content, string FileName)> images, string folder = "products");
+
     Task<Result> DeleteImageAsync(string imageUrl);
 }

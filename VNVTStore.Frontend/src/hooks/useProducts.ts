@@ -25,10 +25,11 @@ export const productKeys = {
 /**
  * Hook for fetching all categories for selection
  */
-export function useCategories() {
+export function useCategories(options?: { enabled?: boolean }) {
     return useQuery({
         queryKey: productKeys.categories,
         queryFn: () => categoryService.getAll(),
+        enabled: options?.enabled,
         select: (response) => {
             if (response.success && response.data) {
                 return response.data.items || [];

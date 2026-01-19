@@ -40,7 +40,7 @@ public class Result<T> : Result
 
     public static Result<T> Success(T value) => new(true, value, null);
     public new static Result<T> Failure(Error error) => new(false, default, error);
-    public static Result<T> Failure(string message) => new(false, default, new Error(message));
+    public new static Result<T> Failure(string message) => new(false, default, new Error(message));
     public new static Result<T> Failure(string code, string message) => new(false, default, new Error(code, message));
 }
 

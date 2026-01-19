@@ -132,3 +132,21 @@ export const formatFileSize = (bytes: number): string => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 };
+
+/**
+ * Get full image URL from relative path
+ */
+export const getImageUrl = (path: string | undefined | null): string => {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+
+    // Get base URL from env or default
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+    // Remove /api/v1 suffix to get root
+    const root = apiBase.replace(/\/api\/v1\/?$/, '');
+
+    // Ensure path starts with /
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+
+    return `${root}${cleanPath}`;
+};

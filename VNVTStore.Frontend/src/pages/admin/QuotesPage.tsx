@@ -111,7 +111,7 @@ export const QuotesPage = () => {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
             <input
               type="text"
-              placeholder={t('admin.placeholders.searchProductCustomer')}
+              placeholder={t('common.placeholders.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-primary"
@@ -168,7 +168,7 @@ export const QuotesPage = () => {
               />
               <div>
                 <p className="font-semibold line-clamp-2">{quote.productName}</p>
-                <p className="text-sm text-tertiary">{t('admin.columns.quantity')}: {quote.quantity}</p>
+                <p className="text-sm text-tertiary">{t('common.fields.quantity')}: {quote.quantity}</p>
               </div>
             </div>
 
@@ -192,7 +192,7 @@ export const QuotesPage = () => {
             {/* Quoted Price */}
             {quote.quotedPrice && (
               <div className="mb-4 p-3 bg-success/10 rounded-lg text-center">
-                <p className="text-sm text-secondary">{t('admin.quotes.quotedPrice')}</p>
+                <p className="text-sm text-secondary">{t('common.fields.quotedPrice')}</p>
                 <p className="text-xl font-bold text-success">{formatCurrency(quote.quotedPrice)}</p>
               </div>
             )}
@@ -261,23 +261,23 @@ export const QuotesPage = () => {
               />
               <div>
                 <p className="font-semibold">{selectedQuote.productName}</p>
-                <p className="text-sm text-tertiary">{t('admin.columns.quantity')}: {selectedQuote.quantity}</p>
+                <p className="text-sm text-tertiary">{t('common.fields.quantity')}: {selectedQuote.quantity}</p>
               </div>
             </div>
 
             <Input
-              label={t('admin.columns.price') + ' (VNĐ)'}
+              label={t('common.fields.price') + ' (VNĐ)'}
               type="number"
-              placeholder={t('admin.placeholders.enterPrice')}
+              placeholder={t('common.placeholders.enterPrice')}
               value={quotePrice}
               onChange={(e) => setQuotePrice(e.target.value)}
               leftIcon={<DollarSign size={18} />}
             />
 
             <div>
-              <label className="block text-sm font-medium mb-2">{t('admin.columns.note')}</label>
+              <label className="block text-sm font-medium mb-2">{t('common.fields.note')}</label>
               <textarea
-                placeholder={t('admin.placeholders.enterNote')}
+                placeholder={t('common.placeholders.enterNote')}
                 rows={3}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-primary resize-none"
               />

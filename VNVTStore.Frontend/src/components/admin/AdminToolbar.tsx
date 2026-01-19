@@ -15,6 +15,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
 
 interface AdminToolbarAction {
@@ -92,6 +93,7 @@ export const AdminToolbar = ({
   searchRef,
   children,
 }: AdminToolbarProps) => {
+  const { t } = useTranslation();
 
   const Item = ({ icon, onClick, title, disabled, className: itemClassName }: AdminToolbarAction) => (
     <button
@@ -116,10 +118,10 @@ export const AdminToolbar = ({
 
       {/* Group 1: CRUD */}
       <div className="flex items-center gap-1">
-        <BlueItem icon={<Plus size={20} className="stroke-[2.5]" />} onClick={onAdd} title="Add New" />
-        <BlueItem icon={<MoreHorizontal size={20} className="stroke-[2.5]" />} onClick={onViewDetails} disabled={selectedCount !== 1} title="Xem chi tiết" />
-        <BlueItem icon={<Edit size={18} className="stroke-[2.5]" />} onClick={onEdit} disabled={selectedCount !== 1} title="Edit" />
-        <BlueItem icon={<Trash2 size={20} className="stroke-[2.5]" />} onClick={onDelete} disabled={selectedCount === 0} title="Delete" />
+        <BlueItem icon={<Plus size={20} className="stroke-[2.5]" />} onClick={onAdd} title={t('admin.createNew')} />
+        <BlueItem icon={<MoreHorizontal size={20} className="stroke-[2.5]" />} onClick={onViewDetails} disabled={selectedCount !== 1} title={t('admin.viewDetails')} />
+        <BlueItem icon={<Edit size={18} className="stroke-[2.5]" />} onClick={onEdit} disabled={selectedCount !== 1} title={t('common.actions.edit')} />
+        <BlueItem icon={<Trash2 size={20} className="stroke-[2.5]" />} onClick={onDelete} disabled={selectedCount === 0} title={t('common.actions.delete')} />
       </div>
 
       <div className="h-6 w-px bg-gray-200 dark:bg-slate-600 mx-2" />
@@ -130,23 +132,22 @@ export const AdminToolbar = ({
           ref={searchRef}
           icon={<Search size={20} className="stroke-[2.5]" />}
           onClick={onSearchClick}
-          title="Search"
+          title={t('common.search')}
           className={isSearchActive ? "bg-blue-100 dark:bg-blue-900/30" : ""}
         />
-        <BlueItem icon={<RefreshCw size={18} className="stroke-[2.5]" />} onClick={onRefresh} disabled={!onRefresh} title="Refresh Data" />
-        <BlueItem icon={<RotateCcw size={18} className="stroke-[2.5]" />} onClick={onReset} title="Reset Filters" />
+        <BlueItem icon={<RotateCcw size={18} className="stroke-[2.5]" />} onClick={onReset} title={t('admin.resetFilters')} />
       </div>
 
       <div className="h-6 w-px bg-gray-200 dark:bg-slate-600 mx-2" />
 
       {/* Group 3: File Ops */}
       <div className="flex items-center gap-1">
-        <BlueItem icon={<Download size={20} className="stroke-[2.5]" />} onClick={onImport} title="Import" />
+        <BlueItem icon={<Download size={20} className="stroke-[2.5]" />} onClick={onImport} title={t('admin.import')} />
         <BlueItem 
           icon={isExporting ? <Loader2 size={20} className="stroke-[2.5] animate-spin" /> : <Upload size={20} className="stroke-[2.5]" />} 
           onClick={!isExporting ? onExport : undefined} 
           disabled={isExporting}
-          title={isExporting ? "Đang xuất..." : "Export"} 
+          title={isExporting ? t('admin.exporting') : t('admin.export')} 
         />
       </div>
 

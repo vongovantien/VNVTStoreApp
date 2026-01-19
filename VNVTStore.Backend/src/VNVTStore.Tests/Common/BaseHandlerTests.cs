@@ -126,7 +126,9 @@ public class BaseHandlerTests
         var result = await _handler.TestDeleteAsync("UNKNOWN", "Category", CancellationToken.None);
 
         Assert.True(result.IsFailure);
-        Assert.Equal(Error.NotFound("Category", "UNKNOWN"), result.Error);
+        var expectedError = Error.NotFound("Category", "UNKNOWN");
+        Assert.Equal(expectedError.Code, result.Error.Code);
+        Assert.Equal(expectedError.Message, result.Error.Message);
     }
 
     [Fact]
@@ -157,7 +159,7 @@ public class BaseHandlerTests
             .ReturnsAsync(cat);
 
         // Setup unit of work
-        _mockUnitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _mockUnitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.TestDeleteAsync("CAT001", "Category", CancellationToken.None);
 
@@ -177,7 +179,7 @@ public class BaseHandlerTests
 
         _mockRepository.Setup(r => r.GetByCodeAsync("CAT001", It.IsAny<CancellationToken>()))
             .ReturnsAsync(cat);
-        _mockUnitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _mockUnitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.TestDeleteAsync("CAT001", "Category", CancellationToken.None, softDelete: false);
 
@@ -191,7 +193,7 @@ public class BaseHandlerTests
     public async Task DeleteMultipleAsync_ShouldReturnFailure_WhenAnyActive()
     {
         var cat1 = new TblCategory { Code = "C1", IsActive = false };
-        var cat2 = new TblCategory { Code = "C2", IsActive = true }; // Active!
+        var cat2 = new TblCategory { Code = "C2", Name = "Category 2", IsActive = true }; // Active!
         var list = new List<TblCategory> { cat1, cat2 };
 
         _mockRepository.Setup(r => r.AsQueryable()).Returns(list.AsQueryable().BuildMock());
@@ -211,7 +213,7 @@ public class BaseHandlerTests
         var list = new List<TblCategory> { cat1, cat2 };
 
         _mockRepository.Setup(r => r.AsQueryable()).Returns(list.AsQueryable().BuildMock());
-        _mockUnitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _mockUnitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.TestDeleteMultipleAsync(new List<string> { "C1", "C2" }, "Category", CancellationToken.None);
 

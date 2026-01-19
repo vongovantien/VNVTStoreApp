@@ -1,6 +1,6 @@
 // ============ Product Types ============
 export interface Product {
-    id: string;
+    code: string; // Changed from id to code
     name: string;
     slug: string;
     description: string;
@@ -26,24 +26,28 @@ export interface Product {
     voltage?: string;
     material?: string;
     size?: string;
+    categoryCode?: string;
+    costPrice?: number;
+    weight?: number;
+    supplierCode?: string;
 }
 
 // ============ Category Types ============
 export interface Category {
-    id: string;
+    code: string; // Changed from id
     name: string;
-    slug: string;
+    slug: string; // Is slug used?
     description?: string;
     image?: string;
-    parentId?: string;
+    parentCode?: string; // Changed from parentId
     productCount: number;
     isActive?: boolean;
-    code?: string; // Appears to be used in CategoriesPage
+    imageUrl?: string;
 }
 
 // ============ Cart Types ============
 export interface CartItem {
-    id: string;
+    code: string;
     product: Product;
     quantity: number;
     color?: string;
@@ -58,9 +62,9 @@ export enum UserRole {
 }
 
 export interface User {
-    id: string;
+    code: string; // Users also use Code in DTO? Check UserDto. Yes.
     email: string;
-    fullName: string; // Changed from name to match API
+    fullName: string;
     username?: string;
     phone?: string;
     avatar?: string;
@@ -70,7 +74,7 @@ export interface User {
 }
 
 export interface Address {
-    id: string;
+    code: string;
     fullName: string;
     phone: string;
     address: string;
@@ -84,9 +88,9 @@ export interface Address {
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'cancelled';
 
 export interface Order {
-    id: string;
+    code: string;
     orderNumber: string;
-    userId: string;
+    userCode: string; // userId -> userCode
     customer: {
         name: string;
         email: string;
@@ -107,7 +111,7 @@ export interface Order {
 }
 
 export interface OrderItem {
-    productId: string;
+    productCode: string; // productId -> productCode
     productName: string;
     productImage: string;
     price: number;
@@ -116,9 +120,9 @@ export interface OrderItem {
 
 // ============ Review Types ============
 export interface Review {
-    id: string;
-    productId: string;
-    userId: string;
+    code: string;
+    productCode: string;
+    userCode: string; // userId -> userCode
     userName: string;
     userAvatar?: string;
     rating: number;
@@ -133,8 +137,8 @@ export interface Review {
 export type QuoteStatus = 'pending' | 'quoted' | 'closed' | 'cancelled';
 
 export interface QuoteRequest {
-    id: string;
-    productId: string;
+    code: string;
+    productCode: string;
     productName: string;
     productImage: string;
     customer: {

@@ -17,7 +17,7 @@ export const CustomersPage = () => {
 
   // State for Fetching
   const [pageIndex, setPageIndex] = useState(PaginationDefaults.PAGE_INDEX);
-  const [pageSize, setPageSize] = useState(PageSize.DEFAULT);
+  const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
   const [sortField, setSortField] = useState('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -154,7 +154,7 @@ export const CustomersPage = () => {
   const columns: DataTableColumn<CustomerDto>[] = [
     {
       id: 'fullName',
-      header: t('admin.columns.customer'),
+      header: t('common.fields.customer'),
       accessor: (customer) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
@@ -170,7 +170,7 @@ export const CustomersPage = () => {
     },
     {
       id: 'contact',
-      header: t('admin.columns.contact'),
+      header: t('common.fields.contact'),
       accessor: (customer) => (
         <div className="space-y-1">
           <p className="text-sm flex items-center gap-2 text-slate-600 dark:text-slate-400">
@@ -188,7 +188,7 @@ export const CustomersPage = () => {
     },
     {
       id: 'role',
-      header: "Role",
+      header: t('common.fields.role'),
       accessor: (customer) => (
         <Badge color={customer.role === 'admin' ? 'error' : 'info'}>{customer.role}</Badge>
       ),
@@ -197,7 +197,7 @@ export const CustomersPage = () => {
     },
     {
       id: 'isActive',
-      header: t('admin.columns.status'),
+      header: t('common.fields.status'),
       accessor: (customer) => (
         <Badge color={customer.isActive ? 'success' : 'secondary'}>
           {customer.isActive ? t('admin.status.active') : t('admin.status.inactive')}
@@ -208,7 +208,7 @@ export const CustomersPage = () => {
     },
     {
       id: 'joinDate',
-      header: t('admin.columns.joinDate'),
+      header: t('common.fields.joinDate'),
       accessor: (customer) => <span className="text-slate-500">{formatDate(customer.createdAt)}</span>,
       sortable: true
     },
@@ -262,9 +262,9 @@ export const CustomersPage = () => {
         advancedFilterDefs={[
           {
             id: 'fullName',
-            label: t('admin.columns.customer'),
+            label: t('common.fields.customer'),
             type: 'text',
-            placeholder: 'Tên khách hàng...'
+            placeholder: t('common.placeholders.search')
           },
           {
             id: 'email',
@@ -273,16 +273,17 @@ export const CustomersPage = () => {
           },
           {
             id: 'phone',
-            label: t('admin.columns.phone') || 'Số điện thoại',
+            label: t('common.fields.phone'),
             type: 'text',
           },
           {
             id: 'role',
-            label: 'Role',
+            label: t('common.fields.role'),
             type: 'select',
             options: [
-              { value: 'customer', label: 'Customer' },
-              { value: 'admin', label: 'Admin' }
+              { value: 'customer', label: t('admin.types.customer') },
+              { value: 'admin', label: t('admin.types.admin') },
+              { value: 'staff', label: t('admin.types.staff') }
             ]
           }
         ]}
@@ -293,7 +294,10 @@ export const CustomersPage = () => {
         totalPages={totalPages}
         pageSize={pageSize}
         onPageChange={setPageIndex}
-        onPageSizeChange={setPageSize}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPageIndex(PaginationDefaults.PAGE_INDEX);
+        }}
 
         // Visibility
         enableColumnVisibility={true}
@@ -309,7 +313,7 @@ export const CustomersPage = () => {
       <Modal
         isOpen={!!selectedCustomer}
         onClose={() => setSelectedCustomer(null)}
-        title={t('admin.actions.view') + ' ' + t('admin.columns.customer')}
+        title={t('admin.actions.view') + ' ' + t('common.fields.customer')}
         size="md"
       >
         {selectedCustomer && (
@@ -331,7 +335,7 @@ export const CustomersPage = () => {
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-semibold text-slate-800 dark:text-white">{t('admin.columns.contact')}</h3>
+              <h3 className="font-semibold text-slate-800 dark:text-white">{t('common.fields.contact')}</h3>
               <div className="space-y-2 text-slate-600 dark:text-slate-400">
                 <p className="flex items-center gap-2">
                   <Mail size={16} className="text-blue-500" />
@@ -373,68 +377,68 @@ export const CustomersPage = () => {
       <Modal
         isOpen={isFormOpen}
         onClose={closeForm}
-        title={editingCustomer ? t('admin.actions.edit') + ' ' + t('admin.columns.customer') : t('admin.actions.create') + ' ' + t('admin.columns.customer')}
+        title={editingCustomer ? t('admin.actions.edit') + ' ' + t('common.fields.customer') : t('admin.actions.create') + ' ' + t('common.fields.customer')}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
             {!editingCustomer && (
                 <Input
-                    label="Username *"
+                    label={t('common.fields.username')}
                     value={formData.username}
                     onChange={e => setFormData({...formData, username: e.target.value})}
-                    required
-                    placeholder="Enter username"
+                    isRequired
+                    placeholder={t('common.placeholders.enterName')}
                 />
             )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <Input
-                    label={t('admin.columns.customer') + ' (Full Name)'}
+                    label={t('common.fields.customer')}
                     value={formData.fullName}
                     onChange={e => setFormData({...formData, fullName: e.target.value})}
-                    placeholder="Enter full name"
+                    placeholder={t('common.placeholders.enterName')}
                 />
                  <Input
-                    label="Email *"
+                    label={t('common.fields.email')}
                     type="email"
                     value={formData.email}
                     onChange={e => setFormData({...formData, email: e.target.value})}
-                    required
-                    placeholder="Enter email"
+                    isRequired
+                    placeholder="example@email.com"
                 />
             </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <Input
-                    label={t('admin.columns.phone')}
+                    label={t('common.fields.phone')}
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    placeholder="Enter phone number"
+                    placeholder={t('common.placeholders.enterPhone')}
                 />
                  <Select
-                    label="Role"
+                    label={t('common.fields.role')}
                     value={formData.role}
                     onChange={e => setFormData({...formData, role: e.target.value})}
                     options={[
-                        { value: 'customer', label: 'Customer' },
-                        { value: 'admin', label: 'Admin' },
-                        { value: 'staff', label: 'Staff' }
+                        { value: 'customer', label: t('admin.types.customer') },
+                        { value: 'admin', label: t('admin.types.admin') },
+                        { value: 'staff', label: t('admin.types.staff') }
                     ]}
                 />
             </div>
 
              <Input
-                label={editingCustomer ? "New Password (Optional)" : "Password *"}
+                label={editingCustomer ? t('common.fields.newPassword') : t('common.fields.password')}
                 type="password"
                 value={formData.password}
                 onChange={e => setFormData({...formData, password: e.target.value})}
-                required={!editingCustomer}
-                placeholder={editingCustomer ? "Leave blank to keep current" : "Enter password"}
+                isRequired={!editingCustomer}
+                placeholder={editingCustomer ? t('common.hints.leaveBlankKeepCurrent') : t('common.placeholders.enterPassword')}
             />
 
                 <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
                      <Switch
-                        label={t('admin.columns.status')}
+                        label={t('common.fields.status')}
                         description={t('admin.statusHint', 'Bật để tài khoản hoạt động')}
                         checked={formData.isActive}
                         onChange={(checked) => setFormData({...formData, isActive: checked})}

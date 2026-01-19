@@ -9,14 +9,15 @@ import { useToast } from '@/store';
 import { BannerDto } from '@/services/bannerService';
 import { formatDate } from '@/utils/format';
 import { AdminPageHeader } from '@/components/admin';
+import { PaginationDefaults } from '@/constants';
 
 const BannersPage = () => {
   const { t } = useTranslation();
   const toast = useToast();
 
   // State
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [currentPage, setCurrentPage] = useState(PaginationDefaults.PAGE_INDEX);
+  const pageSize = PaginationDefaults.PAGE_SIZE;
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch Data
@@ -49,7 +50,7 @@ const BannersPage = () => {
   const columns: DataTableColumn<BannerDto>[] = [
     {
       id: 'title',
-      header: t('admin.columns.title'),
+      header: t('common.fields.title'),
       accessor: (banner) => (
         <div>
           <p className="font-medium text-slate-800 dark:text-slate-100">{banner.title}</p>
@@ -60,7 +61,7 @@ const BannersPage = () => {
     },
     {
       id: 'link',
-      header: t('admin.columns.link'),
+      header: t('common.fields.linkUrl'),
       accessor: (banner) => banner.linkUrl ? (
         <a
           href={banner.linkUrl}
@@ -68,20 +69,20 @@ const BannersPage = () => {
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline flex items-center gap-1 text-sm"
         >
-          {banner.linkText || t('admin.columns.link')} <ExternalLink size={12} />
+          {banner.linkText || t('common.fields.linkUrl')} <ExternalLink size={12} />
         </a>
       ) : <span className="text-slate-400">-</span>,
     },
     {
       id: 'priority',
-      header: t('admin.columns.priority'),
+      header: t('common.fields.priority'),
       accessor: 'priority',
       className: 'text-center',
       headerClassName: 'text-center'
     },
     {
       id: 'status',
-      header: t('admin.columns.status'),
+      header: t('common.fields.status'),
       accessor: (banner) => (
         <Badge
           color={banner.isActive ? 'success' : 'secondary'}
@@ -95,7 +96,7 @@ const BannersPage = () => {
     },
     {
       id: 'createdAt',
-      header: t('admin.columns.createdAt'),
+      header: t('common.fields.date'),
       accessor: (banner) => <span className="text-slate-500">{formatDate(banner.createdAt)}</span>,
       sortable: true
     },
@@ -154,8 +155,8 @@ const BannersPage = () => {
 
   const handleReset = () => {
     setSearchQuery('');
-    setCurrentPage(1);
-    refetch();
+    setCurrentPage(PaginationDefaults.PAGE_INDEX);
+
   };
 
   return (
@@ -180,13 +181,13 @@ const BannersPage = () => {
         advancedFilterDefs={[
           {
             id: 'title',
-            label: t('admin.columns.title'),
+            label: t('common.fields.title'),
             type: 'text',
-            placeholder: t('admin.placeholders.searchTitle')
+            placeholder: t('common.placeholders.enterTitle')
           },
           {
             id: 'status',
-            label: t('admin.columns.status'),
+            label: t('common.fields.status'),
             type: 'select',
             options: [
               { value: 'active', label: t('common.status.active') },

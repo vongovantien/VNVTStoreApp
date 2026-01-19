@@ -27,6 +27,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => (string?)null))
             .ForMember(dest => dest.IsNew, opt => opt.MapFrom(src => false))
             .ForMember(dest => dest.IsFeatured, opt => opt.MapFrom(src => false))
+            .ForMember(dest => dest.ProductImages, opt => opt.Ignore())
             .ReverseMap()
             .ForMember(dest => dest.CategoryCodeNavigation, opt => opt.Ignore());
         
@@ -40,7 +41,7 @@ public class MappingProfile : Profile
         CreateMap<UpdateProductDto, TblProduct>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         
-        CreateMap<TblProductImage, ProductImageDto>().ReverseMap();
+        // CreateMap<TblProductImage, ProductImageDto>().ReverseMap(); // Removed
 
         // Category mappings
         CreateMap<TblCategory, CategoryDto>().ReverseMap();
@@ -88,9 +89,7 @@ public class MappingProfile : Profile
         // Quote mappings
     CreateMap<TblQuote, QuoteDto>()
         .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductCodeNavigation != null ? src.ProductCodeNavigation.Name : null))
-        .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.ProductCodeNavigation != null && src.ProductCodeNavigation.TblProductImages.Any(i => i.IsPrimary == true) 
-            ? src.ProductCodeNavigation.TblProductImages.First(i => i.IsPrimary == true).ImageUrl 
-            : (src.ProductCodeNavigation != null && src.ProductCodeNavigation.TblProductImages.Any() ? src.ProductCodeNavigation.TblProductImages.First().ImageUrl : null)))
+        .ForMember(dest => dest.ProductImage, opt => opt.Ignore())
         .ReverseMap();
 
     CreateMap<CreateQuoteDto, TblQuote>();

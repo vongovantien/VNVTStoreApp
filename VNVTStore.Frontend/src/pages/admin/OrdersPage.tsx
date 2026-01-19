@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Eye, Truck, Check, X, Printer, Package, ChevronUp, ChevronDown, Loader2, Download, Trash2 } from 'lucide-react';
+import defaultImage from '@/assets/default-image.png';
 import { Button, Badge, Modal, Pagination, ConfirmDialog, TableActions } from '@/components/ui';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
 import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/utils/format';
@@ -10,6 +11,7 @@ import { DataTable } from '@/components/common';
 import { exportToExcel } from '@/utils/export';
 import { DataTableColumn } from '@/components/common/DataTable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
 
 export const OrdersPage = () => {
   const { t } = useTranslation();
@@ -18,7 +20,8 @@ export const OrdersPage = () => {
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<OrderDto | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(PaginationDefaults.PAGE_INDEX);
+  const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
 
   // Sorting
@@ -60,13 +63,13 @@ export const OrdersPage = () => {
   const columns: DataTableColumn<OrderDto>[] = [
     {
       id: 'code',
-      header: t('admin.columns.orderCode'),
+      header: t('common.fields.orderCode'),
       accessor: (row) => <span className="font-medium">{row.code}</span>,
       sortable: true
     },
     {
       id: 'customer',
-      header: t('admin.columns.customer'),
+      header: t('common.fields.customer'),
       accessor: (row) => (
         <div>
           <p className="font-medium">{row.shippingName || row.userCode}</p>
@@ -83,7 +86,7 @@ export const OrdersPage = () => {
     },
     {
       id: 'total',
-      header: t('admin.columns.total'),
+      header: t('common.fields.total'),
       accessor: (row) => <span className="font-semibold text-error">{formatCurrency(row.finalAmount)}</span>,
       className: 'text-right',
       headerClassName: 'text-right',
@@ -91,7 +94,7 @@ export const OrdersPage = () => {
     },
     {
       id: 'payment',
-      header: t('admin.columns.payment'),
+      header: t('common.fields.payment'),
       accessor: (row) => (
         <Badge
           color={row.paymentStatus === 'paid' ? 'success' : row.paymentStatus === 'pending' ? 'warning' : 'error'}
@@ -105,7 +108,7 @@ export const OrdersPage = () => {
     },
     {
       id: 'status',
-      header: t('admin.columns.status'),
+      header: t('common.fields.status'),
       accessor: (row) => (
         <Badge color={getStatusColor(row.status) as any} size="sm">
           {getStatusText(row.status)}
@@ -117,7 +120,7 @@ export const OrdersPage = () => {
     },
     {
       id: 'date',
-      header: t('admin.columns.date'),
+      header: t('common.fields.date'),
       accessor: (row) => <span className="text-secondary text-sm">{formatDate(row.createdAt)}</span>,
       sortable: true
     }
@@ -129,7 +132,7 @@ export const OrdersPage = () => {
   // Fetch Data
   const { data: ordersData, isLoading, isFetching, refetch } = useAdminOrders({
     pageIndex: currentPage,
-    pageSize: 10,
+    pageSize: pageSize,
     filters: {
       ...advancedFilters,
       ...(searchQuery ? { search: searchQuery } : {})
@@ -141,14 +144,15 @@ export const OrdersPage = () => {
 
   const handleAdvancedSearch = (filters: Record<string, string>) => {
     setAdvancedFilters(filters);
-    setCurrentPage(1);
+    setCurrentPage(PaginationDefaults.PAGE_INDEX);
   };
 
   const handleReset = () => {
     setAdvancedFilters({});
     setSearchQuery('');
-    setCurrentPage(1);
-    refetch();
+    setCurrentPage(PaginationDefaults.PAGE_INDEX);
+    setPageSize(PaginationDefaults.PAGE_SIZE);
+
   };
 
   // Selection & Toolbar State
@@ -207,6 +211,17 @@ export const OrdersPage = () => {
         data={orders}
         keyField="code"
         isLoading={isLoading || isFetching}
+        
+        // Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(PaginationDefaults.PAGE_INDEX);
+        }}
+        
         onAdd={() => { }} // Placeholder
         onView={(order) => setSelectedOrder(order)}
         onEdit={(order) => setSelectedOrder(order)} // Map Edit to View for now as Order Edit is complex
@@ -267,19 +282,19 @@ export const OrdersPage = () => {
         onReset={handleReset}
         exportFilename="orders_export"
         exportColumns={[
-          { key: 'code', label: t('admin.columns.orderCode'), width: 15 },
-          { key: 'shippingName', label: t('admin.columns.customer'), width: 20 },
-          { key: 'shippingPhone', label: t('admin.columns.phone'), width: 15 },
-          { key: 'shippingAddress', label: t('admin.columns.address'), width: 30 },
-          { key: 'totalAmount', label: t('admin.columns.total'), width: 15 },
-          { key: 'finalAmount', label: t('admin.columns.finalAmount'), width: 15 },
-          { key: 'shippingFee', label: t('admin.columns.shippingFee'), width: 12 },
-          { key: 'discountAmount', label: t('admin.columns.discount'), width: 12 },
-          { key: 'status', label: t('admin.columns.status'), width: 15 },
-          { key: 'paymentMethod', label: t('admin.columns.paymentMethod'), width: 18 },
-          { key: 'paymentStatus', label: t('admin.columns.payment'), width: 15 },
-          { key: 'createdAt', label: t('admin.columns.date'), width: 18 },
-          { key: 'note', label: t('admin.columns.note'), width: 25 },
+          { key: 'code', label: t('common.fields.orderCode'), width: 15 },
+          { key: 'shippingName', label: t('common.fields.customer'), width: 20 },
+          { key: 'shippingPhone', label: t('common.fields.phone'), width: 15 },
+          { key: 'shippingAddress', label: t('common.fields.address'), width: 30 },
+          { key: 'totalAmount', label: t('common.fields.total'), width: 15 },
+          { key: 'finalAmount', label: t('common.fields.finalAmount'), width: 15 },
+          { key: 'shippingFee', label: t('common.fields.shippingFee'), width: 12 },
+          { key: 'discountAmount', label: t('common.fields.discount'), width: 12 },
+          { key: 'status', label: t('common.fields.status'), width: 15 },
+          { key: 'paymentMethod', label: t('common.fields.paymentMethod'), width: 18 },
+          { key: 'paymentStatus', label: t('common.fields.payment'), width: 15 },
+          { key: 'createdAt', label: t('common.fields.date'), width: 18 },
+          { key: 'note', label: t('common.fields.note'), width: 25 },
         ]}
         onExportAllData={async () => {
           const response = await orderService.search({ pageIndex: 1, pageSize: 10000 });
@@ -292,19 +307,19 @@ export const OrdersPage = () => {
         advancedFilterDefs={[
           {
             id: 'fromDate',
-            label: t('admin.filters.fromDate') || 'Từ ngày',
+            label: t('admin.filters.fromDate'),
             type: 'date',
             placeholder: 'dd/mm/yyyy'
           },
           {
             id: 'toDate',
-            label: t('admin.filters.toDate') || 'Đến ngày',
+            label: t('admin.filters.toDate'),
             type: 'date',
             placeholder: 'dd/mm/yyyy'
           },
           {
             id: 'status',
-            label: t('admin.columns.status'),
+            label: t('common.fields.status'),
             type: 'select',
             options: [
               { value: 'pending', label: t('admin.status.pending') },
@@ -316,36 +331,36 @@ export const OrdersPage = () => {
           },
           {
             id: 'paymentStatus',
-            label: t('admin.columns.payment'),
+            label: t('common.fields.payment'),
             type: 'select',
             options: [
-              { value: 'paid', label: t('admin.status.paid') || 'Đã thanh toán' },
-              { value: 'pending', label: t('admin.status.unpaid') || 'Chưa thanh toán' },
+              { value: 'paid', label: t('admin.status.paid') },
+              { value: 'pending', label: t('admin.status.unpaid') },
             ]
           },
           {
             id: 'amountFrom',
-            label: t('admin.filters.amountFrom') || 'Tổng tiền từ',
+            label: t('admin.filters.amountFrom'),
             type: 'number',
             placeholder: '0'
           },
           {
             id: 'amountTo',
-            label: t('admin.filters.amountTo') || 'Tổng tiền đến',
+            label: t('admin.filters.amountTo'),
             type: 'number',
             placeholder: '0'
           },
           {
             id: 'customer',
-            label: t('admin.columns.customer'),
+            label: t('common.fields.customer'),
             type: 'text',
-            placeholder: t('admin.placeholders.searchCustomer') || 'Nhập tên hoặc SĐT'
+            placeholder: t('common.placeholders.search')
           },
           {
             id: 'code',
-            label: t('admin.columns.orderCode'),
+            label: t('common.fields.orderCode'),
             type: 'text',
-            placeholder: t('admin.placeholders.searchOrderCode') || 'Nhập mã đơn hàng'
+            placeholder: t('common.placeholders.enterCode')
           }
         ]}
 
@@ -425,7 +440,14 @@ export const OrdersPage = () => {
               <div className="space-y-3 border rounded-lg p-3 bg-primary">
                 {selectedOrder.orderItems?.map((item, index) => (
                   <div key={index} className="flex items-center gap-3 py-2 border-b last:border-0">
-                    <img src={item.productImage} alt={item.productName} className="w-12 h-12 object-cover rounded border" />
+                    <img 
+                      src={item.productImage || defaultImage} 
+                      alt={item.productName} 
+                      className="w-12 h-12 object-cover rounded border"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = defaultImage;
+                      }}
+                    />
                     <div className="flex-1">
                       <p className="font-medium text-sm">{item.productName}</p>
                       <p className="text-xs text-tertiary">Số lượng: {item.quantity}</p>

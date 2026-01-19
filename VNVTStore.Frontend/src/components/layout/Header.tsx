@@ -32,10 +32,13 @@ import { useCategories } from '@/hooks/useProducts';
 export const Header = memo(() => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
-  const { data: categories = [] } = useCategories(); // Fetch categories
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategories, setShowCategories] = useState(false);
+  
+  const { data: categories = [], isLoading: isLoadingCategories } = useCategories({ 
+    enabled: showCategories || mobileMenuOpen 
+  });
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -386,7 +389,10 @@ export const Header = memo(() => {
             </Button>
             {showCategories && (
               <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overscroll-contain z-[999] grid grid-cols-1 md:grid-cols-3 gap-6">
-                {categories.filter(c => !c.parentCode).map((parent) => (
+                {isLoadingCategories ? (
+                   <div className="col-span-3 text-center py-8 text-secondary">Loading categories...</div>
+                ) : (
+                   categories.filter(c => !c.parentCode).map((parent) => (
                   <div key={parent.code} className="space-y-3">
                     <Link
                       to={`/products?category=${parent.code}`}
@@ -409,7 +415,7 @@ export const Header = memo(() => {
                       ))}
                     </ul>
                   </div>
-                ))}
+                )))}
               </div>
             )}
           </div>

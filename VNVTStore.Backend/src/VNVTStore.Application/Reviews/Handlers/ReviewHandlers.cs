@@ -50,7 +50,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             return Result.Failure<ReviewDto>(Error.Forbidden("Cannot review item from another user's order"));
 
         // Check if already reviewed
-        var existingReview = await Repository.FindAsync(
+        var existingReview = await _repository.FindAsync(
             r => r.OrderItemCode == request.Dto.OrderItemCode && r.UserCode == request.Dto.UserCode,
             cancellationToken);
 
@@ -69,7 +69,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result<ReviewDto>> Handle(UpdateCommand<UpdateReviewDto, ReviewDto> request, CancellationToken cancellationToken)
     {
-        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
             return Result.Failure<ReviewDto>(Error.NotFound(MessageConstants.Review, request.Code));
 
@@ -86,7 +86,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result> Handle(DeleteCommand<TblReview> request, CancellationToken cancellationToken)
     {
-        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
             return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
 
@@ -114,14 +114,14 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result<IEnumerable<ReviewDto>>> Handle(GetUserReviewsQuery request, CancellationToken cancellationToken)
     {
-        var reviews = await Repository.AsQueryable()
+        var reviews = await _repository.AsQueryable()
             .Where(r => r.UserCode == request.UserCode)
             .Include(r => r.OrderItemCodeNavigation)
             .ThenInclude(oi => oi!.ProductCodeNavigation)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return Result.Success(Mapper.Map<IEnumerable<ReviewDto>>(reviews));
+        return Result.Success(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
     }
 
     public async Task<Result<ReviewDto>> Handle(GetByCodeQuery<ReviewDto> request, CancellationToken cancellationToken)
@@ -135,26 +135,26 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result> Handle(ApproveReviewCommand request, CancellationToken cancellationToken)
     {
-        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
              return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
 
         review.IsApproved = true;
-        Repository.Update(review);
-        await UnitOfWork.CommitAsync(cancellationToken);
+        _repository.Update(review);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         return Result.Success();
     }
 
     public async Task<Result> Handle(RejectReviewCommand request, CancellationToken cancellationToken)
     {
-        var review = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
              return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
 
         review.IsApproved = false;
-        Repository.Update(review);
-        await UnitOfWork.CommitAsync(cancellationToken);
+        _repository.Update(review);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         return Result.Success();
     }

@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Application.Quotes.Queries;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
@@ -14,7 +15,8 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
     IRequestHandler<UpdateCommand<UpdateQuoteDto, QuoteDto>, Result<QuoteDto>>,
     IRequestHandler<DeleteCommand<TblQuote>, Result>,
     IRequestHandler<GetAllQuery<QuoteDto>, Result<IEnumerable<QuoteDto>>>,
-    IRequestHandler<GetByCodeQuery<QuoteDto>, Result<QuoteDto>>
+    IRequestHandler<GetByCodeQuery<QuoteDto>, Result<QuoteDto>>,
+    IRequestHandler<GetMyQuotesQuery, ApiResponse<List<QuoteDto>>>
 {
     private readonly ICurrentUser _currentUser;
     private readonly IRepository<TblProduct> _productRepository;
@@ -33,8 +35,15 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
     public async Task<Result<QuoteDto>> Handle(CreateCommand<CreateQuoteDto, QuoteDto> request, CancellationToken cancellationToken)
     {
         var userCode = _currentUser.UserCode;
+        
+        // Validate: Must have User or Guest Info
         if (string.IsNullOrEmpty(userCode))
-             return Result.Failure<QuoteDto>(Error.Unauthorized(MessageConstants.Unauthorized));
+        {
+             if (string.IsNullOrEmpty(request.Dto.CustomerName) || string.IsNullOrEmpty(request.Dto.CustomerEmail))
+             {
+                  return Result.Failure<QuoteDto>(Error.Unauthorized(MessageConstants.RequireLoginOrGuestInfo));
+             }
+        }
 
         // Validate Product
         var product = await _productRepository.GetByCodeAsync(request.Dto.ProductCode, cancellationToken);
@@ -46,15 +55,18 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
             cancellationToken,
             q => {
                 q.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
-                q.UserCode = userCode;
+                q.UserCode = userCode; // Can be null
                 q.Status = "pending";
                 q.CreatedAt = DateTime.Now;
+                // AutoMapper should map CustomerName/Email/Phone/Company from DTO to Entity if names match.
+                // CreateQuoteDto has CustomerName, CustomerEmail, CustomerPhone, Company.
+                // TblQuote likely has them too.
             });
     }
 
     public async Task<Result<QuoteDto>> Handle(UpdateCommand<UpdateQuoteDto, QuoteDto> request, CancellationToken cancellationToken)
     {
-        var quote = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var quote = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (quote == null)
             return Result.Failure<QuoteDto>(Error.NotFound("Quote", request.Code));
 
@@ -77,7 +89,7 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
 
     public async Task<Result> Handle(DeleteCommand<TblQuote> request, CancellationToken cancellationToken)
     {
-        var quote = await Repository.GetByCodeAsync(request.Code, cancellationToken);
+        var quote = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (quote == null)
             return Result.Failure(Error.NotFound("Quote", request.Code));
 
@@ -102,21 +114,19 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
         if (string.IsNullOrEmpty(userCode))
              return Result.Failure<IEnumerable<QuoteDto>>(Error.Unauthorized(MessageConstants.Unauthorized));
 
-        var quotes = await Repository.AsQueryable()
+        var quotes = await _repository.AsQueryable()
             .Where(q => q.UserCode == userCode)
             .Include(q => q.ProductCodeNavigation)
-            .ThenInclude(p => p.TblProductImages)
             .OrderByDescending(q => q.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return Result.Success(Mapper.Map<IEnumerable<QuoteDto>>(quotes));
+        return Result.Success(_mapper.Map<IEnumerable<QuoteDto>>(quotes));
     }
 
     public async Task<Result<QuoteDto>> Handle(GetByCodeQuery<QuoteDto> request, CancellationToken cancellationToken)
     {
-        var quote = await Repository.AsQueryable()
+        var quote = await _repository.AsQueryable()
             .Include(q => q.ProductCodeNavigation)
-            .ThenInclude(p => p.TblProductImages)
             .FirstOrDefaultAsync(q => q.Code == request.Code, cancellationToken);
 
         if (quote == null)
@@ -128,6 +138,38 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
         if (quote.UserCode != userCode && !isAdmin)
              return Result.Failure<QuoteDto>(Error.Forbidden(MessageConstants.Forbidden));
 
-        return Result.Success(Mapper.Map<QuoteDto>(quote));
+        return Result.Success(_mapper.Map<QuoteDto>(quote));
+    }
+
+    public async Task<ApiResponse<List<QuoteDto>>> Handle(GetMyQuotesQuery request, CancellationToken cancellationToken)
+    {
+        var userCode = _currentUser.UserCode;
+        if (string.IsNullOrEmpty(userCode))
+        {
+             return new ApiResponse<List<QuoteDto>> { Success = false, Message = "User not authenticated" };
+        }
+
+        var quotes = await _repository.AsQueryable()
+            .Include(q => q.ProductCodeNavigation)
+            .Where(q => q.UserCode == userCode)
+            .OrderByDescending(q => q.CreatedAt)
+            .Select(q => new QuoteDto
+            {
+                Code = q.Code,
+                UserCode = q.UserCode,
+                ProductCode = q.ProductCode,
+                ProductName = q.ProductCodeNavigation.Name,
+                ProductImage = null,
+                Quantity = q.Quantity,
+                Note = q.Note,
+                Status = q.Status,
+                QuotedPrice = q.QuotedPrice,
+                AdminNote = q.AdminNote,
+                CreatedAt = q.CreatedAt ?? DateTime.UtcNow,
+                UpdatedAt = q.UpdatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return new ApiResponse<List<QuoteDto>> { Success = true, Data = quotes };
     }
 }

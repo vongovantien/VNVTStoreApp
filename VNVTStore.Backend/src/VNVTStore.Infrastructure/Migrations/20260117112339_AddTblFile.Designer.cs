@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VNVTStore.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using VNVTStore.Infrastructure.Persistence;
 namespace VNVTStore.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260117112339_AddTblFile")]
+    partial class AddTblFile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,6 +46,8 @@ namespace VNVTStore.Infrastructure.Migrations
             modelBuilder.HasSequence("payment_code_seq");
 
             modelBuilder.HasSequence("product_code_seq");
+
+            modelBuilder.HasSequence("productimage_code_seq");
 
             modelBuilder.HasSequence("productpromotion_code_seq");
 
@@ -353,14 +358,6 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<string>("MasterCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("MasterType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -391,8 +388,6 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.HasKey("Code")
                         .HasName("TblFile_pkey");
-
-                    b.HasIndex(new[] { "MasterCode" }, "idx_file_mastercode");
 
                     b.ToTable("TblFile", (string)null);
                 });
@@ -657,6 +652,47 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasIndex(new[] { "Name" }, "idx_product_name");
 
                     b.ToTable("TblProduct", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductImage", b =>
+                {
+                    b.Property<string>("Code")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValueSql("('IMG'::text || lpad((nextval('productimage_code_seq'::regclass))::text, 6, '0'::text))");
+
+                    b.Property<string>("AltText")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("ImageURL");
+
+                    b.Property<bool?>("IsPrimary")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("SortOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Code")
+                        .HasName("TblProductImage_pkey");
+
+                    b.HasIndex("ProductCode");
+
+                    b.ToTable("TblProductImage", (string)null);
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductPromotion", b =>
@@ -1144,6 +1180,18 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("SupplierCodeNavigation");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductImage", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", "ProductCodeNavigation")
+                        .WithMany("TblProductImages")
+                        .HasForeignKey("ProductCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblProductImage_ProductCode_fkey");
+
+                    b.Navigation("ProductCodeNavigation");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductPromotion", b =>
                 {
                     b.HasOne("VNVTStore.Domain.Entities.TblProduct", "ProductCodeNavigation")
@@ -1241,6 +1289,8 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("TblCartItems");
 
                     b.Navigation("TblOrderItems");
+
+                    b.Navigation("TblProductImages");
 
                     b.Navigation("TblProductPromotions");
 

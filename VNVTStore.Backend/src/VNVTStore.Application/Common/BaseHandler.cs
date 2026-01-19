@@ -12,15 +12,15 @@ namespace VNVTStore.Application.Common;
 
 public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
 {
-    protected readonly IRepository<TEntity> Repository;
-    protected readonly IUnitOfWork UnitOfWork;
-    protected readonly IMapper Mapper;
+    protected readonly IRepository<TEntity> _repository;
+    protected readonly IUnitOfWork _unitOfWork;
+    protected readonly IMapper _mapper;
 
     protected BaseHandler(IRepository<TEntity> repository, IUnitOfWork unitOfWork, IMapper mapper)
     {
-        Repository = repository;
-        UnitOfWork = unitOfWork;
-        Mapper = mapper;
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     protected async Task<Result<TResponse>> CreateAsync<TCreateDto, TResponse>(
@@ -30,21 +30,21 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
     {
         try 
         {
-            await UnitOfWork.BeginTransactionAsync(cancellationToken);
+            await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            var entity = Mapper.Map<TEntity>(dto);
+            var entity = _mapper.Map<TEntity>(dto);
             
             beforeSave?.Invoke(entity);
 
-            await Repository.AddAsync(entity, cancellationToken);
-            await UnitOfWork.CommitAsync(cancellationToken);
-            await UnitOfWork.CommitTransactionAsync(cancellationToken);
+            await _repository.AddAsync(entity, cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return Result.Success(Mapper.Map<TResponse>(entity));
+            return Result.Success(_mapper.Map<TResponse>(entity));
         }
         catch (Exception)
         {
-            await UnitOfWork.RollbackTransactionAsync(cancellationToken);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
     }
@@ -58,25 +58,25 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
     {
         try
         {
-            await UnitOfWork.BeginTransactionAsync(cancellationToken);
+            await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            var entity = await Repository.GetByCodeAsync(code, cancellationToken);
+            var entity = await _repository.GetByCodeAsync(code, cancellationToken);
             if (entity == null)
                 return Result.Failure<TResponse>(Error.NotFound(entityName, code));
 
-            Mapper.Map(dto, entity);
+            _mapper.Map(dto, entity);
             
             beforeSave?.Invoke(entity);
 
-            Repository.Update(entity);
-            await UnitOfWork.CommitAsync(cancellationToken);
-            await UnitOfWork.CommitTransactionAsync(cancellationToken);
+            _repository.Update(entity);
+            await _unitOfWork.CommitAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return Result.Success(Mapper.Map<TResponse>(entity));
+            return Result.Success(_mapper.Map<TResponse>(entity));
         }
         catch (Exception)
         {
-            await UnitOfWork.RollbackTransactionAsync(cancellationToken);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
     }
@@ -87,7 +87,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         CancellationToken cancellationToken,
         bool softDelete = true)
     {
-        var entity = await Repository.GetByCodeAsync(code, cancellationToken);
+        var entity = await _repository.GetByCodeAsync(code, cancellationToken);
         if (entity == null)
             return Result.Failure(Error.NotFound(entityName, code));
 
@@ -102,15 +102,15 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
              entity.IsActive = false;
              entity.ModifiedType = ModificationType.Delete.ToString();
              entity.UpdatedAt = DateTime.UtcNow; // Clean update
-             Repository.Update(entity);
+             _repository.Update(entity);
         }
         else
         {
-            Repository.Delete(entity);
+            _repository.Delete(entity);
         }
 
-        await UnitOfWork.CommitAsync(cancellationToken);
-        await UnitOfWork.CommitAsync(cancellationToken); // Why commit twice? Legacy? I'll keep one.
+        await _unitOfWork.CommitAsync(cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken); // Why commit twice? Legacy? I'll keep one.
         return Result.Success();
     }
 
@@ -119,7 +119,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         string entityName,
         CancellationToken cancellationToken)
     {
-        var entities = await Repository.AsQueryable()
+        var entities = await _repository.AsQueryable()
             .Where(e => codes.Contains(e.Code))
             .ToListAsync(cancellationToken);
 
@@ -132,17 +132,17 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
 
         if (activeItems.Any())
         {
-            return Result.Failure(Error.Conflict(entityName, $"Cannot delete active items: {string.Join(", ", activeItems)}. Please deactivate them first."));
+            return Result.Failure(Error.Conflict(MessageConstants.Conflict, $"{entityName}: Cannot delete active items: {string.Join(", ", activeItems)}. Please deactivate them first."));
         }
 
         foreach (var entity in entities)
         {
             entity.ModifiedType = ModificationType.Delete.ToString();
             entity.UpdatedAt = DateTime.UtcNow;
-            Repository.Update(entity);
+            _repository.Update(entity);
         }
 
-        await UnitOfWork.CommitAsync(cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
         return Result.Success();
     }
 
@@ -155,7 +155,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         List<string>? fields = null)
     {
-        var query = Repository.AsQueryable();
+        var query = _repository.AsQueryable();
 
         if (predicate != null)
             query = query.Where(predicate);
@@ -179,7 +179,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        var dtos = Mapper.Map<List<TResponse>>(items);
+        var dtos = _mapper.Map<List<TResponse>>(items);
         return Result.Success(new PagedResult<TResponse>(dtos, totalItems));
     }
 
@@ -189,7 +189,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         CancellationToken cancellationToken,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? includes = null)
     {
-        var query = Repository.AsQueryable();
+        var query = _repository.AsQueryable();
 
         // Filter out Soft Deleted
         query = query.Where(e => e.ModifiedType != ModificationType.Delete.ToString());
@@ -202,7 +202,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         if (entity == null)
             return Result.Failure<TResponse>(Error.NotFound(entityName, code));
 
-        return Result.Success(Mapper.Map<TResponse>(entity));
+        return Result.Success(_mapper.Map<TResponse>(entity));
     }
 
     protected async Task<Result<TResponse>> GetByCodeIncludeChildrenAsync<TResponse>(
@@ -275,7 +275,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             // "Name" might not exist on all TEntity. TblUser has "Username", TblCategory "Name".
             // We can try to dynamically select specific display property or just show codes.
             
-            var blockedEntities = await Repository.AsQueryable()
+            var blockedEntities = await _repository.AsQueryable()
                 .Where(e => usedCodes.Contains(e.Code))
                 .ToListAsync(cancellationToken);
 

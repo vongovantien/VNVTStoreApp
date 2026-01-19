@@ -115,7 +115,7 @@ export default function SuppliersPage() {
   const columns: DataTableColumn<SupplierDto>[] = [
     {
       id: 'name',
-      header: t('admin.columns.name'),
+      header: t('common.fields.name'),
       accessor: (supplier) => (
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
@@ -131,7 +131,7 @@ export default function SuppliersPage() {
     },
     {
       id: 'contact',
-      header: t('admin.columns.contact'),
+      header: t('common.fields.contact'),
       accessor: (supplier) => (
         <div className="space-y-1">
           {supplier.contactPerson && (
@@ -154,13 +154,13 @@ export default function SuppliersPage() {
     },
     {
       id: 'address',
-      header: t('admin.columns.address'),
+      header: t('common.fields.address'),
       accessor: 'address',
       className: 'hidden md:table-cell max-w-[200px] truncate'
     },
     {
       id: 'status',
-      header: t('admin.columns.status'),
+      header: t('common.fields.status'),
       accessor: (supplier) => (
         <Badge color={supplier.isActive !== false ? 'success' : 'secondary'}>
           {supplier.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
@@ -193,11 +193,11 @@ export default function SuppliersPage() {
         data={suppliers as SupplierDto[]}
         columns={columns}
         isLoading={isLoading}
-        searchPlaceholder={t('admin.searchPlaceholder')}
+        searchPlaceholder={t('common.placeholders.search')}
         searchOptions={[
-          { label: t('admin.columns.name'), value: 'name' },
-          { label: t('admin.columns.phone'), value: 'phone' },
-          { label: t('admin.columns.email'), value: 'email' }
+          { label: t('common.fields.name'), value: 'name' },
+          { label: t('common.fields.phone'), value: 'phone' },
+          { label: t('common.fields.email'), value: 'email' }
         ]}
         keyField="code"
         enableSelection
@@ -277,22 +277,22 @@ export default function SuppliersPage() {
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-6">
               <div>
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.taxCode')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.taxCode')}</label>
                 <p className="font-medium mt-1">{viewingSupplier.taxCode || t('common.none')}</p>
               </div>
               
               <div>
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.contactPerson')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.contactPerson')}</label>
                 <p className="font-medium mt-1">{viewingSupplier.contactPerson || t('common.none')}</p>
               </div>
 
               <div className="col-span-2">
-                 <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.address')}</label>
+                 <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.address')}</label>
                  <p className="font-medium mt-1">{viewingSupplier.address || t('common.none')}</p>
               </div>
 
               <div>
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.phone')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.phone')}</label>
                 <div className="flex items-center gap-2 mt-1">
                     <Phone size={14} className="text-gray-400" />
                     <span className="font-medium">{viewingSupplier.phone || t('common.none')}</span>
@@ -300,7 +300,7 @@ export default function SuppliersPage() {
               </div>
               
               <div>
-                 <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.email')}</label>
+                 <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.email')}</label>
                  <div className="flex items-center gap-2 mt-1">
                     <Mail size={14} className="text-gray-400" />
                     <span className="font-medium">{viewingSupplier.email || t('common.none')}</span>
@@ -308,17 +308,17 @@ export default function SuppliersPage() {
               </div>
 
               <div>
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.bankName')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.bankName')}</label>
                 <p className="font-medium mt-1">{viewingSupplier.bankName || t('common.none')}</p>
               </div>
 
               <div>
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.bankAccount')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.bankAccount')}</label>
                 <p className="font-medium mt-1">{viewingSupplier.bankAccount || t('common.none')}</p>
               </div>
 
               <div className="col-span-2">
-                <label className="text-xs text-secondary uppercase font-semibold">{t('admin.columns.notes')}</label>
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.note')}</label>
                 <p className="text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-wrap text-sm">
                   {viewingSupplier.notes || t('common.none')}
                 </p>

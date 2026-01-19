@@ -7,7 +7,6 @@ import { Upload, X } from 'lucide-react';
 import { Button, Input, Select, NumberInput, Switch } from '@/components/ui';
 import { useState } from 'react';
 import { useCategories, useSuppliers } from '@/hooks';
-import { uploadService } from '@/services/uploadService';
 
 const productSchemaBase = z.object({
   name: z.string(),
@@ -112,30 +111,27 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     if (acceptedFiles.length > 0) {
       try {
         setIsUploading(true);
-        
-        // Create instant local previews using blob URLs
-        const localPreviews = acceptedFiles.map(file => URL.createObjectURL(file));
         const currentImages = watch('images') || [];
-        setPreviewImages([...currentImages, ...localPreviews]);
         
-        // Upload files and get actual URLs
-        const newUrls: string[] = [];
+        const newImages: string[] = [];
+        
         for (const file of acceptedFiles) {
-           const url = await uploadService.upload(file);
-           newUrls.push(url);
+             const reader = new FileReader();
+             const base64Promise = new Promise<string>((resolve, reject) => {
+                 reader.onload = () => resolve(reader.result as string);
+                 reader.onerror = reject;
+             });
+             reader.readAsDataURL(file);
+             const base64 = await base64Promise;
+             newImages.push(base64);
         }
-        
-        // Replace local previews with actual URLs
-        const updatedImages = [...currentImages, ...newUrls];
+
+        // Combine with existing images
+        const updatedImages = [...currentImages, ...newImages];
         setValue('images', updatedImages, { shouldValidate: true });
         setPreviewImages(updatedImages);
-        
-        // Cleanup blob URLs
-        localPreviews.forEach(url => URL.revokeObjectURL(url));
       } catch (error) {
-        console.error("Upload failed", error);
-        // Revert to original images on error
-        setPreviewImages(watch('images') || []);
+        console.error("File reading failed", error);
       } finally {
         setIsUploading(false);
       }
@@ -160,7 +156,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         <div className="col-span-12 md:col-span-4 space-y-4">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('admin.columns.image')}</label>
+               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('common.fields.image')}</label>
                <span className="text-xs text-gray-400">({previewImages.length} images)</span>
             </div>
             
@@ -212,7 +208,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Input
-                  label={t('admin.columns.name')}
+                  label={t('common.fields.name')}
                   {...register('name')}
                   error={errors.name?.message}
                   placeholder={t('common.placeholders.productName')}
@@ -225,7 +221,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 control={control}
                 render={({ field }) => (
                   <Select
-                    label={t('admin.columns.category')}
+                    label={t('common.fields.category')}
                     options={categoryOptions}
                     value={field.value}
                     onChange={field.onChange}
@@ -237,7 +233,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
               />
 
               <Input
-                label={t('admin.columns.brand')}
+                label={t('common.fields.brand')}
                 {...register('brand')}
                 error={errors.brand?.message}
                 placeholder={t('common.placeholders.brand')}
@@ -247,7 +243,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 label="SKU"
                 {...register('sku')}
                 error={errors.sku?.message}
-                placeholder="SKU Code"
+                placeholder={t('common.placeholders.enterCode')}
               />
               
               <Controller
@@ -255,12 +251,12 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 control={control}
                 render={({ field }) => (
                   <Select
-                    label={t('admin.columns.supplier') || "Supplier"}
+                    label={t('common.fields.supplier')}
                     options={supplierOptions}
                     value={field.value}
                     onChange={field.onChange}
                     error={errors.supplierCode?.message}
-                    placeholder={t('common.placeholders.selectSupplier') || "Select Supplier"}
+                    placeholder={t('common.placeholders.select')}
                   />
                 )}
               />
@@ -277,11 +273,11 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 control={control}
                 render={({ field }) => (
                   <NumberInput
-                    label={t('admin.columns.price')}
+                    label={t('common.fields.price')}
                     value={field.value}
                     onChange={field.onChange}
                     error={errors.price?.message}
-                    placeholder="0"
+                    placeholder={t('common.placeholders.enterPrice')}
                     isRequired
                     min={0}
                   />
@@ -292,11 +288,11 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 control={control}
                 render={({ field }) => (
                   <NumberInput
-                    label={t('admin.columns.costPrice') || "Cost Price"}
+                    label={t('common.fields.costPrice')}
                     value={field.value}
                     onChange={field.onChange}
                     error={errors.costPrice?.message}
-                    placeholder="0"
+                    placeholder={t('common.placeholders.enterPrice')}
                     min={0}
                   />
                 )}
@@ -306,11 +302,11 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 control={control}
                 render={({ field }) => (
                   <NumberInput
-                    label={t('admin.columns.stock')}
+                    label={t('common.fields.stock')}
                     value={field.value}
                     onChange={field.onChange}
                     error={errors.stock?.message}
-                    placeholder="0"
+                    placeholder={t('common.placeholders.enterQuantity')}
                     isRequired
                     min={0}
                   />
@@ -321,11 +317,11 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 control={control}
                 render={({ field }) => (
                   <NumberInput
-                    label={t('admin.columns.weight') || "Weight (kg)"}
+                    label={t('common.fields.weight')}
                     value={field.value}
-                    onChange={field.onChange}
+                     onChange={field.onChange}
                     error={errors.weight?.message}
-                    placeholder="0"
+                    placeholder={t('common.placeholders.enterWeight')}
                     min={0}
                   />
                 )}
@@ -338,13 +334,13 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
               {t('common.fields.specifications')}
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              <Input label={t('admin.columns.color')} {...register('color')} placeholder={t('common.placeholders.exampleColor')} />
-              <Input label={t('admin.columns.material')} {...register('material')} placeholder={t('common.placeholders.exampleMaterial')} />
+              <Input label={t('common.fields.color')} {...register('color')} placeholder={t('common.placeholders.exampleColor')} />
+              <Input label={t('common.fields.material')} {...register('material')} placeholder={t('common.placeholders.exampleMaterial')} />
             </div>
             <div className="grid grid-cols-3 gap-4">
-              <Input label={t('admin.columns.power')} {...register('power')} placeholder={t('common.placeholders.examplePower')} />
-              <Input label={t('admin.columns.voltage')} {...register('voltage')} placeholder={t('common.placeholders.exampleVoltage')} />
-              <Input label={t('admin.columns.size')} {...register('size')} placeholder={t('common.placeholders.exampleSize')} />
+              <Input label={t('common.fields.power')} {...register('power')} placeholder={t('common.placeholders.examplePower')} />
+              <Input label={t('common.fields.voltage')} {...register('voltage')} placeholder={t('common.placeholders.exampleVoltage')} />
+              <Input label={t('common.fields.size')} {...register('size')} placeholder={t('common.placeholders.exampleSize')} />
             </div>
           </div>
         </div>
@@ -357,8 +353,8 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
               control={control}
               render={({ field }) => (
                 <Switch
-                  label={t('admin.columns.status')}
-                  description={t('admin.statusHint', 'Bật để hiển thị sản phẩm trên cửa hàng')}
+                  label={t('common.fields.status')}
+                  description={t('admin.statusHint')}
                   checked={field.value ?? true}
                   onChange={field.onChange}
                 />
@@ -369,7 +365,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
 
         <div className="col-span-12 space-y-2">
           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            {t('admin.columns.description')}
+            {t('common.fields.description')}
           </label>
           <textarea
             className="w-full min-h-[100px] px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-slate-900 transition-all resize-y text-sm"

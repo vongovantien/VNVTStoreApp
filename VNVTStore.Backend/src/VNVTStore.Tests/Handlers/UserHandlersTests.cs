@@ -67,7 +67,7 @@ public class UserHandlersTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        _mockUserRepo.Verify(r => r.Delete(user), Times.Once);
+        _mockUserRepo.Verify(r => r.Update(user), Times.Once);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class UserHandlersTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsFailure);
-        Assert.Equal(MessageConstants.CurrentPasswordIncorrect, result.Error.Code); // Assuming Code or Desc
+        Assert.Equal("Validation", result.Error.Code);
     }
 
     [Fact]

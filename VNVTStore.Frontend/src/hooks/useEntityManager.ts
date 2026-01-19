@@ -3,10 +3,11 @@ import { useMutation, useQueryClient, QueryKey } from '@tanstack/react-query';
 import { useToast } from '@/store';
 import { useTranslation } from 'react-i18next';
 
-interface EntityService<T, CreateDto, UpdateDto> {
+export interface EntityService<T, CreateDto, UpdateDto> {
     create: (data: CreateDto) => Promise<any>;
     update: (id: any, data: UpdateDto) => Promise<any>;
     delete: (id: any) => Promise<any>;
+    getByCode?: (code: any) => Promise<any>; // Optional fetch detail method
 }
 
 interface UseEntityManagerOptions<T, CreateDto, UpdateDto> {
@@ -22,7 +23,7 @@ interface UseEntityManagerOptions<T, CreateDto, UpdateDto> {
     };
 }
 
-export const useEntityManager = <T, CreateDto = Partial<T>, UpdateDto = Partial<T>>({
+export const useEntityManager = <T extends { code?: string; id?: string | number }, CreateDto = Partial<T>, UpdateDto = Partial<T>>({
     service,
     queryKey,
     translations,
@@ -34,6 +35,7 @@ export const useEntityManager = <T, CreateDto = Partial<T>, UpdateDto = Partial<
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<T | null>(null);
     const [itemToDelete, setItemToDelete] = useState<T | null>(null);
+    const [isFetchingDetail, setIsFetchingDetail] = useState(false);
 
     const createMutation = useMutation({
         mutationFn: (data: CreateDto) => service.create(data),
@@ -77,9 +79,30 @@ export const useEntityManager = <T, CreateDto = Partial<T>, UpdateDto = Partial<
         setIsFormOpen(true);
     };
 
-    const openEdit = (item: T) => {
+    const openEdit = async (item: T) => {
         setEditingItem(item);
         setIsFormOpen(true);
+
+        // Try to fetch fresh details if service supports it
+        const id = item.code || item.id;
+        if (service.getByCode && id) {
+            setIsFetchingDetail(true);
+            try {
+                const response = await service.getByCode(id);
+                // Check if response wraps data in ApiResponse logic (success/data props)
+                if (response && response.success && response.data) {
+                    setEditingItem(response.data);
+                } else if (response) {
+                    // Fallback if response is direct object or different format
+                    setEditingItem(response as T);
+                }
+            } catch (err) {
+                console.error("Failed to fetch fresh item details", err);
+                // Optionally toast warning?
+            } finally {
+                setIsFetchingDetail(false);
+            }
+        }
     };
 
     const closeForm = () => {
@@ -112,6 +135,7 @@ export const useEntityManager = <T, CreateDto = Partial<T>, UpdateDto = Partial<
         isFormOpen,
         editingItem,
         itemToDelete,
+        isFetchingDetail,
 
         // Actions
         openCreate,

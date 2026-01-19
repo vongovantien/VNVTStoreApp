@@ -57,4 +57,40 @@ describe('productService', () => {
             expect(result).toEqual(mockResponse);
         });
     });
+
+    describe('create', () => {
+        it('should call apiClient.post with /products and payload', async () => {
+            const payload = {
+                name: 'New Product',
+                price: 100,
+                images: ['base64string']
+            };
+            const mockResponse = { success: true, data: { code: 'NEW001', ...payload } };
+            mockPost.mockResolvedValue(mockResponse);
+
+            const result = await productService.create(payload);
+
+            // Expect endpoint to be base products endpoint
+            expect(mockPost).toHaveBeenCalled();
+            // Since API_ENDPOINTS.PRODUCTS.BASE is likely used, and previous search test expected '/search'
+            // Create typically posts to the base URL or similar. 
+            // Warning: The search test checked for '/search', implying BASE is '/products'.
+            // createEntityService uses endpoint.
+            // If search logic was: internal search method -> /products/search?
+            // createEntityService likely does post(endpoint, data).
+            // So we expect post to be called with endpoint.
+
+            // Checking first assertion of search test: 
+            // "search uses http.post internally to /search" -> comment in test file.
+            // But productService defines endpoint: API_ENDPOINTS.PRODUCTS.BASE.
+            // Let's assume endpoint is passed correctly.
+
+            const url = mockPost.mock.calls[0][0];
+            const body = mockPost.mock.calls[0][1];
+
+            expect(url).toContain('/products');
+            expect(body).toEqual({ PostObject: payload });
+            expect(result).toEqual(mockResponse);
+        });
+    });
 });

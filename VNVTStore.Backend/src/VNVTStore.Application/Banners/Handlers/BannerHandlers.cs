@@ -1,9 +1,12 @@
+#nullable disable
 using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.Application.Banners.Handlers;
 
@@ -14,14 +17,19 @@ public class BannerHandlers : BaseHandler<TblBanner>,
     IRequestHandler<UpdateCommand<UpdateBannerDto, BannerDto>, Result<BannerDto>>,
     IRequestHandler<DeleteCommand<TblBanner>, Result>
 {
-    public BannerHandlers(IRepository<TblBanner> repository, IUnitOfWork unitOfWork, IMapper mapper) 
+    private readonly IImageUploadService _imageUploadService;
+    private readonly IApplicationDbContext _context;
+
+    public BannerHandlers(IRepository<TblBanner> repository, IUnitOfWork unitOfWork, IMapper mapper, IImageUploadService imageUploadService, IApplicationDbContext context) 
         : base(repository, unitOfWork, mapper)
     {
+        _imageUploadService = imageUploadService;
+        _context = context;
     }
 
     public async Task<Result<PagedResult<BannerDto>>> Handle(GetPagedQuery<BannerDto> request, CancellationToken cancellationToken)
     {
-        return await GetPagedAsync<BannerDto>(
+        var result = await GetPagedAsync<BannerDto>(
             request.PageIndex,
             request.PageSize,
             cancellationToken,
@@ -40,33 +48,160 @@ public class BannerHandlers : BaseHandler<TblBanner>,
                 }
                 return q.OrderByDescending(p => p.Priority).ThenByDescending(p => p.CreatedAt);
             });
+
+        if (result.IsSuccess && result.Value.Items.Any())
+        {
+            var codes = result.Value.Items.Select(x => x.Code).ToList();
+            var files = await _context.TblFiles
+                .Where(f => codes.Contains(f.MasterCode) && f.MasterType == "Banner")
+                .ToListAsync(cancellationToken);
+            
+            foreach (var item in result.Value.Items)
+            {
+                var file = files.FirstOrDefault(f => f.MasterCode == item.Code);
+                if (file != null)
+                {
+                    item.ImageUrl = file.Path; 
+                }
+            }
+        }
+        return result;
     }
 
     public async Task<Result<BannerDto>> Handle(GetByCodeQuery<BannerDto> request, CancellationToken cancellationToken)
     {
-        return await GetByCodeAsync<BannerDto>(request.Code, MessageConstants.Banner, cancellationToken);
+        var result = await GetByCodeAsync<BannerDto>(request.Code, MessageConstants.Banner, cancellationToken);
+        if (result.IsSuccess)
+        {
+            var file = await _context.TblFiles.FirstOrDefaultAsync(f => f.MasterCode == request.Code && f.MasterType == "Banner", cancellationToken);
+            if (file != null)
+            {
+                result.Value.ImageUrl = file.Path;
+            }
+        }
+        return result;
     }
 
     public async Task<Result<BannerDto>> Handle(CreateCommand<CreateBannerDto, BannerDto> request, CancellationToken cancellationToken)
     {
-        return await CreateAsync<CreateBannerDto, BannerDto>(
+        string? uploadedPath = null;
+        if (!string.IsNullOrEmpty(request.Dto.ImageUrl) && request.Dto.ImageUrl.StartsWith("data:image"))
+        {
+            var fileName = $"banner_{DateTime.Now.Ticks}.png"; 
+            var uploadResult = await _imageUploadService.UploadBase64Async(request.Dto.ImageUrl, fileName, "banners");
+            if (uploadResult.IsFailure)
+            {
+                return Result.Failure<BannerDto>(uploadResult.Error);
+            }
+            uploadedPath = uploadResult.Value.Url;
+            // request.Dto.ImageUrl = uploadedPath; // Dto ImageUrl is transient here
+        }
+
+        var result = await CreateAsync<CreateBannerDto, BannerDto>(
             request.Dto, 
-            cancellationToken
+            cancellationToken,
+             c => {
+                if (string.IsNullOrEmpty(c.Code))
+                {
+                    c.Code = $"BNN{DateTime.Now.Ticks.ToString().Substring(12)}";
+                }
+                c.IsActive = request.Dto.IsActive;
+            }
         );
+
+        if (result.IsSuccess && !string.IsNullOrEmpty(uploadedPath))
+        {
+            var file = await _context.TblFiles.FirstOrDefaultAsync(f => f.Path == uploadedPath, cancellationToken);
+            if (file != null)
+            {
+                file.MasterCode = result.Value.Code;
+                file.MasterType = "Banner";
+                await _context.SaveChangesAsync(cancellationToken); 
+            }
+            result.Value.ImageUrl = uploadedPath;
+        }
+
+        return result;
     }
 
     public async Task<Result<BannerDto>> Handle(UpdateCommand<UpdateBannerDto, BannerDto> request, CancellationToken cancellationToken)
     {
-        var entity = await Repository.GetByCodeAsync(request.Code, cancellationToken);
-        if (entity == null)
-             return Result.Failure<BannerDto>(Error.NotFound(MessageConstants.Banner, request.Code));
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try 
+        {
+            // 1. Upload Logic
+            string? uploadedPath = null;
+            if (!string.IsNullOrEmpty(request.Dto.ImageUrl) && request.Dto.ImageUrl.StartsWith("data:image"))
+            {
+                var fileName = $"banner_{DateTime.Now.Ticks}.png"; 
+                var uploadResult = await _imageUploadService.UploadBase64Async(request.Dto.ImageUrl, fileName, "banners");
+                if (uploadResult.IsFailure)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<BannerDto>(uploadResult.Error);
+                }
+                uploadedPath = uploadResult.Value.Url;
+            }
+            else if (!string.IsNullOrEmpty(request.Dto.ImageUrl))
+            {
+                // Kept existing image
+                uploadedPath = request.Dto.ImageUrl;
+            }
 
-        return await UpdateAsync<UpdateBannerDto, BannerDto>(
-            request.Code, 
-            request.Dto, 
-            MessageConstants.Banner,
-            cancellationToken
-        );
+            var entity = await _repository.GetByCodeAsync(request.Code, cancellationToken);
+            if (entity == null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<BannerDto>(Error.NotFound(MessageConstants.Banner, request.Code));
+            }
+
+            _mapper.Map(request.Dto, entity);
+            _repository.Update(entity);
+
+            // Handle Files
+            if (uploadedPath != null)
+            {
+                // If it's a new upload (checked by logic or assuming if passed and valid)
+                // Actually if it matches existing, we do nothing.
+                // But if it is new (was base64), we link it and unlink old.
+                
+                // Get current file
+                var currentFile = await _context.TblFiles.FirstOrDefaultAsync(f => f.MasterCode == request.Code && f.MasterType == "Banner", cancellationToken);
+                
+                if (currentFile != null && currentFile.Path != uploadedPath)
+                {
+                     // Remove old file link or delete
+                     _context.TblFiles.Remove(currentFile);
+                }
+
+                if (currentFile == null || currentFile.Path != uploadedPath)
+                {
+                    var newFile = await _context.TblFiles.FirstOrDefaultAsync(f => f.Path == uploadedPath, cancellationToken);
+                    if (newFile != null)
+                    {
+                        newFile.MasterCode = entity.Code;
+                        newFile.MasterType = "Banner";
+                    }
+                }
+            }
+             else if (request.Dto.ImageUrl == "") // Explicitly removed
+            {
+                var currentFile = await _context.TblFiles.FirstOrDefaultAsync(f => f.MasterCode == request.Code && f.MasterType == "Banner", cancellationToken);
+                if (currentFile != null) _context.TblFiles.Remove(currentFile);
+            }
+
+            await _unitOfWork.CommitAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            var resultDto = _mapper.Map<BannerDto>(entity);
+            resultDto.ImageUrl = uploadedPath;
+            return Result.Success(resultDto);
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<Result> Handle(DeleteCommand<TblBanner> request, CancellationToken cancellationToken)

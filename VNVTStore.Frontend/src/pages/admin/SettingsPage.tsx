@@ -18,11 +18,11 @@ export const SettingsPage = () => {
   };
 
   const tabs = [
-    { id: 'general', label: 'Thông tin cửa hàng', icon: Store },
-    { id: 'payment', label: 'Thanh toán', icon: CreditCard },
-    { id: 'shipping', label: 'Vận chuyển', icon: Truck },
-    { id: 'notifications', label: 'Thông báo', icon: Bell },
-    { id: 'security', label: 'Bảo mật', icon: Shield },
+    { id: 'general', label: t('admin.settingsPage.tabs.general'), icon: Store },
+    { id: 'payment', label: t('admin.settingsPage.tabs.payment'), icon: CreditCard },
+    { id: 'shipping', label: t('admin.settingsPage.tabs.shipping'), icon: Truck },
+    { id: 'notifications', label: t('admin.settingsPage.tabs.notifications'), icon: Bell },
+    { id: 'security', label: t('admin.settingsPage.tabs.security'), icon: Shield },
   ];
 
   const GeneralSettings = () => {
@@ -34,19 +34,19 @@ export const SettingsPage = () => {
       <form onSubmit={handleSubmit((data) => handleSave('general', data))} className="space-y-6">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <Store size={20} />
-          {t('admin.subtitles.settings')}
+          {t('admin.settingsPage.tabs.general')}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input label="Tên cửa hàng" {...register('storeName')} />
-          <Input label="Email liên hệ" type="email" {...register('email')} />
-          <Input label="Số điện thoại" {...register('phone')} />
-          <Input label="Website" {...register('website')} />
+          <Input label={t('admin.settingsPage.general.storeName')} {...register('storeName')} />
+          <Input label={t('admin.settingsPage.general.email')} type="email" {...register('email')} />
+          <Input label={t('admin.settingsPage.general.phone')} {...register('phone')} />
+          <Input label={t('admin.settingsPage.general.website')} {...register('website')} />
           <div className="md:col-span-2">
-            <Input label="Địa chỉ" {...register('address')} />
+            <Input label={t('admin.settingsPage.general.address')} {...register('address')} />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2">Mô tả cửa hàng</label>
+            <label className="block text-sm font-medium mb-2">{t('admin.settingsPage.general.description')}</label>
             <textarea
               rows={3}
               {...register('description')}
@@ -69,16 +69,16 @@ export const SettingsPage = () => {
       <form onSubmit={handleSubmit((data) => handleSave('payment', data))} className="space-y-6">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <CreditCard size={20} />
-          Cài đặt thanh toán
+          {t('admin.settingsPage.payment.title')}
         </h2>
 
         <div className="space-y-4">
           {[
-            { id: 'cod', name: 'COD', desc: 'Thanh toán khi nhận hàng' },
-            { id: 'zaloPay', name: 'ZaloPay', desc: 'Thanh toán qua ví ZaloPay' },
-            { id: 'momo', name: 'MoMo', desc: 'Thanh toán qua ví MoMo' },
-            { id: 'vnpay', name: 'VNPAY', desc: 'Thanh toán qua VNPAY QR' },
-            { id: 'bankTransfer', name: 'Chuyển khoản', desc: 'Chuyển khoản ngân hàng' },
+            { id: 'cod', name: t('admin.settingsPage.payment.cod'), desc: t('admin.settingsPage.payment.codDesc') },
+            { id: 'zaloPay', name: t('admin.settingsPage.payment.zaloPay'), desc: t('admin.settingsPage.payment.zaloPayDesc') },
+            { id: 'momo', name: t('admin.settingsPage.payment.momo'), desc: t('admin.settingsPage.payment.momoDesc') },
+            { id: 'vnpay', name: t('admin.settingsPage.payment.vnpay'), desc: t('admin.settingsPage.payment.vnpayDesc') },
+            { id: 'bankTransfer', name: t('admin.settingsPage.payment.bankTransfer'), desc: t('admin.settingsPage.payment.bankTransferDesc') },
           ].map((method) => (
             <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
               <div>
@@ -111,24 +111,24 @@ export const SettingsPage = () => {
         <form onSubmit={handleSubmit((data) => handleSave('shipping', data))} className="space-y-6">
           <h2 className="text-lg font-bold flex items-center gap-2">
             <Truck size={20} />
-            Cài đặt vận chuyển
+            {t('admin.settingsPage.shipping.title')}
           </h2>
 
           <div className="space-y-4">
             <Input
-              label="Phí ship mặc định"
+              label={t('admin.settingsPage.shipping.defaultFee')}
               type="number"
-              helperText="Đơn vị: VNĐ"
+              helperText={t('admin.settingsPage.shipping.currencyUnit')}
               {...register('defaultFee', { valueAsNumber: true })}
             />
             <Input
-              label="Miễn phí ship cho đơn từ"
+              label={t('admin.settingsPage.shipping.freeShippingThreshold')}
               type="number"
-              helperText="Đơn hàng từ giá trị này trở lên được miễn phí ship"
+              helperText={t('admin.settingsPage.shipping.freeShippingDesc')}
               {...register('freeShippingThreshold', { valueAsNumber: true })}
             />
             <Input
-              label="Thời gian giao hàng dự kiến"
+              label={t('admin.settingsPage.shipping.estimatedDelivery')}
               {...register('estimatedDelivery')}
             />
           </div>
@@ -147,15 +147,15 @@ export const SettingsPage = () => {
         <form onSubmit={handleSubmit((data) => handleSave('notifications', data))} className="space-y-6">
             <h2 className="text-lg font-bold flex items-center gap-2">
             <Bell size={20} />
-            Cài đặt thông báo
+            {t('admin.settingsPage.notifications.title')}
             </h2>
 
             <div className="space-y-4">
             {[
-                { id: 'emailNewOrder', label: 'Email khi có đơn hàng mới' },
-                { id: 'emailQuoteRequest', label: 'Email khi có yêu cầu báo giá' },
-                { id: 'emailOrderStatus', label: 'Email khách hàng khi đơn thay đổi trạng thái' },
-                { id: 'lowStockAlert', label: 'Thông báo hàng sắp hết' },
+                { id: 'emailNewOrder', label: t('admin.settingsPage.notifications.emailNewOrder') },
+                { id: 'emailQuoteRequest', label: t('admin.settingsPage.notifications.emailQuoteRequest') },
+                { id: 'emailOrderStatus', label: t('admin.settingsPage.notifications.emailOrderStatus') },
+                { id: 'lowStockAlert', label: t('admin.settingsPage.notifications.lowStockAlert') },
             ].map((setting) => (
                 <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <p className="font-medium">{setting.label}</p>
@@ -177,29 +177,29 @@ export const SettingsPage = () => {
     <div className="space-y-6">
         <h2 className="text-lg font-bold flex items-center gap-2">
         <Shield size={20} />
-        Bảo mật
+        {t('admin.settingsPage.security.title')}
         </h2>
 
         <div className="p-4 border rounded-lg">
-        <h3 className="font-medium mb-4">Đổi mật khẩu</h3>
+        <h3 className="font-medium mb-4">{t('admin.settingsPage.security.changePassword')}</h3>
         <div className="space-y-4">
-            <Input label="Mật khẩu hiện tại" type="password" />
-            <Input label="Mật khẩu mới" type="password" />
-            <Input label="Xác nhận mật khẩu mới" type="password" />
+            <Input label={t('admin.settingsPage.security.currentPassword')} type="password" />
+            <Input label={t('admin.settingsPage.security.newPassword')} type="password" />
+            <Input label={t('admin.settingsPage.security.confirmNewPassword')} type="password" />
         </div>
         </div>
 
         <div className="p-4 border rounded-lg">
         <div className="flex items-center justify-between">
             <div>
-            <p className="font-medium">Xác thực 2 bước (2FA)</p>
-            <p className="text-sm text-tertiary">Tăng cường bảo mật cho tài khoản</p>
+            <p className="font-medium">{t('admin.settingsPage.security.twoFactor')}</p>
+            <p className="text-sm text-tertiary">{t('admin.settingsPage.security.twoFactorDesc')}</p>
             </div>
-            <Button variant="outline" size="sm">Bật</Button>
+            <Button variant="outline" size="sm">{t('admin.settingsPage.security.enable')}</Button>
         </div>
         </div>
 
-        <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>Lưu thay đổi</Button>
+        <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>{t('common.save')}</Button>
     </div>
   );
 

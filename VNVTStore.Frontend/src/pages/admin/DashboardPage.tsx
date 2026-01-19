@@ -16,6 +16,7 @@ import { formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { dashboardService } from '@/services';
 import { useQuery } from '@tanstack/react-query';
 import { useAdminOrders } from '@/hooks';
+import { PageSize, PaginationDefaults } from '@/constants';
 
 // ============ Stat Card Component ============
 interface StatCardProps {
@@ -57,7 +58,7 @@ export const DashboardPage = () => {
 
 
   // Fetch recent orders
-  const { data: ordersData, isLoading: ordersLoading } = useAdminOrders({ pageIndex: 1, pageSize: 5 });
+  const { data: ordersData, isLoading: ordersLoading } = useAdminOrders({ pageIndex: PaginationDefaults.PAGE_INDEX, pageSize: PageSize.SMALL });
   const recentOrders = ordersData?.orders || [];
 
   const { data: statsResponse, isLoading: statsLoading, isError: statsError, refetch } = useQuery({
@@ -187,10 +188,10 @@ export const DashboardPage = () => {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-sm text-tertiary border-b">
-                  <th className="pb-3">{t('admin.orderCode')}</th>
-                  <th className="pb-3">{t('admin.customer')}</th>
-                  <th className="pb-3">{t('admin.total')}</th>
-                  <th className="pb-3">{t('admin.columns.status')}</th>
+                  <th className="pb-3">{t('common.fields.orderCode')}</th>
+                  <th className="pb-3">{t('common.fields.customer')}</th>
+                  <th className="pb-3">{t('common.fields.total')}</th>
+                  <th className="pb-3">{t('common.fields.status')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -229,7 +230,7 @@ export const DashboardPage = () => {
             </a>
           </div>
           <p className="text-sm text-secondary">
-             {t('admin.messages.checkQuotesPage')}
+             {t('common.messages.checkQuotesPage')}
           </p>
         </div>
       </div>

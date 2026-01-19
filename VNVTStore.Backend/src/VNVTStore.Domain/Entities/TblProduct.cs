@@ -10,7 +10,6 @@ public partial class TblProduct : IEntity
     {
         TblCartItems = new List<TblCartItem>();
         TblOrderItems = new List<TblOrderItem>();
-        TblProductImages = new List<TblProductImage>();
         TblProductPromotions = new List<TblProductPromotion>();
         TblQuotes = new List<TblQuote>();
     }
@@ -61,7 +60,7 @@ public partial class TblProduct : IEntity
 
     public virtual ICollection<TblOrderItem> TblOrderItems { get; private set; }
 
-    public virtual ICollection<TblProductImage> TblProductImages { get; private set; }
+
 
     public virtual ICollection<TblProductPromotion> TblProductPromotions { get; private set; }
 

@@ -67,7 +67,7 @@ export interface CategoryDto {
     name: string;
     description?: string;
     imageUrl?: string;
-    parentCode?: string;
+    parentCode?: string | null;
     isActive?: boolean;
 }
 
@@ -75,7 +75,7 @@ export interface CreateCategoryRequest {
     name: string;
     description?: string;
     imageUrl?: string;
-    parentCode?: string;
+    parentCode?: string | null;
     isActive?: boolean;
 }
 

@@ -13,6 +13,7 @@ import { AdvancedFilter, type FilterDef } from '@/components/common/AdvancedFilt
 import { useExport } from '@/hooks/useExport';
 import { exportToExcel, type ExportColumn } from '@/utils/export';
 import { cn } from '@/utils/cn';
+import { PageSize, PaginationDefaults } from '@/constants';
 
 // ============ Types ============
 export interface DataTableColumn<T> {
@@ -22,6 +23,10 @@ export interface DataTableColumn<T> {
   sortable?: boolean;
   className?: string;
   headerClassName?: string;
+  width?: string | number;
+  minWidth?: string | number;
+  maxWidth?: string | number;
+  noWrap?: boolean;
 }
 
 export interface DataTableProps<T extends Record<string, any>> {
@@ -121,7 +126,7 @@ function DataTableInner<T extends Record<string, any>>({
   currentPage: externalPage,
   totalPages: externalTotalPages,
   totalItems: externalTotalItems,
-  pageSize: externalPageSize = 10,
+  pageSize: externalPageSize,
   onPageChange: externalOnPageChange,
   onPageSizeChange: externalOnPageSizeChange,
   pageSizeOptions,
@@ -201,7 +206,7 @@ function DataTableInner<T extends Record<string, any>>({
   const setCurrentPage = isExternalPagination ? externalOnPageChange : setInternalPage;
 
   // Internal page size state if external is not provided or handled
-  const [internalPageSizeState, setInternalPageSizeState] = useState(externalPageSize || 10);
+  const [internalPageSizeState, setInternalPageSizeState] = useState(externalPageSize || PageSize.DEFAULT);
   const pageSize = externalPageSize || internalPageSizeState;
 
   const handlePageSizeChange = useCallback((newSize: number) => {
@@ -269,13 +274,14 @@ function DataTableInner<T extends Record<string, any>>({
   }, [filteredData, sortField, sortDir, isExternalSort]);
 
   // Internal pagination
-  const internalPageSize = externalPageSize;
-  const internalTotalPages = Math.ceil(sortedData.length / internalPageSize);
+  // Use the computed pageSize (which includes internal state)
+  const effectivePageSize = pageSize; 
+  const internalTotalPages = Math.ceil(sortedData.length / effectivePageSize);
   const paginatedData = useMemo(() => {
     if (isExternalPagination) return sortedData;
-    const start = (internalPage - 1) * internalPageSize;
-    return sortedData.slice(start, start + internalPageSize);
-  }, [sortedData, internalPage, internalPageSize, isExternalPagination]);
+    const start = (internalPage - 1) * effectivePageSize;
+    return sortedData.slice(start, start + effectivePageSize);
+  }, [sortedData, internalPage, effectivePageSize, isExternalPagination]);
 
   const displayData = isExternalPagination ? sortedData : paginatedData;
   const totalPages = isExternalPagination ? (externalTotalPages || 1) : internalTotalPages;
@@ -304,6 +310,7 @@ function DataTableInner<T extends Record<string, any>>({
             customActions={renderRowActions ? renderRowActions(row) : undefined}
           />
         ),
+        width: '100px',
         className: 'text-center',
         headerClassName: 'text-center'
       });
@@ -365,7 +372,10 @@ function DataTableInner<T extends Record<string, any>>({
     if (!isExternalPagination) {
       setInternalPage(1);
     }
-  }, [isExternalSort, isExternalPagination, onAdvancedSearch, onReset, setSelectedIds]);
+    // Also trigger refresh if available, as requested
+    // Also trigger refresh if available, as requested
+    // if (onRefresh) onRefresh(); // Removed to avoid double API call as onAdvancedSearch/onReset likely triggers fetch
+  }, [isExternalSort, isExternalPagination, onAdvancedSearch, onReset, setSelectedIds, onRefresh]);
 
   // Get selected item for edit/delete
   const getSelectedItem = useCallback((): T | null => {
@@ -575,9 +585,13 @@ function DataTableInner<T extends Record<string, any>>({
                       column.sortable && "cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 select-none transition-colors",
                       column.headerClassName
                     )}
-                    onClick={column.sortable ? () => handleSort(column.id) : undefined}
+                    style={{
+                      width: column.width,
+                      minWidth: column.minWidth,
+                      maxWidth: column.maxWidth
+                    }}
                   >
-                    <div className="flex items-center gap-1">
+                    <div className={cn("flex items-center gap-1", column.noWrap && "whitespace-nowrap")}>
                       {column.header}
                       {column.sortable && <SortIcon columnId={column.id} />}
                     </div>
@@ -621,7 +635,17 @@ function DataTableInner<T extends Record<string, any>>({
                       )}
 
                       {visibleColumnDefs.map(column => (
-                        <td key={column.id} className={cn("px-4 py-4 text-sm", column.className)}>
+                        <td 
+                          key={column.id} 
+                          className={cn(
+                            "px-4 py-4 text-sm", 
+                            column.className,
+                            column.noWrap && "whitespace-nowrap"
+                          )}
+                          style={{
+                             maxWidth: column.maxWidth // Apply max-width to td as well to force truncation if needed
+                          }}
+                        >
                           {getCellValue(row, column)}
                         </td>
                       ))}

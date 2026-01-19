@@ -6,7 +6,7 @@ import { useCategories } from '@/hooks';
 
 // ============ Schema ============
 const categorySchema = z.object({
-  name: z.string().min(1, 'Tên danh mục là bắt buộc'),
+  name: z.string().min(1, 'required'), // will be localized in component or handling
   description: z.string().optional(),
   parentCode: z.string().optional(),
   imageUrl: z.string().optional(),
@@ -25,6 +25,7 @@ interface CategoryFormProps {
   modalOpen?: boolean;
   modalTitle?: string;
   excludeCode?: string;
+  imageBaseUrl?: string;
 }
 
 // ============ Component ============
@@ -37,13 +38,14 @@ export const CategoryForm = ({
   modalOpen = false,
   modalTitle,
   excludeCode,
+  imageBaseUrl,
 }: CategoryFormProps) => {
   const { t } = useTranslation();
   const { data: categories = [] } = useCategories();
 
   // Build parent category options
   const parentOptions = [
-    { value: '', label: t('common.none', 'Không có') },
+    { value: '', label: t('common.actions.none') },
     ...categories
       .filter((c) => c.code !== excludeCode) // Exclude self by code
       .map((c) => ({ value: c.code, label: c.name })),
@@ -54,37 +56,37 @@ export const CategoryForm = ({
     {
       name: 'imageUrl',
       type: 'image',
-      label: t('admin.columns.image'),
+      label: t('common.fields.image'),
       colSpan: 12,
     },
     {
       name: 'name',
       type: 'text',
-      label: t('admin.columns.name'),
-      placeholder: t('admin.placeholders.categoryName', 'Nhập tên danh mục'),
+      label: t('common.fields.name'),
+      placeholder: t('common.placeholders.enterName'),
       required: true,
       colSpan: 12,
     },
     {
       name: 'description',
       type: 'textarea',
-      label: t('admin.columns.description'),
-      placeholder: t('admin.placeholders.categoryDescription', 'Mô tả danh mục'),
+      label: t('common.fields.description'),
+      placeholder: t('common.placeholders.enterDescription'),
       rows: 3,
       colSpan: 12,
     },
     {
       name: 'parentCode',
       type: 'select',
-      label: t('admin.columns.parentCategory'),
+      label: t('common.fields.parentCategory'),
       options: parentOptions,
       colSpan: 12,
     },
     {
       name: 'isActive',
       type: 'switch',
-      label: t('admin.columns.status'),
-      description: t('admin.statusHint', 'Bật để hiển thị danh mục'),
+      label: t('common.fields.status'),
+      description: t('admin.statusHint'),
       colSpan: 12,
     },
   ];
@@ -111,6 +113,7 @@ export const CategoryForm = ({
       modalOpen={modalOpen}
       modalTitle={modalTitle || (initialData?.name ? t('admin.actions.edit') : t('admin.actions.create'))}
       onModalClose={onCancel}
+      imageBaseUrl={imageBaseUrl}
     />
   );
 };

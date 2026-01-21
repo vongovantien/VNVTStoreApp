@@ -14,21 +14,21 @@ public static class QueryHelper
 
         foreach (var filter in filters)
         {
-            if (string.IsNullOrWhiteSpace(filter.Field) || filter.Value == null)
+            if (string.IsNullOrWhiteSpace(filter.SearchField) || filter.SearchValue == null)
                 continue;
 
             // Simple property access (case-insensitive)
             var parameter = Expression.Parameter(typeof(T), "x");
-            var propertyName = GetPropertyName(typeof(T), filter.Field);
+            var propertyName = GetPropertyName(typeof(T), filter.SearchField);
             
             if (propertyName == null) continue; // Property not found
 
             var property = Expression.Property(parameter, propertyName);
-            var constant = Expression.Constant(ConvertValue(filter.Value, property.Type));
+            var constant = Expression.Constant(ConvertValue(filter.SearchValue, property.Type));
             
             Expression? comparison = null;
 
-            switch (filter.Operator)
+            switch (filter.SearchCondition)
             {
                 case SearchCondition.Equal:
                     comparison = Expression.Equal(property, constant);
@@ -65,17 +65,17 @@ public static class QueryHelper
                     {
                         List<string>? stringValues = null;
 
-                        if (filter.Value is JsonElement valueElement && valueElement.ValueKind == JsonValueKind.Array)
+                        if (filter.SearchValue is JsonElement valueElement && valueElement.ValueKind == JsonValueKind.Array)
                         {
                             stringValues = valueElement.EnumerateArray()
                                 .Select(v => v.ToString())
                                 .ToList();
                         }
-                        else if (filter.Value is IEnumerable<string> listStr)
+                        else if (filter.SearchValue is IEnumerable<string> listStr)
                         {
                             stringValues = listStr.ToList();
                         }
-                        else if (filter.Value is string strVal)
+                        else if (filter.SearchValue is string strVal)
                         {
                              // Fallback for legacy stringified JSON
                              try { stringValues = JsonSerializer.Deserialize<List<string>>(strVal); } catch {}
@@ -87,7 +87,7 @@ public static class QueryHelper
                             var listExpr = Expression.Constant(stringValues);
                             comparison = Expression.Call(listExpr, methodInfo!, property);
                             
-                            if (filter.Operator == SearchCondition.NotIn)
+                            if (filter.SearchCondition == SearchCondition.NotIn)
                             {
                                 comparison = Expression.Not(comparison);
                             }
@@ -116,15 +116,15 @@ public static class QueryHelper
                      try 
                      {
                          List<string>? dates = null;
-                         if (filter.Value is JsonElement dateElement && dateElement.ValueKind == JsonValueKind.Array)
+                         if (filter.SearchValue is JsonElement dateElement && dateElement.ValueKind == JsonValueKind.Array)
                          {
                              dates = dateElement.EnumerateArray().Select(v => v.ToString()).ToList();
                          }
-                         else if (filter.Value is IEnumerable<string> listStr)
+                         else if (filter.SearchValue is IEnumerable<string> listStr)
                          {
                              dates = listStr.ToList();
                          }
-                         else if (filter.Value is string strVal)
+                         else if (filter.SearchValue is string strVal)
                          {
                              try { dates = JsonSerializer.Deserialize<List<string>>(strVal); } catch {}
                          }
@@ -152,21 +152,21 @@ public static class QueryHelper
                              targetProp = Expression.Property(property, "Value");
                          }
                          
-                         string valStr = filter.Value?.ToString() ?? "";
-                         if (filter.Value is JsonElement je && je.ValueKind != JsonValueKind.Null)
+                         string valStr = filter.SearchValue?.ToString() ?? "";
+                         if (filter.SearchValue is JsonElement je && je.ValueKind != JsonValueKind.Null)
                              valStr = je.ToString();
 
-                         if (filter.Operator == SearchCondition.DayPart && int.TryParse(valStr, out var day))
+                         if (filter.SearchCondition == SearchCondition.DayPart && int.TryParse(valStr, out var day))
                          {
                              var dayProp = Expression.Property(targetProp, "Day");
                              comparison = Expression.Equal(dayProp, Expression.Constant(day));
                          }
-                         else if (filter.Operator == SearchCondition.MonthPart && int.TryParse(valStr, out var month))
+                         else if (filter.SearchCondition == SearchCondition.MonthPart && int.TryParse(valStr, out var month))
                          {
                              var monthProp = Expression.Property(targetProp, "Month");
                              comparison = Expression.Equal(monthProp, Expression.Constant(month));
                          }
-                         else if (filter.Operator == SearchCondition.DatePart && DateTime.TryParse(valStr, out var date))
+                         else if (filter.SearchCondition == SearchCondition.DatePart && DateTime.TryParse(valStr, out var date))
                          {
                              var dateProp = Expression.Property(targetProp, "Date");
                              comparison = Expression.Equal(dateProp, Expression.Constant(date.Date));

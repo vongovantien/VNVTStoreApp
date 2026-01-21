@@ -61,7 +61,7 @@ public class ProductHandlersTests
             .Returns(Task.CompletedTask);
         
         // Mock empty files for simplicity in this basic test
-        var files = new List<TblFile>().AsQueryable().BuildMockDbSet();
+        var files = new List<TblFile>().AsQueryable().BuildMock();
         _mockContext.Setup(c => c.TblFiles).Returns(files.Object);
 
         // Act
@@ -90,12 +90,12 @@ public class ProductHandlersTests
         // Mock Upload Service
         var uploadedPath = "products/newimage.png";
         _mockUploadService.Setup(s => s.UploadBase64ImagesAsync(It.IsAny<List<(string, string)>>(), "products"))
-            .ReturnsAsync(Result.Success<IEnumerable<string>>(new List<string> { uploadedPath }));
+            .ReturnsAsync(Result.Success<IEnumerable<VNVTStore.Application.Common.Models.FileDto>>(new List<VNVTStore.Application.Common.Models.FileDto> { new VNVTStore.Application.Common.Models.FileDto { Path = uploadedPath, Url = uploadedPath } }));
 
         // Mock TblFiles database to find the file after "upload" (simulated logic needing Query)
         // In the real handler, it queries TblFiles by Path. We need to mock that TblFiles contains the file.
         var fileEntity = TblFile.Create("newimage.png", "newimage.png", ".png", "image/png", 1024, uploadedPath);
-        var files = new List<TblFile> { fileEntity }.AsQueryable().BuildMockDbSet();
+        var files = new List<TblFile> { fileEntity }.AsQueryable().BuildMock();
         _mockContext.Setup(c => c.TblFiles).Returns(files.Object);
 
         // Act

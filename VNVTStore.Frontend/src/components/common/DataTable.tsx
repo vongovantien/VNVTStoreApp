@@ -400,7 +400,7 @@ function DataTableInner<T extends Record<string, any>>({
   };
 
   const showError = error && !isLoading;
-  const allSelected = displayData.length > 0 && selectedIds.size === displayData.length;
+  const allSelected = displayData.length > 0 && displayData.every(item => selectedIds.has(String(item[keyField])));
 
   // Ref for positioning the popup
   const searchButtonRef = React.useRef<HTMLButtonElement>(null);

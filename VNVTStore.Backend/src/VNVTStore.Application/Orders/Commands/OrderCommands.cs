@@ -13,6 +13,7 @@ public class CreateOrderDto
 {
     public string? AddressCode { get; set; } // If using saved address
     public string? FullName { get; set; }
+    public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Address { get; set; }
     public string? City { get; set; }

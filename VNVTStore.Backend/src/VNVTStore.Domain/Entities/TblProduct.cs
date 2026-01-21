@@ -28,8 +28,6 @@ public partial class TblProduct : IEntity
 
     public string? CategoryCode { get; private set; }
 
-    public string? Sku { get; private set; }
-
     public decimal? Weight { get; private set; }
 
     public string? Color { get; private set; }
@@ -66,7 +64,7 @@ public partial class TblProduct : IEntity
 
     public virtual ICollection<TblQuote> TblQuotes { get; private set; }
 
-    public static TblProduct Create(string name, decimal price, int stock, string? categoryCode, string? sku, decimal? costPrice, 
+    public static TblProduct Create(string name, decimal price, int stock, string? categoryCode, decimal? costPrice, 
         decimal? weight, string? supplierCode, string? color, string? power, string? voltage, string? material, string? size)
     {
          return new TblProduct
@@ -76,7 +74,6 @@ public partial class TblProduct : IEntity
              Price = price,
              StockQuantity = stock,
              CategoryCode = categoryCode,
-             Sku = sku,
              CostPrice = costPrice,
              Weight = weight, 
              SupplierCode = supplierCode,
@@ -92,7 +89,7 @@ public partial class TblProduct : IEntity
     }
 
     public void UpdateInfo(string name, decimal price, string? description, string? categoryCode, decimal? costPrice, int? stockQuantity,
-        decimal? weight, string? supplierCode, string? color, string? power, string? voltage, string? material, string? size, string? sku)
+        decimal? weight, string? supplierCode, string? color, string? power, string? voltage, string? material, string? size)
     {
         Name = name;
         Price = price;
@@ -109,7 +106,6 @@ public partial class TblProduct : IEntity
         Voltage = voltage;
         Material = material;
         Size = size;
-        Sku = sku;
         
         UpdatedAt = DateTime.UtcNow;
     }
@@ -129,13 +125,12 @@ public partial class TblProduct : IEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateFromImport(string name, decimal price, int? stock, string? categoryCode, string? sku, string? description, bool? isActive, decimal? weight, string? color, string? power, string? voltage, string? material, string? size, string? supplierCode)
+    public void UpdateFromImport(string name, decimal price, int? stock, string? categoryCode, string? description, bool? isActive, decimal? weight, string? color, string? power, string? voltage, string? material, string? size, string? supplierCode)
     {
         Name = name;
         Price = price;
         StockQuantity = stock;
         CategoryCode = categoryCode;
-        Sku = sku;
         Description = description;
         if (isActive.HasValue) IsActive = isActive.Value;
         Weight = weight;

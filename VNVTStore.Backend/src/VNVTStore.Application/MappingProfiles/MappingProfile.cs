@@ -5,6 +5,8 @@ using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.Application.MappingProfiles;
 
+using VNVTStore.Application.Mappings.Resolvers;
+
 /// <summary>
 /// AutoMapper Mapping Profile - dùng entities mới với Tbl prefix
 /// </summary>
@@ -40,11 +42,13 @@ public class MappingProfile : Profile
         
         CreateMap<UpdateProductDto, TblProduct>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
         
         // CreateMap<TblProductImage, ProductImageDto>().ReverseMap(); // Removed
 
-        // Category mappings
-        CreateMap<TblCategory, CategoryDto>().ReverseMap();
+        CreateMap<TblCategory, CategoryDto>()
+            .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom<ImageUrlResolver, string?>(src => src.ImageUrl))
+            .ReverseMap();
 
         // Order mappings
         CreateMap<TblOrder, OrderDto>()

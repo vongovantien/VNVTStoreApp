@@ -34,7 +34,7 @@ public class CategoriesHandlerTests
         _mockContext = new Mock<IApplicationDbContext>();
 
         // Setup default TblFiles mock to return empty list to avoid null ref
-        var files = new List<TblFile>().AsQueryable().BuildMockDbSet();
+        var files = new List<TblFile>().AsQueryable().BuildMock();
         _mockContext.Setup(c => c.TblFiles).Returns(files.Object);
 
         _handler = new CategoriesHandler(
@@ -73,7 +73,7 @@ public class CategoriesHandlerTests
         });
 
         _mockImageUploadService.Setup(s => s.UploadBase64Async(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(Result.Success("http://example.com/image.png"));
+            .ReturnsAsync(Result.Success(new VNVTStore.Application.Common.Models.FileDto { Path = "http://example.com/image.png", Url = "http://example.com/image.png" }));
 
         _mockMapper.Setup(m => m.Map<TblCategory>(It.IsAny<CreateCategoryDto>()))
             .Returns(new TblCategory { Name = "New Cat", ImageUrl = "http://example.com/image.png" });
@@ -83,7 +83,7 @@ public class CategoriesHandlerTests
 
         // Mock TblFile existence for linking logic
         var fileEntity = TblFile.Create("image.png", "image.png", ".png", "image/png", 100, "http://example.com/image.png");
-        var files = new List<TblFile> { fileEntity }.AsQueryable().BuildMockDbSet();
+        var files = new List<TblFile> { fileEntity }.AsQueryable().BuildMock();
         _mockContext.Setup(c => c.TblFiles).Returns(files.Object);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -111,7 +111,7 @@ public class CategoriesHandlerTests
         _mockRepo.Setup(r => r.GetByCodeAsync("CAT001", It.IsAny<CancellationToken>())).ReturnsAsync(existingCat);
 
         _mockImageUploadService.Setup(s => s.UploadBase64Async(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(Result.Success("http://example.com/new-image.png"));
+            .ReturnsAsync(Result.Success(new VNVTStore.Application.Common.Models.FileDto { Path = "http://example.com/new-image.png", Url = "http://example.com/new-image.png" }));
 
         _mockMapper.Setup(m => m.Map(It.IsAny<UpdateCategoryDto>(), It.IsAny<TblCategory>()))
             .Callback<UpdateCategoryDto, TblCategory>((dto, entity) => entity.ImageUrl = dto.ImageUrl);
@@ -127,7 +127,7 @@ public class CategoriesHandlerTests
         var newFile = TblFile.Create("new.png", "new.png", ".png", "image/png", 100, "http://example.com/new-image.png");
         
         var filesList = new List<TblFile> { oldFile, newFile };
-        var filesMock = filesList.AsQueryable().BuildMockDbSet();
+        var filesMock = filesList.AsQueryable().BuildMock();
         _mockContext.Setup(c => c.TblFiles).Returns(filesMock.Object);
 
         var result = await _handler.Handle(command, CancellationToken.None);

@@ -220,14 +220,14 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {products.map(p => (
-                <label key={p.id} className="flex items-center gap-2 text-sm p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded cursor-pointer">
+                <label key={p.code} className="flex items-center gap-2 text-sm p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded cursor-pointer">
                   <input
                     type="checkbox"
-                    value={p.id}
+                    value={p.code}
                     {...register('productCodes')}
                     className="rounded border-gray-300"
                   />
-                  <span className="truncate">{p.name} - {p.id}</span>
+                  <span className="truncate">{p.name} - {p.code}</span>
                 </label>
               ))}
             </div>

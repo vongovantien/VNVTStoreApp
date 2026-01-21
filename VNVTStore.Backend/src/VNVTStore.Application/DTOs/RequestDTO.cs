@@ -29,18 +29,37 @@ public class RequestDTO<T>
 /// <summary>
 /// Sort DTO cho sorting
 /// </summary>
+/// <summary>
+/// Sort DTO for sorting
+/// </summary>
 public class SortDTO
 {
     public string? SortBy { get; set; }
-    public bool SortDescending { get; set; } = false;
+    public string Sort { get; set; } = "ASC"; // "ASC" or "DESC"
+    public bool SortDescending 
+    { 
+        get => Sort?.Equals("DESC", StringComparison.OrdinalIgnoreCase) ?? false; 
+        set => Sort = value ? "DESC" : "ASC";
+    }
 }
 
 /// <summary>
-/// Search DTO cho filtering
+/// Search DTO for filtering
 /// </summary>
 public class SearchDTO
 {
-    public string? Field { get; set; }
-    public SearchCondition Operator { get; set; } // Uses new Enum
-    public object? Value { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("field")]
+    [Newtonsoft.Json.JsonProperty("field")]
+    public string SearchField { get; set; } = null!;
+
+    [System.Text.Json.Serialization.JsonPropertyName("operator")]
+    [Newtonsoft.Json.JsonProperty("operator")]
+    public SearchCondition SearchCondition { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("value")]
+    [Newtonsoft.Json.JsonProperty("value")]
+    public object? SearchValue { get; set; }
+
+    public short? GroupID { get; set; }
+    public string? CombineCondition { get; set; } // "AND" or "OR"
 }

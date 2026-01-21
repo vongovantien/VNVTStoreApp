@@ -592,7 +592,7 @@ export const ProductsPage = () => {
               >
                 {filteredProducts.map((product) => (
                   <ProductCard
-                    key={product.id}
+                    key={product.code}
                     product={product}
                     variant={viewMode === 'list' ? 'list' : 'grid'}
                   />

@@ -1,19 +1,26 @@
-﻿using VNVTStore.Domain.Enums;
+﻿using System;
+using System.Collections.Generic;
+using VNVTStore.Domain.Enums;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblOrder
+public partial class TblOrder : IEntity
 {
+    public bool IsActive { get; set; } = true;
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+
     private TblOrder() 
     {
         TblOrderItems = new List<TblOrderItem>();
     }
 
-    public string Code { get; private set; } = null!;
+    public string Code { get; set; } = null!;
 
-    public string UserCode { get; private set; } = null!;
+    public string UserCode { get; set; } = null!;
 
-    public string? ModifiedType { get; private set; }
+    public string? ModifiedType { get; set; }
 
     public DateTime? OrderDate { get; private set; }
 
@@ -30,6 +37,10 @@ public partial class TblOrder
     public string? AddressCode { get; private set; }
 
     public string? CouponCode { get; private set; }
+    
+    public string? VerificationToken { get; private set; }
+    
+    public DateTime? VerificationTokenExpiresAt { get; private set; }
 
     public virtual TblAddress? AddressCodeNavigation { get; private set; }
 
@@ -92,5 +103,11 @@ public partial class TblOrder
              throw new InvalidOperationException($"Cannot cancel order in status {Status}.");
         }
         Status = OrderStatus.Cancelled;
+    }
+
+    public void SetVerificationToken(string token, DateTime expiry)
+    {
+        VerificationToken = token;
+        VerificationTokenExpiresAt = expiry;
     }
 }

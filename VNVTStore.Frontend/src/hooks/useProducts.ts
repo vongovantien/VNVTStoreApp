@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { Product } from '@/types';
 import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
 import { SearchCondition } from '@/services/baseService';
+import { getImageUrl } from '@/utils/format';
 
 // ============ Query Keys ============
 export const productKeys = {
@@ -48,8 +49,9 @@ export function useCategoriesList(params: {
     search?: string;
     parentCode?: string;
     isActive?: string; // 'true' | 'false'
+    fields?: string[];  // Selective columns to fetch
 }) {
-    const { ...searchParams } = params;
+    const { fields, ...searchParams } = params;
 
     // Build filters
     const filters: { field: string; value: string; operator?: SearchCondition }[] = [];
@@ -59,13 +61,14 @@ export function useCategoriesList(params: {
 
 
     return useQuery({
-        queryKey: [...productKeys.categories, searchParams],
+        queryKey: [...productKeys.categories, { ...searchParams, fields }],
         queryFn: () => categoryService.search({
             pageIndex: searchParams.pageIndex,
             pageSize: searchParams.pageSize,
             // Search is handled via filters for precise control or generic search
             // If we use baseService search, we can pass filters directly
-            filters: filters.length > 0 ? filters : undefined
+            filters: filters.length > 0 ? filters : undefined,
+            fields,  // Pass fields for selective column fetching
         }),
         placeholderData: keepPreviousData,
         select: (response) => {
@@ -75,8 +78,11 @@ export function useCategoriesList(params: {
                 const totalItems = response.data.totalItems;
                 const totalPages = Math.ceil(totalItems / pageSize);
 
+                // Deduplicate
+                const uniqueItems = Array.from(new Map((response.data.items || []).map(item => [item.code, item])).values());
+
                 return {
-                    categories: response.data.items || [],
+                    categories: uniqueItems,
                     totalItems,
                     totalPages,
                     pageNumber: pageIndex,
@@ -110,8 +116,9 @@ export function useProducts(params: {
     rating?: number;
     enabled?: boolean;
     ids?: string[];
+    fields?: string[];  // Selective columns to fetch (reduces data transfer)
 }) {
-    const { enabled = true, ...searchParams } = params;
+    const { enabled = true, fields, ...searchParams } = params;
 
     // Build filters dynamically
     const filters: { field: string; value: string | string[]; operator?: SearchCondition }[] = [];
@@ -175,7 +182,7 @@ export function useProducts(params: {
 
 
     return useQuery({
-        queryKey: productKeys.list(searchParams),
+        queryKey: productKeys.list({ ...searchParams, fields }),
         queryFn: () => productService.search({
             pageIndex: searchParams.pageIndex,
             pageSize: searchParams.pageSize,
@@ -183,7 +190,8 @@ export function useProducts(params: {
             searchField: 'name',
             sortBy: searchParams.sortField,
             sortDesc: searchParams.sortDir === 'desc',
-            filters: filters.length > 0 ? filters : undefined
+            filters: filters.length > 0 ? filters : undefined,
+            fields,  // Pass fields for selective column fetching
         }),
         enabled,
         placeholderData: keepPreviousData,
@@ -202,15 +210,18 @@ export function useProducts(params: {
                 const totalItems = response.data.totalItems;
                 const totalPages = Math.ceil(totalItems / pageSize);
 
+                // Deduplicate items based on code to prevent UI duplication issues
+                const uniqueItems = Array.from(new Map((response.data.items || []).map(item => [item.code, item])).values());
+
                 // Map ProductDto to Frontend Product model
-                const products: Product[] = (response.data.items || []).map(item => ({
-                    id: item.code,
+                const products: Product[] = uniqueItems.map(item => ({
+                    code: item.code,
                     name: item.name,
                     slug: item.code, // Use code as slug for now
                     description: item.description || '',
                     price: item.price,
-                    image: item.productImages?.find(img => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl || '',
-                    images: item.productImages?.map(img => img.imageUrl || '') || [],
+                    image: getImageUrl(item.productImages?.find(img => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
+                    images: item.productImages?.map(img => getImageUrl(img.imageUrl)) || [],
                     category: item.categoryName || '',
                     categoryId: item.categoryCode || '',
                     stock: item.stockQuantity || 0,
@@ -265,13 +276,13 @@ export function useProduct(code: string) {
                 const item = response.data;
                 // Map ProductDto to Frontend Product model
                 return {
-                    id: item.code,
+                    code: item.code,
                     name: item.name,
                     slug: item.code,
                     description: item.description || '',
                     price: item.price,
-                    image: item.productImages?.find(img => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl || '',
-                    images: item.productImages?.map(img => img.imageUrl || '') || [],
+                    image: getImageUrl(item.productImages?.find(img => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
+                    images: item.productImages?.map(img => getImageUrl(img.imageUrl)) || [],
                     category: item.categoryName || '',
                     categoryId: item.categoryCode || '',
                     stock: item.stockQuantity || 0,

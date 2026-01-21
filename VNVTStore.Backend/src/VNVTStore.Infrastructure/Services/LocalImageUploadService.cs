@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Interfaces;
-using VNVTStore.Application.Common.Models;
 using VNVTStore.Domain.Entities;
+using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Infrastructure.Services;
 
@@ -180,5 +180,18 @@ public class LocalImageUploadService : IImageUploadService
             files.Add(result.Value!);
         }
         return Result.Success((IEnumerable<FileDto>)files);
+    }
+
+    public async Task<Result> DeleteImagesAsync(IEnumerable<string> imageUrls)
+    {
+        foreach (var url in imageUrls)
+        {
+            var result = await DeleteImageAsync(url);
+            if (result.IsFailure)
+            {
+                return result;
+            }
+        }
+        return Result.Success();
     }
 }

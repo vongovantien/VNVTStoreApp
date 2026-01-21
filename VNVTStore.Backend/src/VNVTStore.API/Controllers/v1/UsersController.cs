@@ -104,16 +104,6 @@ public class UsersController : BaseApiController
         var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
         var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
         
-        // Extract basic search (name/email/username) from the generic 'Search' field if provided, 
-        // OR from the 'searching' list if it contains 'search', 'name', 'code'.
-        string? search = request.Searching?.FirstOrDefault(s => 
-            s.Field?.ToLower() == "name" || s.Field?.ToLower() == "search" || s.Field?.ToLower() == "code" || s.Field?.ToLower() == "username")?.Value?.ToString();
-
-        // Extract advanced filters (exclude basic search fields)
-        var filters = request.Searching?.Where(s => 
-            s.Field?.ToLower() != "name" && s.Field?.ToLower() != "search" && s.Field?.ToLower() != "code" && s.Field?.ToLower() != "username"
-        ).ToList();
-
         var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, null, request.SortDTO, filters));
         return HandleResult(result);
     }

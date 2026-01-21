@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblPromotion
+public partial class TblPromotion : IEntity
 {
     public string Code { get; set; } = null!;
 
@@ -25,9 +24,13 @@ public partial class TblPromotion
 
     public int? UsageLimit { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     public virtual ICollection<TblCoupon> TblCoupons { get; set; } = new List<TblCoupon>();
 
     public virtual ICollection<TblProductPromotion> TblProductPromotions { get; set; } = new List<TblProductPromotion>();
+
+    public string? ModifiedType { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

@@ -11,6 +11,20 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiServices(builder.Configuration);
 builder.Services.AddSignalR();
+builder.Services.AddSignalR();
+builder.Services.AddHttpContextAccessor();
+
+// Increase Request Body Limits for Large Image Uploads
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 200 * 1024 * 1024; // 200MB
+    options.ValueLengthLimit = 200 * 1024 * 1024; // 200MB just in case
+});
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 200 * 1024 * 1024; // 200MB
+});
 
 var app = builder.Build();
 

@@ -80,7 +80,7 @@ export const OrdersPage = () => {
     {
       id: 'products',
       header: t('admin.products'),
-      accessor: (row) => <span>{row.orderItems?.length || 0} sản phẩm</span>,
+      accessor: (row) => <span>{t('admin.order.productCount', { count: row.orderItems?.length || 0 })}</span>,
       className: 'text-center',
       headerClassName: 'text-center'
     },
@@ -100,7 +100,7 @@ export const OrdersPage = () => {
           color={row.paymentStatus === 'paid' ? 'success' : row.paymentStatus === 'pending' ? 'warning' : 'error'}
           size="sm"
         >
-          {row.paymentStatus === 'paid' ? 'Đã thanh toán' : row.paymentStatus === 'pending' ? 'Chờ thanh toán' : 'Thất bại'}
+          {row.paymentStatus === 'paid' ? t('admin.payment.paid') : row.paymentStatus === 'pending' ? t('admin.payment.pending') : t('admin.payment.failed')}
         </Badge>
       ),
       className: 'text-center',
@@ -198,8 +198,8 @@ export const OrdersPage = () => {
         subtitle="admin.subtitles.orders"
         rightSection={
           <div className="flex items-center gap-2">
-            <Badge color="warning">{orders.filter(o => o.status === 'pending').length} chờ xác nhận</Badge>
-            <Badge color="info">{orders.filter(o => o.status === 'shipping').length} đang giao</Badge>
+            <Badge color="warning">{t('admin.order.pendingCount', { count: orders.filter(o => o.status === 'pending').length })}</Badge>
+            <Badge color="info">{t('admin.order.shippingCount', { count: orders.filter(o => o.status === 'shipping').length })}</Badge>
           </div>
         }
       />
@@ -231,7 +231,7 @@ export const OrdersPage = () => {
             {order.status === 'pending' && (
               <button
                 className="p-1.5 hover:bg-success/10 rounded transition-colors text-success"
-                title="Xác nhận đơn"
+                title={t('admin.actions.confirmOrder')}
                 onClick={() => updateStatus(order.code, 'confirmed')}
               >
                 <Check size={18} />
@@ -241,7 +241,7 @@ export const OrdersPage = () => {
             {order.status === 'confirmed' && (
               <button
                 className="p-1.5 hover:bg-primary/10 rounded transition-colors text-primary"
-                title="Giao hàng"
+                title={t('admin.actions.shipOrder')}
                 onClick={() => updateStatus(order.code, 'shipping')}
               >
                 <Truck size={18} />
@@ -251,7 +251,7 @@ export const OrdersPage = () => {
             {order.status === 'shipping' && (
               <button
                 className="p-1.5 hover:bg-success/10 rounded transition-colors text-success"
-                title="Đã giao"
+                title={t('admin.actions.markDelivered')}
                 onClick={() => updateStatus(order.code, 'delivered')}
               >
                 <Package size={18} />
@@ -261,7 +261,7 @@ export const OrdersPage = () => {
             {order.status === 'delivered' && (
               <button
                 className="p-1.5 hover:bg-secondary rounded transition-colors text-secondary"
-                title="In hóa đơn"
+                title={t('admin.actions.printInvoice')}
                 onClick={handlePrintInvoice}
               >
                 <Printer size={18} />
@@ -271,7 +271,7 @@ export const OrdersPage = () => {
             {order.status === 'pending' && (
               <button
                 className="p-1.5 hover:bg-error/10 rounded transition-colors text-error"
-                title="Hủy đơn"
+                title={t('admin.actions.cancelOrder')}
                 onClick={() => updateStatus(order.code, 'cancelled')}
               >
                 <X size={18} />
@@ -389,17 +389,17 @@ export const OrdersPage = () => {
       <Modal
         isOpen={!!selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        title={`Chi tiết đơn hàng ${selectedOrder?.code}`}
+        title={`${t('admin.actions.view')} ${t('common.fields.orderCode')}: ${selectedOrder?.code}`}
         size="lg"
         footer={
           selectedOrder && (
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSelectedOrder(null)}>Đóng</Button>
+              <Button variant="outline" onClick={() => setSelectedOrder(null)}>{t('common.close')}</Button>
               {selectedOrder.status === 'pending' && (
-                <Button onClick={() => updateStatus(selectedOrder.code, 'confirmed')}>Xác nhận đơn hàng</Button>
+                <Button onClick={() => updateStatus(selectedOrder.code, 'confirmed')}>{t('admin.actions.confirmOrderFull')}</Button>
               )}
               {selectedOrder.status === 'delivered' && (
-                <Button leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>In hóa đơn</Button>
+                <Button leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>{t('admin.actions.printInvoice')}</Button>
               )}
             </div>
           )
@@ -413,14 +413,14 @@ export const OrdersPage = () => {
                 {getStatusText(selectedOrder.status)}
               </Badge>
               <Badge color={selectedOrder.paymentStatus === 'paid' ? 'success' : 'warning'}>
-                {selectedOrder.paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chờ thanh toán'}
+                {selectedOrder.paymentStatus === 'paid' ? t('admin.payment.paid') : t('admin.payment.pending')}
               </Badge>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Customer Info */}
               <div className="bg-secondary rounded-lg p-4">
-                <h3 className="font-semibold mb-2">Thông tin khách hàng</h3>
+                <h3 className="font-semibold mb-2">{t('admin.order.customerInfo')}</h3>
                 <p className="font-medium">{selectedOrder.shippingName || selectedOrder.userCode}</p>
                 <p className="text-secondary text-sm">{selectedOrder.shippingPhone || '-'}</p>
                 <p className="text-secondary text-sm mt-1">{selectedOrder.shippingAddress || '-'}</p>
@@ -428,15 +428,15 @@ export const OrdersPage = () => {
 
               {/* Order Info */}
               <div className="bg-secondary rounded-lg p-4">
-                <h3 className="font-semibold mb-2">Thông tin đơn hàng</h3>
-                <p className="text-secondary text-sm">Ngày đặt: {formatDate(selectedOrder.createdAt)}</p>
-                <p className="text-secondary text-sm">Phương thức: {selectedOrder.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản'}</p>
+                <h3 className="font-semibold mb-2">{t('admin.order.orderInfo')}</h3>
+                <p className="text-secondary text-sm">{t('admin.order.orderDate')}: {formatDate(selectedOrder.createdAt)}</p>
+                <p className="text-secondary text-sm">{t('common.fields.paymentMethod')}: {selectedOrder.paymentMethod === 'cod' ? t('admin.order.paymentMethodCod') : t('admin.order.paymentMethodTransfer')}</p>
               </div>
             </div>
 
             {/* Items */}
             <div>
-              <h3 className="font-semibold mb-3">Sản phẩm</h3>
+              <h3 className="font-semibold mb-3">{t('common.products')}</h3>
               <div className="space-y-3 border rounded-lg p-3 bg-primary">
                 {selectedOrder.orderItems?.map((item, index) => (
                   <div key={index} className="flex items-center gap-3 py-2 border-b last:border-0">
@@ -450,7 +450,7 @@ export const OrdersPage = () => {
                     />
                     <div className="flex-1">
                       <p className="font-medium text-sm">{item.productName}</p>
-                      <p className="text-xs text-tertiary">Số lượng: {item.quantity}</p>
+                      <p className="text-xs text-tertiary">{t('common.fields.quantity')}: {item.quantity}</p>
                     </div>
                     <p className="font-medium">{formatCurrency(item.priceAtOrder * item.quantity)}</p>
                   </div>
@@ -461,19 +461,19 @@ export const OrdersPage = () => {
             {/* Summary */}
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-secondary">Tạm tính</span>
+                <span className="text-secondary">{t('admin.order.subtotal')}</span>
                 <span>{formatCurrency(selectedOrder.totalAmount)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-secondary">Phí ship</span>
+                <span className="text-secondary">{t('admin.order.shippingFee')}</span>
                 <span>{formatCurrency(selectedOrder.shippingFee)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-secondary">Giảm giá</span>
+                <span className="text-secondary">{t('admin.order.discount')}</span>
                 <span className="text-success">-{formatCurrency(selectedOrder.discountAmount || 0)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                <span>Tổng cộng</span>
+                <span>{t('admin.order.grandTotal')}</span>
                 <span className="text-error">{formatCurrency(selectedOrder.finalAmount)}</span>
               </div>
             </div>

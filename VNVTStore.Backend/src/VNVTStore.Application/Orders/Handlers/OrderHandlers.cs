@@ -11,16 +11,18 @@ using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Strategies;
 using VNVTStore.Domain.Events;
 using VNVTStore.Application.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace VNVTStore.Application.Orders.Handlers;
 
-public class OrderHandlers :
+public class OrderHandlers : BaseHandler<TblOrder>,
     IRequestHandler<CreateOrderCommand, Result<OrderDto>>,
     IRequestHandler<GetMyOrdersQuery, Result<PagedResult<OrderDto>>>,
     IRequestHandler<GetOrderByIdQuery, Result<OrderDto>>,
     IRequestHandler<GetAllOrdersQuery, Result<PagedResult<OrderDto>>>,
     IRequestHandler<UpdateOrderStatusCommand, Result<OrderDto>>,
-    IRequestHandler<CancelOrderCommand, Result<bool>>
+    IRequestHandler<CancelOrderCommand, Result<bool>>,
+    IRequestHandler<VerifyOrderCommand, Result<string>>
 {
     private readonly IRepository<TblOrder> _orderRepository;
     private readonly ICartService _cartService;
@@ -32,7 +34,10 @@ public class OrderHandlers :
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly INotificationService _notificationService;
-    private readonly IApplicationDbContext _context;
+    private readonly IApplicationDbContext _context; // Required for TblFile logic in CreateOrder
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
+    private readonly IDapperContext _dapperContext;
 
     public OrderHandlers(
         IRepository<TblOrder> orderRepository,
@@ -45,7 +50,10 @@ public class OrderHandlers :
         IUnitOfWork unitOfWork,
         IMapper mapper,
         INotificationService notificationService,
-        IApplicationDbContext context) 
+        IApplicationDbContext context,
+        IEmailService emailService,
+        IConfiguration configuration,
+        IDapperContext dapperContext) : base(orderRepository, unitOfWork, mapper, dapperContext)
     {
         _orderRepository = orderRepository;
         _cartService = cartService;
@@ -58,6 +66,40 @@ public class OrderHandlers :
         _mapper = mapper;
         _notificationService = notificationService;
         _context = context;
+        _emailService = emailService;
+        _configuration = configuration;
+        _dapperContext = dapperContext;
+    }
+
+    public async Task<Result<PagedResult<OrderDto>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
+    {
+        var searchFields = new List<SearchDTO>();
+        if (request.filters != null)
+        {
+            foreach (var filter in request.filters)
+            {
+                 if (string.IsNullOrEmpty(filter.Value)) continue;
+                 // Map specific SearchParams keys to DB columns if needed, or pass through
+                 if (filter.Key == "code") searchFields.Add(new SearchDTO { SearchField = "Code", SearchValue = filter.Value, SearchCondition = SearchCondition.Contains });
+                 // Add more custom filters mapping here if needed
+            }
+        }
+        
+        if (request.status.HasValue)
+        {
+             searchFields.Add(new SearchDTO { SearchField = "Status", SearchValue = ((int)request.status.Value).ToString(), SearchCondition = SearchCondition.Equal });
+        }
+
+
+        return await GetPagedDapperAsync<OrderDto>(
+            request.pageIndex,
+            request.pageSize,
+            searchFields,
+            null, // SortDTO default
+            null, // ReferenceTables (auto-discovered)
+            null, // Fields
+            cancellationToken
+        );
     }
 
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -218,6 +260,9 @@ public class OrderHandlers :
             }
 
             // 5. Save Order
+            var token = Guid.NewGuid().ToString("N");
+            order.SetVerificationToken(token, DateTime.UtcNow.AddMinutes(30));
+
             await _orderRepository.AddAsync(order, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -225,6 +270,29 @@ public class OrderHandlers :
             await _mediator.Publish(new OrderCreatedEvent(order, userCode, request.dto.CartCode), cancellationToken);
             
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            // Send Email Verification
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var verifyLink = $"{frontendUrl}/verify-order?token={token}";
+            var emailBody = $"<h3>Thank you for your order!</h3><p>Order Code: <b>{order.Code}</b></p><p>Please verify your order by clicking the link below:</p><a href='{verifyLink}'>Verify Order</a>";
+            
+            var userEmail = (await _userRepository.GetByCodeAsync(userCode, cancellationToken))?.Email;
+            if (string.IsNullOrEmpty(userEmail) || userEmail == "guest@vnvtstore.com")
+            {
+                 userEmail = request.dto.Email;
+            }
+            
+            if (!string.IsNullOrEmpty(userEmail))
+            { 
+                 try 
+                 {
+                    await _emailService.SendEmailAsync(userEmail, $"Verify your order {order.Code}", emailBody, true);
+                 }
+                 catch (Exception ex)
+                 {
+                    Console.WriteLine($"Failed to send email: {ex.Message}");
+                 }
+            }
 
             // Send Real-time Notification
             await _notificationService.SendAsync("ReceiveOrderNotification", $"New Order Received: {order.Code} - {order.TotalAmount:C}");
@@ -253,9 +321,6 @@ public class OrderHandlers :
                 UserRole.Customer
             );
             await _userRepository.AddAsync(guestUser, cancellationToken);
-            // Don't commit here if we want it part of the transaction, but since commit executes savechanges which writes to DB (and transaction holds it), it is okay. 
-            // However, CommitAsync in UnitOfWork calls SaveChangesAsync. 
-            // If we are in transaction, SaveChangesAsync sends INSERT.
             await _unitOfWork.CommitAsync(cancellationToken); 
         }
         return guestUser.Code;
@@ -263,6 +328,8 @@ public class OrderHandlers :
 
     public async Task<Result<PagedResult<OrderDto>>> Handle(GetMyOrdersQuery request, CancellationToken cancellationToken)
     {
+        // Should also optimize GetMyOrdersQuery later, but user focused on Admin (GetAllOrders).
+        // For consistency, let's leave this EF logic for now unless requested.
         var query = _orderRepository.AsQueryable()
             .Where(o => o.UserCode == request.userCode);
 
@@ -287,6 +354,7 @@ public class OrderHandlers :
 
     public async Task<Result<OrderDto>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
+        // ... (Keep EF for single get for now)
         var order = await _orderRepository.AsQueryable()
             .Include(o => o.TblOrderItems)
             .ThenInclude(oi => oi.ProductCodeNavigation)
@@ -296,37 +364,6 @@ public class OrderHandlers :
             return Result.Failure<OrderDto>(Error.NotFound(MessageConstants.Order, request.orderCode));
 
         return Result.Success(_mapper.Map<OrderDto>(order));
-    }
-
-    public async Task<Result<PagedResult<OrderDto>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
-    {
-        var query = _orderRepository.AsQueryable();
-
-        if (request.status.HasValue)
-             query = query.Where(o => o.Status == request.status.Value);
-
-        if (request.filters != null && request.filters.Any())
-        {
-            var f = request.filters;
-            if (f.ContainsKey("code") && !string.IsNullOrEmpty(f["code"]))
-                query = query.Where(o => o.Code.Contains(f["code"]));
-             // ... (Keeping simple for brevity, assumed other filters work same)
-        }
-
-         var totalItems = await query.CountAsync(cancellationToken);
-        
-        var items = await query
-            .OrderByDescending(o => o.OrderDate)
-             .Skip((request.pageIndex - 1) * request.pageSize)
-            .Take(request.pageSize)
-            .Include(o => o.TblOrderItems)
-            .ThenInclude(oi => oi.ProductCodeNavigation)
-            .Include(o => o.UserCodeNavigation)
-            .Include(o => o.AddressCodeNavigation)
-            .ToListAsync(cancellationToken);
-
-        var dtos = _mapper.Map<List<OrderDto>>(items);
-        return Result.Success(new PagedResult<OrderDto>(dtos, totalItems));
     }
 
     public async Task<Result<OrderDto>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -395,4 +432,33 @@ public class OrderHandlers :
     }
 
     private record ProcessableOrderItem(string ProductCode, TblProduct ProductCodeNavigation, int Quantity, string? Size, string? Color, string? ImageUrl);
+
+    public async Task<Result<string>> Handle(VerifyOrderCommand request, CancellationToken cancellationToken)
+    {
+        var order = await _context.TblOrders.FirstOrDefaultAsync(o => o.VerificationToken == request.Token, cancellationToken);
+        
+        if (order == null)
+        {
+            return Result.Failure<string>(Error.Validation("Invalid verification token."));
+        }
+
+        if (order.VerificationTokenExpiresAt < DateTime.UtcNow)
+        {
+             return Result.Failure<string>(Error.Validation("Verification token has expired."));
+        }
+
+        if (order.Status != OrderStatus.Pending)
+        {
+             return Result.Success("Order is already verified or processed.");
+        }
+
+        order.UpdateStatus(OrderStatus.Confirmed); // Or a specific Verified status if exists. Assuming Confirmed for now.
+        // Clear token
+        order.SetVerificationToken(null!, DateTime.MinValue); // Hacky clear
+        
+        _orderRepository.Update(order);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success(order.Code);
+    }
 }

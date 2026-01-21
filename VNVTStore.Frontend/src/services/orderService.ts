@@ -42,6 +42,7 @@ export interface GuestCartItemDto {
 
 export interface CreateOrderRequest {
     fullName: string;
+    email?: string;
     phone: string;
     address: string;
     city: string;
@@ -76,6 +77,9 @@ export const orderService = {
             throw new Error(response.message || 'Create failed');
         }
         return response;
+    },
+    verify: async (token: string) => {
+        return await apiClient.get<string>(`${API_ENDPOINTS.ORDERS.BASE}/verify`, { params: { token } });
     }
 };
 

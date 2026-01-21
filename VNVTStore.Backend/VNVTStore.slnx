@@ -5,4 +5,7 @@
     <Project Path="src/VNVTStore.Domain/VNVTStore.Domain.csproj" />
     <Project Path="src/VNVTStore.Infrastructure/VNVTStore.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VNVTStore.Application.Tests/VNVTStore.Application.Tests.csproj" />
+  </Folder>
 </Solution>

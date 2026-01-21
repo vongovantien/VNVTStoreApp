@@ -128,15 +128,6 @@ public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : Bas
     {
         var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
         var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
-        
-        // Default search extraction
-        string? search = request.Searching?.FirstOrDefault(s => 
-            s.Field?.ToLower() == "name" || s.Field?.ToLower() == "search" || s.Field?.ToLower() == "code")?.Value?.ToString();
-
-        // Extract other filters (exclude the ones used for text search)
-        var filters = request.Searching?.Where(s => 
-            s.Field?.ToLower() != "name" && s.Field?.ToLower() != "search" && s.Field?.ToLower() != "code"
-        ).ToList();
 
         var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, search, request.SortDTO, filters, request.Fields));
         return HandleResult(result);

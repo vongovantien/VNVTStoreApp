@@ -58,7 +58,7 @@ export const CartPage = () => {
             {/* Items */}
             {items.map((item) => (
               <motion.div
-                key={item.id}
+                key={item.code}
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -67,7 +67,7 @@ export const CartPage = () => {
               >
                 {/* Product */}
                 <div className="md:col-span-6 flex gap-4">
-                  <Link to={`/product/${item.product.id}`} className="flex-shrink-0">
+                  <Link to={`/product/${item.product.code}`} className="flex-shrink-0">
                     <SharedImage
                       src={item.product.image}
                       alt={item.product.name}
@@ -76,7 +76,7 @@ export const CartPage = () => {
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link
-                      to={`/product/${item.product.id}`}
+                      to={`/product/${item.product.code}`}
                       className="font-medium text-primary hover:text-primary-dark transition-colors line-clamp-2"
                     >
                       {item.product.name}
@@ -98,14 +98,14 @@ export const CartPage = () => {
                 <div className="md:col-span-2 flex justify-center">
                   <div className="flex items-center border rounded-lg">
                     <button
-                      onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                      onClick={() => updateQuantity(item.code, Math.max(1, item.quantity - 1))}
                       className="p-2 hover:bg-secondary transition-colors"
                     >
                       <Minus size={16} />
                     </button>
                     <span className="w-12 text-center font-medium">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.code, item.quantity + 1)}
                       className="p-2 hover:bg-secondary transition-colors"
                     >
                       <Plus size={16} />
@@ -119,7 +119,7 @@ export const CartPage = () => {
                     {formatCurrency(item.product.price * item.quantity)}
                   </span>
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.code)}
                     className="p-2 text-tertiary hover:text-error transition-colors"
                   >
                     <X size={18} />

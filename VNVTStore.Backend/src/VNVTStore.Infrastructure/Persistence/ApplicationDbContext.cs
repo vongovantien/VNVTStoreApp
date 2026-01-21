@@ -116,6 +116,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(d => d.UserCodeNavigation).WithMany(p => p.TblAddresses)
                 .HasForeignKey(d => d.UserCode)
                 .HasConstraintName("TblAddress_UserCode_fkey");
+
+            entity.HasIndex(e => e.UserCode, "idx_address_user");
         });
 
         modelBuilder.Entity<TblCart>(entity =>
@@ -188,6 +190,9 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("TblCategory_ParentCode_fkey");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            
+            entity.HasIndex(e => e.ParentCode, "idx_category_parent");
+            entity.HasIndex(e => e.Name, "idx_category_name");
         });
 
         modelBuilder.Entity<TblCoupon>(entity =>
@@ -247,6 +252,9 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .HasConstraintName("TblOrder_UserCode_fkey");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+
+            entity.HasIndex(e => e.OrderDate, "idx_order_date");
+            entity.HasIndex(e => e.UserCode, "idx_order_user");
         });
 
         modelBuilder.Entity<TblOrderItem>(entity =>
@@ -310,7 +318,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblProduct");
 
-            entity.HasIndex(e => e.Sku, "TblProduct_SKU_key").IsUnique();
+
 
             entity.HasIndex(e => e.Name, "idx_product_name");
 
@@ -325,9 +333,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Price).HasPrecision(15, 2);
-            entity.Property(e => e.Sku)
-                .HasMaxLength(50)
-                .HasColumnName("SKU");
+
             entity.Property(e => e.StockQuantity).HasDefaultValue(0);
             entity.Property(e => e.Weight).HasPrecision(8, 2);
 
@@ -340,6 +346,12 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.SupplierCode)
                 .OnDelete(DeleteBehavior.SetNull);
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+
+            entity.HasIndex(e => e.CategoryCode, "idx_product_category");
+            entity.HasIndex(e => e.SupplierCode, "idx_product_supplier");
+            entity.HasIndex(e => e.IsActive, "idx_product_active");
+            entity.HasIndex(e => e.Code, "idx_product_code"); // Usually PK is indexed, but explicit helps if used in joins often? PK is TblProduct_pkey. Code is PK. So redundant? PK is Code. So index exists.
+            // Removing explicit Code index as it is PK.
         });
 
 
@@ -491,6 +503,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Username).HasMaxLength(50);
             entity.Property(e => e.ModifiedType).HasDefaultValue("Add");
+
+            entity.HasIndex(e => e.Phone, "idx_user_phone");
         });
 
         modelBuilder.Entity<TblFile>(entity =>

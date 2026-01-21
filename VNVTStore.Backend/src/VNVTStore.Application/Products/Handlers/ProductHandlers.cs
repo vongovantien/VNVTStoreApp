@@ -12,6 +12,9 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Enums;
 
+using Dapper;
+using Newtonsoft.Json.Linq;
+
 namespace VNVTStore.Application.Products.Handlers;
 
 public class ProductHandlers : BaseHandler<TblProduct>,
@@ -23,59 +26,65 @@ public class ProductHandlers : BaseHandler<TblProduct>,
     IRequestHandler<DeleteCommand<TblProduct>, Result>,
     IRequestHandler<ImportProductsCommand, Result<int>>
 {
+
     private readonly IImageUploadService _imageUploadService;
+    private readonly IBaseUrlService _baseUrlService;
     private readonly IApplicationDbContext _context;
 
-    public ProductHandlers(IRepository<TblProduct> repository, IUnitOfWork unitOfWork, IMapper mapper, IImageUploadService imageUploadService, IApplicationDbContext context) 
-        : base(repository, unitOfWork, mapper)
+    public ProductHandlers(
+        IRepository<TblProduct> repository, 
+        IUnitOfWork unitOfWork, 
+        IMapper mapper,
+        IDapperContext dapperContext,
+        IBaseUrlService baseUrlService,
+        IImageUploadService imageUploadService,
+        IApplicationDbContext context) 
+        : base(repository, unitOfWork, mapper, dapperContext)
     {
+        _baseUrlService = baseUrlService;
         _imageUploadService = imageUploadService;
         _context = context;
     }
 
+
     public async Task<Result<PagedResult<ProductDto>>> Handle(GetPagedQuery<ProductDto> request, CancellationToken cancellationToken)
     {
-        string? categoryCode = null;
-        if (request is GetProductsQuery productsQuery)
-        {
-            categoryCode = productsQuery.CategoryCode;
-        }
+        // Use request.Searching directly (already contains search conditions from frontend)
+        var searchFields = request.Searching ?? new List<SearchDTO>();
 
-        var result = await GetPagedAsync<ProductDto>(
-            request.PageIndex,
-            request.PageSize,
-            cancellationToken,
-            predicate: p => (p.IsActive == true) && (p.ModifiedType != ModificationType.Delete.ToString()) &&
-                           (string.IsNullOrWhiteSpace(request.Search) || p.Name.Contains(request.Search) || p.Code.Contains(request.Search) || (p.Sku != null && p.Sku.Contains(request.Search))) &&
-                           (string.IsNullOrWhiteSpace(categoryCode) || p.CategoryCode == categoryCode),
-            includes: q => QueryHelper.ApplyFilters(
-                q.Include(p => p.CategoryCodeNavigation), 
-                request.Filters),
-            orderBy: q => {
-                if (request.SortDTO != null && !string.IsNullOrWhiteSpace(request.SortDTO.SortBy))
-                {
-                    var sortBy = request.SortDTO.SortBy.ToLower();
-                    if (sortBy == nameof(TblProduct.Price).ToLower())
-                        return request.SortDTO.SortDescending ? q.OrderByDescending(p => p.Price) : q.OrderBy(p => p.Price);
-                    if (sortBy == nameof(TblProduct.Name).ToLower())
-                        return request.SortDTO.SortDescending ? q.OrderByDescending(p => p.Name) : q.OrderBy(p => p.Name);
-                    if (sortBy == nameof(TblProduct.CreatedAt).ToLower())
-                        return request.SortDTO.SortDescending ? q.OrderByDescending(p => p.CreatedAt) : q.OrderBy(p => p.CreatedAt);
-                    
-                    return q.OrderByDescending(p => p.CreatedAt);
-                }
-                return q.OrderByDescending(p => p.CreatedAt);
-            },
-            fields: request.Fields);
+        // // Add IsActive filter by default
+        // if (!searchFields.Any(s => s.SearchField == "IsActive"))
+        // {
+        //     searchFields.Add(new SearchDTO { SearchField = "IsActive", SearchCondition = SearchCondition.Equal, SearchValue = true });
+        // }
+        
+        // // Category Filter (for GetProductsQuery)
+        // string? categoryCode = null;
+        // if (request is GetProductsQuery productsQuery)
+        // {
+        //     categoryCode = productsQuery.CategoryCode;
+        // }
 
+        // if (!string.IsNullOrWhiteSpace(categoryCode))
+        // {
+        //      searchFields.Add(new SearchDTO { SearchField = "CategoryCode", SearchCondition = SearchCondition.Equal, SearchValue = categoryCode });
+        // }
+
+        var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
+
+        // Call Base Handler
+        var result = await GetPagedDapperAsync<ProductDto>(request.PageIndex, request.PageSize, searchFields, sortDTO, null, request.Fields, cancellationToken);
+
+        // 6. Populate Images Logic
         if (result.IsSuccess && result.Value.Items.Any())
         {
+            using var connection = _dapperContext.CreateConnection();
             var productCodes = result.Value.Items.Select(p => p.Code).ToList();
-            var files = await _context.TblFiles
-                .Where(f => productCodes.Contains(f.MasterCode) && f.MasterType == "Product")
-                .ToListAsync(cancellationToken);
+            var fileSql = @"SELECT * FROM ""TblFile"" WHERE ""MasterCode"" = ANY(@Codes) AND ""MasterType"" = 'Product'";
+            var files = await connection.QueryAsync<TblFile>(fileSql, new { Codes = productCodes });
             
             var fileGroups = files.GroupBy(f => f.MasterCode).ToDictionary(g => g.Key, g => g.ToList());
+            var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
 
             foreach (var dto in result.Value.Items)
             {
@@ -84,9 +93,9 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                     dto.ProductImages = productFiles.Select(f => new ProductImageDto
                     {
                         Code = f.Code,
-                        ImageUrl = f.Path,
+                        ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
                         AltText = f.OriginalName,
-                        IsPrimary = productFiles.IndexOf(f) == 0 // Assumption
+                        IsPrimary = productFiles.IndexOf(f) == 0 
                     }).ToList();
                 }
             }
@@ -115,10 +124,11 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 .Where(f => f.MasterCode == request.Code && f.MasterType == "Product")
                 .ToListAsync(cancellationToken);
             
+            var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
             result.Value.ProductImages = files.Select(f => new ProductImageDto
             {
                  Code = f.Code,
-                 ImageUrl = f.Path,
+                 ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
                  AltText = f.OriginalName,
                  IsPrimary = files.IndexOf(f) == 0
             }).ToList();
@@ -134,22 +144,11 @@ public class ProductHandlers : BaseHandler<TblProduct>,
         {
             var dto = request.Dto;
 
-            if (!string.IsNullOrWhiteSpace(dto.Sku))
-            {
-                var existingSku = await _repository.FindAsync(p => p.Sku == dto.Sku && p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
-                if (existingSku != null)
-                {
-                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", dto.Sku));
-                }
-            }
 
-            var sku = string.IsNullOrWhiteSpace(dto.Sku) 
-                ? $"SKU{DateTime.Now.Ticks.ToString().Substring(10)}" 
-                : dto.Sku;
 
-            var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, sku, dto.CostPrice, 
-                dto.Weight, dto.SupplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
+            var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
+            var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, dto.CostPrice, 
+                dto.Weight, supplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
             
             if (dto.Images != null && dto.Images.Any())
             {
@@ -188,18 +187,23 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 }
 
                 // Link files to product
+                // Need to normalize URLs to relative paths (e.g. /uploads/...) to match DB
                 var uniqueUrls = finalUrls.Distinct().ToList();
+                var relativeUrls = uniqueUrls.Select(u => 
+                {
+                    if (Uri.TryCreate(u, UriKind.Absolute, out var uri))
+                        return uri.AbsolutePath;
+                    return u; // Already relative or invalid
+                }).ToList();
+
                 var filesToLink = await _context.TblFiles
-                    .Where(f => uniqueUrls.Contains(f.Path))
+                    .Where(f => relativeUrls.Contains(f.Path))
                     .ToListAsync(cancellationToken);
                 
                 foreach(var file in filesToLink) 
                 {
                     file.MasterCode = product.Code;
                     file.MasterType = "Product";
-                    // TblFile Save is handled by Context, but we need to mark them modified? 
-                    // They are tracked by _context (if shared context).
-                    // _context is IApplicationDbContext.
                 }
             }
 
@@ -209,7 +213,23 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             await _unitOfWork.CommitAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return Result.Success(_mapper.Map<ProductDto>(product));
+            var productDto = _mapper.Map<ProductDto>(product);
+            
+            // Populate images for response
+            var finalFiles = await _context.TblFiles
+                .Where(f => f.MasterCode == product.Code && f.MasterType == "Product")
+                .ToListAsync(cancellationToken);
+
+            var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
+            productDto.ProductImages = finalFiles.Select(f => new ProductImageDto
+            {
+                 Code = f.Code,
+                 ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
+                 AltText = f.OriginalName,
+                 IsPrimary = finalFiles.IndexOf(f) == 0
+            }).ToList();
+
+            return Result.Success(productDto);
         }
         catch (Exception)
         {
@@ -232,21 +252,15 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             }
 
             // SKU Check Code...
-            if (!string.IsNullOrWhiteSpace(request.Dto.Sku) && request.Dto.Sku != product.Sku)
-            {
-                var existingSku = await _repository.FindAsync(p => p.Sku == request.Dto.Sku && p.Code != request.Code && p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
-                if (existingSku != null)
-                {
-                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<ProductDto>(Error.Conflict(MessageConstants.AlreadyExists, "SKU", request.Dto.Sku));
-                }
-            }
 
+
+            var supplierCode = string.IsNullOrWhiteSpace(request.Dto.SupplierCode) ? null : request.Dto.SupplierCode;
+            
             product.UpdateInfo(request.Dto.Name ?? product.Name, request.Dto.Price ?? product.Price, request.Dto.Description ?? product.Description, 
                 request.Dto.CategoryCode ?? product.CategoryCode, request.Dto.CostPrice ?? product.CostPrice, request.Dto.StockQuantity ?? product.StockQuantity,
-                request.Dto.Weight ?? product.Weight, request.Dto.SupplierCode ?? product.SupplierCode, request.Dto.Color ?? product.Color, 
+                request.Dto.Weight ?? product.Weight, supplierCode ?? product.SupplierCode, request.Dto.Color ?? product.Color, 
                 request.Dto.Power ?? product.Power, request.Dto.Voltage ?? product.Voltage, request.Dto.Material ?? product.Material, 
-                request.Dto.Size ?? product.Size, request.Dto.Sku ?? product.Sku);
+                request.Dto.Size ?? product.Size);
 
             if (request.Dto.Images != null)
             {
@@ -284,32 +298,55 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                     keptUrls.AddRange(uploadResult.Value.Select(f => f.Url));
                 }
 
+                // Match by File Name (Robust against path variations)
+                // Extract filenames from all kept URLs (both existing and newly uploaded)
+                // Handles http://.../file.png, /uploads/file.png, file.png
+                var keptFileNames = keptUrls
+                    .Select(u => u.Split('/', '\\').Last())
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
                 // 1. Get currently linked files
                 var currentFiles = await _context.TblFiles
                     .Where(f => f.MasterCode == product.Code)
                     .ToListAsync(cancellationToken);
 
-                // 2. Identify files to remove (Current but not in Kept)
-                var uniqueKeptUrls = keptUrls.Distinct().ToList();
-                var filesToRemove = currentFiles.Where(f => !uniqueKeptUrls.Contains(f.Path)).ToList();
+                // 2. Identify files to remove (Current but Filename NOT in Kept)
+                var filesToRemove = currentFiles
+                    .Where(f => !keptFileNames.Contains(f.FileName, StringComparer.OrdinalIgnoreCase))
+                    .ToList();
                 
+                var pathsToDelete = new List<string>();
                 foreach (var f in filesToRemove)
                 {
                     f.MasterCode = null; // Unlink
                     f.IsActive = false; // Soft delete
-                    // Optionally delete file from disk: _imageUploadService.DeleteImageAsync(f.Path);
+                    
+                    if (!string.IsNullOrEmpty(f.Path))
+                    {
+                        pathsToDelete.Add(f.Path);
+                    }
+                }
+                
+                if (pathsToDelete.Any())
+                {
+                    await _imageUploadService.DeleteImagesAsync(pathsToDelete);
                 }
 
-                // 3. Link new files (in Kept but not linked)
-                // We need to fetch the orphans (newly uploaded)
-                 var filesToLink = await _context.TblFiles
-                    .Where(f => uniqueKeptUrls.Contains(f.Path) && f.MasterCode != product.Code)
+                // 3. Link new files (Filename in Kept but not linked to this product)
+                 var potentialFiles = await _context.TblFiles
+                    .Where(f => keptFileNames.Contains(f.FileName) && f.MasterCode != product.Code)
                     .ToListAsync(cancellationToken);
-
-                foreach (var f in filesToLink)
+                
+                foreach (var f in potentialFiles)
                 {
-                    f.MasterCode = product.Code;
-                    f.MasterType = "Product";
+                     // Double check in memory
+                     if (keptFileNames.Contains(f.FileName, StringComparer.OrdinalIgnoreCase))
+                     {
+                        f.MasterCode = product.Code;
+                        f.MasterType = "Product";
+                     }
                 }
             }
             
@@ -317,7 +354,23 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             await _unitOfWork.CommitAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return Result.Success(_mapper.Map<ProductDto>(product));
+            var productDto = _mapper.Map<ProductDto>(product);
+            
+            // Populate images for response
+            var finalFiles = await _context.TblFiles
+                .Where(f => f.MasterCode == product.Code && f.MasterType == "Product")
+                .ToListAsync(cancellationToken);
+
+            var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
+            productDto.ProductImages = finalFiles.Select(f => new ProductImageDto
+            {
+                 Code = f.Code,
+                 ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
+                 AltText = f.OriginalName,
+                 IsPrimary = finalFiles.IndexOf(f) == 0
+            }).ToList();
+
+            return Result.Success(productDto);
         }
         catch (Exception)
         {
@@ -328,7 +381,43 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
     public async Task<Result> Handle(DeleteCommand<TblProduct> request, CancellationToken cancellationToken)
     {
-        return await DeleteAsync(request.Code, MessageConstants.Product, cancellationToken);
+        // 1. Fetch images linked to this product (Active ones)
+        var linkedFiles = await _context.TblFiles
+            .Where(f => f.MasterCode == request.Code && f.MasterType == "Product" && f.IsActive)
+            .ToListAsync(cancellationToken);
+
+        // 2. Delete Product (Soft Delete)
+        var result = await DeleteAsync(request.Code, MessageConstants.Product, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            // 3. Strict Cleanup: Delete images from Cloudinary and Soft Delete in DB (Bulk)
+            var pathsToDelete = new List<string>();
+            foreach (var f in linkedFiles)
+            {
+                f.IsActive = false;
+                if (!string.IsNullOrEmpty(f.Path))
+                {
+                     pathsToDelete.Add(f.Path);
+                }
+            }
+            
+            if (pathsToDelete.Any())
+            {
+                 try 
+                 {
+                     await _imageUploadService.DeleteImagesAsync(pathsToDelete);
+                 }
+                 catch (Exception ex)
+                 {
+                     Console.WriteLine($"Failed to bulk delete images: {ex.Message}");
+                 }
+            }
+            
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        return result;
     }
 
     private bool IsBase64String(string s)
@@ -356,13 +445,15 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
                 if (product != null)
                 {
-                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Sku, dto.Description, dto.IsActive, dto.Weight, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size, dto.SupplierCode);
+                    var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
+                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, dto.Weight, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size, supplierCode);
                     _repository.Update(product);
                 }
                 else
                 {
-                    product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, dto.Sku, null, dto.Weight, dto.SupplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
-                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Sku, dto.Description, dto.IsActive, dto.Weight, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size, dto.SupplierCode);
+                    var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
+                    product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, null, dto.Weight, supplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
+                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, dto.Weight, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size, supplierCode);
                     await _repository.AddAsync(product, cancellationToken);
                 }
                 importedCount++;

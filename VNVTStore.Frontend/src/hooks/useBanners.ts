@@ -6,6 +6,21 @@ export const useBanners = (params?: SearchParams) => {
     return useQuery({
         queryKey: ['banners', params],
         queryFn: () => bannerService.search(params || {}),
+        select: (response) => {
+            if (response.success && response.data) {
+                // Deduplicate
+                const uniqueItems = Array.from(new Map((response.data.items || []).map(item => [item.code, item])).values());
+
+                return {
+                    ...response,
+                    data: {
+                        ...response.data,
+                        items: uniqueItems
+                    }
+                };
+            }
+            return response;
+        }
     });
 };
 

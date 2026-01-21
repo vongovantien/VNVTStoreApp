@@ -8,6 +8,13 @@ using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 
+using Dapper;
+using VNVTStore.Application.Common.Helpers;
+using VNVTStore.Application.Common.Attributes;
+using VNVTStore.Application.Interfaces;
+using Newtonsoft.Json;
+using System.Reflection;
+
 namespace VNVTStore.Application.Common;
 
 public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
@@ -15,12 +22,27 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
     protected readonly IRepository<TEntity> _repository;
     protected readonly IUnitOfWork _unitOfWork;
     protected readonly IMapper _mapper;
+    protected readonly IDapperContext _dapperContext;
 
-    protected BaseHandler(IRepository<TEntity> repository, IUnitOfWork unitOfWork, IMapper mapper)
+    protected BaseHandler(
+        IRepository<TEntity> repository, 
+        IUnitOfWork unitOfWork, 
+        IMapper mapper,
+        IDapperContext dapperContext)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _dapperContext = dapperContext;
+    }
+
+    // Backwards-compatible constructor for handlers not using Dapper
+    protected BaseHandler(
+        IRepository<TEntity> repository, 
+        IUnitOfWork unitOfWork, 
+        IMapper mapper)
+        : this(repository, unitOfWork, mapper, null!)
+    {
     }
 
     protected async Task<Result<TResponse>> CreateAsync<TCreateDto, TResponse>(
@@ -301,5 +323,213 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         }
 
         return Result.Success();
+    }
+    protected async Task<Result<PagedResult<TResponse>>> GetPagedDapperAsync<TResponse>(
+        int pageIndex,
+        int pageSize,
+        List<SearchDTO>? searchFields,
+        SortDTO? sortDTO,
+        List<ReferenceTable>? referenceTables = null,
+        List<string>? fields = null,
+        CancellationToken cancellationToken = default)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        
+        using var connection = _dapperContext.CreateConnection();
+        
+        // ... (Existing Setup Code) ...
+        searchFields ??= new List<SearchDTO>();
+        if (sortDTO == null) sortDTO = new SortDTO { SortBy = "CreatedAt", Sort = "DESC" };
+        else if (string.IsNullOrEmpty(sortDTO.Sort)) sortDTO.Sort = sortDTO.SortDescending ? "DESC" : "ASC";
+
+        // Filter out Soft Deleted items by default if not already in search
+        if (!searchFields.Any(s => s.SearchField == "ModifiedType"))
+        {
+             searchFields.Add(new SearchDTO { SearchField = "ModifiedType", SearchCondition = SearchCondition.NotEqual, SearchValue = "Delete" });
+        }
+        
+        // Infer Table Name from TEntity
+        var tableName = typeof(TEntity).Name;
+        
+        // Auto-discover Reference Tables from TResponse Attributes
+        var autoRefTables = GetReferenceTables<TResponse>();
+        
+        if (referenceTables == null) 
+        {
+            referenceTables = autoRefTables;
+        }
+        else 
+        {
+            referenceTables.AddRange(autoRefTables);
+        }
+
+        var sql = QueryBuilder.BuildRawQueryPaging(pageSize, pageIndex, tableName, referenceTables, searchFields, sortDTO, fields);
+        
+        Console.WriteLine($"[Dapper Debug] SQL Generation took: {sw.ElapsedMilliseconds}ms");
+        sw.Restart();
+
+        var dynamicResults = await connection.QueryAsync<dynamic>(sql);
+        Console.WriteLine($"[Dapper Debug] Query Execution took: {sw.ElapsedMilliseconds}ms. Rows: {dynamicResults.Count()}");
+        sw.Restart();
+
+        var dtos = new List<TResponse>();
+        int totalCount = 0;
+
+        if (dynamicResults.Any())
+        {
+            totalCount = (int)dynamicResults.First().TotalRow;
+
+            // Manual Mapping Optimized (Avoid JSON if possible, but keep robust fallback)
+            // JSON Serialization is SLOW for large lists.
+            var json = JsonConvert.SerializeObject(dynamicResults);
+            dtos = JsonConvert.DeserializeObject<List<TResponse>>(json) ?? new List<TResponse>();
+        }
+        Console.WriteLine($"[Dapper Debug] Mapping (JSON) took: {sw.ElapsedMilliseconds}ms");
+        sw.Restart();
+        
+        // Populate Collections
+        await PopulateCollectionsAsync(dtos, cancellationToken);
+        Console.WriteLine($"[Dapper Debug] PopulateCollections took: {sw.ElapsedMilliseconds}ms");
+
+        return Result.Success(new PagedResult<TResponse>(dtos, totalCount));
+    }
+
+    private List<ReferenceTable> GetReferenceTables<TResponse>()
+    {
+        var list = new List<ReferenceTable>();
+        var props = typeof(TResponse).GetProperties();
+        
+        foreach (var prop in props)
+        {
+            var attr = prop.GetCustomAttribute<ReferenceAttribute>();
+            if (attr != null)
+            {
+                // Skip if any required field is empty to avoid SQL errors
+                if (string.IsNullOrEmpty(attr.TableName) || 
+                    string.IsNullOrEmpty(attr.ForeignKey) || 
+                    string.IsNullOrEmpty(attr.SelectColumn) ||
+                    string.IsNullOrEmpty(prop.Name))
+                {
+                    continue;
+                }
+                
+                list.Add(new ReferenceTable
+                {
+                    TableName = attr.TableName,
+                    AliasName = prop.Name, // DTO Property Name (e.g., CategoryName)
+                    ForeignKeyCol = attr.ForeignKey,
+                    ColumnName = attr.SelectColumn,
+                    FilterType = attr.FilterType ?? "All"
+                });
+            }
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Populates child collections for DTOs based on ReferenceCollectionAttribute.
+    /// Uses a second query to fetch all children for all parent codes, then maps them.
+    /// </summary>
+    protected async Task PopulateCollectionsAsync<TResponse>(
+        List<TResponse> items,
+        CancellationToken cancellationToken = default)
+    {
+        if (items == null || !items.Any()) return;
+
+        using var connection = _dapperContext.CreateConnection();
+        var responseType = typeof(TResponse);
+        var props = responseType.GetProperties();
+
+        foreach (var prop in props)
+        {
+            var collAttr = prop.GetCustomAttribute<ReferenceCollectionAttribute>();
+            if (collAttr == null) continue;
+
+            // Get parent codes from items
+            var parentKeyProp = responseType.GetProperty(collAttr.ParentKey);
+            if (parentKeyProp == null) continue;
+
+            var parentCodes = items
+                .Select(i => parentKeyProp.GetValue(i)?.ToString())
+                .Where(c => !string.IsNullOrEmpty(c))
+                .Distinct()
+                .ToList();
+
+            if (!parentCodes.Any()) continue;
+
+            // Build SQL for child query
+            var sql = $"SELECT * FROM \"{collAttr.ChildTableName}\" WHERE \"{collAttr.ForeignKey}\" = ANY(@Codes)";
+            
+            if (!string.IsNullOrEmpty(collAttr.FilterColumn) && !string.IsNullOrEmpty(collAttr.FilterValue))
+            {
+                sql += $" AND \"{collAttr.FilterColumn}\" = @FilterValue";
+            }
+
+            var parameters = new { Codes = parentCodes.ToArray(), FilterValue = collAttr.FilterValue };
+            
+            // Execute query and get dynamic results
+            var children = await connection.QueryAsync<dynamic>(sql, parameters);
+            
+            // Convert dynamic to child DTO type
+            var json = JsonConvert.SerializeObject(children);
+            var method = typeof(JsonConvert).GetMethod("DeserializeObject", new[] { typeof(string) });
+            var genericMethod = method!.MakeGenericMethod(typeof(List<>).MakeGenericType(collAttr.ChildDtoType));
+            var childList = genericMethod.Invoke(null, new object[] { json });
+
+            if (childList == null) continue;
+
+            // Group children by foreign key
+            var groupedChildren = new Dictionary<string, List<object>>();
+            var foreignKeyProp = collAttr.ChildDtoType.GetProperty(collAttr.ForeignKey);
+            
+            if (foreignKeyProp == null)
+            {
+                // Try to find property with matching column attribute or Name
+                var childProps = collAttr.ChildDtoType.GetProperties();
+                foreach (var p in childProps)
+                {
+                    if (p.Name.Equals(collAttr.ForeignKey, StringComparison.OrdinalIgnoreCase))
+                    {
+                        foreignKeyProp = p;
+                        break;
+                    }
+                }
+            }
+
+            if (foreignKeyProp == null) continue;
+
+            foreach (var child in (System.Collections.IEnumerable)childList)
+            {
+                var fkValue = foreignKeyProp.GetValue(child)?.ToString();
+                if (string.IsNullOrEmpty(fkValue)) continue;
+
+                if (!groupedChildren.ContainsKey(fkValue))
+                    groupedChildren[fkValue] = new List<object>();
+                
+                groupedChildren[fkValue].Add(child);
+            }
+
+            // Assign to parent items
+            foreach (var item in items)
+            {
+                var parentCode = parentKeyProp.GetValue(item)?.ToString();
+                if (string.IsNullOrEmpty(parentCode)) continue;
+
+                if (groupedChildren.TryGetValue(parentCode, out var childrenForParent))
+                {
+                    // Create properly typed list
+                    var listType = typeof(List<>).MakeGenericType(collAttr.ChildDtoType);
+                    var typedList = Activator.CreateInstance(listType);
+                    var addMethod = listType.GetMethod("Add");
+                    
+                    foreach (var c in childrenForParent)
+                    {
+                        addMethod!.Invoke(typedList, new[] { c });
+                    }
+                    
+                    prop.SetValue(item, typedList);
+                }
+            }
+        }
     }
 }

@@ -24,11 +24,51 @@ export const RegisterPage = () => {
     agreeTerms: false,
   });
 
+  /* Validation Regex */
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  const [errors, setErrors] = useState({
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: ''
+  });
+
+  const validate = () => {
+    let isValid = true;
+    const newErrors = { email: '', phone: '', password: '', confirmPassword: '' };
+
+    if (!emailRegex.test(formData.email)) {
+        newErrors.email = t('validation.invalidEmail') || 'Email không hợp lệ';
+        isValid = false;
+    }
+
+    if (!phoneRegex.test(formData.phone)) {
+        newErrors.phone = t('validation.invalidPhone') || 'Số điện thoại không hợp lệ (VD: 0901234567)';
+        isValid = false;
+    }
+
+    if (!passwordRegex.test(formData.password)) {
+        newErrors.password = t('validation.weakPassword') || 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
+        isValid = false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = t('register.passwordMismatch') || 'Mật khẩu xác nhận không khớp';
+        isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      toast.error(t('register.passwordMismatch') || 'Mật khẩu xác nhận không khớp');
-      return;
+    
+    if (!validate()) {
+        return;
     }
 
     setIsLoading(true);
@@ -45,7 +85,7 @@ export const RegisterPage = () => {
         toast.success(t('messages.registerSuccess') || 'Đăng ký thành công!');
         // Auto-login after registration
         login({
-          id: response.data.code,
+          code: response.data.code,
           email: response.data.email,
           fullName: response.data.fullName || response.data.username,
           phone: formData.phone,
@@ -79,7 +119,7 @@ export const RegisterPage = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <Input
           label={t('register.name')}
           placeholder="Nguyễn Văn A"
@@ -94,18 +134,26 @@ export const RegisterPage = () => {
           type="email"
           placeholder="email@example.com"
           value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          onChange={(e) => {
+             setFormData({ ...formData, email: e.target.value });
+             if (errors.email) setErrors({...errors, email: ''});
+          }}
           leftIcon={<Mail size={18} />}
           required
+          error={errors.email}
         />
 
         <Input
           label={t('register.phone')}
           placeholder="0901234567"
           value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          onChange={(e) => {
+              setFormData({ ...formData, phone: e.target.value });
+              if (errors.phone) setErrors({...errors, phone: ''});
+          }}
           leftIcon={<Phone size={18} />}
           required
+          error={errors.phone}
         />
 
         <div className="relative">
@@ -114,9 +162,13 @@ export const RegisterPage = () => {
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••"
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                if (errors.password) setErrors({...errors, password: ''});
+            }}
             leftIcon={<Lock size={18} />}
             required
+            error={errors.password}
           />
           <button
             type="button"
@@ -132,9 +184,13 @@ export const RegisterPage = () => {
           type="password"
           placeholder="••••••••"
           value={formData.confirmPassword}
-          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+          onChange={(e) => {
+              setFormData({ ...formData, confirmPassword: e.target.value });
+               if (errors.confirmPassword) setErrors({...errors, confirmPassword: ''});
+          }}
           leftIcon={<Lock size={18} />}
           required
+          error={errors.confirmPassword}
         />
 
         <label className="flex items-start gap-3 cursor-pointer">

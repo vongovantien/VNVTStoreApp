@@ -7,7 +7,21 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5176",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "FrontendUrl": "http://localhost:5173",
+        "EmailSettings__Host": "smtp.gmail.com",
+        "EmailSettings__Port": "587",
+        "EmailSettings__FromEmail": "your-email@gmail.com",
+        "EmailSettings__Password": "your-app-password",
+        "EmailSettings__EnableSsl": "true",
+        "CorsSettings__AllowedOrigins__0": "http://localhost:5173",
+        "CorsSettings__AllowedOrigins__1": "http://localhost:3000",
+        "RateLimiting__PermitLimit": "100",
+        "RateLimiting__WindowInSeconds": "60",
+        "RateLimiting__QueueLimit": "2",
+        "Cloudinary__CloudName": "dgct8zpvp",
+        "Cloudinary__ApiKey": "631943736442228",
+        "Cloudinary__ApiSecret": "4xKADk_UWqAKS7vlOl8qst_LUjw"
       }
     },
     "https": {
@@ -16,7 +30,21 @@
       "launchBrowser": false,
       "applicationUrl": "https://localhost:7092;http://localhost:5176",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "FrontendUrl": "http://localhost:5173",
+        "EmailSettings__Host": "smtp.gmail.com",
+        "EmailSettings__Port": "587",
+        "EmailSettings__FromEmail": "your-email@gmail.com",
+        "EmailSettings__Password": "your-app-password",
+        "EmailSettings__EnableSsl": "true",
+        "CorsSettings__AllowedOrigins__0": "http://localhost:5173",
+        "CorsSettings__AllowedOrigins__1": "http://localhost:3000",
+        "RateLimiting__PermitLimit": "100",
+        "RateLimiting__WindowInSeconds": "60",
+        "RateLimiting__QueueLimit": "2",
+        "Cloudinary__CloudName": "dgct8zpvp",
+        "Cloudinary__ApiKey": "631943736442228",
+        "Cloudinary__ApiSecret": "4xKADk_UWqAKS7vlOl8qst_LUjw"
       }
     }
   }

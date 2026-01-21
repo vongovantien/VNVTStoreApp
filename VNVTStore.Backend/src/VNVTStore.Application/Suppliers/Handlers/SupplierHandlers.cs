@@ -6,6 +6,7 @@ using VNVTStore.Application.Suppliers.Queries;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.Application.Suppliers.Handlers;
 
@@ -23,7 +24,8 @@ public class SupplierHandlers : BaseHandler<TblSupplier>,
         IRepository<TblSupplier> repository,
         IRepository<TblProduct> productRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : base(repository, unitOfWork, mapper)
+        IMapper mapper,
+        IDapperContext dapperContext) : base(repository, unitOfWork, mapper, dapperContext)
     {
         _productRepository = productRepository;
     }
@@ -76,12 +78,16 @@ public class SupplierHandlers : BaseHandler<TblSupplier>,
 
     public async Task<Result<PagedResult<SupplierDto>>> Handle(GetPagedQuery<SupplierDto> request, CancellationToken cancellationToken)
     {
-        return await GetPagedAsync<SupplierDto>(
-            request.PageIndex, 
-            request.PageSize, 
-            cancellationToken,
-            predicate: s => (string.IsNullOrEmpty(request.Search) || (s.Name.Contains(request.Search) || (s.Email != null && s.Email.Contains(request.Search)) || (s.Phone != null && s.Phone.Contains(request.Search)))),
-            orderBy: q => q.OrderByDescending(s => s.CreatedAt));
+        var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
+
+        return await GetPagedDapperAsync<SupplierDto>(
+            request.PageIndex,
+            request.PageSize,
+            request.Searching,
+            sortDTO,
+            null,
+            request.Fields,
+            cancellationToken);
     }
 
     public async Task<Result<SupplierDto>> Handle(GetByCodeQuery<SupplierDto> request, CancellationToken cancellationToken)

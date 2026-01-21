@@ -86,6 +86,9 @@
     "info": "General Info",
     "fields": {
         "name": "Name",
+        "brand": "Brand",
+        "costPrice": "Cost Price",
+        "weight": "Weight",
         "email": "Email",
         "phone": "Phone",
         "address": "Address",

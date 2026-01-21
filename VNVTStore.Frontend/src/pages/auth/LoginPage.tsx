@@ -48,7 +48,7 @@ export const LoginPage = () => {
 
         login(
           {
-            id: user.code,
+            code: user.code,
             email: user.email,
             fullName: user.fullName || user.username,
             role: (user.role as UserRole) || UserRole.CUSTOMER,
@@ -68,7 +68,6 @@ export const LoginPage = () => {
             navigate(from, { replace: true });
         }
       } else {
-        toast.error(response.message || t('messages.loginError'));
         setError(response.message || 'Tên đăng nhập hoặc mật khẩu không đúng');
       }
     } catch (err) {
@@ -95,7 +94,7 @@ export const LoginPage = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {error && (
           <div className="p-3 bg-red-50 text-red-500 text-sm rounded-lg">
             {error}

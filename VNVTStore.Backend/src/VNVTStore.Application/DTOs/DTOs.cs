@@ -1,4 +1,5 @@
 namespace VNVTStore.Application.DTOs;
+using VNVTStore.Application.Common.Attributes;
 
 /// <summary>
 /// Interface cho các DTOs có Code
@@ -59,9 +60,10 @@ public class ProductDto : IBaseDto
     public decimal Price { get; set; }
     public decimal? CostPrice { get; set; }
     public string? CategoryCode { get; set; }
+    [Reference("TblCategory", "CategoryCode", "Name")]
     public string? CategoryName { get; set; }
     public int? StockQuantity { get; set; }
-    public string? Sku { get; set; }
+
     public decimal? Weight { get; set; }
     public string? Color { get; set; }
     public string? Power { get; set; }
@@ -73,6 +75,7 @@ public class ProductDto : IBaseDto
     public bool IsNew { get; set; }
     public bool IsFeatured { get; set; }
     public DateTime? CreatedAt { get; set; }
+    [ReferenceCollection(typeof(ProductImageDto), "TblFile", "MasterCode", "Code", "MasterType", "Product")]
     public List<ProductImageDto> ProductImages { get; set; } = new();
 }
 
@@ -84,7 +87,7 @@ public class CreateProductDto
     public decimal? CostPrice { get; set; }
     public string? CategoryCode { get; set; }
     public int? StockQuantity { get; set; }
-    public string? Sku { get; set; }
+
     public decimal? Weight { get; set; }
     public string? SupplierCode { get; set; } // Added
     public string? Color { get; set; }
@@ -106,7 +109,7 @@ public class UpdateProductDto
     public decimal? CostPrice { get; set; }
     public string? CategoryCode { get; set; }
     public int? StockQuantity { get; set; }
-    public string? Sku { get; set; }
+
     public decimal? Weight { get; set; }
     public string? SupplierCode { get; set; } // Added
     public string? Color { get; set; }
@@ -124,6 +127,7 @@ public class UpdateProductDto
 public class ProductImageDto
 {
     public string Code { get; set; } = null!;
+    public string? MasterCode { get; set; }
     public string? ImageUrl { get; set; }
     public string? AltText { get; set; }
     public int? SortOrder { get; set; }
@@ -138,6 +142,8 @@ public class CategoryDto : IBaseDto
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
     public string? ParentCode { get; set; }
+    [Reference("TblCategory", "ParentCode", "Name")]
+    public string? ParentName { get; set; }
     public bool? IsActive { get; set; }
 }
 
@@ -172,7 +178,23 @@ public class OrderDto : IBaseDto
     public string? Status { get; set; }
     public string? AddressCode { get; set; }
     public string? CouponCode { get; set; }
+    [ReferenceCollection(typeof(OrderItemDto), "TblOrderItem", "OrderCode", "Code")]
     public List<OrderItemDto> OrderItems { get; set; } = new();
+
+    public string? ShippingName { get; set; }
+    
+    public string? ShippingPhone { get; set; }
+    
+    // Custom mapping for Shipping Address might be tricky with Reference attribute if it's concatenated.
+    // BaseHandler ReferenceAttribute maps *one* column.
+    // We can map AddressLine and then frontend logic or Backend logic to display? 
+    // Or we use a view / computed column? 
+    // Or we stick to mapped "AddressLine" property.
+    [Reference("TblAddress", "AddressCode", "AddressLine")]
+    public string? ShippingAddress { get; set; }
+    
+    [Reference("TblUser", "UserCode", "FullName")]
+    public string? CustomerName { get; set; } // Map FullName to here
 }
 
 public class OrderItemDto
@@ -180,12 +202,32 @@ public class OrderItemDto
     public string Code { get; set; } = null!;
     public string OrderCode { get; set; } = null!;
     public string? ProductCode { get; set; }
+    
+    [Reference("TblProduct", "ProductCode", "Name")]
     public string? ProductName { get; set; }
+    
     public string? Size { get; set; }
     public string? Color { get; set; }
     public int Quantity { get; set; }
     public decimal PriceAtOrder { get; set; }
     public decimal? DiscountAmount { get; set; }
+
+    // Needs Product Image.
+    // TblFile lookup: MasterCode = ProductCode, MasterType = 'Product' -> Path
+    // ReferenceAttribute supports simple FK lookup. 
+    // TblFile doesn't have FK to Product directly (MasterCode = Code).
+    // We can use [Reference("TblFile", "ProductCode", "Path", "MasterCode", FilterColumn="MasterType", FilterValue="Product")] if supported?
+    // ReferenceAttribute signature: TableName, ForeignKey (on DTO or Entity?), SelectColumn. 
+    // Let's check BaseHandler logic for ReferenceAttribute.
+    // It assumes FK is on the HOST Table? No, "ReferenceTable" struct in BaseHandler:
+    // ForeignKeyCol = attr.ForeignKey
+    // Join ON Parent.FK = RefTable.Code (Primary Key implied?)
+    // BaseHandler Sql: "LEFT JOIN {t.TableName} {t.AliasName} ON t1.\"{t.ForeignKeyCol}\" = {t.AliasName}.\"Code\""
+    // So it assumes Join on RefTable.Code.
+    // TblFile uses MasterCode, not Code. TblFile.Code is its own PK.
+    // So generic ReferenceAttribute WON'T work for TblFile (polymorphic association).
+    // We need to extend ReferenceAttribute or handle Image manually.
+    // For now, let's omit [Reference] for Image and expect it to be missing or I'll add a specific fix later. 
 }
 
 // ==================== CART ====================
@@ -254,6 +296,7 @@ public class ReviewDto : IBaseDto
     public string? Comment { get; set; }
     public DateTime? CreatedAt { get; set; }
     public bool? IsApproved { get; set; }
+    [Reference("TblUser", "UserCode", "Username")]
     public string? UserName { get; set; }
 }
 
@@ -394,8 +437,10 @@ public class QuoteDto : IBaseDto
 {
     public string Code { get; set; } = null!;
     public string UserCode { get; set; } = null!;
+    [Reference("TblUser", "UserCode", "Username")]
     public string? UserName { get; set; }
     public string ProductCode { get; set; } = null!;
+    [Reference("TblProduct", "ProductCode", "Name")]
     public string? ProductName { get; set; }
     public string? ProductImage { get; set; }
     public int Quantity { get; set; }

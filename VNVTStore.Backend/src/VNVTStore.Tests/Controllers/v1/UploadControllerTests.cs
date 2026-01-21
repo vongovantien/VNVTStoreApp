@@ -64,7 +64,7 @@ public class UploadControllerTests
         mockFile.Setup(f => f.FileName).Returns("test.jpg");
 
         _mockUploadService.Setup(s => s.UploadImageAsync(It.IsAny<Stream>(), "test.jpg", It.IsAny<string>()))
-            .ReturnsAsync(Result.Success("uploads/test.jpg"));
+            .ReturnsAsync(Result.Success(new VNVTStore.Application.Common.Models.FileDto { Path = "uploads/test.jpg", Url = "uploads/test.jpg" }));
 
         // Act
         var result = await _controller.Upload(mockFile.Object);

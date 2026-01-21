@@ -10,5 +10,6 @@ public interface IApplicationDbContext
     DbSet<TblQuote> TblQuotes { get; }
     DbSet<TblBanner> TblBanners { get; }
     DbSet<TblFile> TblFiles { get; }
+    DbSet<TblOrder> TblOrders { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

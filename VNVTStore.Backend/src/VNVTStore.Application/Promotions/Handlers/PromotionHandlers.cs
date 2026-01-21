@@ -10,7 +10,7 @@ using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.Application.Promotions.Handlers;
 
-public class PromotionHandlers :
+public class PromotionHandlers : BaseHandler<TblPromotion>,
     IRequestHandler<CreateCommand<CreatePromotionDto, PromotionDto>, Result<PromotionDto>>,
     IRequestHandler<UpdateCommand<UpdatePromotionDto, PromotionDto>, Result<PromotionDto>>,
     IRequestHandler<DeleteCommand<TblPromotion>, Result>,
@@ -18,26 +18,21 @@ public class PromotionHandlers :
     IRequestHandler<GetByCodeQuery<PromotionDto>, Result<PromotionDto>>,
     IRequestHandler<GetFlashSaleQuery, Result<List<PromotionDto>>>
 {
-    private readonly IRepository<TblPromotion> _promotionRepository;
     private readonly IRepository<TblProductPromotion> _productPromotionRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
 
     public PromotionHandlers(
-        IRepository<TblPromotion> promotionRepository,
+        IRepository<TblPromotion> repository,
         IRepository<TblProductPromotion> productPromotionRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper,
+        IDapperContext dapperContext) : base(repository, unitOfWork, mapper, dapperContext)
     {
-        _promotionRepository = promotionRepository;
         _productPromotionRepository = productPromotionRepository;
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
     }
 
     public async Task<Result<PromotionDto>> Handle(CreateCommand<CreatePromotionDto, PromotionDto> request, CancellationToken cancellationToken)
     {
-        var existing = await _promotionRepository.AsQueryable()
+        var existing = await _repository.AsQueryable()
             .FirstOrDefaultAsync(p => p.Code == request.Dto.Code, cancellationToken);
         if (existing != null)
             return Result.Failure<PromotionDto>(Error.Validation("Promotion code already exists"));
@@ -64,7 +59,7 @@ public class PromotionHandlers :
             }
         }
 
-        await _promotionRepository.AddAsync(promotion, cancellationToken);
+        await _repository.AddAsync(promotion, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
 
         // Use MapToDto or _mapper.Map?
@@ -74,7 +69,7 @@ public class PromotionHandlers :
 
     public async Task<Result<PromotionDto>> Handle(UpdateCommand<UpdatePromotionDto, PromotionDto> request, CancellationToken cancellationToken)
     {
-        var promotion = await _promotionRepository.AsQueryable()
+        var promotion = await _repository.AsQueryable()
             .Include(p => p.TblProductPromotions)
             .FirstOrDefaultAsync(p => p.Code == request.Code, cancellationToken);
 
@@ -109,7 +104,7 @@ public class PromotionHandlers :
             }
         }
 
-        _promotionRepository.Update(promotion);
+        _repository.Update(promotion);
         await _unitOfWork.CommitAsync(cancellationToken);
 
         return Result.Success(_mapper.Map<PromotionDto>(promotion));
@@ -117,77 +112,35 @@ public class PromotionHandlers :
 
     public async Task<Result> Handle(DeleteCommand<TblPromotion> request, CancellationToken cancellationToken)
     {
-        var promotion = await _promotionRepository.GetByCodeAsync(request.Code, cancellationToken);
+        var promotion = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (promotion == null) return Result.Failure(Error.NotFound("Promotion", request.Code));
 
-        _promotionRepository.Delete(promotion);
+        _repository.Delete(promotion);
         await _unitOfWork.CommitAsync(cancellationToken);
         return Result.Success();
     }
 
     public async Task<Result<PagedResult<PromotionDto>>> Handle(GetPagedQuery<PromotionDto> request, CancellationToken cancellationToken)
     {
-        var query = _promotionRepository.AsQueryable();
+        var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "StartDate", SortDescending = request.SortDescending };
 
-        // Handle generic filters
-        if (request.Filters != null)
-        {
-             query = QueryHelper.ApplyFilters(query, request.Filters);
-        }
-        
-        if (!string.IsNullOrEmpty(request.Search))
-        {
-            query = query.Where(p => p.Name.Contains(request.Search) || p.Code.Contains(request.Search));
-        }
+        // Ensure valid sort column map if needed, otherwise rely on DTO/Entity match
+        if (sortDTO.SortBy.Equals("CreatedAt", StringComparison.OrdinalIgnoreCase)) 
+            sortDTO.SortBy = "StartDate";
 
-        var total = await query.CountAsync(cancellationToken);
-        
-        List<PromotionDto> dtos;
-
-        if (request.Fields != null && request.Fields.Any())
-        {
-            query = query
-                .OrderByDescending(p => p.StartDate)
-                .Skip((request.PageIndex - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .AsNoTracking();
-                
-            query = QueryHelper.ApplySelection(query, request.Fields);
-            
-            var items = await query.ToListAsync(cancellationToken);
-            dtos = _mapper.Map<List<PromotionDto>>(items);
-        }
-        else
-        {
-            dtos = await query
-                .OrderByDescending(p => p.StartDate)
-                .Skip((request.PageIndex - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .AsNoTracking() // Performance optimization
-                .Select(p => new PromotionDto
-                {
-                    Code = p.Code,
-                    Name = p.Name,
-                    Description = p.Description,
-                    DiscountType = p.DiscountType,
-                    DiscountValue = p.DiscountValue,
-                    MinOrderAmount = p.MinOrderAmount,
-                    MaxDiscountAmount = p.MaxDiscountAmount,
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate,
-                    UsageLimit = p.UsageLimit,
-                    IsActive = p.IsActive,
-                    ProductCodes = p.TblProductPromotions.Select(pp => pp.ProductCode).ToList()
-                })
-                .ToListAsync(cancellationToken);
-        }
-
-        return Result.Success(new PagedResult<PromotionDto>(dtos, total));
+        return await GetPagedDapperAsync<PromotionDto>(
+            request.PageIndex,
+            request.PageSize,
+            request.Searching,
+            sortDTO,
+            null, // referenceTables
+            request.Fields,
+            cancellationToken);
     }
 
     public async Task<Result<PromotionDto>> Handle(GetByCodeQuery<PromotionDto> request, CancellationToken cancellationToken)
     {
-        var promotion = await _promotionRepository.AsQueryable()
+        var promotion = await _repository.AsQueryable()
             .Include(p => p.TblProductPromotions)
             .FirstOrDefaultAsync(p => p.Code == request.Code, cancellationToken);
 
@@ -199,7 +152,7 @@ public class PromotionHandlers :
     public async Task<Result<List<PromotionDto>>> Handle(GetFlashSaleQuery request, CancellationToken cancellationToken)
     {
         var now = DateTime.Now;
-        var promotions = await _promotionRepository.AsQueryable()
+        var promotions = await _repository.AsQueryable()
             .AsNoTracking()
             .Where(p => p.IsActive == true && p.StartDate <= now && p.EndDate >= now)
             .Where(p => p.TblProductPromotions.Any())

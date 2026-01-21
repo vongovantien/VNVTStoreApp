@@ -1,6 +1,7 @@
 // ============ Product Types ============
 export interface Product {
-    code: string; // Changed from id to code
+    code: string;
+
     name: string;
     slug: string;
     description: string;

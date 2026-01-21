@@ -1,4 +1,4 @@
-namespace VNVTStore.Application.Common.Models;
+namespace VNVTStore.Application.DTOs;
 
 public class FileDto
 {

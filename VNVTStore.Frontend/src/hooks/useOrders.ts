@@ -24,8 +24,11 @@ export function useOrders(params?: {
             const totalItems = response.data?.totalItems || 0;
             const totalPages = Math.ceil(totalItems / pageSize);
 
+            // Deduplicate
+            const uniqueItems = Array.from(new Map((response.data?.items || []).map(item => [item.code, item])).values());
+
             return {
-                orders: response.data?.items || [],
+                orders: uniqueItems,
                 totalPages,
                 totalItems,
                 pageNumber: pageIndex
@@ -66,8 +69,11 @@ export function useAdminOrders(params?: {
             const totalItems = response.data?.totalItems || 0;
             const totalPages = Math.ceil(totalItems / pageSize);
 
+            // Deduplicate
+            const uniqueItems = Array.from(new Map((response.data?.items || []).map(item => [item.code, item])).values());
+
             return {
-                orders: response.data?.items || [],
+                orders: uniqueItems,
                 totalPages,
                 totalItems,
                 pageNumber: pageIndex

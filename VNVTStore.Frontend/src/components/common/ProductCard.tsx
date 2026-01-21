@@ -48,8 +48,8 @@ export const ProductCard = memo(
     const toast = useToast();
 
     // Derived states
-    const isWishlisted = isInWishlist(product.id);
-    const isCompared = isInCompare(product.id);
+    const isWishlisted = isInWishlist(product.code);
+    const isCompared = isInCompare(product.code);
     const hasFixedPrice = product.price > 0;
     const hasDiscount = product.discount && product.discount > 0;
     const isLowStock = product.stock <= 5 && product.stock > 0;
@@ -73,7 +73,7 @@ export const ProductCard = memo(
       (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        isWishlisted ? removeFromWishlist(product.id) : addToWishlist(product);
+        isWishlisted ? removeFromWishlist(product.code) : addToWishlist(product);
       },
       [isWishlisted, product, addToWishlist, removeFromWishlist]
     );
@@ -82,7 +82,7 @@ export const ProductCard = memo(
       (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        isCompared ? removeFromCompare(product.id) : addToCompare(product);
+        isCompared ? removeFromCompare(product.code) : addToCompare(product);
       },
       [isCompared, product, addToCompare, removeFromCompare]
     );
@@ -138,7 +138,7 @@ export const ProductCard = memo(
           className
         )}>
           {/* Image */}
-          <Link to={`/product/${product.id}`} className="flex-shrink-0">
+          <Link to={`/product/${product.code}`} className="flex-shrink-0">
             <div className="relative w-40 h-40 rounded-lg overflow-hidden bg-secondary">
               <CustomImage
                 src={product.image}
@@ -157,7 +157,7 @@ export const ProductCard = memo(
               <Link to={`/products?category=${product.categoryId}`} className="text-xs text-primary font-medium uppercase tracking-wide">
                 {product.category}
               </Link>
-              <Link to={`/product/${product.id}`}>
+              <Link to={`/product/${product.code}`}>
                 <h3 className="font-semibold text-primary mt-1 hover:text-primary-dark transition-colors">
                   {product.name}
                 </h3>
@@ -223,7 +223,7 @@ export const ProductCard = memo(
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Link to={`/product/${product.id}`} className="flex-1 flex flex-col">
+        <Link to={`/product/${product.code}`} className="flex-1 flex flex-col">
           {/* Image Container */}
           <div className="relative aspect-square overflow-hidden bg-slate-50 rounded-t-2xl">
             <CustomImage
@@ -335,7 +335,7 @@ export const ProductCard = memo(
               leftIcon={<Phone size={16} />}
               onClick={(e) => {
                 e.preventDefault();
-                window.location.href = `/quote-request/${product.id}`;
+                window.location.href = `/quote-request/${product.code}`;
               }}
             >
               {t('product.requestQuote')}

@@ -64,7 +64,7 @@ export const CartDrawer = memo(() => {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {items.map((item) => (
                   <motion.div
-                    key={item.id}
+                    key={item.code}
                     layout
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -73,7 +73,7 @@ export const CartDrawer = memo(() => {
                   >
                     {/* Image */}
                     <Link
-                      to={`/product/${item.product.id}`}
+                      to={`/product/${item.product.code}`}
                       onClick={() => setCartOpen(false)}
                       className="flex-shrink-0"
                     >
@@ -87,7 +87,7 @@ export const CartDrawer = memo(() => {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <Link
-                        to={`/product/${item.product.id}`}
+                        to={`/product/${item.product.code}`}
                         onClick={() => setCartOpen(false)}
                         className="font-medium text-primary hover:text-primary-dark transition-colors line-clamp-2"
                       >
@@ -115,7 +115,7 @@ export const CartDrawer = memo(() => {
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center border rounded-lg overflow-hidden">
                           <button
-                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                            onClick={() => updateQuantity(item.code, Math.max(1, item.quantity - 1))}
                             className="p-1.5 hover:bg-tertiary transition-colors"
                             disabled={item.quantity <= 1}
                           >
@@ -123,7 +123,7 @@ export const CartDrawer = memo(() => {
                           </button>
                           <span className="px-3 text-sm font-medium">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.code, item.quantity + 1)}
                             className="p-1.5 hover:bg-tertiary transition-colors"
                           >
                             <Plus size={14} />
@@ -131,7 +131,7 @@ export const CartDrawer = memo(() => {
                         </div>
 
                         <button
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeItem(item.code)}
                           className="text-tertiary hover:text-error transition-colors"
                         >
                           <X size={18} />

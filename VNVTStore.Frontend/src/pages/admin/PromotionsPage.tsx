@@ -235,15 +235,15 @@ export const PromotionsPage = () => {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title="admin.promotions"
-        subtitle="admin.subtitles.promotions"
+        title="promotions.title"
+        subtitle="promotions.subtitle"
       />
 
       <DataTable
         columns={columns}
         data={promotions}
         keyField="code"
-        isLoading={isLoading}
+        isLoading={isLoading || isFetching}
         isFetching={isFetching}
         error={isError ? (error as Error) : null}
         onAdd={() => openCreate()}

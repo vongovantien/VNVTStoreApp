@@ -8,7 +8,7 @@ public class ProductImportDto
     public decimal Price { get; set; }
     public int? StockQuantity { get; set; }
     public string? CategoryCode { get; set; }
-    public string? Sku { get; set; }
+
     public bool? IsActive { get; set; }
     public decimal? Weight { get; set; }
     public string? Color { get; set; }

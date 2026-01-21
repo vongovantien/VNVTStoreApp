@@ -17,8 +17,10 @@ public record GetPagedQuery<TResponse>(
     int PageSize = AppConstants.Paging.DefaultPageSize,
     string? Search = null,
     SortDTO? SortDTO = null,
-    List<SearchDTO>? Filters = null,
-    List<string>? Fields = null
+    List<SearchDTO>? Searching = null,
+    List<string>? Fields = null,
+    string? SortField = null,
+    bool SortDescending = true
 ) : IRequest<Result<PagedResult<TResponse>>>;
 
 /// <summary>

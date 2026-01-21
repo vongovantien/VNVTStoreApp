@@ -45,12 +45,12 @@ function mapCartDtoToCartItems(dto: CartDto): CartItem[] {
         const productImage = item.productImage || rawItem.ProductImage || 'https://picsum.photos/seed/product/400/400';
 
         return {
-            id: item.code || rawItem.Code,
+            code: item.code || rawItem.Code,
             quantity: item.quantity || rawItem.Quantity,
             size: item.size || rawItem.Size,
             color: item.color || rawItem.Color,
             product: {
-                id: item.productCode || rawItem.ProductCode,
+                code: item.productCode || rawItem.ProductCode,
                 name: productName,
                 price: productPrice,
                 image: productImage,

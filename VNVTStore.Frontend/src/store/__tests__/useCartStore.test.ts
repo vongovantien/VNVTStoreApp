@@ -86,6 +86,6 @@ describe('useCartStore', () => {
         expect(cartService.addToCart).not.toHaveBeenCalled();
         expect(result.current.items).toHaveLength(1);
         expect(result.current.items[0].quantity).toBe(2);
-        expect(result.current.items[0].product.id).toBe('P1');
+        expect(result.current.items[0].product.code).toBe('P1');
     });
 });

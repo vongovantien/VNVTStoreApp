@@ -9,6 +9,7 @@ import { DataTable, type DataTableColumn } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { CategoryForm, type CategoryFormData } from './forms';
 import { PaginationDefaults, API_ENDPOINTS } from '@/constants';
+import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
 import { getImageUrl } from '@/utils/format';
 
 export default function CategoriesPage() {
@@ -30,7 +31,8 @@ export default function CategoriesPage() {
     refetch 
   } = useCategoriesList({
     pageIndex: pagination.pageIndex,
-    pageSize: pagination.pageSize
+    pageSize: pagination.pageSize,
+    fields: CATEGORY_LIST_FIELDS,  // Selective columns for list view
   });
 
   const categories = data?.categories || [];
@@ -114,7 +116,9 @@ export default function CategoriesPage() {
       header: t('common.fields.image'),
       width: '80px',
       className: 'text-center',
-      accessor: (category) => (
+      accessor: (category) => {
+
+        return (
         <div className="flex flex-col items-center">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
                {category.imageUrl ? (
@@ -130,15 +134,11 @@ export default function CategoriesPage() {
                  </div>
                )}
             </div>
-            {/* Debug Info */}
-            {category.imageUrl && (
-                <span className="text-[8px] text-red-500 max-w-[80px] truncate block" title={getImageUrl(category.imageUrl)}>
-                    {getImageUrl(category.imageUrl)}
-                </span>
-            )}
+
         </div>
-      )
-    },
+      );
+    }
+  },
     {
       id: 'name',
       header: t('common.fields.name'),

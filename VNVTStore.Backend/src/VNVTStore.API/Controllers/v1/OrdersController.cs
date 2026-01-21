@@ -52,6 +52,15 @@ public class OrdersController : BaseApiController
             "Order created successfully");
     }
 
+    [HttpGet("verify")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> VerifyOrder([FromQuery] string token)
+    {
+        var result = await Mediator.Send(new VerifyOrderCommand(token));
+        return HandleResult(result, "Order verified successfully");
+    }
+
     [HttpGet]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<OrderDto>>), StatusCodes.Status200OK)]
@@ -95,9 +104,9 @@ public class OrdersController : BaseApiController
         {
             foreach (var s in request.Searching)
             {
-               if (!string.IsNullOrEmpty(s.Field) && s.Value != null)
+               if (!string.IsNullOrEmpty(s.SearchField) && s.SearchValue != null)
                {
-                   filters[s.Field.ToLower()] = s.Value?.ToString();
+                   filters[s.SearchField.ToLower()] = s.SearchValue?.ToString();
                }
             }
         }

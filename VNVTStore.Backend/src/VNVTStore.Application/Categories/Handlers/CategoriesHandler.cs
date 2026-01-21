@@ -2,12 +2,22 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using VNVTStore.Application.Categories.Queries;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
+
+using Dapper;
+using VNVTStore.Application.Common.Helpers;
+using Newtonsoft.Json.Linq;
 
 namespace VNVTStore.Application.Categories.Handlers;
 
@@ -19,9 +29,9 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
     IRequestHandler<DeleteMultipleCommand<TblCategory>, Result>,
     IRequestHandler<GetByCodeQuery<CategoryDto>, Result<CategoryDto>>
 {
-    private readonly IRepository<TblProduct> _productRepository;
     private readonly IImageUploadService _imageUploadService;
-    private readonly IApplicationDbContext _context;
+    private readonly IApplicationDbContext _context; // This field is still used in other methods, so it should not be removed.
+    private readonly IRepository<TblProduct> _productRepository; // This field is still used in other methods, so it should not be removed.
 
     public CategoriesHandler(
         IRepository<TblCategory> repository,
@@ -29,7 +39,9 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
         IImageUploadService imageUploadService,
         IApplicationDbContext context,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : base(repository, unitOfWork, mapper)
+        IMapper mapper,
+        IDapperContext dapperContext)
+        : base(repository, unitOfWork, mapper, dapperContext)
     {
         _productRepository = productRepository;
         _imageUploadService = imageUploadService;
@@ -38,14 +50,10 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
 
     public async Task<Result<PagedResult<CategoryDto>>> Handle(GetPagedQuery<CategoryDto> request, CancellationToken cancellationToken)
     {
-        var searchName = request.Search;
+        var searchFields = request.Searching ?? new List<SearchDTO>();
+        searchFields.Add(new SearchDTO { SearchField = "Name", SearchCondition = SearchCondition.Contains, SearchValue = request.Search });
         
-        return await GetPagedAsync<CategoryDto>(
-            request.PageIndex,
-            request.PageSize,
-            cancellationToken,
-            predicate: c => string.IsNullOrEmpty(searchName) || c.Name.ToLower().Contains(searchName.ToLower()),
-            orderBy: q => q.OrderBy(c => c.Name));
+        return await GetPagedDapperAsync<CategoryDto>(request.PageIndex, request.PageSize, searchFields, request.SortDTO, null, request.Fields, cancellationToken);
     }
 
 
@@ -135,6 +143,7 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
             _repository.Update(entity);
             
             // 4. Handle Old Files (Deleting old image if new one uploaded)
+            var urlsToDelete = new List<string>();
             if (!string.IsNullOrEmpty(uploadedPath))
             {
                 // Find old files linked to this category
@@ -142,13 +151,10 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
                     .Where(f => f.MasterCode == request.Code && f.MasterType == "Category")
                     .ToListAsync(cancellationToken);
 
-                 // Unlink or Mark for Delete
+                // Unlink or Mark for Delete
                 foreach (var oldFile in oldFilesToDelete)
                 {
-                    // Option A: Just Unlink
-                    // dist.MasterCode = null; 
-                    
-                    // Option B: Hard Delete from DB
+                    if (!string.IsNullOrEmpty(oldFile.Path)) urlsToDelete.Add(oldFile.Path);
                     _context.TblFiles.Remove(oldFile);
                 }
                 
@@ -161,11 +167,6 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
                 }
                 
                 await _context.SaveChangesAsync(cancellationToken);
-
-                // Physical Deletion of old files (Post-Transaction or try here)
-                // Best practice: Do it after commit. But for now, we can collect paths.
-                // We'll delete them after success.
-                // But we are inside transaction.
             }
 
             // 5. Commit
@@ -173,12 +174,8 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             // 6. Post-Commit Physical Delete
-             if (!string.IsNullOrEmpty(uploadedPath))
-             {
-                 // We need to know which files were deleted.
-                 // Re-fetching or storing in list above would be needed. 
-                 // For now, skipping physical delete to avoid complexity or assuming implemented in service.
-             }
+            // 6. Post-Commit Physical Delete
+             await _imageUploadService.DeleteImagesAsync(urlsToDelete);
 
             return Result.Success(_mapper.Map<CategoryDto>(entity));
         }
@@ -201,7 +198,27 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
                 MessageConstants.Get(MessageConstants.CategoryHasProducts, category?.Name ?? request.Code, productCount)));
         }
 
-        return await DeleteAsync(request.Code, MessageConstants.Category, cancellationToken, softDelete: false);
+        // Fetch linked files for cleanup
+        var linkedFiles = await _context.TblFiles
+            .Where(f => f.MasterCode == request.Code && f.MasterType == "Category")
+            .ToListAsync(cancellationToken);
+
+        var result = await DeleteAsync(request.Code, MessageConstants.Category, cancellationToken, softDelete: false);
+        
+        if (result.IsSuccess)
+        {
+             var pathsToDelete = linkedFiles
+                .Where(f => !string.IsNullOrEmpty(f.Path))
+                .Select(f => f.Path)
+                .ToList();
+
+             if (pathsToDelete.Any())
+             {
+                 await _imageUploadService.DeleteImagesAsync(pathsToDelete);
+             }
+        }
+        
+        return result;
     }
 
     public async Task<Result> Handle(DeleteMultipleCommand<TblCategory> request, CancellationToken cancellationToken)

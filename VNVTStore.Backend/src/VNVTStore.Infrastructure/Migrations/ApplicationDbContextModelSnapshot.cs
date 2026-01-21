@@ -452,6 +452,12 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("VerificationToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("VerificationTokenExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Code")
                         .HasName("TblOrder_pkey");
 
@@ -621,11 +627,6 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Size")
                         .HasColumnType("text");
 
-                    b.Property<string>("Sku")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("SKU");
-
                     b.Property<int?>("StockQuantity")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -650,9 +651,6 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasIndex("CategoryCode");
 
                     b.HasIndex("SupplierCode");
-
-                    b.HasIndex(new[] { "Sku" }, "TblProduct_SKU_key")
-                        .IsUnique();
 
                     b.HasIndex(new[] { "Name" }, "idx_product_name");
 

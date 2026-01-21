@@ -5,7 +5,7 @@ import { useForm, Controller, UseFormReturn, Path, DefaultValues } from 'react-h
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ZodSchema } from 'zod';
 import { Button, Input, Select, NumberInput, Switch, Modal } from '@/components/ui';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, ImageOff } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 
 // ============ Field Definition Types ============
@@ -89,6 +89,12 @@ function FieldRenderer<T extends Record<string, unknown>>({
   const { control, register, formState: { errors }, setValue, watch } = form;
   const error = (errors as Record<string, { message?: string }>)[field.name]?.message;
   const [isUploading, setIsUploading] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Reset error when value changes
+  React.useEffect(() => {
+    setImageError(false);
+  }, [watch(field.name as Path<T>)]);
 
   // ... (useDropzone logic) 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -256,12 +262,25 @@ function FieldRenderer<T extends Record<string, unknown>>({
             
             {currentValue && (
               <div className="relative w-32 h-32 border rounded-lg overflow-hidden group">
-                <img 
-                  src={previewUrl} 
-                  alt="Preview" 
-                  className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" 
-                  onClick={() => onPreviewImage(previewUrl)}
-                />
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                    {imageError ? (
+                      <div className="flex flex-col items-center text-gray-400">
+                        <ImageOff size={24} />
+                        <span className="text-[10px] mt-1">Error</span>
+                      </div>
+                    ) : (
+                      <img 
+                        src={previewUrl} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" 
+                        onClick={() => onPreviewImage(previewUrl)}
+                        onError={(e) => {
+                          console.error("Image load failed:", previewUrl);
+                          setImageError(true);
+                        }}
+                      />
+                    )}
+                  </div>
                 <button
                   type="button"
                   onClick={() => setValue(field.name as Path<T>, '' as T[keyof T])}

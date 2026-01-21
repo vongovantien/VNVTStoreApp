@@ -8,6 +8,10 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Application.Interfaces;
 
+using Dapper;
+using VNVTStore.Application.Common.Helpers;
+using Newtonsoft.Json.Linq;
+
 namespace VNVTStore.Application.Banners.Handlers;
 
 public class BannerHandlers : BaseHandler<TblBanner>,
@@ -20,8 +24,9 @@ public class BannerHandlers : BaseHandler<TblBanner>,
     private readonly IImageUploadService _imageUploadService;
     private readonly IApplicationDbContext _context;
 
-    public BannerHandlers(IRepository<TblBanner> repository, IUnitOfWork unitOfWork, IMapper mapper, IImageUploadService imageUploadService, IApplicationDbContext context) 
-        : base(repository, unitOfWork, mapper)
+
+    public BannerHandlers(IRepository<TblBanner> repository, IUnitOfWork unitOfWork, IMapper mapper, IImageUploadService imageUploadService, IApplicationDbContext context, IDapperContext dapperContext) 
+        : base(repository, unitOfWork, mapper, dapperContext)
     {
         _imageUploadService = imageUploadService;
         _context = context;
@@ -29,42 +34,30 @@ public class BannerHandlers : BaseHandler<TblBanner>,
 
     public async Task<Result<PagedResult<BannerDto>>> Handle(GetPagedQuery<BannerDto> request, CancellationToken cancellationToken)
     {
-        var result = await GetPagedAsync<BannerDto>(
-            request.PageIndex,
-            request.PageSize,
-            cancellationToken,
-            predicate: p => string.IsNullOrWhiteSpace(request.Search) || p.Title.Contains(request.Search),
-            orderBy: q => {
-                var sortDto = request.SortDTO;
-                if (sortDto != null && !string.IsNullOrWhiteSpace(sortDto.SortBy))
-                {
-                    return sortDto.SortBy.ToLower() switch
-                    {
-                        "priority" => sortDto.SortDescending ? q.OrderByDescending(p => p.Priority) : q.OrderBy(p => p.Priority),
-                        "title" => sortDto.SortDescending ? q.OrderByDescending(p => p.Title) : q.OrderBy(p => p.Title),
-                        "createdat" => sortDto.SortDescending ? q.OrderByDescending(p => p.CreatedAt) : q.OrderBy(p => p.CreatedAt),
-                        _ => q.OrderByDescending(p => p.CreatedAt)
-                    };
-                }
-                return q.OrderByDescending(p => p.Priority).ThenByDescending(p => p.CreatedAt);
-            });
+        var searchFields = request.Searching ?? new List<SearchDTO>();
 
+        searchFields.Add(new SearchDTO { SearchField = "Title", SearchCondition = SearchCondition.Contains, SearchValue = request.Search });
+
+        var result = await GetPagedDapperAsync<BannerDto>(request.PageIndex, request.PageSize, searchFields, request.SortDTO, null, request.Fields, cancellationToken);
+        
+        // Populate Images Logic (since GetPagedDapperAsync doesn't handle child collections yet)
         if (result.IsSuccess && result.Value.Items.Any())
         {
-            var codes = result.Value.Items.Select(x => x.Code).ToList();
-            var files = await _context.TblFiles
-                .Where(f => codes.Contains(f.MasterCode) && f.MasterType == "Banner")
-                .ToListAsync(cancellationToken);
+             using var connection = _dapperContext.CreateConnection();
+             var bannerCodes = result.Value.Items.Select(b => b.Code).ToList();
+             var fileSql = @"SELECT * FROM ""TblFile"" WHERE ""MasterCode"" = ANY(@Codes) AND ""MasterType"" = 'Banner'";
+             var files = await connection.QueryAsync<TblFile>(fileSql, new { Codes = bannerCodes });
             
-            foreach (var item in result.Value.Items)
-            {
+             foreach (var item in result.Value.Items)
+             {
                 var file = files.FirstOrDefault(f => f.MasterCode == item.Code);
                 if (file != null)
                 {
                     item.ImageUrl = file.Path; 
                 }
-            }
+             }
         }
+        
         return result;
     }
 
@@ -172,6 +165,11 @@ public class BannerHandlers : BaseHandler<TblBanner>,
                 {
                      // Remove old file link or delete
                      _context.TblFiles.Remove(currentFile);
+                     // Strictly delete from cloud if we are replacing it
+                     if (!string.IsNullOrEmpty(currentFile.Path))
+                     {
+                         await _imageUploadService.DeleteImagesAsync(new[] { currentFile.Path });
+                     }
                 }
 
                 if (currentFile == null || currentFile.Path != uploadedPath)

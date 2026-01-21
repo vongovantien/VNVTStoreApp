@@ -26,7 +26,8 @@ public class CouponHandlers : BaseHandler<TblCoupon>,
         IRepository<TblPromotion> promotionRepository,
         ICouponService couponService,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : base(couponRepository, unitOfWork, mapper)
+        IMapper mapper,
+        IDapperContext dapperContext) : base(couponRepository, unitOfWork, mapper, dapperContext)
     {
         _promotionRepository = promotionRepository;
         _couponService = couponService;
@@ -73,11 +74,20 @@ public class CouponHandlers : BaseHandler<TblCoupon>,
 
     public async Task<Result<PagedResult<CouponDto>>> Handle(GetPagedQuery<CouponDto> request, CancellationToken cancellationToken)
     {
-        return await GetPagedAsync<CouponDto>(
+        var searchFields = request.Searching ?? new List<SearchDTO>();
+        
+        // Note: For Coupon, search might need different logic - leaving empty unless specific field needed
+        // Code field should use exact match, not Contains
+
+        var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "Code", SortDescending = request.SortDescending };
+
+        return await GetPagedDapperAsync<CouponDto>(
             request.PageIndex,
             request.PageSize,
-            cancellationToken,
-            includes: q => q.Include(c => c.PromotionCodeNavigation),
-            orderBy: q => q.OrderByDescending(c => c.Code));
+            searchFields,
+            sortDTO,
+            null,
+            request.Fields,
+            cancellationToken);
     }
 }

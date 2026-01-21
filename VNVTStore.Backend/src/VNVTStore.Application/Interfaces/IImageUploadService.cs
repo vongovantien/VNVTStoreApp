@@ -1,5 +1,5 @@
 using VNVTStore.Application.Common;
-using VNVTStore.Application.Common.Models;
+using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Application.Interfaces;
 
@@ -15,4 +15,5 @@ public interface IImageUploadService
     Task<Result<IEnumerable<FileDto>>> UploadBase64ImagesAsync(IEnumerable<(string Base64Content, string FileName)> images, string folder = "products");
 
     Task<Result> DeleteImageAsync(string imageUrl);
+    Task<Result> DeleteImagesAsync(IEnumerable<string> imageUrls);
 }

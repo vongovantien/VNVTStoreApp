@@ -7,6 +7,7 @@ import { Upload, X } from 'lucide-react';
 import { Button, Input, Select, NumberInput, Switch } from '@/components/ui';
 import { useState } from 'react';
 import { useCategories, useSuppliers } from '@/hooks';
+import { useToast } from '@/store';
 
 const productSchemaBase = z.object({
   name: z.string(),
@@ -16,7 +17,7 @@ const productSchemaBase = z.object({
   stock: z.number().int(),
   description: z.string().optional(),
   brand: z.string().optional(),
-  sku: z.string().optional(),
+
   weight: z.number().optional(),
   supplierCode: z.string().optional(),
   images: z.array(z.string()).optional(),
@@ -47,7 +48,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     stock: z.number().int().min(0, t('admin.validation.stockMin') || 'Tồn kho không được âm'),
     description: z.string().optional(),
     brand: z.string().optional(),
-    sku: z.string().optional(),
+
     weight: z.number().optional(),
     supplierCode: z.string().optional(),
     images: z.array(z.string()).optional(),
@@ -76,7 +77,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
       stock: 0,
       description: '',
       brand: '',
-      sku: '',
+
       weight: 0,
       supplierCode: '',
       color: '',
@@ -107,31 +108,38 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     label: s.name,
   }));
 
+  // Toast for errors
+  const { toast } = useToast();
+
   const onDrop = async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
-      try {
-        setIsUploading(true);
-        const currentImages = watch('images') || [];
-        
-        const newImages: string[] = [];
-        
-        for (const file of acceptedFiles) {
-             const reader = new FileReader();
-             const base64Promise = new Promise<string>((resolve, reject) => {
-                 reader.onload = () => resolve(reader.result as string);
-                 reader.onerror = reject;
-             });
-             reader.readAsDataURL(file);
-             const base64 = await base64Promise;
-             newImages.push(base64);
-        }
+      setIsUploading(true);
+      const currentImages = watch('images') || [];
+      const newBase64Images: string[] = [];
 
-        // Combine with existing images
-        const updatedImages = [...currentImages, ...newImages];
-        setValue('images', updatedImages, { shouldValidate: true });
-        setPreviewImages(updatedImages);
+      try {
+        const promises = acceptedFiles.map((file) => {
+          return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        });
+
+        const results = await Promise.all(promises);
+        newBase64Images.push(...results);
+
+        const finalImages = [...currentImages, ...newBase64Images];
+        setValue('images', finalImages, { shouldValidate: true });
+        setPreviewImages(finalImages);
       } catch (error) {
-        console.error("File reading failed", error);
+        console.error("Error reading files", error);
+        toast({
+             title: t('messages.error'),
+             description: "Failed to process images",
+             variant: 'destructive',
+        });
       } finally {
         setIsUploading(false);
       }
@@ -239,12 +247,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 placeholder={t('common.placeholders.brand')}
               />
 
-              <Input
-                label="SKU"
-                {...register('sku')}
-                error={errors.sku?.message}
-                placeholder={t('common.placeholders.enterCode')}
-              />
+
               
               <Controller
                 name="supplierCode"

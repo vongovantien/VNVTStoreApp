@@ -24,7 +24,7 @@ export interface ProductDto {
     categoryCode?: string;
     categoryName?: string;
     stockQuantity?: number;
-    sku?: string;
+
     weight?: number;
     isActive?: boolean;
     color?: string;
@@ -44,7 +44,7 @@ export interface CreateProductRequest {
     categoryCode?: string;
     stockQuantity?: number;
     stock?: number;
-    sku?: string;
+
     weight?: number;
     supplierCode?: string;
     brand?: string;

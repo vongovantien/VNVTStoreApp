@@ -46,15 +46,15 @@ export const ComparePage = () => {
               <tr>
                 <th className="p-4 text-left w-40"></th>
                 {items.map((product) => (
-                  <th key={product.id} className="p-4 text-center border-l">
+                  <th key={product.code} className="p-4 text-center border-l">
                     <div className="relative">
                       <button
-                        onClick={() => removeItem(product.id)}
+                        onClick={() => removeItem(product.code)}
                         className="absolute -top-2 -right-2 p-1 bg-error text-white rounded-full hover:bg-error/80 transition-colors"
                       >
                         <X size={14} />
                       </button>
-                      <Link to={`/product/${product.id}`}>
+                      <Link to={`/product/${product.code}`}>
                         <SharedImage
                           src={product.image}
                           alt={product.name}
@@ -74,7 +74,7 @@ export const ComparePage = () => {
               <tr className="bg-secondary/50">
                 <td className="p-4 font-semibold">{t('compare.price')}</td>
                 {items.map((product) => (
-                  <td key={product.id} className="p-4 text-center border-l">
+                  <td key={product.code} className="p-4 text-center border-l">
                     {product.price > 0 ? (
                       <span className="text-xl font-bold text-error">{formatCurrency(product.price)}</span>
                     ) : (
@@ -88,7 +88,7 @@ export const ComparePage = () => {
               <tr>
                 <td className="p-4 font-semibold">Thương hiệu</td>
                 {items.map((product) => (
-                  <td key={product.id} className="p-4 text-center border-l">
+                  <td key={product.code} className="p-4 text-center border-l">
                     {product.brand || <Minus size={16} className="mx-auto text-tertiary" />}
                   </td>
                 ))}
@@ -98,7 +98,7 @@ export const ComparePage = () => {
               <tr className="bg-secondary/50">
                 <td className="p-4 font-semibold">Danh mục</td>
                 {items.map((product) => (
-                  <td key={product.id} className="p-4 text-center border-l">
+                  <td key={product.code} className="p-4 text-center border-l">
                     {product.category}
                   </td>
                 ))}
@@ -108,7 +108,7 @@ export const ComparePage = () => {
               <tr>
                 <td className="p-4 font-semibold">Đánh giá</td>
                 {items.map((product) => (
-                  <td key={product.id} className="p-4 text-center border-l">
+                  <td key={product.code} className="p-4 text-center border-l">
                     <span className="inline-flex items-center gap-1">
                       ⭐ {product.rating} ({product.reviewCount})
                     </span>
@@ -120,7 +120,7 @@ export const ComparePage = () => {
               <tr className="bg-secondary/50">
                 <td className="p-4 font-semibold">Tình trạng</td>
                 {items.map((product) => (
-                  <td key={product.id} className="p-4 text-center border-l">
+                  <td key={product.code} className="p-4 text-center border-l">
                     {product.stock > 0 ? (
                       <span className="inline-flex items-center gap-1 text-success">
                         <Check size={16} /> Còn hàng
@@ -136,7 +136,7 @@ export const ComparePage = () => {
               <tr>
                 <td className="p-4"></td>
                 {items.map((product) => (
-                  <td key={product.id} className="p-4 text-center border-l">
+                  <td key={product.code} className="p-4 text-center border-l">
                     {product.price > 0 ? (
                       <Button
                         size="sm"
@@ -147,7 +147,7 @@ export const ComparePage = () => {
                         {t('product.addToCart')}
                       </Button>
                     ) : (
-                      <Link to={`/quote-request/${product.id}`}>
+                      <Link to={`/quote-request/${product.code}`}>
                         <Button size="sm" variant="outline">
                           {t('product.requestQuote')}
                         </Button>

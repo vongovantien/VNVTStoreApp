@@ -28,14 +28,19 @@ public static class DependencyInjection
         // Add Generic Repository
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+        // Add Dapper Context
+        services.AddSingleton<IDapperContext, DapperContext>();
+
         // Add Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<IImageUploadService, LocalImageUploadService>();
+        services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICouponService, CouponService>();
         services.AddTransient<INotificationService, NotificationService>();
+        services.AddTransient<IEmailService, EmailService>();
+        services.AddScoped<IBaseUrlService, BaseUrlService>();
         services.AddHttpContextAccessor();
 
         var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();

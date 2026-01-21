@@ -108,6 +108,33 @@ export const CheckoutPage = () => {
   // Recalculate total with discount
   const finalTotal = Math.max(0, subtotal + shippingFee - discountAmount);
 
+  /* Validation Regex */
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+
+  const [errors, setErrors] = useState({
+      email: '',
+      phone: ''
+  });
+
+  const validate = () => {
+    let isValid = true;
+    const newErrors = { email: '', phone: '' };
+
+    if (formData.email && !emailRegex.test(formData.email)) {
+        newErrors.email = t('validation.invalidEmail') || 'Email không hợp lệ';
+        isValid = false;
+    }
+
+    if (!phoneRegex.test(formData.phone)) {
+        newErrors.phone = t('validation.invalidPhone') || 'Số điện thoại không hợp lệ (VD: 0901234567)';
+        isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
@@ -115,13 +142,17 @@ export const CheckoutPage = () => {
       if (!formData.fullName || !formData.phone || !formData.address || !formData.city || !formData.district) {
         toast.error(t('validation.required') || 'Vui lòng điền đầy đủ thông tin giao hàng');
         setIsProcessing(false);
-        // User is already at Step 3 (Review), if data is missing, they should manually go back or we just show error.
-        // removing setStep(1) as per user request "don't jump back".
         return;
+      }
+
+      if (!validate()) {
+          setIsProcessing(false);
+          return;
       }
 
       const orderData: CreateOrderRequest = {
         fullName: formData.fullName,
+        email: formData.email,
         phone: formData.phone,
         address: formData.address,
         city: formData.city,
@@ -131,7 +162,7 @@ export const CheckoutPage = () => {
         paymentMethod: paymentMethod,
         couponCode: appliedVoucher?.code,
         items: !isAuthenticated ? items.map(item => ({
-          productCode: item.product.id,
+          productCode: item.product.code,
           quantity: item.quantity,
           size: item.size,
           color: item.color
@@ -256,10 +287,14 @@ export const CheckoutPage = () => {
                     label={t('checkout.phone')}
                     placeholder="0901234567"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onChange={(e) => {
+                        handleInputChange('phone', e.target.value);
+                        if(errors.phone) setErrors({...errors, phone: ''});
+                    }}
                     leftIcon={<Phone size={18} />}
                     required
                     isRequired
+                    error={errors.phone}
                   />
                   <div className="md:col-span-2">
                     <Input
@@ -267,8 +302,12 @@ export const CheckoutPage = () => {
                       type="email"
                       placeholder="email@example.com"
                       value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      onChange={(e) => {
+                          handleInputChange('email', e.target.value);
+                          if(errors.email) setErrors({...errors, email: ''});
+                      }}
                       leftIcon={<Mail size={18} />}
+                      error={errors.email}
                     />
                   </div>
                     <Select
@@ -401,7 +440,7 @@ export const CheckoutPage = () => {
                 {/* Order Items */}
                 <div className="space-y-3 mb-6">
                   {items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4">
+                    <div key={item.code} className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
                         <CustomImage
                           src={item.product.image}
@@ -437,7 +476,7 @@ export const CheckoutPage = () => {
 
               <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3 text-sm">
+                  <div key={item.code} className="flex gap-3 text-sm">
                     <div className="w-12 h-12 rounded overflow-hidden bg-secondary flex-shrink-0">
                       <CustomImage
                         src={item.product.image}

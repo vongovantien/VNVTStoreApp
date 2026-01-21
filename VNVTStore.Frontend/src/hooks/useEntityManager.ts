@@ -84,7 +84,7 @@ export const useEntityManager = <T extends { code?: string; id?: string | number
         setIsFormOpen(true);
 
         // Try to fetch fresh details if service supports it
-        const id = item.code || item.id;
+        const id = item.code;
         if (service.getByCode && id) {
             setIsFetchingDetail(true);
             try {

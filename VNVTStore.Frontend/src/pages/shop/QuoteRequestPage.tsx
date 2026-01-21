@@ -101,7 +101,7 @@ export const QuoteRequestPage = () => {
         <div className="container mx-auto px-4 flex items-center gap-2 text-sm flex-wrap">
           <Link to="/" className="text-secondary hover:text-primary">{t('common.home')}</Link>
           <ChevronRight size={14} />
-          <Link to={`/product/${product.id}`} className="text-secondary hover:text-primary truncate max-w-[150px]">
+          <Link to={`/product/${product.code}`} className="text-secondary hover:text-primary truncate max-w-[150px]">
             {product.name}
           </Link>
           <ChevronRight size={14} />

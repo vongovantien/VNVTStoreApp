@@ -6,11 +6,7 @@ import { ShopLayout } from '@/layouts/ShopLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 
 // Loading component
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-  </div>
-);
+import { PageLoader } from '@/components/common/PageLoader';
 
 // Lazy load pages for code splitting
 const HomePage = lazy(() => import('@/pages/shop/HomePage'));
@@ -19,6 +15,7 @@ const ProductDetailPage = lazy(() => import('@/pages/shop/ProductDetailPage'));
 const CartPage = lazy(() => import('@/pages/shop/CartPage'));
 const CheckoutPage = lazy(() => import('@/pages/shop/CheckoutPage'));
 const OrderSuccessPage = lazy(() => import('@/pages/shop/OrderSuccessPage'));
+const VerifyOrderPage = lazy(() => import('@/pages/shop/VerifyOrderPage'));
 const QuoteRequestPage = lazy(() => import('@/pages/shop/QuoteRequestPage'));
 const WishlistPage = lazy(() => import('@/pages/shop/WishlistPage'));
 const ComparePage = lazy(() => import('@/pages/shop/ComparePage'));
@@ -105,6 +102,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <OrderSuccessPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'verify-order',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <VerifyOrderPage />
               </Suspense>
             ),
           },

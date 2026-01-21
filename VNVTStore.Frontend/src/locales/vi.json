@@ -1,4 +1,27 @@
 {
+  "validation": {
+      "required": "Vui lòng nhập thông tin",
+      "minLength": "Vui lòng nhập ít nhất {{min}} ký tự",
+      "minNumber": "Giá trị phải lớn hơn hoặc bằng {{min}}",
+      "integer": "Vui lòng nhập số nguyên",
+      "positive": "Giá trị phải là số dương",
+      "productNameMin": "Tên sản phẩm phải có ít nhất 3 ký tự",
+      "categoryRequired": "Vui lòng chọn danh mục",
+      "priceMin": "Giá không được âm",
+      "stockMin": "Tồn kho không được âm",
+      "supplierNameRequired": "Tên nhà cung cấp là bắt buộc",
+      "invalidEmail": "Email không hợp lệ",
+      "phoneFormat": "Số điện thoại phải có 10-11 số",
+      "invalidPhone": "Số điện thoại không hợp lệ (VD: 0901234567)",
+      "weakPassword": "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt",
+      "checkErrors": "Vui lòng kiểm tra lại thông tin"
+  },
+  "promotions": {
+    "title": "Quản lý khuyến mãi",
+    "subtitle": "Quản lý các chương trình giảm giá và sự kiện",
+    "noPromotions": "Chưa có khuyến mãi nào",
+    "createGuide": "Bắt đầu tạo chương trình khuyến mãi đầu tiên"
+  },
   "common": {
     "home": "Trang chủ",
     "products": "Sản phẩm",
@@ -19,7 +42,6 @@
     "update": "Cập nhật",
     "delete": "Xóa",
     "edit": "Sửa",
-    "save": "Lưu",
     "cancel": "Hủy",
     "close": "Đóng",
     "actions": {
@@ -94,6 +116,9 @@
     "info": "Thông tin chung",
     "fields": {
         "name": "Tên",
+        "brand": "Thương hiệu",
+        "costPrice": "Giá vốn",
+        "weight": "Khối lượng",
         "email": "Email",
         "phone": "Điện thoại",
         "address": "Địa chỉ",
@@ -351,23 +376,34 @@
       "quote": "Báo giá",
       "updatePrice": "Cập nhật giá",
       "closeDeal": "Chốt",
-      "sendQuote": "Gửi báo giá"
+      "sendQuote": "Gửi báo giá",
+      "confirmOrder": "Xác nhận đơn",
+      "confirmOrderFull": "Xác nhận đơn hàng",
+      "shipOrder": "Giao hàng",
+      "markDelivered": "Đã giao",
+      "printInvoice": "In hóa đơn",
+      "cancelOrder": "Hủy đơn"
     },
-    "validation": {
-      "required": "Vui lòng nhập thông tin",
-      "minLength": "Vui lòng nhập ít nhất {{min}} ký tự",
-      "minNumber": "Giá trị phải lớn hơn hoặc bằng {{min}}",
-      "integer": "Vui lòng nhập số nguyên",
-      "positive": "Giá trị phải là số dương",
-      "productNameMin": "Tên sản phẩm phải có ít nhất 3 ký tự",
-      "categoryRequired": "Vui lòng chọn danh mục",
-      "priceMin": "Giá không được âm",
+    "payment": {
+      "paid": "Đã thanh toán",
+      "pending": "Chờ thanh toán",
+      "failed": "Thất bại"
+    },
+    "order": {
+      "productCount": "{{count}} sản phẩm",
+      "pendingCount": "{{count}} chờ xác nhận",
+      "shippingCount": "{{count}} đang giao",
+      "grandTotal": "Tổng cộng",
+      "subtotal": "Tạm tính",
+      "shippingFee": "Phí ship",
+      "discount": "Giảm giá",
+      "customerInfo": "Thông tin khách hàng",
+      "orderInfo": "Thông tin đơn hàng",
+      "orderDate": "Ngày đặt",
+      "paymentMethodCod": "Thanh toán khi nhận hàng (COD)",
+      "paymentMethodTransfer": "Chuyển khoản"
+    },
 
-      "stockMin": "Tồn kho không được âm",
-      "supplierNameRequired": "Tên nhà cung cấp là bắt buộc",
-      "emailInvalid": "Email không hợp lệ",
-      "phoneFormat": "Số điện thoại phải có 10-11 số"
-    },
     "types": {
       "voucher": "Mã giảm giá",
       "flashSale": "Flash Sale",

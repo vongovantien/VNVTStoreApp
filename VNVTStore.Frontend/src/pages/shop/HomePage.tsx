@@ -262,7 +262,7 @@ export const HomePage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {saleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.code} product={product} />
             ))}
           </div>
         </div>
@@ -286,7 +286,7 @@ export const HomePage = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.code} product={product} />
               ))}
             </div>
           )}
@@ -306,7 +306,7 @@ export const HomePage = () => {
               />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {newProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.code} product={product} />
                 ))}
               </div>
             </div>
@@ -355,8 +355,8 @@ export const HomePage = () => {
             ) : (
               products.slice(0, 5).map((product, index) => (
                 <Link
-                  key={product.id}
-                  to={`/product/${product.id}`}
+                  key={product.code}
+                  to={`/product/${product.code}`}
                   className="flex items-center gap-4 p-4 bg-primary rounded-xl hover:shadow-lg hover:translate-x-1 transition-all"
                 >
                   <span

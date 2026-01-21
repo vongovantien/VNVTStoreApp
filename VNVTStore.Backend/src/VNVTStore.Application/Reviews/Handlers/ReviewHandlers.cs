@@ -30,7 +30,8 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         IRepository<TblOrderItem> orderItemRepository,
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : base(reviewRepository, unitOfWork, mapper)
+        IMapper mapper,
+        IDapperContext dapperContext) : base(reviewRepository, unitOfWork, mapper, dapperContext)
     {
         _orderItemRepository = orderItemRepository;
         _currentUser = currentUser;
@@ -161,14 +162,15 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result<PagedResult<ReviewDto>>> Handle(GetPagedQuery<ReviewDto> request, CancellationToken cancellationToken)
     {
-        return await GetPagedAsync<ReviewDto>(
+        var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
+
+        return await GetPagedDapperAsync<ReviewDto>(
             request.PageIndex,
             request.PageSize,
-            cancellationToken,
-            predicate: r => true, // Review GetAllReviewsQuery used IsApproved. Generic GetPagedQuery doesn't have it.
-            includes: q => q.Include(r => r.UserCodeNavigation)
-                             .Include(r => r.OrderItemCodeNavigation)
-                             .ThenInclude(oi => oi!.ProductCodeNavigation),
-            orderBy: q => q.OrderByDescending(r => r.CreatedAt));
+            request.Searching,
+            sortDTO,
+            null,
+            request.Fields,
+            cancellationToken);
     }
 }

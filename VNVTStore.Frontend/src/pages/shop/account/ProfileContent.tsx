@@ -27,10 +27,18 @@ const ProfileContent = () => {
     });
   }, []);
 
+  const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
   const handleSave = async () => {
      if (!profile.fullName) {
        toast.error(t('validation.required') || 'Vui lòng nhập họ tên');
        return;
+     }
+     
+     if (profile.phone && !phoneRegex.test(profile.phone)) {
+        toast.error(t('validation.invalidPhone') || 'Số điện thoại không hợp lệ');
+        return;
      }
      
      setLoading(true);
@@ -65,8 +73,8 @@ const ProfileContent = () => {
       return;
     }
     
-    if (passwordForm.newPassword.length < 6) {
-      toast.error('Mật khẩu mới phải có ít nhất 6 ký tự');
+    if (!passwordRegex.test(passwordForm.newPassword)) {
+      toast.error(t('validation.weakPassword') || 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt');
       return;
     }
     

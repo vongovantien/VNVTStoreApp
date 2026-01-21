@@ -57,7 +57,7 @@ export const WishlistPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((product) => (
             <motion.div
-              key={product.id}
+              key={product.code}
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

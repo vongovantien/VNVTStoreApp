@@ -22,6 +22,13 @@ export const uploadService = {
         // If apiBaseUrl is http://localhost:5176/api/v1, root is http://localhost:5176
         const rootUrl = apiBaseUrl.replace(/\/api\/v1\/?$/, '');
 
-        return `${rootUrl}${relativeUrl}`;
+        // Robust join: ensure one slash between root and relative path
+        const cleanRoot = rootUrl.endsWith('/') ? rootUrl.slice(0, -1) : rootUrl;
+        const cleanRelative = relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`;
+
+        const fullUrl = `${cleanRoot}${cleanRelative}`;
+        console.log(`[Upload] Uploaded: ${fullUrl}`);
+
+        return fullUrl;
     }
 };

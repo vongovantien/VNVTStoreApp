@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Edit2, Trash2, Eye, Star, Plus, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart } from 'lucide-react';
+import { Edit2, Trash2, Eye, Star, Plus, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart, Package } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { Dropdown, DropdownItem } from '@/components/ui/Dropdown';
-import { formatCurrency } from '@/utils/format';
+import { formatCurrency, getImageUrl } from '@/utils/format';
 import { ProductForm, ProductFormData } from './forms/ProductForm';
 import {
   useProducts,
@@ -15,6 +15,7 @@ import type { Product } from '@/types';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
+import { PRODUCT_LIST_FIELDS } from '@/constants/fieldConstants';
 
 // Types for sorting
 type SortField = 'name' | 'price' | 'stock' | 'createdAt';
@@ -59,6 +60,7 @@ export const ProductsPage = () => {
     search: searchQuery || undefined,
     sortField,
     sortDir,
+    fields: PRODUCT_LIST_FIELDS,  // Selective columns for list view
     ...advancedFilters
   });
 
@@ -126,7 +128,7 @@ export const ProductsPage = () => {
         categoryCode: data.categoryId,
         stock: data.stock,
         costPrice: data.costPrice,
-        sku: data.sku,
+
         weight: data.weight,
         supplierCode: data.supplierCode,
         brand: data.brand,
@@ -155,7 +157,7 @@ export const ProductsPage = () => {
           categoryCode: data.categoryId,
           stockQuantity: data.stock,
           costPrice: data.costPrice,
-          sku: data.sku,
+
           weight: data.weight,
           supplierCode: data.supplierCode,
           brand: data.brand,
@@ -198,19 +200,36 @@ export const ProductsPage = () => {
   // Column Definitions
   const columns: DataTableColumn<Product>[] = [
     {
+      id: 'image',
+      header: t('common.fields.image'),
+      width: '80px',
+      className: 'text-center',
+      accessor: (product) => (
+        <div className="flex flex-col items-center">
+            <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
+               {product.images?.[0] ? (
+                 <img 
+                   src={getImageUrl(product.images[0])} 
+                   alt={product.name} 
+                   className="w-full h-full object-cover"
+                   onError={(e) => console.error("Img Error:", e.currentTarget.src)}
+                 />
+               ) : (
+                 <div className="w-full h-full flex items-center justify-center text-gray-400">
+                   <Package size={18} />
+                 </div>
+               )}
+            </div>
+        </div>
+      )
+    },
+    {
       id: 'name',
       header: t('common.fields.name'),
       accessor: (product) => (
-        <div className="flex items-center gap-3">
-          <img
-            src={product.images?.[0] || 'https://placehold.co/100?text=No+Image'}
-            alt={product.name}
-            className="w-12 h-12 rounded-lg object-cover border bg-white"
-          />
-          <div>
-            <p className="font-medium text-sm text-slate-700 dark:text-slate-200">{product.name}</p>
-            <p className="text-xs text-slate-500">{product.brand}</p>
-          </div>
+        <div>
+          <p className="font-medium text-sm text-slate-700 dark:text-slate-200">{product.name}</p>
+          <p className="text-xs text-slate-500">{product.brand}</p>
         </div>
       ),
       sortable: true
@@ -300,6 +319,7 @@ export const ProductsPage = () => {
         columns={columns}
         data={products}
         keyField="code"
+        enableSelection
         isLoading={isLoading}
         isFetching={isFetching}
         onAdd={() => openCreate()}

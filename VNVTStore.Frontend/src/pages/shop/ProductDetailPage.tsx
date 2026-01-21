@@ -265,13 +265,13 @@ export const ProductDetailPage = () => {
   });
 
   const relatedProducts = useMemo(
-    () => (relatedData?.products || []).filter((p) => p.id !== id).slice(0, 4),
+    () => (relatedData?.products || []).filter((p) => p.code !== id).slice(0, 4),
     [relatedData?.products, id]
   );
 
   // Derived states
-  const isWishlisted = product ? isInWishlist(product.id) : false;
-  const isCompared = product ? isInCompare(product.id) : false;
+  const isWishlisted = product ? isInWishlist(product.code) : false;
+  const isCompared = product ? isInCompare(product.code) : false;
   const hasFixedPrice = product ? product.price > 0 : false;
   const images = product ? (product.images?.length ? product.images : [product.image]) : [];
 
@@ -293,7 +293,7 @@ export const ProductDetailPage = () => {
 
   const handleWishlistToggle = useCallback(() => {
     if (product) {
-      isWishlisted ? removeFromWishlist(product.id) : addToWishlist(product);
+      isWishlisted ? removeFromWishlist(product.code) : addToWishlist(product);
     }
   }, [product, isWishlisted, addToWishlist, removeFromWishlist]);
 
@@ -508,7 +508,7 @@ export const ProductDetailPage = () => {
 
             {/* Contact for Quote */}
             {!hasFixedPrice && (
-              <Link to={`/quote-request/${product.id}`}>
+              <Link to={`/quote-request/${product.code}`}>
                 <Button size="lg" fullWidth leftIcon={<Phone size={20} />}>
                   {t('product.requestQuote')}
                 </Button>
@@ -630,7 +630,7 @@ export const ProductDetailPage = () => {
             <h2 className="text-2xl font-bold mb-6">{t('product.relatedProducts')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.code} product={p} />
               ))}
             </div>
           </div>

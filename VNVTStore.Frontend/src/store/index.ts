@@ -47,7 +47,7 @@ export const useCartStore = create<CartState>()(
                     set((state) => {
                         // Find item matching product ID AND options
                         const existingItem = state.items.find((item) =>
-                            item.product.id === product.id &&
+                            item.product.code === product.code &&
                             item.size === options?.size &&
                             item.color === options?.color
                         );
@@ -55,7 +55,7 @@ export const useCartStore = create<CartState>()(
                         if (existingItem) {
                             return {
                                 items: state.items.map((item) =>
-                                    item.id === existingItem.id
+                                    item.code === existingItem.code
                                         ? { ...item, quantity: item.quantity + quantity }
                                         : item
                                 ),
@@ -63,11 +63,11 @@ export const useCartStore = create<CartState>()(
                         }
 
                         // Create unique ID for guest item
-                        const newItemId = `guest_${product.id}_${options?.size || ''}_${options?.color || ''}_${Date.now()}`;
+                        const newItemId = `guest_${product.code}_${options?.size || ''}_${options?.color || ''}_${Date.now()}`;
 
                         return {
                             items: [...state.items, {
-                                id: newItemId,
+                                code: newItemId,
                                 product,
                                 quantity,
                                 size: options?.size,
@@ -82,7 +82,7 @@ export const useCartStore = create<CartState>()(
                 set({ isLoading: true });
                 try {
                     const res = await cartService.addToCart({
-                        productCode: product.id,
+                        productCode: product.code,
                         quantity,
                         size: options?.size,
                         color: options?.color
@@ -105,7 +105,7 @@ export const useCartStore = create<CartState>()(
                 const { isAuthenticated } = useAuthStore.getState();
                 if (!isAuthenticated) {
                     set((state) => ({
-                        items: state.items.filter((item) => item.id !== itemId),
+                        items: state.items.filter((item) => item.code !== itemId),
                     }));
                     return;
                 }
@@ -130,7 +130,7 @@ export const useCartStore = create<CartState>()(
                 if (!isAuthenticated) {
                     set((state) => ({
                         items: state.items.map((item) =>
-                            item.id === itemId ? { ...item, quantity } : item
+                            item.code === itemId ? { ...item, quantity } : item
                         ),
                     }));
                     return;
@@ -223,7 +223,7 @@ export const useAuthStore = create<AuthState>()(
                     for (const item of items) {
                         try {
                             await cartService.addToCart({
-                                productCode: item.product.id,
+                                productCode: item.product.code,
                                 quantity: item.quantity,
                                 size: item.size,
                                 color: item.color
@@ -267,7 +267,7 @@ export const useWishlistStore = create<WishlistState>()(
             items: [],
             addItem: (product) => {
                 set((state) => {
-                    if (state.items.find((item) => item.id === product.id)) {
+                    if (state.items.find((item) => item.code === product.code)) {
                         return state;
                     }
                     return { items: [...state.items, product] };
@@ -275,11 +275,11 @@ export const useWishlistStore = create<WishlistState>()(
             },
             removeItem: (productId) => {
                 set((state) => ({
-                    items: state.items.filter((item) => item.id !== productId),
+                    items: state.items.filter((item) => item.code !== productId),
                 }));
             },
             isInWishlist: (productId) => {
-                return get().items.some((item) => item.id === productId);
+                return get().items.some((item) => item.code === productId);
             },
             clearWishlist: () => set({ items: [] }),
         }),
@@ -312,7 +312,7 @@ export const useCompareStore = create<CompareState>()(
                         const newItems = [...state.items.slice(1), product];
                         return { items: newItems };
                     }
-                    if (state.items.find((item) => item.id === product.id)) {
+                    if (state.items.find((item) => item.code === product.code)) {
                         return state;
                     }
                     return { items: [...state.items, product] };
@@ -320,11 +320,11 @@ export const useCompareStore = create<CompareState>()(
             },
             removeItem: (productId) => {
                 set((state) => ({
-                    items: state.items.filter((item) => item.id !== productId),
+                    items: state.items.filter((item) => item.code !== productId),
                 }));
             },
             isInCompare: (productId) => {
-                return get().items.some((item) => item.id === productId);
+                return get().items.some((item) => item.code === productId);
             },
             clearCompare: () => set({ items: [] }),
         }),

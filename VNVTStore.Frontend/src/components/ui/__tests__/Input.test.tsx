@@ -24,7 +24,7 @@ describe('Input', () => {
   it('displays error message', () => {
     render(<Input error="Invalid input" />);
     expect(screen.getByText('Invalid input')).toBeInTheDocument();
-    expect(screen.getByRole('textbox')).toHaveClass('border-red-500');
+    expect(screen.getByRole('textbox')).toHaveClass('border-error');
   });
 
   it('renders label', () => {

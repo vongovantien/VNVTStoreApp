@@ -27,6 +27,7 @@ export interface SearchParams {
     sortBy?: string;
     sortDesc?: boolean;
     filters?: Array<{ field: string; value: string | number | boolean | null | Array<string | number>; operator?: SearchCondition }>;
+    fields?: string[];  // List of columns to select (reduces data transfer)
 }
 
 // ============ HTTP Methods (internal) ============
@@ -71,6 +72,7 @@ export function createEntityService<
                 sortDTO: params.sortBy
                     ? { sortBy: params.sortBy, sortDescending: params.sortDesc ?? false }
                     : undefined,
+                fields: params.fields,  // Pass fields for selective column fetching
             };
 
             return http.post<PagedResult<TDto>>(`${endpoint}/search`, request);

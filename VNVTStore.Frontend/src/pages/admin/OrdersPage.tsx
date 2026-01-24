@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Eye, Truck, Check, X, Printer, Package, ChevronUp, ChevronDown, Loader2, Download, Trash2 } from 'lucide-react';
+import { Search, Eye, Truck, Check, X, Printer, Package, ChevronUp, ChevronDown, Loader2, Download, Trash2, ShoppingCart, FileText } from 'lucide-react';
 import defaultImage from '@/assets/default-image.png';
 import { Button, Badge, Modal, Pagination, ConfirmDialog, TableActions } from '@/components/ui';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
@@ -12,6 +12,8 @@ import { exportToExcel } from '@/utils/export';
 import { DataTableColumn } from '@/components/common/DataTable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
+import { StatsCards } from '@/components/admin/StatsCards';
+import { useQuery } from '@tanstack/react-query';
 
 export const OrdersPage = () => {
   const { t } = useTranslation();
@@ -111,7 +113,7 @@ export const OrdersPage = () => {
       header: t('common.fields.status'),
       accessor: (row) => (
         <Badge color={getStatusColor(row.status) as any} size="sm">
-          {getStatusText(row.status)}
+          {t(getStatusText(row.status))}
         </Badge>
       ),
       className: 'text-center',
@@ -141,6 +143,13 @@ export const OrdersPage = () => {
 
   const orders = ordersData?.orders || [];
   const totalPages = ordersData?.totalPages || 1;
+
+  // Fetch Stats
+  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+      queryKey: ['order-stats'],
+      queryFn: () => orderService.getStats(),
+      staleTime: 60000,
+  });
 
   const handleAdvancedSearch = (filters: Record<string, string>) => {
     setAdvancedFilters(filters);
@@ -204,7 +213,29 @@ export const OrdersPage = () => {
         }
       />
 
-
+    <StatsCards stats={[
+        {
+            label: t('admin.stats.totalOrders'),
+            value: statsData?.total || 0,
+            icon: <ShoppingCart size={24} />,
+            color: 'blue',
+            loading: isStatsLoading
+        },
+        {
+            label: t('admin.stats.pendingOrders'),
+            value: statsData?.pending || 0,
+            icon: <FileText size={24} />,
+            color: 'amber',
+            loading: isStatsLoading
+        },
+        {
+            label: t('admin.stats.shippingOrders'),
+             value: statsData?.shipping || 0,
+            icon: <Truck size={24} />,
+            color: 'indigo',
+            loading: isStatsLoading
+        }
+    ]} />
 
       <DataTable
         columns={columns}
@@ -293,7 +324,7 @@ export const OrdersPage = () => {
           { key: 'status', label: t('common.fields.status'), width: 15 },
           { key: 'paymentMethod', label: t('common.fields.paymentMethod'), width: 18 },
           { key: 'paymentStatus', label: t('common.fields.payment'), width: 15 },
-          { key: 'createdAt', label: t('common.fields.date'), width: 18 },
+          { key: 'orderDate', label: t('common.fields.date'), width: 18 },
           { key: 'note', label: t('common.fields.note'), width: 25 },
         ]}
         onExportAllData={async () => {

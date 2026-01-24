@@ -16,6 +16,8 @@ export interface UserProfileDto {
     avatar?: string;
     role: string;
     createdAt: string;
+    isEmailVerified: boolean;
+    lastLogin?: string;
 }
 
 export interface UpdateProfileRequest {

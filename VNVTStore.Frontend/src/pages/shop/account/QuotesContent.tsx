@@ -33,12 +33,11 @@ const QuotesContent = () => {
   };
 
   const getStatusText = (status: string) => {
-    // Simple mapping, ideally use translation
     switch (status) {
-      case 'pending': return 'Đang chờ';
-      case 'quoted': return 'Đã báo giá';
-      case 'closed': return 'Hoàn thành';
-      case 'cancelled': return 'Đã hủy';
+      case 'pending': return 'admin.status.pending'; // or specific quote keys if they exist, but admin keys work for common terms
+      case 'quoted': return 'admin.status.quoted';
+      case 'closed': return 'admin.status.closed';
+      case 'cancelled': return 'admin.status.cancelled';
       default: return status;
     }
   };
@@ -66,7 +65,7 @@ const QuotesContent = () => {
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold bg-${getStatusColor(quote.status)}/20 text-${getStatusColor(quote.status)}`}
             >
-              {getStatusText(quote.status)}
+              {t(getStatusText(quote.status))}
             </span>
           </div>
 

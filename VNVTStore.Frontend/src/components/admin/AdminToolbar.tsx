@@ -114,7 +114,7 @@ export const AdminToolbar = ({
   );
 
   return (
-    <div className={cn("flex flex-wrap items-center bg-white dark:bg-slate-800 border-b p-1 gap-1 relative z-20", className)}>
+    <div className={cn("flex flex-wrap items-center bg-transparent gap-1 relative z-20", className)}>
 
       {/* Group 1: CRUD */}
       <div className="flex items-center gap-1">

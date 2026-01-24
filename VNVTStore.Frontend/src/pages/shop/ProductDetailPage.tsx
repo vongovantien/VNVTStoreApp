@@ -18,6 +18,8 @@ import {
   Loader2,
   AlertCircle,
   X,
+  Package,
+  Globe,
 } from 'lucide-react';
 import { Button, Badge } from '@/components/ui';
 import { ProductCard } from '@/components/common/ProductCard';
@@ -260,8 +262,8 @@ export const ProductDetailPage = () => {
   // Fetch related products (same category)
   const { data: relatedData } = useProducts({
     pageIndex: 1,
-    pageSize: 4,
-    enabled: !!product?.categoryId,
+    pageSize: 8, // Fetch more for better matching
+    enabled: !!product?.categoryCode,
   });
 
   const relatedProducts = useMemo(
@@ -269,11 +271,27 @@ export const ProductDetailPage = () => {
     [relatedData?.products, id]
   );
 
+  // Group: RELATION for accessories/cross-selling
+  const relations = useMemo(() => 
+    product?.details?.filter(d => d.detailType === 'RELATION') || [],
+    [product?.details]
+  );
+
   // Derived states
   const isWishlisted = product ? isInWishlist(product.code) : false;
   const isCompared = product ? isInCompare(product.code) : false;
-  const hasFixedPrice = product ? product.price > 0 : false;
+  const hasFixedPrice = product ? (product.price > 0) : false;
   const images = product ? (product.images?.length ? product.images : [product.image]) : [];
+
+  const stockStatus = useMemo(() => {
+    if (!product) return null;
+    const stock = product.stock || 0;
+    const minStock = product.minStockLevel || 5; // Default threshold if not set
+    
+    if (stock <= 0) return { label: t('product.outOfStock'), color: 'error' as const, text: 'text-red-600' };
+    if (stock <= minStock) return { label: t('product.lowStock') || 'Sắp hết hàng', color: 'warning' as const, text: 'text-orange-600' };
+    return { label: `${t('product.inStock')} (${stock})`, color: 'success' as const, text: 'text-green-600' };
+  }, [product, t]);
 
   // Handlers
   const handleAddToCart = useCallback(async () => {
@@ -362,7 +380,7 @@ export const ProductDetailPage = () => {
           <ChevronRight size={14} className="text-tertiary" />
           <Link to="/products" className="text-secondary hover:text-primary">{t('common.products')}</Link>
           <ChevronRight size={14} className="text-tertiary" />
-          <Link to={`/products?category=${product.categoryId}`} className="text-secondary hover:text-primary">
+          <Link to={`/products?category=${product.categoryCode}`} className="text-secondary hover:text-primary">
             {product.category}
           </Link>
           <ChevronRight size={14} className="text-tertiary" />
@@ -387,6 +405,9 @@ export const ProductDetailPage = () => {
                 <Badge color="error">-{product.discount}%</Badge>
               )}
               {!hasFixedPrice && <Badge color="primary">{t('product.contactForPrice')}</Badge>}
+              {stockStatus && stockStatus.color !== 'success' && (
+                  <Badge color={stockStatus.color}>{stockStatus.label}</Badge>
+              )}
             </div>
 
             {/* Title */}
@@ -399,21 +420,30 @@ export const ProductDetailPage = () => {
                 {product.rating} ({product.reviewCount} {t('product.reviews')})
               </span>
               <span className="text-tertiary">|</span>
-              <span className="text-success font-medium">
-                {product.stock > 0 ? `${t('product.inStock')} (${product.stock})` : t('product.outOfStock')}
+              <span className={`font-medium ${stockStatus?.text || ''}`}>
+                {stockStatus?.label}
               </span>
             </div>
 
             {/* Price */}
             <div className="py-4 border-y">
               {hasFixedPrice ? (
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-bold text-error">{formatCurrency(product.price)}</span>
-                  {product.originalPrice && product.originalPrice > product.price && (
-                    <span className="text-xl text-tertiary line-through">
-                      {formatCurrency(product.originalPrice)}
-                    </span>
-                  )}
+                <div className="flex flex-col gap-2">
+                   <div className="flex items-baseline gap-3">
+                      <span className="text-3xl font-bold text-error">{formatCurrency(product.price)}</span>
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <span className="text-xl text-tertiary line-through">
+                          {formatCurrency(product.originalPrice)}
+                        </span>
+                      )}
+                    </div>
+                    {product.wholesalePrice && (
+                       <div className="flex items-center gap-2 text-sm text-secondary">
+                          <Badge color="secondary" className="font-normal">Giá sỉ</Badge>
+                          <span className="font-bold">{formatCurrency(product.wholesalePrice)}</span>
+                          <span className="text-[11px] opacity-70">(Liên hệ để nhận ưu đãi tốt nhất)</span>
+                       </div>
+                    )}
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -423,59 +453,57 @@ export const ProductDetailPage = () => {
               )}
             </div>
 
+            {/* Core Info Details */}
+            <div className="grid grid-cols-2 gap-y-2 text-sm">
+                <div className="text-tertiary">Mã sản phẩm:</div>
+                <div className="text-primary font-medium">{product.code}</div>
+                
+                <div className="text-tertiary">Đơn vị tính:</div>
+                <div className="text-primary">{product.baseUnit || 'Cái'}</div>
+                
+                <div className="text-tertiary">Vị trí kho:</div>
+                <div className="text-primary">{product.binLocation || 'Đang cập nhật'}</div>
+            </div>
+
             {/* Description */}
-            <p className="text-secondary leading-relaxed">{product.description}</p>
+            <p className="text-secondary leading-relaxed line-clamp-3">{product.description}</p>
 
-            {/* Attributes Selection */}
-            {hasFixedPrice && (
-                <div className="space-y-4 mb-6">
-                    {/* Size */}
-                    <div>
-                        <span className="font-medium text-primary block mb-2">{t('product.size') || 'Size'}</span>
-                        <div className="flex flex-wrap gap-2">
-                            {sizes.map(size => (
-                                <button
-                                    key={size}
-                                    onClick={() => setSelectedSize(size)}
-                                    className={`px-3 py-1 border rounded-md text-sm transition-colors ${
-                                        selectedSize === size 
-                                            ? 'border-primary bg-primary text-secondary' 
-                                            : 'border-gray-200 hover:border-primary'
-                                    }`}
-                                >
-                                    {size}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+            {/* Dynamic Logistics Cards */}
+            {product.details?.filter(d => d.detailType === 'LOGISTICS').length ? (
+                <div className="flex flex-wrap gap-3 py-2">
+                    {product.details.filter(d => d.detailType === 'LOGISTICS').map((detail, idx) => {
+                        const lowerName = detail.specName.toLowerCase();
+                        let Icon = Truck;
+                        if (lowerName.includes('weight') || lowerName.includes('cân') || lowerName.includes('nặng') || lowerName.includes('kg')) Icon = Scale;
+                        if (lowerName.includes('box') || lowerName.includes('hộp') || lowerName.includes('thùng') || lowerName.includes('pack') || lowerName.includes('quy cách')) Icon = Package;
 
-                    {/* Color */}
-                    <div>
-                        <span className="font-medium text-primary block mb-2">{t('product.color') || 'Color'}</span>
-                        <div className="flex flex-wrap gap-2">
-                            {colors.map(color => (
-                                <button
-                                    key={color}
-                                    onClick={() => setSelectedColor(color)}
-                                    className={`px-3 py-1 border rounded-md text-sm transition-colors ${
-                                        selectedColor === color 
-                                            ? 'border-primary bg-primary text-secondary' 
-                                            : 'border-gray-200 hover:border-primary'
-                                    }`}
-                                >
-                                    {color}
-                                </button>
-                            ))}
+                        return (
+                            <div key={idx} className="flex items-center gap-2 p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                                <Icon size={16} className="text-indigo-500" />
+                                <div className="text-xs">
+                                    <span className="text-tertiary">{detail.specName}: </span>
+                                    <span className="font-bold text-primary">{detail.specValue}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {product.countryOfOrigin && (
+                        <div className="flex items-center gap-2 p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                            <Globe size={16} className="text-blue-500" />
+                            <div className="text-xs">
+                                <span className="text-tertiary">Xuất xứ: </span>
+                                <span className="font-bold text-primary">{product.countryOfOrigin}</span>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
-            )}
+            ) : null}
 
             {/* Quantity & Add to Cart */}
             {hasFixedPrice && (
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Quantity */}
-                <div className="flex items-center border rounded-lg">
+                <div className="flex items-center border rounded-lg bg-white">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="p-3 hover:bg-secondary transition-colors"
@@ -484,9 +512,9 @@ export const ProductDetailPage = () => {
                   </button>
                   <span className="w-16 text-center font-semibold">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                    disabled={quantity >= product.stock}
-                    className={`p-3 transition-colors ${quantity >= product.stock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
+                    onClick={() => setQuantity(Math.min(product.stockQuantity ?? product.stock, quantity + 1))}
+                    disabled={quantity >= (product.stockQuantity ?? product.stock)}
+                    className={`p-3 transition-colors ${quantity >= (product.stockQuantity ?? product.stock) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
                   >
                     <Plus size={18} />
                   </button>
@@ -495,9 +523,9 @@ export const ProductDetailPage = () => {
                 {/* Add to Cart */}
                 <Button
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 bg-slate-900 hover:bg-black text-white"
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0 || isAddingToCart}
+                  disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
                   isLoading={isAddingToCart}
                   leftIcon={!isAddingToCart && <ShoppingCart size={20} />}
                 >
@@ -580,14 +608,18 @@ export const ProductDetailPage = () => {
           )}
 
           {activeTab === 'specs' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(product.specifications || { Thương_hiệu: product.brand, Danh_mục: product.category }).map(
-                ([key, value]) => (
-                  <div key={key} className="flex border-b py-2">
-                    <span className="w-1/3 font-medium text-secondary">{key.replace(/_/g, ' ')}</span>
-                    <span className="flex-1 text-primary">{value as string}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
+              {product.details?.filter(d => d.detailType === 'SPEC').length ? (
+                  product.details.filter(d => d.detailType === 'SPEC').map((detail, idx) => (
+                     <div key={idx} className="flex border-b border-slate-100 py-3 text-sm">
+                        <span className="w-1/2 font-medium text-secondary">{detail.specName}</span>
+                        <span className="flex-1 text-primary font-semibold">{detail.specValue}</span>
+                     </div>
+                  ))
+              ) : (
+                  <div className="col-span-2 text-center py-8 text-tertiary">
+                      Không có thông số kỹ thuật chi tiết.
                   </div>
-                )
               )}
             </div>
           )}
@@ -623,6 +655,30 @@ export const ProductDetailPage = () => {
             </div>
           )}
         </div>
+
+        {/* Product Relations (Cross-selling) */}
+        {relations.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <RefreshCw className="text-indigo-500" size={24} />
+                Thường được mua cùng (Phụ kiện)
+            </h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              {relations.map((rel, idx) => (
+                <Link 
+                    key={idx}
+                    to={`/products?search=${encodeURIComponent(rel.specValue)}`}
+                    className="flex-shrink-0"
+                >
+                    <Button variant="outline" className="h-auto py-3 px-6 rounded-2xl border-indigo-100 hover:border-indigo-500 hover:bg-indigo-50 transition-all flex flex-col items-center gap-1 group">
+                        <span className="text-xs text-tertiary">M gợi ý:</span>
+                        <span className="font-bold text-indigo-600 group-hover:scale-105 transition-transform">{rel.specValue}</span>
+                    </Button>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

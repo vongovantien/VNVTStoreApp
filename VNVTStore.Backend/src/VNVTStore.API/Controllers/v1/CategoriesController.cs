@@ -18,7 +18,7 @@ public class CategoriesController : BaseApiController<CategoryDto, CreateCategor
     }
 
     protected override IRequest<Result<PagedResult<CategoryDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<CategoryDto>(pageIndex, pageSize, search, sort, filters, fields);
+        => new GetCategoriesQuery(pageIndex, pageSize, search, sort, filters, fields);
 
     protected override IRequest<Result<CategoryDto>> CreateGetByCodeQuery(string code)
         => new GetByCodeQuery<CategoryDto>(code);
@@ -38,5 +38,11 @@ public class CategoriesController : BaseApiController<CategoryDto, CreateCategor
     {
         var result = await Mediator.Send(new DeleteMultipleCommand<TblCategory>(codes));
         return HandleDelete(result);
+    }
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        var result = await Mediator.Send(new GetCategoryStatsQuery());
+        return HandleResult(result);
     }
 }

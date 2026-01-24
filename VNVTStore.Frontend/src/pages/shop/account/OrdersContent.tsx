@@ -38,12 +38,12 @@ const OrdersContent = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
             <div>
               <p className="font-semibold">{order.code}</p>
-              <p className="text-sm text-tertiary">{formatDate(order.createdAt)}</p>
+              <p className="text-sm text-tertiary">{formatDate(order.orderDate)}</p>
             </div>
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold bg-${getStatusColor(order.status)}/20 text-${getStatusColor(order.status)}`}
             >
-              {getStatusText(order.status)}
+              {t(getStatusText(order.status))}
             </span>
           </div>
 

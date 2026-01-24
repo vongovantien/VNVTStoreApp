@@ -144,6 +144,7 @@
         "voltage": "Điện áp",
         "power": "Công suất",
         "priceAndStock": "Giá & Tồn kho",
+        "createdAt": "Ngày tạo",
         "specifications": "Thông số kỹ thuật",
         "supplier": "Nhà cung cấp",
         "image": "Hình ảnh",
@@ -268,6 +269,13 @@
       "marketing": "Marketing",
       "system": "Hệ thống"
     },
+    "userMenu": {
+      "signedInAs": "Đăng nhập với tư cách",
+      "accountSettings": "Cài đặt tài khoản",
+      "support": "Hỗ trợ",
+      "license": "Bản quyền",
+      "signOut": "Đăng xuất"
+    },
     "subtitles": {
       "dashboard": "Tổng quan hệ thống",
       "orders": "Quản lý đơn hàng",
@@ -338,7 +346,22 @@
       "revenue": "Doanh thu",
       "orders": "Đơn hàng",
       "customers": "Khách hàng",
-      "products": "Sản phẩm"
+      "products": "Sản phẩm",
+      "vsLastMonth": "so với tháng trước",
+      "totalOrders": "Tổng đơn hàng",
+      "pendingOrders": "Chờ xử lý",
+      "monthlyRevenue": "Doanh thu (Tháng)",
+      "totalSuppliers": "Tổng nhà cung cấp",
+      "active": "Đang hoạt động",
+      "newContacts": "Liên hệ mới",
+      "totalCategories": "Tổng danh mục",
+      "mainCategories": "Danh mục chính",
+      "totalProducts": "Tổng sản phẩm",
+      "lowStock": "Sắp hết hàng",
+      "outOfStock": "Hết hàng",
+      "totalCustomers": "Tổng khách hàng",
+      "notActivated": "Chưa kích hoạt",
+      "activeCustomers": "Khách hàng tích cực"
     },
     "revenueChart": "Biểu đồ doanh thu",
     "topProducts": "Sản phẩm bán chạy",
@@ -364,7 +387,9 @@
       "active": "Hoạt động",
       "inactive": "Ngưng hoạt động",
       "quoted": "Đã báo giá",
-      "closed": "Đã chốt"
+      "closed": "Đã chốt",
+      "verified": "Đã xác thực",
+      "unactivated": "Chưa kích hoạt"
     },
     "statusHint": "Bật để tài khoản hoạt động",
 
@@ -564,7 +589,13 @@
   },
   "auth": {
     "login": "Đăng nhập",
-    "register": "Đăng ký"
+    "register": "Đăng ký",
+    "forgotPasswordTitle": "Quên mật khẩu?",
+    "forgotPasswordSubtitle": "Nhập email của bạn và chúng tôi sẽ gửi liên kết để đặt lại mật khẩu.",
+    "sendResetLink": "Gửi liên kết đặt lại",
+    "backToLogin": "Quay lại đăng nhập",
+    "checkEmailTitle": "Kiểm tra email của bạn",
+    "checkEmailMessage": "Chúng tôi đã gửi liên kết đặt lại mật khẩu tới <1>{{email}}</1>. Vui lòng kiểm tra hộp thư đến (và thư mục rác) để tiếp tục."
   },
   "wishlist": {
     "title": "Sản phẩm yêu thích",
@@ -658,6 +689,7 @@
     "orderSuccess": "Đặt hàng thành công!",
     "orderError": "Đặt hàng thất bại. Vui lòng thử lại.",
     "paymentError": "Có lỗi khi tạo thanh toán, vui lòng liên hệ CSKH.",
+    "forgotPasswordSuccess": "Nếu tài khoản tồn tại, liên kết đặt lại mật khẩu đã được gửi.",
     "generalError": "Có lỗi xảy ra",
     "createSuccess": "Tạo thành công!",
     "createError": "Không thể tạo. Vui lòng thử lại.",

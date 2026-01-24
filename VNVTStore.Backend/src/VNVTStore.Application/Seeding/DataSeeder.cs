@@ -49,12 +49,18 @@ public class DataSeeder
             admin.Code = "USR_ADMIN";
             admin.IsActive = true;
             await _userRepo.AddAsync(admin);
+            Console.WriteLine("Admin user created: admin / Password123!");
         }
         else
         {
+            // Force update to match E2E expectations
+            adminRecord.UpdateProfile("Administrator", null, "admin@vnvtstore.com");
             adminRecord.UpdatePassword(_passwordHasher.Hash("Password123!"));
+            adminRecord.UpdateRole(UserRole.Admin);
             _userRepo.Update(adminRecord);
+            Console.WriteLine("Admin user updated: admin@vnvtstore.com / Password123!");
         }
+        await _unitOfWork.CommitAsync();
 
         // 1. Seed Users (200)
         // Check if we need to seed data (seed if less than 50 products, meaning incomplete seed)
@@ -113,14 +119,18 @@ public class DataSeeder
             await _supplierRepo.AddRangeAsync(suppliers);
 
             // 3. Seed Products (200)
-            // TblProduct.Create(name, price, stock, categoryCode, costPrice, weight, supplierCode, color, power, voltage, material, size)
+            // TblProduct.Create(name, price, costPrice, stock, categoryCode, weight, supplierCode, material, unit)
             var productFaker = new Faker<TblProduct>()
                 .CustomInstantiator(f => TblProduct.Create(
                     f.Commerce.ProductName(),
                     decimal.Parse(f.Commerce.Price(100000, 5000000)),
+                    null, // wholesalePrice
                     f.Random.Int(10, 100),
                     f.PickRandom(categories).Code,
-                    null, null, f.PickRandom(suppliers).Code, null, null, null, null, null // Optional args: supplierCode passed
+                    null, // costPrice
+                    f.PickRandom(suppliers).Code,
+                    null, // brandCode
+                    "Cái" // baseUnit
                 ))
                 .RuleFor(p => p.Code, f => $"PRD{f.Random.Guid().ToString().Substring(0, 8).ToUpper()}");
             // Description is private set, missed in Create? Create doesn't take Description? 

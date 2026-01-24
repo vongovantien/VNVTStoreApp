@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, Phone, ShoppingBag, Eye, Edit, Trash2, Plus, Users } from 'lucide-react';
+import { Mail, Phone, Users, AlertTriangle, Key } from 'lucide-react';
 import { Button, Modal, Badge, ConfirmDialog, TableActions, Input, Select, Switch } from '@/components/ui';
 import { useToast } from '@/store';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -9,18 +9,21 @@ import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager } from '@/hooks';
 import { customerService, type CustomerDto, type CreateCustomerRequest, type UpdateCustomerRequest } from '@/services';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
+import { PaginationDefaults, SortDirection } from '@/constants';
+import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 
 export const CustomersPage = () => {
   const { t } = useTranslation();
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
+  const [resettingCustomer, setResettingCustomer] = useState<CustomerDto | null>(null);
+  const [newPassword, setNewPassword] = useState('');
 
   // State for Fetching
   const [pageIndex, setPageIndex] = useState(PaginationDefaults.PAGE_INDEX);
   const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
   const [sortField, setSortField] = useState('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<Record<string, string>>({ role: 'customer' });
 
   // Fetch Data
   const { data: customerResponse, isLoading, refetch } = useQuery({
@@ -32,9 +35,40 @@ export const CustomersPage = () => {
       sortDesc: sortDir === SortDirection.DESC,
       filters: Object.entries(filters).map(([field, value]) => ({ field, value })),
       search: filters.search,
-      searchField: filters.search ? 'fullName' : undefined // Basic search by name
+      searchField: filters.search ? 'fullName' : undefined
     })
   });
+
+  // Fetch Stats
+  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+      queryKey: ['customer-stats'],
+      queryFn: () => customerService.getStats(),
+      staleTime: 60000, 
+  });
+
+  const stats: StatItem[] = [
+      {
+          label: t('admin.stats.totalCustomers'),
+          value: statsData?.total || 0,
+          icon: <Users size={24} />,
+          color: 'blue',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.notActivated'),
+          value: statsData?.unverified || 0,
+          icon: <AlertTriangle size={24} />,
+          color: 'rose',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.activeCustomers'),
+          value: statsData?.active || 0,
+          icon: <Users size={24} />,
+          color: 'emerald',
+          loading: isStatsLoading
+      }
+  ];
 
   const items = customerResponse?.data?.items || [];
   const totalCount = customerResponse?.data?.totalItems || PaginationDefaults.TOTAL_ITEMS;
@@ -57,7 +91,7 @@ export const CustomersPage = () => {
       delete: deleteCustomer
   } = useEntityManager<CustomerDto, CreateCustomerRequest, UpdateCustomerRequest>({
     service: customerService,
-    queryKey: ['customers', pageIndex, pageSize, sortField, sortDir, filters], // Include fetch dependencies to invalidate properly
+    queryKey: ['customers', pageIndex, pageSize, sortField, sortDir, filters],
   });
 
   const toast = useToast();
@@ -116,9 +150,9 @@ export const CustomersPage = () => {
       setFormData({
           username: customer.username || '',
           email: customer.email,
-          password: '', // Don't fill password on edit
+          password: '',
           fullName: customer.fullName || '',
-          phone: customer.phone || '', // Map phone or phoneNumber depending on DTO (we standardized to phone)
+          phone: customer.phone || '',
           role: customer.role || 'customer',
           isActive: customer.isActive
       });
@@ -135,18 +169,34 @@ export const CustomersPage = () => {
               phone: formData.phone,
               role: formData.role,
               isActive: formData.isActive,
-              password: formData.password || undefined // Only send if set
+              password: formData.password || undefined
           });
       } else {
           createCustomer({
               username: formData.username,
               email: formData.email,
-              password: formData.password, // Required for create
+              password: formData.password,
               fullName: formData.fullName,
               phone: formData.phone,
               role: formData.role,
               isActive: formData.isActive
           });
+      }
+  };
+
+  const handleResetPasswordPrompt = (customer: CustomerDto) => {
+      setResettingCustomer(customer);
+      setNewPassword('');
+  };
+
+  const confirmResetPassword = async () => {
+      if (!resettingCustomer || !newPassword) return;
+      try {
+          await customerService.update(resettingCustomer.code, { password: newPassword });
+          toast.success("Mật khẩu đã được cập nhật thành công.");
+          setResettingCustomer(null);
+      } catch (err) {
+          toast.error("Không thể cập nhật mật khẩu.");
       }
   };
 
@@ -190,7 +240,9 @@ export const CustomersPage = () => {
       id: 'role',
       header: t('common.fields.role'),
       accessor: (customer) => (
-        <Badge color={customer.role === 'admin' ? 'error' : 'info'}>{customer.role}</Badge>
+        <Badge color={customer.role === 'admin' ? 'error' : 'info'}>
+          {t(`admin.types.${customer.role.toLowerCase()}`, customer.role)}
+        </Badge>
       ),
       className: 'text-center',
       headerClassName: 'text-center'
@@ -205,6 +257,23 @@ export const CustomersPage = () => {
       ),
       className: 'text-center',
       headerClassName: 'text-center'
+    },
+    {
+      id: 'isEmailVerified',
+      header: t('common.fields.emailVerified', 'Email Verified'),
+      accessor: (customer) => (
+        <Badge color={customer.isEmailVerified ? 'success' : 'error'} variant="outline">
+          {customer.isEmailVerified ? t('admin.status.verified') : t('admin.status.unactivated')}
+        </Badge>
+      ),
+      className: 'text-center',
+      headerClassName: 'text-center'
+    },
+    {
+      id: 'lastLogin',
+      header: t('common.fields.lastLogin', 'Last Login'),
+      accessor: (customer) => <span className="text-slate-500">{customer.lastLogin ? formatDate(customer.lastLogin) : t('common.never', 'Never')}</span>,
+      sortable: true
     },
     {
       id: 'joinDate',
@@ -226,11 +295,12 @@ export const CustomersPage = () => {
   };
 
   const handleReset = () => {
-    setFilters({});
+    // Reset to starting state: just customers sorted by createdAt desc
+    setFilters({ role: 'customer' }); 
     setPageIndex(PaginationDefaults.PAGE_INDEX);
     setSortField('createdAt');
     setSortDir(SortDirection.DESC);
-    refetch(); // Force API call
+    refetch();
   };
 
   return (
@@ -239,6 +309,8 @@ export const CustomersPage = () => {
         title="admin.sidebar.customers"
         subtitle="admin.subtitles.customers"
       />
+
+      <StatsCards stats={stats} />
 
       <DataTable
         columns={columns}
@@ -249,7 +321,24 @@ export const CustomersPage = () => {
         onView={(customer) => setSelectedCustomer(customer)}
         onEdit={handleOpenEdit}
         onDelete={confirmDelete}
-        onAdd={handleOpenCreate} // Enable Add button
+        onAdd={handleOpenCreate}
+        initialFilters={{ role: 'customer' }}
+        renderRowActions={(customer) => (
+        <TableActions
+          onView={() => setSelectedCustomer(customer)}
+          onEdit={() => handleOpenEdit(customer)}
+          onDelete={() => confirmDelete(customer)}
+          customActions={
+            <button
+              className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+              title="Reset Password"
+              onClick={() => handleResetPasswordPrompt(customer)}
+            >
+              <Key size={18} />
+            </button>
+          }
+        />
+        )}
 
         // Sorting
         externalSortField={sortField}
@@ -477,6 +566,28 @@ export const CustomersPage = () => {
         confirmText={t('common.delete')}
         isLoading={bulkDeleteMutation.isPending}
       />
+
+      <Modal
+        isOpen={!!resettingCustomer}
+        onClose={() => setResettingCustomer(null)}
+        title={`Reset Password for ${resettingCustomer?.fullName}`}
+        size="sm"
+      >
+        <div className="space-y-4">
+            <Input
+                label="New Password"
+                type="password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="Enter new strong password"
+                isRequired
+            />
+            <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setResettingCustomer(null)}>Cancel</Button>
+                <Button onClick={confirmResetPassword} disabled={!newPassword}>Update Password</Button>
+            </div>
+        </div>
+      </Modal>
     </div>
   );
 };

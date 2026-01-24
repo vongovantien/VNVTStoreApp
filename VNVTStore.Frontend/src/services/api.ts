@@ -73,6 +73,7 @@ export interface RequestDTO {
   pageSize: number;
   searching?: SearchDTO[];
   sortDTO?: SortDTO;
+  fields?: string[];
 }
 
 // ============ Axios Setup ============

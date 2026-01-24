@@ -1,36 +1,67 @@
 // ============ Product Types ============
 export interface Product {
     code: string;
-
     name: string;
     slug: string;
     description: string;
     price: number;
+    wholesalePrice?: number; // New
     originalPrice?: number;
     discount?: number;
     image: string;
     images?: string[];
     category: string;
-    categoryId: string;
+    categoryCode?: string;
     brand?: string;
+    brandCode?: string; // New
     stock: number;
-    rating: number;
-    reviewCount: number;
-    isFeatured?: boolean;
-    isNew?: boolean;
-    specifications?: Record<string, string>;
-    createdAt: string;
-    updatedAt?: string;
-    isActive?: boolean;
+    stockQuantity?: number; // Sync with backend name
+    minStockLevel?: number; // New
+    binLocation?: string; // New
+    vatRate?: number; // New
+    countryOfOrigin?: string; // New
+    baseUnit?: string; // New
+    weight?: number;
     color?: string;
     power?: string;
     voltage?: string;
     material?: string;
     size?: string;
-    categoryCode?: string;
-    costPrice?: number;
-    weight?: number;
-    supplierCode?: string;
+    rating: number;
+    reviewCount: number;
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isActive?: boolean;
+    createdAt: string;
+    updatedAt?: string;
+
+    // Relations
+    details?: ProductDetail[];
+    units?: ProductUnit[];
+    tags?: ProductTag[];
+}
+
+export type DetailType = 'SPEC' | 'LOGISTICS' | 'RELATION' | 'IMAGE';
+
+export interface ProductDetail {
+    code: string;
+    productCode: string;
+    detailType: DetailType;
+    specName: string;
+    specValue: string;
+}
+
+export interface ProductUnit {
+    code: string;
+    productCode: string;
+    unitName: string;
+    conversionRate: number;
+    price: number;
+}
+
+export interface ProductTag {
+    productCode: string;
+    tagCode: string;
 }
 
 // ============ Category Types ============
@@ -57,9 +88,16 @@ export interface CartItem {
 
 // ============ User Types ============
 export enum UserRole {
-    ADMIN = 'Admin',
-    CUSTOMER = 'Customer',
-    STAFF = 'Staff'
+    Admin = 'Admin',
+    Customer = 'Customer',
+    Staff = 'Staff'
+}
+
+export enum UserStatus {
+    Active = 'Active',
+    Inactive = 'Inactive',
+    Locked = 'Locked',
+    Pending = 'Pending'
 }
 
 export interface User {
@@ -69,8 +107,9 @@ export interface User {
     username?: string;
     phone?: string;
     avatar?: string;
-    role: UserRole | string;
+    role: UserRole;
     addresses?: Address[];
+    status: UserStatus;
     createdAt: string;
 }
 

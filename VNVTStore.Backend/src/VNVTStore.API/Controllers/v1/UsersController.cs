@@ -109,6 +109,28 @@ public class UsersController : BaseApiController
     }
 
     /// <summary>
+    /// Get user by code (Admin only)
+    /// </summary>
+    [HttpGet("{code}")]
+    [Authorize(Roles = "admin,Admin")]
+    public async Task<IActionResult> GetByCode(string code)
+    {
+        var result = await Mediator.Send(new GetUserByCodeQuery(code));
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Delete user (Admin only)
+    /// </summary>
+    [HttpDelete("{code}")]
+    [Authorize(Roles = "admin,Admin")]
+    public async Task<IActionResult> Delete(string code)
+    {
+        var result = await Mediator.Send(new DeleteCommand<TblUser>(code));
+        return HandleDelete(result);
+    }
+
+    /// <summary>
     /// Delete multiple users (Admin only)
     /// </summary>
     [HttpPost("delete-multiple")]

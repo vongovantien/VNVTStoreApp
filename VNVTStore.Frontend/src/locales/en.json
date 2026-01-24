@@ -9,6 +9,12 @@
     "account": "Account",
     "login": "Login",
     "register": "Register",
+    "forgotPasswordTitle": "Forgot Password?",
+    "forgotPasswordSubtitle": "Enter your email and we'll send you a link to reset your password.",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "checkEmailTitle": "Check Your Email",
+    "checkEmailMessage": "We have sent a password reset link to <1>{{email}}</1>. Please check your inbox (and spam folder) to continue.",
     "logout": "Logout",
     "save": "Save",
     "search": "Search",
@@ -114,6 +120,7 @@
         "voltage": "Voltage",
         "power": "Power",
         "priceAndStock": "Price & Stock",
+        "createdAt": "Created At",
         "specifications": "Specifications",
         "supplier": "Supplier",
         "image": "Image",
@@ -238,6 +245,13 @@
       "marketing": "Marketing",
       "system": "System"
     },
+    "userMenu": {
+      "signedInAs": "Signed in as",
+      "accountSettings": "Account settings",
+      "support": "Support",
+      "license": "License",
+      "signOut": "Sign out"
+    },
     "subtitles": {
       "dashboard": "System Overview",
       "orders": "Manage Orders",
@@ -308,7 +322,22 @@
       "revenue": "Revenue",
       "orders": "Orders",
       "customers": "Customers",
-      "products": "Products"
+      "products": "Products",
+      "vsLastMonth": "vs last month",
+      "totalOrders": "Total Orders",
+      "pendingOrders": "Pending Processing",
+      "monthlyRevenue": "Revenue (Month)",
+      "totalSuppliers": "Total Suppliers",
+      "active": "Active",
+      "newContacts": "New Contacts",
+      "totalCategories": "Total Categories",
+      "mainCategories": "Main Categories",
+      "totalProducts": "Total Products",
+      "lowStock": "Low Stock",
+      "outOfStock": "Out of Stock",
+      "totalCustomers": "Total Customers",
+      "notActivated": "Not Activated",
+      "activeCustomers": "Active Customers"
     },
     "revenueChart": "Revenue Chart",
     "topProducts": "Top Products",
@@ -335,7 +364,9 @@
       "active": "Active",
       "inactive": "Inactive",
       "quoted": "Quoted",
-      "closed": "Closed"
+      "closed": "Closed",
+      "verified": "Verified",
+      "unactivated": "Not Activated"
     },
     "statusHint": "Enable to make account active",
 
@@ -612,6 +643,7 @@
     "orderSuccess": "Order placed successfully!",
     "orderError": "Order failed. Please try again.",
     "paymentError": "Payment error, please contact support.",
+    "forgotPasswordSuccess": "If an account exists with this email, a reset link has been sent.",
     "generalError": "An error occurred",
     "createSuccess": "Created successfully!",
     "createError": "Unable to create. Please try again.",

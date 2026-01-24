@@ -11,6 +11,8 @@ import { CategoryForm, type CategoryFormData } from './forms';
 import { PaginationDefaults, API_ENDPOINTS } from '@/constants';
 import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
 import { getImageUrl } from '@/utils/format';
+import { StatsCards, StatItem } from '@/components/admin/StatsCards';
+import { useQuery } from '@tanstack/react-query';
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
@@ -198,12 +200,45 @@ export default function CategoriesPage() {
       };
   };
 
+  // Fetch Stats
+  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+      queryKey: ['category-stats'],
+      queryFn: () => categoryService.getStats(),
+      staleTime: 60000,
+  });
+
+  const stats: StatItem[] = [
+      {
+          label: t('admin.stats.totalCategories'),
+          value: statsData?.total || 0,
+          icon: <Folder size={24} />,
+          color: 'indigo',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.mainCategories'),
+          value: statsData?.mainCategories || 0,
+          icon: <Folder size={24} />, // Maybe distinct icon?
+          color: 'emerald',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.active'),
+          value: statsData?.active || 0, // Assuming active count returned or we calculate? For now use total or returned val
+          icon: <RefreshCw size={24} />,
+          color: 'amber',
+          loading: isStatsLoading
+      }
+  ];
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
         title="admin.sidebar.categories"
         subtitle="admin.subtitles.categories"
       />
+
+      <StatsCards stats={stats} />
 
       <DataTable
         data={categories}

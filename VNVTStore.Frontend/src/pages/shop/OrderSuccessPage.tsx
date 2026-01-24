@@ -161,7 +161,7 @@ const OrderSuccessPage = () => {
                                     </div>
                                     <div className="text-right pt-0.5">
                                         <p className="text-[13px] font-medium text-[#333333]">
-                                            {formatCurrency(item.price * item.quantity)}
+                                            {formatCurrency(item.priceAtOrder * item.quantity)}
                                         </p>
                                     </div>
                                 </div>

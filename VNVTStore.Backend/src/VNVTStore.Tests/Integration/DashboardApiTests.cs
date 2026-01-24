@@ -15,10 +15,10 @@ public class DashboardApiTests : ApiTestBase
     public async Task GetStats_ReturnsSuccessOrAuth()
     {
         // Try both possible routes based on controller naming
-        var response = await Client.GetAsync("/api/v1/warehouse/dashboard-stats");
+        var response = await Client.GetAsync("/api/v1/dashboard/stats");
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            response = await Client.GetAsync("/api/v1/warehouse/stats");
+            response = await Client.GetAsync("/api/v1/dashboard/stats");
         }
         
         Assert.NotEqual(HttpStatusCode.InternalServerError, response.StatusCode);

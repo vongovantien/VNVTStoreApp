@@ -24,7 +24,7 @@ import type { CategoryDto } from '@/services/productService';
 interface FilterSidebarProps {
   categories: CategoryDto[];
   selectedCategories: string[];
-  onCategoryToggle: (id: string) => void;
+  onCategoryToggle: (code: string) => void;
   selectedBrands: string[];
   onBrandToggle: (brand: string) => void;
   priceRange: [number, number];

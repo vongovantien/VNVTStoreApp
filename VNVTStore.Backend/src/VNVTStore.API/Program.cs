@@ -11,7 +11,6 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiServices(builder.Configuration);
 builder.Services.AddSignalR();
-builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
 
 // Increase Request Body Limits for Large Image Uploads

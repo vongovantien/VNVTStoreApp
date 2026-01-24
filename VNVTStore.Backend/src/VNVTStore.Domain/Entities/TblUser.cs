@@ -47,6 +47,14 @@ public partial class TblUser : IEntity
     [Column("LoyaltyPoints")]
     public int LoyaltyPoints { get; private set; } = 0;
 
+    public string? EmailVerificationToken { get; private set; }
+
+    public bool IsEmailVerified { get; private set; } = false;
+
+    public string? PasswordResetToken { get; private set; }
+
+    public DateTime? ResetTokenExpiry { get; private set; }
+
     public virtual ICollection<TblAddress> TblAddresses { get; private set; }
 
     public virtual ICollection<TblCart> TblCarts { get; private set; }
@@ -74,7 +82,9 @@ public partial class TblUser : IEntity
             Role = role,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            IsEmailVerified = false,
+            EmailVerificationToken = Guid.NewGuid().ToString("N")
         };
         
         return user;
@@ -120,6 +130,34 @@ public partial class TblUser : IEntity
     {
         if (points < 0) throw new ArgumentException("Points cannot be negative", nameof(points));
         LoyaltyPoints += points;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void VerifyEmail(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token)) throw new ArgumentException("Token cannot be empty", nameof(token));
+        if (EmailVerificationToken != token) throw new InvalidOperationException("Invalid verification token");
+        
+        IsEmailVerified = true;
+        EmailVerificationToken = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void GeneratePasswordResetToken()
+    {
+        PasswordResetToken = Guid.NewGuid().ToString("N");
+        ResetTokenExpiry = DateTime.UtcNow.AddHours(24);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ResetPassword(string token, string passwordHash)
+    {
+        if (PasswordResetToken != token) throw new InvalidOperationException("Invalid reset token");
+        if (ResetTokenExpiry < DateTime.UtcNow) throw new InvalidOperationException("Reset token expired");
+        
+        PasswordHash = passwordHash;
+        PasswordResetToken = null;
+        ResetTokenExpiry = null;
         UpdatedAt = DateTime.UtcNow;
     }
 

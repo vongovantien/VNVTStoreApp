@@ -6,6 +6,11 @@ public class NotificationHub : Hub
 {
     public async Task SendNotification(string message)
     {
-        await Clients.All.SendAsync("ReceiveNotification", message);
+        await Clients.All.SendAsync("ReceiveOrderNotification", message);
+    }
+
+    public async Task BroadcastSystemMessage(string message)
+    {
+        await Clients.All.SendAsync("ReceiveSystemNotification", message);
     }
 }

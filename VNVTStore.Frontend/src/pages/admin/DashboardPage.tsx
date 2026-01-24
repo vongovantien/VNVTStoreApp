@@ -27,29 +27,32 @@ interface StatCardProps {
   color: string;
 }
 
-const StatCard = ({ title, value, change, icon: Icon, color }: StatCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="bg-primary rounded-xl p-6"
-  >
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-sm text-secondary mb-1">{title}</p>
-        <p className="text-2xl font-bold">{value}</p>
-        {typeof change === 'number' && (
-          <p className={`flex items-center gap-1 text-sm mt-2 ${change >= 0 ? 'text-success' : 'text-error'}`}>
-            {change >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            {change >= 0 ? '+' : ''}{change}% so với tháng trước
-          </p>
-        )}
+const StatCard = ({ title, value, change, icon: Icon, color }: StatCardProps) => {
+  const { t } = useTranslation();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-primary rounded-xl p-6"
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-secondary mb-1">{title}</p>
+          <p className="text-2xl font-bold">{value}</p>
+          {typeof change === 'number' && (
+            <p className={`flex items-center gap-1 text-sm mt-2 ${change >= 0 ? 'text-success' : 'text-error'}`}>
+              {change >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+              {change >= 0 ? '+' : ''}{change}% {t('admin.stats.vsLastMonth')}
+            </p>
+          )}
+        </div>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
+          <Icon size={24} className="text-white" />
+        </div>
       </div>
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
-        <Icon size={24} className="text-white" />
-      </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // ============ Dashboard Page ============
 export const DashboardPage = () => {
@@ -206,7 +209,7 @@ export const DashboardPage = () => {
                     <td className="py-3 text-error font-medium">{formatCurrency(order.finalAmount)}</td>
                     <td className="py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium bg-${getStatusColor(order.status)}/20 text-${getStatusColor(order.status)}`}>
-                        {getStatusText(order.status)}
+                        {t(getStatusText(order.status))}
                       </span>
                     </td>
                   </tr>

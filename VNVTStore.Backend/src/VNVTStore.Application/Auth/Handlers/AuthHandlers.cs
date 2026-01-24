@@ -16,17 +16,20 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
     private readonly IPasswordHasher _passwordHasher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IEmailService _emailService;
 
     public RegisterCommandHandler(
         IRepository<TblUser> repository,
         IPasswordHasher passwordHasher,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper,
+        IEmailService emailService)
     {
         _repository = repository;
         _passwordHasher = passwordHasher;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _emailService = emailService;
     }
 
     public async Task<Result<UserDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -53,7 +56,105 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
         await _repository.AddAsync(user, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
 
+        // Send Verification Email
+        var verificationLink = $"http://localhost:5173/verify-email?email={user.Email}&token={user.EmailVerificationToken}";
+        await _emailService.SendEmailAsync(user.Email, "VNVT Store - Email Verification", 
+            $"<h1>Welcome to VNVT Store!</h1><p>Please verify your email by clicking the following link:</p><a href='{verificationLink}'>Verify Email</a>", true);
+
         return Result.Success(_mapper.Map<UserDto>(user));
+    }
+}
+
+public class VerifyEmailCommandHandler : IRequestHandler<VerifyEmailCommand, Result<bool>>
+{
+    private readonly IRepository<TblUser> _repository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public VerifyEmailCommandHandler(IRepository<TblUser> repository, IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result<bool>> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _repository.FindAsync(u => u.Email == request.email, cancellationToken);
+        if (user == null)
+            return Result.Failure<bool>(Error.NotFound("User not found"));
+
+        try
+        {
+            user.VerifyEmail(request.token);
+            _repository.Update(user);
+            await _unitOfWork.CommitAsync(cancellationToken);
+            return Result.Success(true);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>(Error.Validation(ex.Message));
+        }
+    }
+}
+
+public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand, Result<bool>>
+{
+    private readonly IRepository<TblUser> _repository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailService _emailService;
+
+    public ForgotPasswordCommandHandler(IRepository<TblUser> repository, IUnitOfWork unitOfWork, IEmailService emailService)
+    {
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+        _emailService = emailService;
+    }
+
+    public async Task<Result<bool>> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _repository.FindAsync(u => u.Email == request.email, cancellationToken);
+        if (user == null) return Result.Success(true); // Don't reveal account existence
+
+        user.GeneratePasswordResetToken();
+        _repository.Update(user);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        var resetLink = $"http://localhost:5173/reset-password?email={user.Email}&token={user.PasswordResetToken}";
+        await _emailService.SendEmailAsync(user.Email, "VNVT Store - Reset Password",
+            $"<h1>Reset Your Password</h1><p>Click the link below to reset your password:</p><a href='{resetLink}'>Reset Password</a>", true);
+
+        return Result.Success(true);
+    }
+}
+
+public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, Result<bool>>
+{
+    private readonly IRepository<TblUser> _repository;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public ResetPasswordCommandHandler(IRepository<TblUser> repository, IPasswordHasher passwordHasher, IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _passwordHasher = passwordHasher;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result<bool>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _repository.FindAsync(u => u.Email == request.email, cancellationToken);
+        if (user == null) return Result.Failure<bool>(Error.NotFound("User not found"));
+
+        try
+        {
+            user.ResetPassword(request.token, _passwordHasher.Hash(request.newPassword));
+            _repository.Update(user);
+            await _unitOfWork.CommitAsync(cancellationToken);
+            return Result.Success(true);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>(Error.Validation(ex.Message));
+        }
     }
 }
 

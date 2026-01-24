@@ -2,6 +2,7 @@ using AutoMapper;
 using VNVTStore.Application.DTOs;
 
 using VNVTStore.Domain.Entities;
+using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.MappingProfiles;
 
@@ -26,12 +27,14 @@ public class MappingProfile : Profile
         // Product mappings
         CreateMap<TblProduct, ProductDto>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryCodeNavigation != null ? src.CategoryCodeNavigation.Name : null))
-            .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => (string?)null))
-            .ForMember(dest => dest.IsNew, opt => opt.MapFrom(src => false))
-            .ForMember(dest => dest.IsFeatured, opt => opt.MapFrom(src => false))
+            .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.Name : null))
+            .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.TblProductDetails))
             .ForMember(dest => dest.ProductImages, opt => opt.Ignore())
             .ReverseMap()
-            .ForMember(dest => dest.CategoryCodeNavigation, opt => opt.Ignore());
+            .ForMember(dest => dest.CategoryCodeNavigation, opt => opt.Ignore())
+            .ForMember(dest => dest.Brand, opt => opt.Ignore());
+            
+        CreateMap<TblProductDetail, ProductDetailDto>().ReverseMap();
         
         // CreateProductDto -> TblProduct mapping
         CreateMap<CreateProductDto, TblProduct>()
@@ -47,7 +50,7 @@ public class MappingProfile : Profile
         // CreateMap<TblProductImage, ProductImageDto>().ReverseMap(); // Removed
 
         CreateMap<TblCategory, CategoryDto>()
-            .ForMember(dest => dest.ImageURL, opt => opt.MapFrom<ImageUrlResolver, string?>(src => src.ImageUrl))
+            .ForMember(dest => dest.ImageURL, opt => opt.MapFrom<ImageUrlResolver, string?>(src => src.ImageURL))
             .ReverseMap();
 
         // Order mappings

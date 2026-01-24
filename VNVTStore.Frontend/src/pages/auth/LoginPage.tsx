@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -12,7 +12,7 @@ export const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuthStore();
+  const { login, isAuthenticated, user } = useAuthStore();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,10 +23,53 @@ export const LoginPage = () => {
     remember: false,
   });
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+        if (user.role === UserRole.Admin) { 
+            navigate('/admin', { replace: true });
+        } else {
+            navigate('/', { replace: true });
+        }
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const from = (location.state as { from?: string })?.from || '/';
+  const [formErrors, setFormErrors] = useState<Record<string, string | undefined>>({});
+
+  const validate = () => {
+    const errors: Record<string, string | undefined> = {};
+    if (!formData.email) {
+      errors.email = 'Vui lòng nhập email';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Email không hợp lệ';
+    }
+    
+    if (!formData.password) {
+      errors.password = 'Vui lòng nhập mật khẩu';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  /* Load saved email if 'Remember Me' was checked */
+  useEffect(() => {
+      const isRemembered = localStorage.getItem('vnvt-remember') === 'true';
+      if (isRemembered) {
+          const savedEmail = localStorage.getItem('vnvt-email');
+          if (savedEmail) {
+              setFormData(prev => ({ ...prev, email: savedEmail, remember: true }));
+          }
+      }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
+
     setIsLoading(true);
     setError(null);
 
@@ -42,8 +85,10 @@ export const LoginPage = () => {
         // Handle Remember Me preference
         if (formData.remember) {
             localStorage.setItem('vnvt-remember', 'true');
+            localStorage.setItem('vnvt-email', formData.email);
         } else {
             localStorage.removeItem('vnvt-remember');
+            localStorage.removeItem('vnvt-email');
         }
 
         login(
@@ -51,7 +96,7 @@ export const LoginPage = () => {
             code: user.code,
             email: user.email,
             fullName: user.fullName || user.username,
-            role: (user.role as UserRole) || UserRole.CUSTOMER,
+            role: (user.role as UserRole) || UserRole.Customer,
             createdAt: new Date().toISOString(),
           },
           token,
@@ -62,7 +107,7 @@ export const LoginPage = () => {
         
         // Redirect to admin if admin role, otherwise to original destination
         // backend returns PascalCase 'Admin', Enum is 'Admin'
-        if (user.role === UserRole.ADMIN) { 
+        if (user.role === UserRole.Admin) { 
             navigate('/admin', { replace: true });
         } else {
             navigate(from, { replace: true });
@@ -108,6 +153,7 @@ export const LoginPage = () => {
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           leftIcon={<Mail size={18} />}
           required
+          error={formErrors.email}
         />
 
         <div className="relative">
@@ -119,6 +165,7 @@ export const LoginPage = () => {
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             leftIcon={<Lock size={18} />}
             required
+            error={formErrors.password}
           />
           <button
             type="button"

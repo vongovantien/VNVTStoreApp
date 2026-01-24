@@ -9,6 +9,8 @@ import { DataTable, type DataTableColumn } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, useSuppliers } from '@/hooks';
 import { SupplierForm, type SupplierFormData } from './forms';
+import { StatsCards, StatItem } from '@/components/admin/StatsCards';
+import { useQuery } from '@tanstack/react-query';
 
 export default function SuppliersPage() {
   const { t } = useTranslation();
@@ -182,12 +184,45 @@ export default function SuppliersPage() {
       }
   ];
 
+  // Fetch Stats
+  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+      queryKey: ['supplier-stats'],
+      queryFn: () => supplierService.getStats(),
+      staleTime: 60000,
+  });
+
+  const stats: StatItem[] = [
+      {
+          label: t('admin.stats.totalSuppliers'),
+          value: statsData?.total || 0,
+          icon: <Building2 size={24} />,
+          color: 'blue',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.active'),
+          value: statsData?.active || 0,
+          icon: <RefreshCw size={24} />,
+          color: 'emerald',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.newContacts'),
+          value: 0, // Placeholder as service might not return this yet
+          icon: <Mail size={24} />,
+          color: 'rose',
+          loading: isStatsLoading
+      }
+  ];
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
         title="admin.sidebar.suppliers"
         subtitle="admin.subtitles.suppliers"
       />
+
+      <StatsCards stats={stats} />
 
       <DataTable
         data={suppliers as SupplierDto[]}

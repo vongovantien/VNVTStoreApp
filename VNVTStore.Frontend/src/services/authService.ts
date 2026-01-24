@@ -61,6 +61,27 @@ export const authService = {
     async getProfile(): Promise<ApiResponse<UserDto>> {
         return apiClient.get<UserDto>('/auth/me');
     },
+
+    /**
+     * Verify email with token
+     */
+    async verifyEmail(email: string, token: string): Promise<ApiResponse<boolean>> {
+        return apiClient.get<boolean>(`/auth/verify-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`);
+    },
+
+    /**
+     * Request password reset link
+     */
+    async forgotPassword(email: string): Promise<ApiResponse<boolean>> {
+        return apiClient.post<boolean>('/auth/forgot-password', { email });
+    },
+
+    /**
+     * Reset password with token
+     */
+    async resetPassword(data: { email: string; token: string; newPassword: string }): Promise<ApiResponse<boolean>> {
+        return apiClient.post<boolean>('/auth/reset-password', data);
+    },
 };
 
 export default authService;

@@ -18,6 +18,17 @@ class SignalRService {
             this.notifyListeners('ReceiveOrderNotification', message);
         });
 
+        this.connection.on('ReceiveSystemNotification', (data: any) => {
+            // Support both string messages and localized notification objects
+            if (typeof data === 'object' && data.Key) {
+                // If it's a localized object, we'll notify listeners with the key/args
+                // Listeners should use i18n.t(data.Key, data.Args)
+                this.notifyListeners('ReceiveSystemNotification', data);
+            } else {
+                this.notifyListeners('ReceiveSystemNotification', data);
+            }
+        });
+
         try {
             await this.connection.start();
             console.log('SignalR Connected');

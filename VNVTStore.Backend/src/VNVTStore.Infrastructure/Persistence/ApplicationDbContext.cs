@@ -51,6 +51,12 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public virtual DbSet<TblUser> TblUsers { get; set; }
 
+    public virtual DbSet<TblBrand> TblBrands { get; set; }
+    public virtual DbSet<TblUnit> TblUnits { get; set; } // Renamed from TblProductUnit
+    public virtual DbSet<TblProductDetail> TblProductDetails { get; set; } // New
+    public virtual DbSet<TblTag> TblTags { get; set; }
+    public virtual DbSet<TblProductTag> TblProductTags { get; set; }
+
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -66,6 +72,10 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
         configurationBuilder.Properties<UserRole>().HaveConversion<EnumLowerCaseConverter<UserRole>>();
         configurationBuilder.Properties<PaymentStatus>().HaveConversion<EnumLowerCaseConverter<PaymentStatus>>();
         configurationBuilder.Properties<PaymentMethod>().HaveConversion<EnumLowerCaseConverter<PaymentMethod>>();
+        
+        // Custom conversion for ProductDetailType to use Description attribute or just ToString. 
+        // Let's use string conversion for now, uppercase.
+        configurationBuilder.Properties<ProductDetailType>().HaveConversion<string>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -196,7 +206,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Code)
                 .HasMaxLength(100)
                 .HasDefaultValueSql("('CAT'::text || lpad((nextval('category_code_seq'::regclass))::text, 6, '0'::text))");
-            entity.Property(e => e.ImageUrl)
+            entity.Property(e => e.ImageURL)
                 .HasMaxLength(255)
                 .HasColumnName("ImageURL");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
@@ -392,7 +402,12 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Price).HasPrecision(15, 2);
 
             entity.Property(e => e.StockQuantity).HasDefaultValue(0);
-            entity.Property(e => e.Weight).HasPrecision(8, 2);
+            entity.Property(e => e.WholesalePrice).HasPrecision(15, 2);
+            entity.Property(e => e.BrandCode).HasMaxLength(50);
+            entity.Property(e => e.BaseUnit).HasMaxLength(50);
+            entity.Property(e => e.BinLocation).HasMaxLength(100);
+            entity.Property(e => e.VatRate).HasPrecision(5, 2);
+            entity.Property(e => e.CountryOfOrigin).HasMaxLength(100);
 
             entity.HasOne(d => d.CategoryCodeNavigation).WithMany(p => p.TblProducts)
                 .HasForeignKey(d => d.CategoryCode)
@@ -402,13 +417,17 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(d => d.SupplierCodeNavigation).WithMany()
                 .HasForeignKey(d => d.SupplierCode)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(d => d.Brand).WithMany(p => p.TblProducts)
+                .HasForeignKey(d => d.BrandCode)
+                .OnDelete(DeleteBehavior.SetNull);
+            
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
 
             entity.HasIndex(e => e.CategoryCode, "idx_product_category");
             entity.HasIndex(e => e.SupplierCode, "idx_product_supplier");
+            entity.HasIndex(e => e.BrandCode, "idx_product_brand");
             entity.HasIndex(e => e.IsActive, "idx_product_active");
-            entity.HasIndex(e => e.Code, "idx_product_code"); // Usually PK is indexed, but explicit helps if used in joins often? PK is TblProduct_pkey. Code is PK. So redundant? PK is Code. So index exists.
-            // Removing explicit Code index as it is PK.
         });
 
 
@@ -639,6 +658,96 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.HasSequence("user_code_seq");
         modelBuilder.HasSequence("banner_code_seq");
         modelBuilder.HasSequence("file_code_seq");
+
+        // Brand Configuration
+        modelBuilder.Entity<TblBrand>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblBrand_pkey");
+            entity.ToTable("TblBrand");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+        });
+
+        // Product Unit Configuration (Renamed TblUnit)
+        modelBuilder.Entity<TblUnit>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblUnit_pkey");
+            entity.ToTable("TblUnit");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.ProductCode).HasMaxLength(100);
+            entity.Property(e => e.UnitName).HasMaxLength(50);
+            entity.Property(e => e.Price).HasPrecision(15, 2);
+            entity.Property(e => e.ConversionRate).HasPrecision(10, 2);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.TblUnits)
+                .HasForeignKey(d => d.ProductCode)
+                .HasConstraintName("TblUnit_ProductCode_fkey");
+        });
+
+        // Product Detail Configuration
+        modelBuilder.Entity<TblProductDetail>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblProductDetail_pkey");
+            entity.ToTable("TblProductDetail");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.ProductCode).HasMaxLength(100);
+            entity.Property(e => e.SpecName).HasMaxLength(100);
+            entity.Property(e => e.SpecValue).HasMaxLength(255);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+
+            entity.Property(e => e.DetailType)
+                  .HasMaxLength(50)
+                  .HasConversion<EnumStringConverter<VNVTStore.Domain.Enums.ProductDetailType>>();
+
+            entity.HasOne(d => d.Product).WithMany(p => p.TblProductDetails)
+                .HasForeignKey(d => d.ProductCode)
+                .HasConstraintName("TblProductDetail_ProductCode_fkey");
+        });
+
+        // Tag Configuration
+        modelBuilder.Entity<TblTag>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblTag_pkey");
+            entity.ToTable("TblTag");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+        });
+
+        // Product Tag Junction Configuration
+        modelBuilder.Entity<TblProductTag>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblProductTag_pkey");
+            entity.ToTable("TblProductTag");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.ProductCode).HasMaxLength(100);
+            entity.Property(e => e.TagCode).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.TblProductTags)
+                .HasForeignKey(d => d.ProductCode)
+                .HasConstraintName("TblProductTag_ProductCode_fkey");
+
+            entity.HasOne(d => d.Tag).WithMany(p => p.TblProductTags)
+                .HasForeignKey(d => d.TagCode)
+                .HasConstraintName("TblProductTag_TagCode_fkey");
+        });
+
 
 
 

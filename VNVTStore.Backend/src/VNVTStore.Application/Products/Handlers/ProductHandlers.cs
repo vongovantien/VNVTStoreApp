@@ -147,8 +147,21 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
 
             var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
-            var product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, dto.CostPrice, 
-                dto.Weight, supplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
+            var product = TblProduct.Create(dto.Name, dto.Price, dto.WholesalePrice, dto.StockQuantity ?? 0, dto.CategoryCode, dto.CostPrice, 
+                supplierCode, dto.BrandCode, dto.BaseUnit);
+
+            if (dto.Details != null && dto.Details.Any())
+            {
+                foreach (var detail in dto.Details)
+                {
+                    product.TblProductDetails.Add(new TblProductDetail {
+                        ProductCode = product.Code,
+                        DetailType = detail.DetailType,
+                        SpecName = detail.SpecName,
+                        SpecValue = detail.SpecValue
+                    });
+                }
+            }
             
             if (dto.Images != null && dto.Images.Any())
             {
@@ -256,11 +269,40 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
             var supplierCode = string.IsNullOrWhiteSpace(request.Dto.SupplierCode) ? null : request.Dto.SupplierCode;
             
-            product.UpdateInfo(request.Dto.Name ?? product.Name, request.Dto.Price ?? product.Price, request.Dto.Description ?? product.Description, 
-                request.Dto.CategoryCode ?? product.CategoryCode, request.Dto.CostPrice ?? product.CostPrice, request.Dto.StockQuantity ?? product.StockQuantity,
-                request.Dto.Weight ?? product.Weight, supplierCode ?? product.SupplierCode, request.Dto.Color ?? product.Color, 
-                request.Dto.Power ?? product.Power, request.Dto.Voltage ?? product.Voltage, request.Dto.Material ?? product.Material, 
-                request.Dto.Size ?? product.Size);
+            product.UpdateInfo(
+                request.Dto.Name ?? product.Name, 
+                request.Dto.Price ?? product.Price, 
+                request.Dto.WholesalePrice ?? product.WholesalePrice,
+                request.Dto.Description ?? product.Description, 
+                request.Dto.CategoryCode ?? product.CategoryCode, 
+                request.Dto.CostPrice ?? product.CostPrice, 
+                request.Dto.StockQuantity ?? product.StockQuantity,
+                supplierCode ?? product.SupplierCode, 
+                request.Dto.BrandCode ?? product.BrandCode, 
+                request.Dto.BaseUnit ?? product.BaseUnit,
+                request.Dto.MinStockLevel ?? product.MinStockLevel,
+                request.Dto.BinLocation ?? product.BinLocation,
+                request.Dto.VatRate ?? product.VatRate,
+                request.Dto.CountryOfOrigin ?? product.CountryOfOrigin
+            );
+
+            // Handle Details update (for now, simply replace)
+            if (request.Dto.Details != null)
+            {
+                // Unlink old details (Soft delete)
+                foreach(var d in product.TblProductDetails) d.IsActive = false;
+                
+                // Add new
+                foreach (var detail in request.Dto.Details)
+                {
+                    product.TblProductDetails.Add(new TblProductDetail {
+                        ProductCode = product.Code,
+                        DetailType = detail.DetailType,
+                        SpecName = detail.SpecName,
+                        SpecValue = detail.SpecValue
+                    });
+                }
+            }
 
             if (request.Dto.Images != null)
             {
@@ -446,14 +488,14 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 if (product != null)
                 {
                     var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
-                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, dto.Weight, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size, supplierCode);
+                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, supplierCode, dto.BrandCode);
                     _repository.Update(product);
                 }
                 else
                 {
                     var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
-                    product = TblProduct.Create(dto.Name, dto.Price, dto.StockQuantity ?? 0, dto.CategoryCode, null, dto.Weight, supplierCode, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size);
-                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, dto.Weight, dto.Color, dto.Power, dto.Voltage, dto.Material, dto.Size, supplierCode);
+                    product = TblProduct.Create(dto.Name, dto.Price, dto.WholesalePrice, dto.StockQuantity ?? 0, dto.CategoryCode, null, supplierCode, dto.BrandCode, dto.BaseUnit);
+                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, supplierCode, dto.BrandCode);
                     await _repository.AddAsync(product, cancellationToken);
                 }
                 importedCount++;

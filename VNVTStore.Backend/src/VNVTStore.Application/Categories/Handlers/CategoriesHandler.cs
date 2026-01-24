@@ -21,16 +21,17 @@ using Newtonsoft.Json.Linq;
 namespace VNVTStore.Application.Categories.Handlers;
 
 public class CategoriesHandler : BaseHandler<TblCategory>,
-    IRequestHandler<GetPagedQuery<CategoryDto>, Result<PagedResult<CategoryDto>>>,
+    IRequestHandler<GetCategoriesQuery, Result<PagedResult<CategoryDto>>>,
     IRequestHandler<CreateCommand<CreateCategoryDto, CategoryDto>, Result<CategoryDto>>,
     IRequestHandler<UpdateCommand<UpdateCategoryDto, CategoryDto>, Result<CategoryDto>>,
     IRequestHandler<DeleteCommand<TblCategory>, Result>,
     IRequestHandler<DeleteMultipleCommand<TblCategory>, Result>,
-    IRequestHandler<GetByCodeQuery<CategoryDto>, Result<CategoryDto>>
+    IRequestHandler<GetByCodeQuery<CategoryDto>, Result<CategoryDto>>,
+    IRequestHandler<GetCategoryStatsQuery, Result<CategoryStatsDto>>
 {
     private readonly IImageUploadService _imageUploadService;
-    private readonly IApplicationDbContext _context; // This field is still used in other methods, so it should not be removed.
-    private readonly IRepository<TblProduct> _productRepository; // This field is still used in other methods, so it should not be removed.
+    private readonly IApplicationDbContext _context; 
+    private readonly IRepository<TblProduct> _productRepository;
 
     public CategoriesHandler(
         IRepository<TblCategory> repository,
@@ -47,12 +48,25 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
         _context = context;
     }
 
-    public async Task<Result<PagedResult<CategoryDto>>> Handle(GetPagedQuery<CategoryDto> request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<CategoryDto>>> Handle(GetCategoriesQuery request, CancellationToken cancellationToken)
     {
         var searchFields = request.Searching ?? new List<SearchDTO>();
-        searchFields.Add(new SearchDTO { SearchField = "Name", SearchCondition = SearchCondition.Contains, SearchValue = request.Search });
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+             searchFields.Add(new SearchDTO { SearchField = "Name", SearchCondition = SearchCondition.Contains, SearchValue = request.Search });
+        }
         
-        return await GetPagedDapperAsync<CategoryDto>(request.PageIndex, request.PageSize, searchFields, request.SortDTO, null, request.Fields, cancellationToken);
+        // Use default sort if not provided
+        var sort = request.SortDTO ?? new SortDTO { SortBy = "CreatedAt", SortDescending = true };
+
+        return await GetPagedDapperAsync<CategoryDto>(
+            request.PageIndex, 
+            request.PageSize, 
+            searchFields, 
+            sort, 
+            null, 
+            request.Fields, 
+            cancellationToken);
     }
 
 
@@ -237,5 +251,19 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
     public async Task<Result<CategoryDto>> Handle(GetByCodeQuery<CategoryDto> request, CancellationToken cancellationToken)
     {
         return await GetByCodeAsync<CategoryDto>(request.Code, MessageConstants.Category, cancellationToken);
+    }
+
+    public async Task<Result<CategoryStatsDto>> Handle(GetCategoryStatsQuery request, CancellationToken cancellationToken)
+    {
+        var total = await _repository.CountAsync(x => true, cancellationToken);
+        var active = await _repository.CountAsync(x => x.IsActive, cancellationToken);
+        var main = await _repository.CountAsync(x => x.ParentCode == null, cancellationToken);
+
+        return Result.Success(new CategoryStatsDto
+        {
+            Total = total,
+            Active = active,
+            Main = main
+        });
     }
 }

@@ -21,6 +21,9 @@ const WishlistPage = lazy(() => import('@/pages/shop/WishlistPage'));
 const ComparePage = lazy(() => import('@/pages/shop/ComparePage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
+const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const AccountPage = lazy(() => import('@/pages/shop/AccountPage'));
 const PromotionsPage = lazy(() => import('@/pages/shop/PromotionsPage'));
 const NewsPage = lazy(() => import('@/pages/shop/NewsPage'));
@@ -216,6 +219,33 @@ const router = createBrowserRouter([
     element: (
       <Suspense fallback={<PageLoader />}>
         <RegisterPage />
+      </Suspense>
+    ),
+    errorElement: <ErrorBoundary />,
+  },
+  {
+    path: '/verify-email',
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <VerifyEmailPage />
+      </Suspense>
+    ),
+    errorElement: <ErrorBoundary />,
+  },
+  {
+    path: '/forgot-password',
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <ForgotPasswordPage />
+      </Suspense>
+    ),
+    errorElement: <ErrorBoundary />,
+  },
+  {
+    path: '/reset-password',
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <ResetPasswordPage />
       </Suspense>
     ),
     errorElement: <ErrorBoundary />,

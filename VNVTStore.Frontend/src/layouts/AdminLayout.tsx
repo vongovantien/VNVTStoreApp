@@ -247,18 +247,17 @@ export const AdminLayout = () => {
                     }
                   >
                     <item.icon size={20} />
-                    <AnimatePresence mode="wait">
-                      {!sidebarCollapsed && (
-                        <motion.span
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: 'auto' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          className="whitespace-nowrap"
-                        >
-                          {t(item.label)}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                    <motion.span
+                      initial={false}
+                      animate={{
+                        width: sidebarCollapsed ? 0 : 'auto',
+                        opacity: sidebarCollapsed ? 0 : 1,
+                      }}
+                      transition={{ duration: 0.3 }}
+                      className="whitespace-nowrap overflow-hidden"
+                    >
+                      {t(item.label)}
+                    </motion.span>
                   </NavLink>
                 ))}
               </div>
@@ -417,7 +416,7 @@ export const AdminLayout = () => {
                 {showLangMenu && createPortal(
                   <div
                     ref={langDropdownRef}
-                    className="fixed bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-1 min-w-[140px] z-[9999]"
+                    className="fixed bg-primary rounded-lg shadow-xl border border-border p-1 min-w-[140px] z-[9999]"
                     style={{
                       top: langBtnRef.current ? langBtnRef.current.getBoundingClientRect().bottom + 8 : 0,
                       left: langBtnRef.current ? langBtnRef.current.getBoundingClientRect().right - 140 : 0,
@@ -429,7 +428,7 @@ export const AdminLayout = () => {
                         'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                         i18n.language === 'vi'
                           ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                          : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                          : 'hover:bg-secondary text-primary'
                       )}
                     >
                       🇻🇳 Tiếng Việt
@@ -440,7 +439,7 @@ export const AdminLayout = () => {
                         'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                         i18n.language === 'en'
                           ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                          : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300'
+                          : 'hover:bg-secondary text-primary'
                       )}
                     >
                       🇺🇸 English
@@ -489,44 +488,44 @@ export const AdminLayout = () => {
                 {showUserMenu && createPortal(
                   <div
                     ref={userDropdownRef}
-                    className="fixed bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-2 min-w-[200px] z-[9999]"
+                    className="fixed bg-primary rounded-lg shadow-xl border border-border py-2 min-w-[200px] z-[9999]"
                     style={{
                       top: userBtnRef.current ? userBtnRef.current.getBoundingClientRect().bottom + 8 : 0,
                       left: userBtnRef.current ? userBtnRef.current.getBoundingClientRect().right - 200 : 0,
                     }}
                   >
-                    <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-700">
-                      <p className="text-xs text-tertiary">Signed in as</p>
+                    <div className="px-4 py-2 border-b border-border">
+                      <p className="text-xs text-tertiary">{t('admin.userMenu.signedInAs')}</p>
                       <p className="text-sm font-medium text-primary truncate">{user?.email || 'admin@example.com'}</p>
                     </div>
                     <div className="py-1">
                       <button
                         onClick={() => { setShowUserMenu(false); navigate('/admin/settings'); }}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-secondary transition-colors"
                       >
                         <UserIcon size={16} />
-                        Account settings
+                        {t('admin.userMenu.accountSettings')}
                       </button>
                       <button
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-secondary transition-colors"
                       >
                         <HelpCircle size={16} />
-                        Support
+                        {t('admin.userMenu.support')}
                       </button>
                       <button
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-secondary transition-colors"
                       >
                         <FileKey size={16} />
-                        License
+                        {t('admin.userMenu.license')}
                       </button>
                     </div>
-                    <div className="border-t border-slate-100 dark:border-slate-700 py-1">
+                    <div className="border-t border-border py-1">
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 w-full px-4 py-2 text-sm text-error hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                       >
                         <LogOut size={16} />
-                        Sign out
+                        {t('admin.userMenu.signOut')}
                       </button>
                     </div>
                   </div>,
@@ -568,7 +567,7 @@ export const AdminLayout = () => {
               initial={{ opacity: 0, scale: 0.95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[1000] overflow-hidden"
+              className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-primary rounded-2xl shadow-2xl border border-border z-[1000] overflow-hidden"
             >
               {/* Search Header with Gradient */}
               <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4">
@@ -596,7 +595,7 @@ export const AdminLayout = () => {
               
               {/* Quick Links */}
               <div className="p-4">
-                <p className="mb-3 text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                <p className="mb-3 text-xs font-semibold text-tertiary uppercase tracking-widest">
                   ⚡ Truy cập nhanh
                 </p>
                 <div className="grid grid-cols-3 gap-2">
@@ -607,7 +606,7 @@ export const AdminLayout = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
                       <ShoppingCart size={18} className="text-white" />
                     </div>
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Đơn hàng</span>
+                    <span className="text-xs font-medium text-secondary group-hover:text-primary">Đơn hàng</span>
                   </button>
                   <button 
                     onClick={() => { setShowSearchModal(false); navigate('/admin/products'); }}
@@ -616,7 +615,7 @@ export const AdminLayout = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
                       <Package size={18} className="text-white" />
                     </div>
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Sản phẩm</span>
+                    <span className="text-xs font-medium text-secondary group-hover:text-primary">Sản phẩm</span>
                   </button>
                   <button 
                     onClick={() => { setShowSearchModal(false); navigate('/admin/customers'); }}
@@ -625,14 +624,14 @@ export const AdminLayout = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
                       <Users size={18} className="text-white" />
                     </div>
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Khách hàng</span>
+                    <span className="text-xs font-medium text-secondary group-hover:text-primary">Khách hàng</span>
                   </button>
                 </div>
               </div>
               
               {/* Footer hint */}
-              <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-400 flex items-center justify-between">
-                <span>Nhấn <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded border text-[10px] mx-1">Enter</kbd> để tìm kiếm</span>
+              <div className="px-4 py-3 bg-secondary border-t border-border text-xs text-tertiary flex items-center justify-between">
+                <span>Nhấn <kbd className="px-1.5 py-0.5 bg-primary rounded border text-[10px] mx-1">Enter</kbd> để tìm kiếm</span>
                 <span className="flex items-center gap-1">
                   <Command size={10} /> + K để mở
                 </span>

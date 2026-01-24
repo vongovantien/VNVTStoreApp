@@ -187,17 +187,22 @@ interface AuthState {
 }
 
 // Custom storage to handle "Remember me" (localStorage vs sessionStorage)
+// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
 const authStorage = {
     getItem: (name: string) => {
+        // Check local first, then session (priority to persistent storage)
         return localStorage.getItem(name) || sessionStorage.getItem(name);
     },
     setItem: (name: string, value: string) => {
+        // Check the remember flag which we set in LoginPage
         const isRemember = localStorage.getItem('vnvt-remember') === 'true';
         if (isRemember) {
             localStorage.setItem(name, value);
+            // Clean session just in case
             sessionStorage.removeItem(name);
         } else {
             sessionStorage.setItem(name, value);
+            // Clean local to prevent persistence
             localStorage.removeItem(name);
         }
     },

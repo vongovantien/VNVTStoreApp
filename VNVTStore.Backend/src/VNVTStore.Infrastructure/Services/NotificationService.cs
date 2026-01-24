@@ -18,4 +18,14 @@ public class NotificationService : INotificationService
     {
         await _hubContext.Clients.All.SendAsync(method, message);
     }
+
+    public async Task BroadcastMessageAsync(string message)
+    {
+        await _hubContext.Clients.All.SendAsync("ReceiveSystemNotification", message);
+    }
+
+    public async Task BroadcastLocalizedAsync(string key, params object[] args)
+    {
+        await _hubContext.Clients.All.SendAsync("ReceiveSystemNotification", new { Key = key, Args = args });
+    }
 }

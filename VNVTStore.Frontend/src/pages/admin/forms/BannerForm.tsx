@@ -1,6 +1,8 @@
-// ... imports
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload, X } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import { Button, Input } from '@/components/ui';
 
 export interface BannerFormData {
   title: string;
@@ -12,7 +14,12 @@ export interface BannerFormData {
   isActive: boolean;
 }
 
-// ... props
+interface BannerFormProps {
+  initialData?: BannerFormData;
+  onSubmit: (data: BannerFormData) => void;
+  onCancel: () => void;
+  isLoading?: boolean;
+}
 
 export const BannerForm = ({
   initialData,

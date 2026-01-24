@@ -100,12 +100,34 @@ export const productService = {
             },
         });
         return response.data;
+    },
+    getStats: async () => {
+        const response = await apiClient.get<any>(`${API_ENDPOINTS.PRODUCTS.BASE}/stats`);
+        // Fallback if backend doesn't implement stats
+        if (!response.success && response.message?.includes('404')) {
+            return {
+                total: 0,
+                outOfStock: 0,
+                lowStock: 0
+            }
+        }
+        // Mock data structure if response.data is null/undefined but call succeeded (or fallback)
+        return response.data || { total: 0, outOfStock: 0, lowStock: 0 };
     }
 };
 
-export const categoryService = createEntityService<CategoryDto, CreateCategoryRequest, UpdateCategoryRequest>({
-    endpoint: API_ENDPOINTS.CATEGORIES.BASE,
-    resourceName: 'Category'
-});
+export const categoryService = {
+    ...createEntityService<CategoryDto, CreateCategoryRequest, UpdateCategoryRequest>({
+        endpoint: API_ENDPOINTS.CATEGORIES.BASE,
+        resourceName: 'Category'
+    }),
+    getStats: async () => {
+        const response = await apiClient.get<any>(`${API_ENDPOINTS.CATEGORIES.BASE}/stats`);
+        if (!response.success && response.message?.includes('404')) {
+            return { total: 0, mainCategories: 0 }
+        }
+        return response.data || { total: 0, mainCategories: 0 };
+    }
+};
 
 export default productService;

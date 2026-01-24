@@ -6,6 +6,7 @@ import { Button, Input } from '@/components/ui';
 import { useToast } from '@/store';
 import { authService } from '@/services';
 import { AuthLayout } from '@/layouts/AuthLayout';
+import { validationRules } from '@/utils/validation';
 
 export const RegisterPage = () => {
   const { t } = useTranslation();
@@ -24,12 +25,8 @@ export const RegisterPage = () => {
     agreeTerms: false,
   });
 
-  /* Validation Regex */
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-  const [errors, setErrors] = useState({
+  /* Validation Rules from utility */
+  const [errors, setErrors] = useState<Record<string, string>>({
       email: '',
       phone: '',
       password: '',
@@ -40,18 +37,18 @@ export const RegisterPage = () => {
     let isValid = true;
     const newErrors = { email: '', phone: '', password: '', confirmPassword: '' };
 
-    if (!emailRegex.test(formData.email)) {
+    if (!validationRules.email(formData.email)) {
         newErrors.email = t('validation.invalidEmail') || 'Email không hợp lệ';
         isValid = false;
     }
 
-    if (!phoneRegex.test(formData.phone)) {
+    if (!validationRules.phone(formData.phone)) {
         newErrors.phone = t('validation.invalidPhone') || 'Số điện thoại không hợp lệ (VD: 0901234567)';
         isValid = false;
     }
 
-    if (!passwordRegex.test(formData.password)) {
-        newErrors.password = t('validation.weakPassword') || 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
+    if (!validationRules.password(formData.password)) {
+        newErrors.password = t('validation.weakPassword') || 'Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số';
         isValid = false;
     }
 

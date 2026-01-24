@@ -20,6 +20,7 @@ export const formatNumber = (num: number): string => {
  */
 export const formatDate = (
     dateString: string | Date | undefined | null,
+    locale: string = 'vi-VN',
     options?: Intl.DateTimeFormatOptions
 ): string => {
     if (!dateString) return '';
@@ -27,7 +28,7 @@ export const formatDate = (
     // Check for valid date
     if (isNaN(date.getTime())) return '';
 
-    return date.toLocaleDateString('vi-VN', {
+    return date.toLocaleDateString(locale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -104,12 +105,12 @@ export const getStatusColor = (status: string): string => {
  */
 export const getStatusText = (status: string): string => {
     const texts: Record<string, string> = {
-        pending: 'Chờ xác nhận',
-        confirmed: 'Đã xác nhận',
-        processing: 'Đang xử lý',
-        shipping: 'Đang giao',
-        delivered: 'Đã giao',
-        cancelled: 'Đã hủy',
+        pending: 'admin.status.pending',
+        confirmed: 'admin.status.confirmed',
+        processing: 'admin.status.processing',
+        shipping: 'admin.status.shipping',
+        delivered: 'admin.status.delivered',
+        cancelled: 'admin.status.cancelled',
     };
     return texts[status] || status;
 };

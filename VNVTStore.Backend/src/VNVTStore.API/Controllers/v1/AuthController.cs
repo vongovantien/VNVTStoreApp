@@ -58,7 +58,47 @@ public class AuthController : BaseApiController
         var result = await Mediator.Send(command);
         return HandleResult(result);
     }
+
+    /// <summary>
+    /// Xác thực email
+    /// </summary>
+    [HttpGet("verify-email")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string email, [FromQuery] string token)
+    {
+        var command = new VerifyEmailCommand(email, token);
+        var result = await Mediator.Send(command);
+        return HandleResult(result, "Email verified successfully");
+    }
+
+    /// <summary>
+    /// Quên mật khẩu
+    /// </summary>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var command = new ForgotPasswordCommand(request.Email);
+        var result = await Mediator.Send(command);
+        return HandleResult(result, "If an account exists with this email, a reset link has been sent.");
+    }
+
+    /// <summary>
+    /// Đặt lại mật khẩu
+    /// </summary>
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var command = new ResetPasswordCommand(request.Email, request.Token, request.NewPassword);
+        var result = await Mediator.Send(command);
+        return HandleResult(result, "Password reset successfully.");
+    }
 }
+
+public record ForgotPasswordRequest(string Email);
+public record ResetPasswordRequest(string Email, string Token, string NewPassword);
 
 public record RefreshTokenRequest(string Token, string RefreshToken);
 

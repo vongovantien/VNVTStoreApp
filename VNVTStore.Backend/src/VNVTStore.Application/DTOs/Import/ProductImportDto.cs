@@ -6,15 +6,12 @@ public class ProductImportDto
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public decimal Price { get; set; }
+    public decimal? WholesalePrice { get; set; }
     public int? StockQuantity { get; set; }
     public string? CategoryCode { get; set; }
 
     public bool? IsActive { get; set; }
-    public decimal? Weight { get; set; }
-    public string? Color { get; set; }
-    public string? Power { get; set; }
-    public string? Voltage { get; set; }
-    public string? Material { get; set; }
-    public string? Size { get; set; }
+    public string? BrandCode { get; set; }
+    public string? BaseUnit { get; set; }
     public string? SupplierCode { get; set; }
 }

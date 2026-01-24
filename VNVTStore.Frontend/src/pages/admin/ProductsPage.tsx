@@ -16,12 +16,13 @@ import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
 import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
 import { PRODUCT_LIST_FIELDS } from '@/constants/fieldConstants';
+import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 
 // Types for sorting
 type SortField = 'name' | 'price' | 'stock' | 'createdAt';
 
 export const ProductsPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
 
   // State
@@ -63,6 +64,37 @@ export const ProductsPage = () => {
     fields: PRODUCT_LIST_FIELDS,  // Selective columns for list view
     ...advancedFilters
   });
+
+  // Fetch Stats
+  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+      queryKey: ['product-stats'],
+      queryFn: () => productService.getStats(),
+      staleTime: 60000,
+  });
+
+  const stats: StatItem[] = [
+      {
+          label: t('admin.stats.totalProducts'),
+          value: statsData?.total || 0,
+          icon: <Package size={24} />,
+          color: 'blue',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.lowStock'),
+          value: statsData?.lowStock || 0,
+          icon: <AlertTriangle size={24} />,
+          color: 'amber',
+          loading: isStatsLoading
+      },
+      {
+          label: t('admin.stats.outOfStock'),
+          value: statsData?.outOfStock || 0,
+          icon: <Trash2 size={24} />,
+          color: 'rose',
+          loading: isStatsLoading
+      }
+  ];
 
   const products: Product[] = productsData?.products || [];
   const totalItems: number = productsData?.totalItems || 0;
@@ -125,8 +157,8 @@ export const ProductsPage = () => {
         name: data.name,
         description: data.description,
         price: data.price,
-        categoryCode: data.categoryId,
-        stock: data.stock,
+        categoryCode: data.categoryCode,
+        stockQuantity: data.stockQuantity,
         costPrice: data.costPrice,
 
         weight: data.weight,
@@ -154,8 +186,8 @@ export const ProductsPage = () => {
           name: data.name,
           description: data.description,
           price: data.price,
-          categoryCode: data.categoryId,
-          stockQuantity: data.stock,
+          categoryCode: data.categoryCode,
+          stockQuantity: data.stockQuantity,
           costPrice: data.costPrice,
 
           weight: data.weight,
@@ -293,18 +325,16 @@ export const ProductsPage = () => {
       headerClassName: 'text-center'
     },
     {
-      id: 'actions',
-      header: t('common.fields.action'),
+      id: 'createdAt',
+      header: t('common.fields.createdAt') || 'Created At',
       accessor: (product) => (
-        <TableActions
-          onView={() => handleOpenView(product)}
-          onEdit={() => openEdit(product)}
-          onDelete={() => confirmDelete(product)}
-        />
+        <span className="text-sm text-slate-500">
+           {new Date(product.createdAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' })}
+        </span>
       ),
       className: 'text-center',
       headerClassName: 'text-center',
-      width: '100px'
+      sortable: true
     }
   ];
 
@@ -315,29 +345,7 @@ export const ProductsPage = () => {
         subtitle="admin.subtitles.products"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-primary p-4 rounded-xl shadow-sm border flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><Package size={24}/></div>
-              <div>
-                  <p className="text-sm text-secondary">Tổng sản phẩm</p>
-                  <p className="text-xl font-bold">{totalItems}</p>
-              </div>
-          </div>
-          <div className="bg-primary p-4 rounded-xl shadow-sm border flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><AlertTriangle size={24}/></div>
-              <div>
-                  <p className="text-sm text-secondary">Sắp hết hàng</p>
-                  <p className="text-xl font-bold">{products.filter(p => p.stock > 0 && p.stock < 10).length}</p>
-              </div>
-          </div>
-          <div className="bg-primary p-4 rounded-xl shadow-sm border flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><Trash2 size={24}/></div>
-              <div>
-                  <p className="text-sm text-secondary">Hết hàng</p>
-                  <p className="text-xl font-bold">{products.filter(p => p.stock === 0).length}</p>
-              </div>
-          </div>
-      </div>
+      <StatsCards stats={stats} />
 
       <DataTable
         columns={columns}
@@ -447,21 +455,24 @@ export const ProductsPage = () => {
         title={editingProduct ? t('common.actions.edit') : t('common.actions.create')}
         size="3xl"
         // Force unmount on close to reset form state
-        // key={isFormOpen ? 'open' : 'closed'} 
       >
         <ProductForm
           initialData={editingProduct ? {
             name: editingProduct.name,
             description: editingProduct.description,
             price: editingProduct.price,
-            categoryId: editingProduct.categoryId,
-            stock: editingProduct.stock,
+            categoryCode: editingProduct.categoryCode,
+            stockQuantity: editingProduct.stockQuantity ?? editingProduct.stock,
             images: editingProduct.images || [],
             color: editingProduct.color,
             power: editingProduct.power,
             voltage: editingProduct.voltage,
             material: editingProduct.material,
             size: editingProduct.size,
+            weight: editingProduct.weight,
+            supplierCode: editingProduct.supplierCode,
+            brand: editingProduct.brand,
+            isActive: editingProduct.isActive,
           } : undefined}
           onSubmit={editingProduct ? handleUpdate : handleCreate}
           onCancel={closeForm}

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronUp, ChevronDown, Loader2, AlertCircle, Filter, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, Loader2, AlertCircle, Filter, X, Search } from 'lucide-react';
 import { Pagination, Button } from '@/components/ui';
 import { AdminToolbar } from '@/components/admin/AdminToolbar';
 import { ColumnVisibility } from '@/components/admin/ColumnVisibility';
@@ -95,6 +95,7 @@ export interface DataTableProps<T extends Record<string, any>> {
 
   // Reset
   onReset?: () => void;
+  initialFilters?: Record<string, string>;
 }
 
 // ============ DataTable Component ============
@@ -142,7 +143,8 @@ function DataTableInner<T extends Record<string, any>>({
   onSelectionChange,
   onBulkDelete,
   enableSelection = true,
-  renderRowActions // Destructure new prop
+  renderRowActions, // Destructure new prop
+  initialFilters
 }: DataTableProps<T>) {
   const { t } = useTranslation();
 
@@ -177,7 +179,7 @@ function DataTableInner<T extends Record<string, any>>({
 
   // Advanced Filter State
   const [showFilters, setShowFilters] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>(initialFilters || {});
 
   // Export Hook
   const { isExporting, exportData } = useExport<T>();
@@ -418,10 +420,10 @@ function DataTableInner<T extends Record<string, any>>({
   // ============ Render ============
   return (
     <>
-    <div className="bg-white dark:bg-slate-800 border shadow-sm rounded-xl relative flex flex-col" ref={containerRef}>
+    <div className="bg-primary border shadow-sm rounded-xl relative flex flex-col" ref={containerRef}>
       {/* Toolbar */}
       {showToolbar && (
-        <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="p-4 border-b border-border">
             <AdminToolbar
               onAdd={onAdd}
               onRefresh={onRefresh}
@@ -451,10 +453,27 @@ function DataTableInner<T extends Record<string, any>>({
               selectedCount={selectedIds.size}
               searchRef={searchButtonRef}
               className="w-full"
+              searchInput={showSearch && (
+                <div className="flex items-center mr-2 animate-in fade-in slide-in-from-right-4 duration-200">
+                  <div className="relative">
+                     <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                       <Search size={16} />
+                     </div>
+                     <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={searchPlaceholder || t('common.placeholders.search')}
+                        className="w-64 pl-9 pr-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        autoFocus
+                     />
+                  </div>
+                </div>
+              )}
             >
               {enableColumnVisibility && (
                 <ColumnVisibility
-                  columns={columns.map(c => ({ id: c.id, label: typeof c.header === 'string' ? c.header : c.id }))}
+                  columns={columns.filter(c => c.id !== 'actions').map(c => ({ id: c.id, label: typeof c.header === 'string' ? c.header : c.id }))}
                   visibleColumns={visibleColIds}
                   onChange={setVisibleColIds}
                 />
@@ -466,7 +485,7 @@ function DataTableInner<T extends Record<string, any>>({
       {/* Floating Filter Panel */}
       {advancedFilterDefs && showFilters && (
         <div
-          className="fixed inset-x-4 top-24 z-[100] md:absolute md:top-16 md:w-[600px] md:inset-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-left max-h-[80vh] overflow-y-auto"
+          className="fixed inset-x-4 top-24 z-[100] md:absolute md:top-16 md:w-[600px] md:inset-auto bg-primary shadow-2xl rounded-xl border border-border p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-left max-h-[80vh] overflow-y-auto"
           style={{
             ...(window.innerWidth >= 768 ? { left: popupLeft > 0 ? popupLeft : '230px' } : {})
           }}
@@ -475,13 +494,13 @@ function DataTableInner<T extends Record<string, any>>({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {advancedFilterDefs.map((def) => (
               <div key={def.id} className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-semibold text-primary">
                   {def.label}
                 </label>
                 {def.type === 'select' ? (
                   <div className="relative">
                     <select
-                      className="w-full pl-3 pr-10 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm appearance-none outline-none cursor-pointer"
+                      className="w-full pl-3 pr-10 py-2 bg-secondary border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm appearance-none outline-none cursor-pointer"
                       value={advancedFilters[def.id] || ''}
                       onChange={(e) => setAdvancedFilters(prev => ({ ...prev, [def.id]: e.target.value }))}
                     >
@@ -490,12 +509,12 @@ function DataTableInner<T extends Record<string, any>>({
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary pointer-events-none" />
                   </div>
                 ) : (
                   <input
                     type={def.type}
-                    className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm outline-none placeholder:text-gray-400"
+                    className="w-full px-3 py-2 bg-secondary border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm outline-none placeholder:text-gray-400"
                     placeholder={def.placeholder}
                     value={advancedFilters[def.id] || ''}
                     onChange={(e) => setAdvancedFilters(prev => ({ ...prev, [def.id]: e.target.value }))}
@@ -506,7 +525,7 @@ function DataTableInner<T extends Record<string, any>>({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-center items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <div className="flex justify-center items-center gap-3 pt-4 border-t border-border">
             <button
               className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-md transition-all flex items-center gap-2"
               onClick={() => {
@@ -524,7 +543,7 @@ function DataTableInner<T extends Record<string, any>>({
               {t('common.actions.close')}
             </button>
             <button
-              className="px-4 py-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 font-medium transition-all"
+              className="px-4 py-2 rounded-lg text-secondary hover:text-primary hover:bg-secondary font-medium transition-all"
               onClick={() => {
                 setAdvancedFilters({});
                 if (onAdvancedSearch) onAdvancedSearch({});
@@ -541,7 +560,7 @@ function DataTableInner<T extends Record<string, any>>({
 
         {/* Error Overlay */}
         {showError && (
-          <div className="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-primary/80 flex items-center justify-center z-10 backdrop-blur-sm">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
               <h3 className="font-semibold mb-2">{t('messages.error')}</h3>
@@ -553,7 +572,7 @@ function DataTableInner<T extends Record<string, any>>({
         <div className="relative">
           {/* Centered Loading Overlay */}
           {(isLoading || isFetching) && (
-            <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 z-10 flex items-center justify-center">
+            <div className="absolute inset-0 bg-primary/60 z-10 flex items-center justify-center">
               <div className="flex flex-col items-center gap-2">
                 <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm text-secondary">{t('common.loading', 'Đang tải...')}</span>
@@ -562,7 +581,7 @@ function DataTableInner<T extends Record<string, any>>({
           )}
           <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-60")}>
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-gray-700">
+            <thead className="bg-secondary border-b border-border">
               {/* Main Header Row */}
               <tr>
                 {/* Selection Checkbox */}
@@ -581,8 +600,8 @@ function DataTableInner<T extends Record<string, any>>({
                   <th
                     key={column.id}
                     className={cn(
-                      "px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-gray-300",
-                      column.sortable && "cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 select-none transition-colors",
+                      "px-4 py-3 text-left text-sm font-semibold text-secondary",
+                      column.sortable && "cursor-pointer hover:bg-tertiary select-none transition-colors",
                       column.headerClassName
                     )}
                     style={{
@@ -599,7 +618,7 @@ function DataTableInner<T extends Record<string, any>>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody className="divide-y divide-border">
               {displayData.length === 0 && !isLoading ? (
                 <tr>
                   <td colSpan={visibleColumnDefs.length + (enableSelection ? 1 : 0)} className="px-4 py-12 text-center text-secondary">
@@ -618,7 +637,7 @@ function DataTableInner<T extends Record<string, any>>({
                     <tr
                       key={rowKey}
                       className={cn(
-                        "hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors",
+                        "hover:bg-secondary transition-colors",
                         isSelected && "bg-blue-50/50 dark:bg-blue-900/20",
                         rowClassName?.(row, index)
                       )}
@@ -659,7 +678,7 @@ function DataTableInner<T extends Record<string, any>>({
       </div>
       
        {/* Pagination */}
-       <div className="border-t border-gray-100 dark:border-gray-700 p-4">
+       <div className="border-t border-border p-4">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

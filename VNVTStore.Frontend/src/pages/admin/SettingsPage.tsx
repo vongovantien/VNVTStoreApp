@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Save, Store, CreditCard, Truck, Bell, Shield, Globe } from 'lucide-react';
+import { Save, Store, CreditCard, Truck, Bell, Shield, Globe, Eye, EyeOff } from 'lucide-react';
 import { Button, Input, Select } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { useToast, useSettings } from '@/store';
@@ -172,6 +172,27 @@ export const SettingsPage = () => {
     );
   };
 
+  // Helper for password fields with toggle
+  const PasswordInput = ({ label, ...props }: any) => {
+    const [show, setShow] = useState(false);
+    return (
+      <Input
+        label={label}
+        type={show ? 'text' : 'password'}
+        rightIcon={
+          <button
+            type="button"
+            onClick={() => setShow(!show)}
+            className="hover:text-primary focus:outline-none transition-colors"
+          >
+            {show ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        }
+        {...props}
+      />
+    );
+  };
+
   // Security Mock - no persistence needed for password/modal logic yet
   const SecuritySettings = () => (
     <div className="space-y-6">
@@ -183,9 +204,9 @@ export const SettingsPage = () => {
         <div className="p-4 border rounded-lg">
         <h3 className="font-medium mb-4">{t('admin.settingsPage.security.changePassword')}</h3>
         <div className="space-y-4">
-            <Input label={t('admin.settingsPage.security.currentPassword')} type="password" />
-            <Input label={t('admin.settingsPage.security.newPassword')} type="password" />
-            <Input label={t('admin.settingsPage.security.confirmNewPassword')} type="password" />
+            <PasswordInput label={t('admin.settingsPage.security.currentPassword')} />
+            <PasswordInput label={t('admin.settingsPage.security.newPassword')} />
+            <PasswordInput label={t('admin.settingsPage.security.confirmNewPassword')} />
         </div>
         </div>
 

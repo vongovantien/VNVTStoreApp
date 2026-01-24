@@ -8,6 +8,8 @@ import type { QuoteRequest } from '@/types';
 import { AdminPageHeader } from '@/components/admin';
 
 import { useToast } from '@/store/toastStore';
+import { StatsCards } from '@/components/admin/StatsCards';
+import { useQuery } from '@tanstack/react-query';
 
 export const QuotesPage = () => {
   const { t } = useTranslation();
@@ -21,6 +23,13 @@ export const QuotesPage = () => {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quotePrice, setQuotePrice] = useState('');
 
+  // Fetch Stats
+  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+      queryKey: ['quote-stats'],
+      queryFn: () => quoteService.getStats(),
+      staleTime: 60000,
+  });
+
   // Fetch quotes
   useEffect(() => {
     fetchQuotes();
@@ -31,8 +40,8 @@ export const QuotesPage = () => {
       const res = await quoteService.getAll();
       if (res.success && res.data) {
         const mappedQuotes: QuoteRequest[] = (res.data.items || []).map((dto) => ({
-          id: dto.code,
-          productId: dto.productCode,
+          code: dto.code,
+          productCode: dto.productCode,
           productName: dto.productName || 'Unknown Product',
           productImage: dto.productImage || 'https://placehold.co/100',
           quantity: dto.quantity,
@@ -73,7 +82,7 @@ export const QuotesPage = () => {
     if (!selectedQuote || !quotePrice) return;
 
     try {
-      const res = await quoteService.update(selectedQuote.id, {
+      const res = await quoteService.update(selectedQuote.code, {
         status: 'quoted',
         quotedPrice: parseFloat(quotePrice)
       });
@@ -103,6 +112,30 @@ export const QuotesPage = () => {
           </div>
         }
       />
+
+      <StatsCards stats={[
+        {
+            label: t('admin.stats.totalQuotes'),
+            value: statsData?.total || 0,
+            icon: <MessageSquare size={24} />,
+            color: 'blue',
+            loading: isStatsLoading
+        },
+        {
+            label: t('admin.stats.pendingQuotes'),
+            value: statsData?.pending || 0,
+            icon: <DollarSign size={24} />,
+            color: 'amber',
+            loading: isStatsLoading
+        },
+        {
+            label: t('admin.stats.processedQuotes'),
+             value: statsData?.processed || 0,
+            icon: <Check size={24} />,
+            color: 'emerald',
+            loading: isStatsLoading
+        }
+    ]} />
 
       {/* Filters */}
       <div className="bg-primary rounded-xl p-4">
@@ -134,7 +167,7 @@ export const QuotesPage = () => {
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredQuotes.map((quote) => (
-          <div key={quote.id} className="bg-primary rounded-xl p-5">
+          <div key={quote.code} className="bg-primary rounded-xl p-5">
             {/* Status */}
             <div className="flex items-center justify-between mb-4">
               <Badge

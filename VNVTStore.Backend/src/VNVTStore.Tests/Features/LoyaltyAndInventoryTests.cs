@@ -30,8 +30,8 @@ public class LoyaltyAndInventoryTests
     public void Dashboard_ShouldIdentifyLowStockProducts()
     {
         // 1. Arrange: Threshold is < 10
-        var p1 = TblProduct.Create("Low", 100, 5, null, null, null, null, null, null, null, null, null);
-        var p2 = TblProduct.Create("High", 100, 15, null, null, null, null, null, null, null, null, null);
+        var p1 = TblProduct.Create("Low", 100, null, 5, null, null, null, null, null);
+        var p2 = TblProduct.Create("High", 100, null, 15, null, null, null, null, null);
         var products = new List<TblProduct> { p1, p2 };
 
         // 2. Act

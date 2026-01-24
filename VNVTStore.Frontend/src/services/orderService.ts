@@ -31,6 +31,7 @@ export interface OrderDto {
     shippingName?: string;
     shippingPhone?: string;
     shippingAddress?: string;
+    city?: string;
 }
 
 export interface GuestCartItemDto {
@@ -80,6 +81,13 @@ export const orderService = {
     },
     verify: async (token: string) => {
         return await apiClient.get<string>(`${API_ENDPOINTS.ORDERS.BASE}/verify`, { params: { token } });
+    },
+    getStats: async () => {
+        const response = await apiClient.get<any>(`${API_ENDPOINTS.ORDERS.BASE}/stats`);
+        if (!response.success && response.message?.includes('404')) {
+            return { total: 0, pending: 0, shipping: 0, delivered: 0 }
+        }
+        return response.data || { total: 0, pending: 0, shipping: 0, delivered: 0 };
     }
 };
 

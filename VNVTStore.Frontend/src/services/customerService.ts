@@ -20,6 +20,8 @@ export interface CustomerDto {
     ordersCount?: number;
     totalSpent?: number;
     isActive: boolean;
+    isEmailVerified: boolean;
+    lastLogin?: string;
 }
 
 export interface CreateCustomerRequest {
@@ -48,4 +50,34 @@ export const customerService = createEntityService<CustomerDto, CreateCustomerRe
     resourceName: 'Customer'
 });
 
-export default customerService;
+// Extend with stats
+const extendedService = {
+    ...customerService,
+    getStats: async () => {
+        const [totalRes, activeRes, unverifiedRes] = await Promise.all([
+            // Total
+            customerService.search({ pageIndex: 1, pageSize: 1 }),
+            // Active
+            customerService.search({
+                pageIndex: 1,
+                pageSize: 1,
+                filters: [{ field: 'isActive', value: 'true' }]
+            }),
+            // Unverified (Not Activated)
+            customerService.search({
+                pageIndex: 1,
+                pageSize: 1,
+                filters: [{ field: 'isEmailVerified', value: 'false' }]
+            })
+        ]);
+
+        return {
+            total: totalRes.data?.totalItems || 0,
+            active: activeRes.data?.totalItems || 0,
+            unverified: unverifiedRes.data?.totalItems || 0
+        };
+    }
+};
+
+export const customerServiceApi = extendedService;
+export default extendedService;

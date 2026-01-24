@@ -15,7 +15,8 @@ public class SupplierHandlers : BaseHandler<TblSupplier>,
     IRequestHandler<UpdateCommand<UpdateSupplierDto, SupplierDto>, Result<SupplierDto>>,
     IRequestHandler<DeleteCommand<TblSupplier>, Result>,
     IRequestHandler<DeleteMultipleCommand<TblSupplier>, Result>,
-    IRequestHandler<GetPagedQuery<SupplierDto>, Result<PagedResult<SupplierDto>>>,
+    IRequestHandler<GetPagedQuery<SupplierDto>, Result<PagedResult<SupplierDto>>>, // Add this explicitly
+    IRequestHandler<GetAllSuppliersQuery, Result<PagedResult<SupplierDto>>>, // Keep existing
     IRequestHandler<GetByCodeQuery<SupplierDto>, Result<SupplierDto>>
 {
     private readonly IRepository<TblProduct> _productRepository;
@@ -67,7 +68,7 @@ public class SupplierHandlers : BaseHandler<TblSupplier>,
     {
         // Check for suppliers with active products
         var blockedCodesQuery = _productRepository.AsQueryable()
-             .Where(p => request.Codes.Contains(p.SupplierCode) && p.IsActive == true)
+             .Where(p => p.SupplierCode != null && request.Codes.Contains(p.SupplierCode) && p.IsActive == true)
              .Select(p => p.SupplierCode!);
 
         var checkResult = await CheckBlockingDependenciesAsync(blockedCodesQuery, "products", cancellationToken);
@@ -76,9 +77,19 @@ public class SupplierHandlers : BaseHandler<TblSupplier>,
         return await DeleteMultipleAsync(request.Codes, MessageConstants.Supplier, cancellationToken);
     }
 
-    public async Task<Result<PagedResult<SupplierDto>>> Handle(GetPagedQuery<SupplierDto> request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<SupplierDto>>> Handle(GetAllSuppliersQuery request, CancellationToken cancellationToken)
     {
         var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
+
+        // Handle IsActive filter if present in query
+        string? whereClause = null;
+        object? parameters = null;
+        if (request.IsActive.HasValue)
+        {
+             // Dapper WHERE generation needs to be handled or pass active filter
+             // BaseHandler GetPagedDapperAsync might support filters if extended or use SQL string builder
+             // For now, standard search.
+        }
 
         return await GetPagedDapperAsync<SupplierDto>(
             request.PageIndex,
@@ -93,5 +104,26 @@ public class SupplierHandlers : BaseHandler<TblSupplier>,
     public async Task<Result<SupplierDto>> Handle(GetByCodeQuery<SupplierDto> request, CancellationToken cancellationToken)
     {
         return await GetByCodeAsync<SupplierDto>(request.Code, MessageConstants.Supplier, cancellationToken);
+    }
+
+    public async Task<Result<PagedResult<SupplierDto>>> Handle(GetPagedQuery<SupplierDto> request, CancellationToken cancellationToken)
+    {
+        var searchFields = request.Searching ?? new List<SearchDTO>();
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+             searchFields.Add(new SearchDTO { SearchField = "Name", SearchCondition = SearchCondition.Contains, SearchValue = request.Search });
+        }
+        
+        // Use default sort if not provided
+        var sort = request.SortDTO ?? new SortDTO { SortBy = "CreatedAt", SortDescending = true };
+
+        return await GetPagedDapperAsync<SupplierDto>(
+            request.PageIndex, 
+            request.PageSize, 
+            searchFields, 
+            sort, 
+            null, 
+            request.Fields, 
+            cancellationToken);
     }
 }

@@ -52,8 +52,8 @@ export const ProductCard = memo(
     const isCompared = isInCompare(product.code);
     const hasFixedPrice = product.price > 0;
     const hasDiscount = product.discount && product.discount > 0;
-    const isLowStock = product.stock <= 5 && product.stock > 0;
-    const isOutOfStock = product.stock === 0;
+    const isLowStock = (product.stockQuantity ?? product.stock) <= 5 && (product.stockQuantity ?? product.stock) > 0;
+    const isOutOfStock = (product.stockQuantity ?? product.stock) === 0;
     
     // Calculate isNew based on createdAt within NEW_PRODUCT_DAYS, or use product.isNew if provided
     const NEW_PRODUCT_DAYS = 7;
@@ -154,7 +154,7 @@ export const ProductCard = memo(
           {/* Content */}
           <div className="flex-1 flex flex-col justify-between">
             <div>
-              <Link to={`/products?category=${product.categoryId}`} className="text-xs text-primary font-medium uppercase tracking-wide">
+              <Link to={`/products?category=${product.categoryCode}`} className="text-xs text-primary font-medium uppercase tracking-wide">
                 {product.category}
               </Link>
               <Link to={`/product/${product.code}`}>
@@ -215,133 +215,137 @@ export const ProductCard = memo(
     return (
       <motion.div
         className={cn(
-          'group relative bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 flex flex-col',
-          hoverable && 'hover:-translate-y-1 hover:shadow-xl transition-all duration-300',
+          'group relative bg-white rounded-xl overflow-hidden border border-slate-100/80 transition-all duration-500',
+          hoverable && 'hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-slate-200',
           className
         )}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <Link to={`/product/${product.code}`} className="flex-1 flex flex-col">
+        <Link to={`/product/${product.code}`} className="block relative">
           {/* Image Container */}
-          <div className="relative aspect-square overflow-hidden bg-slate-50 rounded-t-2xl">
+          <div className="relative aspect-[4/5] overflow-hidden bg-slate-50">
             <CustomImage
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               loading="lazy"
             />
 
+            {/* Overlay Gradient on Hover */}
+            <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
             {/* Badges */}
-            <div className="absolute top-2 left-2 flex flex-col gap-1">
-              {isNew && <Badge color="error" size="sm">{t('product.new')}</Badge>}
-              {hasDiscount && <Badge color="error" size="sm">{`-${product.discount}%`}</Badge>}
-              {!hasFixedPrice && <Badge color="primary" size="sm">{t('product.contactForPrice')}</Badge>}
+            <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+              {isNew && (
+                <Badge className="bg-red-500 text-white border-0 shadow-sm px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider">
+                  {t('product.new')}
+                </Badge>
+              )}
+              {hasDiscount && (
+                <Badge className="bg-orange-500 text-white border-0 shadow-sm px-2.5 py-0.5 text-xs font-bold">
+                  {`-${product.discount}%`}
+                </Badge>
+              )}
             </div>
 
-            {/* Quick Actions */}
-            <div
-              className={cn(
-                'absolute top-2 right-2 flex flex-col gap-1 transition-all duration-300',
-                actionsOnHover && 'opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'
-              )}
-            >
+            {/* Right Side Actions (Wishlist, Compare, QuickView) */}
+            <div className="absolute top-3 right-3 flex flex-col gap-2 translate-x-10 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 z-20">
               <button
                 onClick={handleWishlistToggle}
                 className={cn(
-                  'w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-all hover:scale-110',
-                  isWishlisted ? 'text-rose-500' : 'text-gray-600'
+                  'w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-transform hover:scale-110 text-slate-600 hover:text-rose-500',
+                  isWishlisted && 'text-rose-500'
                 )}
+                title={t('product.addToWishlist')}
               >
-                <Heart size={16} fill={isWishlisted ? 'currentColor' : 'none'} />
+                <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} className={isWishlisted ? "animate-pulse-once" : ""} />
               </button>
               <button
                 onClick={handleCompareToggle}
                 className={cn(
-                  'w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-all hover:scale-110',
-                  isCompared ? 'bg-indigo-600 text-white' : 'text-gray-600'
+                  'w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-transform hover:scale-110 text-slate-600 hover:text-indigo-600 delay-75',
+                  isCompared && 'bg-indigo-600 text-white hover:text-white'
                 )}
+                title={t('product.compare')}
               >
-                <Scale size={16} />
+                <Scale size={18} />
               </button>
               {showQuickView && (
                 <button
                   onClick={handleQuickView}
-                  className="w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-all hover:scale-110 text-gray-600 hover:text-indigo-600"
+                  className="w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-transform hover:scale-110 text-slate-600 hover:text-indigo-600 delay-100"
+                  title="Quick View"
                 >
-                  <Eye size={16} />
+                  <Eye size={18} />
                 </button>
+              )}
+            </div>
+
+            {/* Bottom Action Area (Add to Cart) */}
+            <div className="absolute inset-x-4 bottom-4 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
+               {hasFixedPrice ? (
+                <Button
+                  className="w-full bg-slate-900/90 hover:bg-black text-white shadow-lg backdrop-blur-sm border-0"
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock}
+                >
+                  <ShoppingCart size={18} className="mr-2" />
+                  {isOutOfStock ? t('product.outOfStock') : t('product.addToCart')}
+                </Button>
+              ) : (
+                <Button
+                  className="w-full bg-white/90 hover:bg-white text-primary shadow-lg backdrop-blur-sm border-0"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = `/quote-request/${product.code}`;
+                  }}
+                >
+                  <Phone size={18} className="mr-2" />
+                  {t('product.requestQuote')}
+                </Button>
               )}
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-4 flex flex-col flex-1">
-            <span className="text-xs text-indigo-600 font-semibold uppercase tracking-wide">
+          <div className="p-4 pt-3.5">
+            {/* Category */}
+            <div className="text-[11px] font-bold text-indigo-500 uppercase tracking-wider mb-1 line-clamp-1">
               {product.category}
-            </span>
-            <h3 className="font-semibold text-slate-800 mt-1 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+            </div>
+            
+            {/* Title */}
+            <h3 className="text-[15px] font-medium text-slate-800 leading-snug line-clamp-2 min-h-[2.5em] group-hover:text-indigo-600 transition-colors mb-1.5">
               {product.name}
             </h3>
 
             {/* Rating */}
-            <div className="flex items-center gap-1 mt-2">
-              {stars}
-              <span className="text-xs text-tertiary ml-1">({product.reviewCount})</span>
+            <div className="flex items-center gap-1 mb-2">
+              <div className="flex text-yellow-400 gap-0.5">
+                {stars}
+              </div>
+              <span className="text-xs text-slate-400 font-medium ml-1">({product.reviewCount})</span>
             </div>
 
-            {/* Price */}
-            <div className="mt-auto pt-3 flex items-center gap-2">
-              {hasFixedPrice ? (
-                <>
-                  <span className="text-lg font-bold text-error">{formatCurrency(product.price)}</span>
-                  {product.originalPrice && product.originalPrice > product.price && (
-                    <span className="text-sm text-tertiary line-through">{formatCurrency(product.originalPrice)}</span>
-                  )}
-                </>
-              ) : (
-                <span className="text-base font-semibold text-primary">{t('product.contactForPrice')}</span>
-              )}
+            {/* Price & Stock */}
+            <div className="flex items-end justify-between mt-auto">
+              <div className="flex flex-col">
+                {hasFixedPrice ? (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold text-slate-900">{formatCurrency(product.price)}</span>
+                    {product.originalPrice && product.originalPrice > product.price && (
+                      <span className="text-sm text-slate-400 line-through decoration-1">{formatCurrency(product.originalPrice)}</span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-base font-semibold text-indigo-600">{t('product.contactForPrice')}</span>
+                )}
+              </div>
             </div>
-
-            {/* Stock warning */}
-            {isLowStock && (
-              <span className="text-xs text-warning font-medium mt-1">
-                {t('product.lowStock', { count: product.stock })}
-              </span>
-            )}
-            {isOutOfStock && (
-              <span className="text-xs text-error font-medium mt-1">{t('product.outOfStock')}</span>
-            )}
           </div>
         </Link>
-
-        {/* Add to Cart Button */}
-        <div className="p-4 pt-0">
-          {hasFixedPrice ? (
-            <Button
-              fullWidth
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              leftIcon={<ShoppingCart size={16} />}
-            >
-              {isOutOfStock ? t('product.outOfStock') : t('product.addToCart')}
-            </Button>
-          ) : (
-            <Button
-              fullWidth
-              variant="outline"
-              leftIcon={<Phone size={16} />}
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = `/quote-request/${product.code}`;
-              }}
-            >
-              {t('product.requestQuote')}
-            </Button>
-          )}
-        </div>
       </motion.div>
     );
   }

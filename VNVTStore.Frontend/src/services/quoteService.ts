@@ -4,6 +4,7 @@
  */
 
 import { createEntityService, API_ENDPOINTS } from './baseService';
+import apiClient from './api';
 
 // ============ Types ============
 export interface QuoteDto {
@@ -51,6 +52,13 @@ export const quoteService = {
             ...res,
             data: res.data?.items || []
         };
+    },
+    getStats: async () => {
+        const response = await apiClient.get<any>(`${API_ENDPOINTS.QUOTES.BASE}/stats`);
+        if (!response.success && response.message?.includes('404')) {
+            return { total: 0, pending: 0, processed: 0 }
+        }
+        return response.data || { total: 0, pending: 0, processed: 0 };
     }
 };
 

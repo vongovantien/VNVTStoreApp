@@ -39,7 +39,19 @@ public static class DependencyInjection
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICouponService, CouponService>();
         services.AddTransient<INotificationService, NotificationService>();
-        services.AddTransient<IEmailService, EmailService>();
+        
+        // Check if we should use Mock Email Service (e.g. for testing)
+        // Ideally we pass IWebHostEnvironment but for now checking config or defaulting
+        var useMockEmail = configuration.GetValue<bool>("EmailSettings:UseMock", false);
+        if (useMockEmail)
+        {
+            services.AddTransient<IEmailService, MockEmailService>();
+        }
+        else
+        {
+            services.AddTransient<IEmailService, EmailService>();
+        }
+
         services.AddScoped<IBaseUrlService, BaseUrlService>();
         services.AddHttpContextAccessor();
 

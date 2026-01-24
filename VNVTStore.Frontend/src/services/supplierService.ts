@@ -4,6 +4,7 @@
  */
 
 import { createEntityService, API_ENDPOINTS } from './baseService';
+import apiClient from './api';
 
 // ============ Types ============
 export interface SupplierDto {
@@ -39,8 +40,17 @@ export interface UpdateSupplierRequest extends Partial<CreateSupplierRequest> {
 }
 
 // ============ Service ============
-export const supplierService = createEntityService<SupplierDto, CreateSupplierRequest, UpdateSupplierRequest>({
-    endpoint: API_ENDPOINTS.SUPPLIERS.BASE,
-});
+export const supplierService = {
+    ...createEntityService<SupplierDto, CreateSupplierRequest, UpdateSupplierRequest>({
+        endpoint: API_ENDPOINTS.SUPPLIERS.BASE,
+    }),
+    getStats: async () => {
+        const response = await apiClient.get<any>(`${API_ENDPOINTS.SUPPLIERS.BASE}/stats`);
+        if (!response.success && response.message?.includes('404')) {
+            return { total: 0, active: 0 }
+        }
+        return response.data || { total: 0, active: 0 };
+    }
+};
 
 export default supplierService;

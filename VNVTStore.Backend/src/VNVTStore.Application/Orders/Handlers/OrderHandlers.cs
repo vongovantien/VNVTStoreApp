@@ -311,7 +311,7 @@ public class OrderHandlers : BaseHandler<TblOrder>,
             }
 
             // Send Real-time Notification
-            await _notificationService.SendAsync("ReceiveOrderNotification", $"New Order Received: {order.Code} - {order.TotalAmount:C}");
+            await _notificationService.BroadcastLocalizedAsync(MessageConstants.NotificationNewOrder, order.Code);
 
             return Result.Success(_mapper.Map<OrderDto>(order));
         }

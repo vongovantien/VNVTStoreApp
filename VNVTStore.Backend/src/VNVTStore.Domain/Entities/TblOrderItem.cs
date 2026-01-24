@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblOrderItem
+public partial class TblOrderItem : IEntity
 {
     private TblOrderItem() { }
 
-    public string Code { get; private set; } = null!;
+    public string Code { get; set; } = null!;
 
     public string OrderCode { get; private set; } = null!;
 
@@ -25,6 +26,14 @@ public partial class TblOrderItem
     public decimal PriceAtOrder { get; private set; }
 
     public decimal? DiscountAmount { get; private set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public string? ModifiedType { get; set; }
+
+    public bool IsActive { get; set; } = true;
 
     public virtual TblOrder OrderCodeNavigation { get; private set; } = null!;
 

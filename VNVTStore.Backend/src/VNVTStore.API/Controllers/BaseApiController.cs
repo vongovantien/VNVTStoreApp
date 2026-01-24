@@ -129,7 +129,7 @@ public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : Bas
         var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
         var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
 
-        var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, search, request.SortDTO, filters, request.Fields));
+        var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, null, request.SortDTO, request.Searching, request.Fields));
         return HandleResult(result);
     }
 

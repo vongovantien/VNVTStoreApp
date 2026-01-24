@@ -121,7 +121,7 @@ export const OrdersPage = () => {
     {
       id: 'date',
       header: t('common.fields.date'),
-      accessor: (row) => <span className="text-secondary text-sm">{formatDate(row.createdAt)}</span>,
+      accessor: (row) => <span className="text-secondary text-sm">{formatDate(row.orderDate)}</span>,
       sortable: true
     }
   ];
@@ -163,7 +163,7 @@ export const OrdersPage = () => {
   const sortedOrders = [...orders].sort((a, b) => {
     let comparison = 0;
     if (sortField === 'orderDate') {
-      comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      comparison = new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
     } else if (sortField === 'totalAmount') {
       comparison = a.finalAmount - b.finalAmount;
     } else if (sortField === 'status') {
@@ -429,7 +429,7 @@ export const OrdersPage = () => {
               {/* Order Info */}
               <div className="bg-secondary rounded-lg p-4">
                 <h3 className="font-semibold mb-2">{t('admin.order.orderInfo')}</h3>
-                <p className="text-secondary text-sm">{t('admin.order.orderDate')}: {formatDate(selectedOrder.createdAt)}</p>
+                <p className="text-secondary text-sm">{t('admin.order.orderDate')}: {formatDate(selectedOrder.orderDate)}</p>
                 <p className="text-secondary text-sm">{t('common.fields.paymentMethod')}: {selectedOrder.paymentMethod === 'cod' ? t('admin.order.paymentMethodCod') : t('admin.order.paymentMethodTransfer')}</p>
               </div>
             </div>

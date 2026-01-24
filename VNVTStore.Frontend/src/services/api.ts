@@ -82,6 +82,7 @@ const axiosInstance: AxiosInstance = axios.create({
   timeout: 30000, // 30 seconds timeout
   headers: {
     'Content-Type': 'application/json',
+    'Accept-Language': 'vi', // Default to Vietnamese
   },
   withCredentials: true // For XSRF protection if backend supports it
 });

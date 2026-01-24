@@ -21,6 +21,9 @@ public static class DependencyInjection
         // Registry Strategies
         services.AddSingleton<IShippingStrategy, StandardShippingStrategy>();
 
+        // Register Data Seeder
+        services.AddScoped<VNVTStore.Application.Seeding.DataSeeder>();
+
         return services;
     }
 }

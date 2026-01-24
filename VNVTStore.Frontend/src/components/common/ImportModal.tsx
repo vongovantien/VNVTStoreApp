@@ -104,7 +104,7 @@ export const ImportModal = ({
                 : "border-slate-300 dark:border-slate-700 hover:border-primary hover:bg-slate-50 dark:hover:bg-slate-800/50"
           )}
         >
-          <input {...getInputProps()} />
+          <input {...getInputProps()} data-testid="dropzone-input" />
           
           {file ? (
              <div className="flex flex-col items-center gap-3">

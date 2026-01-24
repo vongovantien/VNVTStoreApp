@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Edit2, Trash2, Eye, Star, Plus, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart, Package } from 'lucide-react';
+import { Edit2, Trash2, Eye, Star, Plus, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart, Package, AlertTriangle } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { Dropdown, DropdownItem } from '@/components/ui/Dropdown';
 import { formatCurrency, getImageUrl } from '@/utils/format';
@@ -314,6 +314,30 @@ export const ProductsPage = () => {
         title="common.modules.products"
         subtitle="admin.subtitles.products"
       />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-primary p-4 rounded-xl shadow-sm border flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><Package size={24}/></div>
+              <div>
+                  <p className="text-sm text-secondary">Tổng sản phẩm</p>
+                  <p className="text-xl font-bold">{totalItems}</p>
+              </div>
+          </div>
+          <div className="bg-primary p-4 rounded-xl shadow-sm border flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><AlertTriangle size={24}/></div>
+              <div>
+                  <p className="text-sm text-secondary">Sắp hết hàng</p>
+                  <p className="text-xl font-bold">{products.filter(p => p.stock > 0 && p.stock < 10).length}</p>
+              </div>
+          </div>
+          <div className="bg-primary p-4 rounded-xl shadow-sm border flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><Trash2 size={24}/></div>
+              <div>
+                  <p className="text-sm text-secondary">Hết hàng</p>
+                  <p className="text-xl font-bold">{products.filter(p => p.stock === 0).length}</p>
+              </div>
+          </div>
+      </div>
 
       <DataTable
         columns={columns}

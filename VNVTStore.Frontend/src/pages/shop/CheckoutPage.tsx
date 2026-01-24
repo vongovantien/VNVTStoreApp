@@ -146,6 +146,8 @@ export const CheckoutPage = () => {
       }
 
       if (!validate()) {
+          toast.error(t('validation.checkErrors') || 'Vui lòng kiểm tra lại thông tin giao hàng');
+          setStep(1); // Go back to step 1 to show errors
           setIsProcessing(false);
           return;
       }
@@ -362,6 +364,10 @@ export const CheckoutPage = () => {
                   <Button size="lg" onClick={() => {
                     if (!formData.fullName || !formData.phone || !formData.address || !formData.city || !formData.district) {
                       toast.error(t('validation.required') || 'Vui lòng điền đầy đủ thông tin giao hàng');
+                      return;
+                    }
+                    if (!validate()) {
+                      toast.error(t('validation.checkErrors') || 'Vui lòng kiểm tra lại thông tin');
                       return;
                     }
                     setStep(2);

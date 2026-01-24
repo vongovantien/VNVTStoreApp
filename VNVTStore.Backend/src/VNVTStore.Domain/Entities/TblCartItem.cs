@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblCartItem
+public partial class TblCartItem : IEntity
 {
     private TblCartItem() { } // For EF Core
 
-    public string Code { get; private set; } = null!;
+    public string Code { get; set; } = null!;
 
     public string CartCode { get; private set; } = null!;
 
@@ -20,6 +21,14 @@ public partial class TblCartItem
     public string? Color { get; private set; }
 
     public DateTime? AddedAt { get; private set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public string? ModifiedType { get; set; }
+
+    public bool IsActive { get; set; } = true;
 
     public virtual TblCart CartCodeNavigation { get; private set; } = null!;
 

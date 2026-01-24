@@ -1,0 +1,354 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]:
+        - strong [ref=e11]: Khuyến mãi cực hot 2026
+        - img [ref=e12]
+        - text: Giảm giá tới 50% cho tất cả sản phẩm.
+      - link "Mua ngay" [ref=e14] [cursor=pointer]:
+        - /url: /shop
+        - text: Mua ngay →
+    - button "Dismiss" [ref=e16] [cursor=pointer]:
+      - generic [ref=e17]: Dismiss
+      - img [ref=e18]
+  - banner [ref=e21]:
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - 'link "Hotline: 1900 123 456" [ref=e25] [cursor=pointer]':
+          - /url: tel:1900123456
+          - img [ref=e26]
+          - generic [ref=e28]: "Hotline: 1900 123 456"
+        - link "Chat Zalo" [ref=e29] [cursor=pointer]:
+          - /url: https://zalo.me
+          - img [ref=e30]
+          - generic [ref=e32]: Chat Zalo
+      - generic [ref=e33]:
+        - link "Tra cứu đơn hàng" [ref=e34] [cursor=pointer]:
+          - /url: /tracking
+        - link "Hỗ trợ" [ref=e35] [cursor=pointer]:
+          - /url: /support
+        - link "Về chúng tôi" [ref=e36] [cursor=pointer]:
+          - /url: /about
+    - generic [ref=e38]:
+      - link "🏠 VNVT Store" [ref=e39] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e40]: 🏠
+        - generic [ref=e41]:
+          - generic [ref=e42]: VNVT
+          - generic [ref=e43]: Store
+      - generic [ref=e45]:
+        - img [ref=e46]
+        - textbox "Tìm kiếm sản phẩm..." [ref=e50]
+        - button "Tìm kiếm" [ref=e51] [cursor=pointer]
+      - generic [ref=e52]:
+        - button "vi" [ref=e54] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e58]: vi
+        - button [ref=e59] [cursor=pointer]:
+          - img [ref=e60]
+        - link [ref=e62] [cursor=pointer]:
+          - /url: /compare
+          - button [ref=e63]:
+            - img [ref=e64]
+        - link [ref=e68] [cursor=pointer]:
+          - /url: /wishlist
+          - button [ref=e69]:
+            - img [ref=e70]
+        - button [ref=e72] [cursor=pointer]:
+          - img [ref=e73]
+        - button [ref=e78] [cursor=pointer]:
+          - img [ref=e79]
+          - img [ref=e82]
+  - navigation [ref=e84]:
+    - generic [ref=e85]:
+      - button "Danh mục sản phẩm" [ref=e87] [cursor=pointer]:
+        - img [ref=e88]
+        - text: Danh mục sản phẩm
+        - img [ref=e89]
+      - generic [ref=e91]:
+        - link "Trang chủ" [ref=e92] [cursor=pointer]:
+          - /url: /
+        - link "Sản phẩm" [ref=e93] [cursor=pointer]:
+          - /url: /products
+        - link "Khuyến mãi" [ref=e94] [cursor=pointer]:
+          - /url: /promotions
+        - link "Tin tức" [ref=e95] [cursor=pointer]:
+          - /url: /news
+        - link "Liên hệ" [ref=e96] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e97]:
+        - generic [ref=e98]: 🔥 HOT
+        - generic [ref=e99]: Miễn phí ship đơn từ 500K
+  - main [ref=e100]:
+    - generic [ref=e101]:
+      - generic [ref=e103]:
+        - link "Trang chủ" [ref=e104] [cursor=pointer]:
+          - /url: /
+        - img [ref=e105]
+        - generic [ref=e107]: Sản phẩm
+      - generic [ref=e109]:
+        - complementary [ref=e111]:
+          - heading "Bộ lọc" [level=3] [ref=e113]:
+            - img [ref=e114]
+            - text: Bộ lọc
+          - generic [ref=e115]:
+            - heading "Danh mục" [level=4] [ref=e116]
+            - generic [ref=e117]:
+              - generic [ref=e120] [cursor=pointer]: Nhà bếp
+              - generic [ref=e123] [cursor=pointer]: Dây & Cáp điện
+              - generic [ref=e126] [cursor=pointer]: Thiết bị đóng cắt
+              - generic [ref=e129] [cursor=pointer]: Công tắc & Ổ cắm
+              - generic [ref=e132] [cursor=pointer]: Ống luồn & Vật tư điện
+              - generic [ref=e135] [cursor=pointer]: Tủ điện & Phụ kiện
+              - generic [ref=e138] [cursor=pointer]: Vật tư Nước & Kim khí
+              - generic [ref=e141] [cursor=pointer]: Kim khí & Ngũ kim
+              - generic [ref=e144] [cursor=pointer]: Chiếu sáng dân dụng
+              - generic [ref=e147] [cursor=pointer]: Chiếu sáng trang trí
+              - generic [ref=e150] [cursor=pointer]: Chiếu sáng ngoại thất
+              - generic [ref=e153] [cursor=pointer]: Thiết bị điều khiển
+              - generic [ref=e156] [cursor=pointer]: Thiết bị Điện
+              - generic [ref=e159] [cursor=pointer]: Làm mát & Thông gió
+              - generic [ref=e162] [cursor=pointer]: Điện gia dụng nhỏ
+              - generic [ref=e165] [cursor=pointer]: Máy bơm & Máy công cụ
+              - generic [ref=e168] [cursor=pointer]: Nhà thông minh
+              - generic [ref=e171] [cursor=pointer]: Điều khiển thông minh
+              - generic [ref=e174] [cursor=pointer]: Keo & Chất tẩy rửa
+              - generic [ref=e177] [cursor=pointer]: tes11
+              - generic [ref=e180] [cursor=pointer]: Electronics
+              - generic [ref=e183] [cursor=pointer]: Hệ thống ống nước
+              - generic [ref=e186] [cursor=pointer]: Thiết bị Chiếu sáng
+              - generic [ref=e189] [cursor=pointer]: Thiết bị Gia dụng
+              - generic [ref=e192] [cursor=pointer]: Phòng tắm 2
+              - generic [ref=e195] [cursor=pointer]: Phụ kiện đường ống
+              - generic [ref=e198] [cursor=pointer]: Clothing
+              - generic [ref=e201] [cursor=pointer]: Thiết bị Vệ sinh & Nhà bếp
+              - generic [ref=e204] [cursor=pointer]: Bình nóng lạnh
+              - generic [ref=e207] [cursor=pointer]: Computers mobile
+              - generic [ref=e210] [cursor=pointer]: Clothing Rustic
+              - generic [ref=e213] [cursor=pointer]: Outdoors Response
+              - generic [ref=e216] [cursor=pointer]: Movies Haven
+              - generic [ref=e219] [cursor=pointer]: Books magenta
+              - generic [ref=e222] [cursor=pointer]: Electronics Pula
+              - generic [ref=e225] [cursor=pointer]: Grocery Dale
+              - generic [ref=e228] [cursor=pointer]: Sports XSS
+              - generic [ref=e231] [cursor=pointer]: Tools orange
+              - generic [ref=e234] [cursor=pointer]: Sports Jewelery, Jewelery & Toys
+              - generic [ref=e237] [cursor=pointer]: Sports Principal
+              - generic [ref=e240] [cursor=pointer]: Toys Borders
+              - generic [ref=e243] [cursor=pointer]: Movies Movies & Garden
+              - generic [ref=e246] [cursor=pointer]: Sports invoice
+              - generic [ref=e249] [cursor=pointer]: Jewelery Lead
+              - generic [ref=e252] [cursor=pointer]: Music Cotton
+              - generic [ref=e255] [cursor=pointer]: Tools Points
+              - generic [ref=e258] [cursor=pointer]: Computers Enhanced
+              - generic [ref=e261] [cursor=pointer]: Jewelery Yuan Renminbi
+              - generic [ref=e264] [cursor=pointer]: Music quantify
+          - generic [ref=e265]:
+            - heading "Loại giá" [level=4] [ref=e266]
+            - generic [ref=e267]:
+              - generic [ref=e271] [cursor=pointer]: Chọn giá trị
+              - generic [ref=e274] [cursor=pointer]: Giá cố định
+              - generic [ref=e277] [cursor=pointer]: Liên hệ báo giá
+          - generic [ref=e278]:
+            - heading "Khoảng giá" [level=4] [ref=e279]
+            - generic [ref=e280]:
+              - spinbutton [ref=e281]
+              - generic [ref=e282]: "-"
+              - spinbutton [ref=e283]
+            - generic [ref=e284]:
+              - button "Dưới 1 triệu" [ref=e285] [cursor=pointer]
+              - button "1 - 5 triệu" [ref=e286] [cursor=pointer]
+              - button "5 - 10 triệu" [ref=e287] [cursor=pointer]
+              - button "Trên 10 triệu" [ref=e288] [cursor=pointer]
+          - heading "Thương hiệu" [level=4] [ref=e290]
+          - generic [ref=e291]:
+            - heading "Đánh giá" [level=4] [ref=e292]
+            - generic [ref=e293]:
+              - button "trở lên" [ref=e294] [cursor=pointer]:
+                - img [ref=e295]
+                - img [ref=e297]
+                - img [ref=e299]
+                - img [ref=e301]
+                - img [ref=e303]
+                - generic [ref=e305]: trở lên
+              - button "trở lên" [ref=e306] [cursor=pointer]:
+                - img [ref=e307]
+                - img [ref=e309]
+                - img [ref=e311]
+                - img [ref=e313]
+                - img [ref=e315]
+                - generic [ref=e317]: trở lên
+              - button "trở lên" [ref=e318] [cursor=pointer]:
+                - img [ref=e319]
+                - img [ref=e321]
+                - img [ref=e323]
+                - img [ref=e325]
+                - img [ref=e327]
+                - generic [ref=e329]: trở lên
+              - button "trở lên" [ref=e330] [cursor=pointer]:
+                - img [ref=e331]
+                - img [ref=e333]
+                - img [ref=e335]
+                - img [ref=e337]
+                - img [ref=e339]
+                - generic [ref=e341]: trở lên
+              - button "trở lên" [ref=e342] [cursor=pointer]:
+                - img [ref=e343]
+                - img [ref=e345]
+                - img [ref=e347]
+                - img [ref=e349]
+                - img [ref=e351]
+                - generic [ref=e353]: trở lên
+        - generic [ref=e354]:
+          - generic [ref=e355]:
+            - generic [ref=e356]:
+              - button "Ẩn bộ lọc" [ref=e357] [cursor=pointer]:
+                - img [ref=e358]
+                - text: Ẩn bộ lọc
+              - generic [ref=e359]:
+                - img [ref=e360]
+                - textbox "Tìm kiếm" [ref=e363]: "'; DROP TABLE TblUser; --"
+              - generic [ref=e364]: Hiển thị 0 sản phẩm
+            - generic [ref=e365]:
+              - generic [ref=e366]:
+                - generic [ref=e367]: "Sắp xếp:"
+                - combobox [ref=e368] [cursor=pointer]:
+                  - option "Mới nhất" [selected]
+                  - option "Giá thấp đến cao"
+                  - option "Giá cao đến thấp"
+                  - option "Đánh giá cao"
+                  - option "Bán chạy"
+                - img
+              - generic [ref=e369]:
+                - button [ref=e370] [cursor=pointer]:
+                  - img [ref=e371]
+                - button [ref=e373] [cursor=pointer]:
+                  - img [ref=e374]
+          - generic [ref=e375]:
+            - generic [ref=e376]: 🔍
+            - heading "Không tìm thấy kết quả" [level=3] [ref=e377]
+            - paragraph [ref=e378]: Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
+            - button "Xóa tất cả" [ref=e379] [cursor=pointer]
+  - contentinfo [ref=e380]:
+    - generic [ref=e383]:
+      - generic [ref=e384]:
+        - img [ref=e386]
+        - generic [ref=e391]:
+          - heading "Miễn phí vận chuyển" [level=4] [ref=e392]
+          - paragraph [ref=e393]: Đơn hàng từ 500K
+      - generic [ref=e394]:
+        - img [ref=e396]
+        - generic [ref=e398]:
+          - heading "Bảo hành chính hãng" [level=4] [ref=e399]
+          - paragraph [ref=e400]: 12-24 tháng
+      - generic [ref=e401]:
+        - img [ref=e403]
+        - generic [ref=e405]:
+          - heading "Đổi trả dễ dàng" [level=4] [ref=e406]
+          - paragraph [ref=e407]: Trong vòng 7 ngày
+      - generic [ref=e408]:
+        - img [ref=e410]
+        - generic [ref=e412]:
+          - heading "Hỗ trợ 24/7" [level=4] [ref=e413]
+          - paragraph [ref=e414]: Tư vấn nhiệt tình
+    - generic [ref=e417]:
+      - generic [ref=e418]:
+        - link "🏠 VNVT Store" [ref=e419] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e420]: 🏠
+          - generic [ref=e421]:
+            - generic [ref=e422]: VNVT
+            - generic [ref=e423]: Store
+        - paragraph [ref=e424]: Cửa hàng đồ gia dụng cao cấp - Chất lượng tạo nên sự khác biệt
+        - generic [ref=e425]:
+          - generic [ref=e426]:
+            - img [ref=e427]
+            - generic [ref=e430]: 123 Nguyễn Huệ, Q.1, TP.HCM
+          - generic [ref=e431]:
+            - img [ref=e432]
+            - generic [ref=e434]: 1900 123 456
+          - generic [ref=e435]:
+            - img [ref=e436]
+            - generic [ref=e439]: contact@vnvtstore.com
+        - generic [ref=e440]:
+          - link [ref=e441] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e442]
+          - link [ref=e444] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e445]
+          - link [ref=e448] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e449]
+          - link "Zalo" [ref=e452] [cursor=pointer]:
+            - /url: https://zalo.me
+            - generic [ref=e453]: Zalo
+      - generic [ref=e454]:
+        - heading "Về VNVT Store" [level=3] [ref=e455]: Về VNVT Store
+        - list [ref=e457]:
+          - listitem [ref=e458]:
+            - link "Về chúng tôi" [ref=e459] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=e460]:
+            - link "Tin tức" [ref=e461] [cursor=pointer]:
+              - /url: /news
+          - listitem [ref=e462]:
+            - link "Khuyến mãi" [ref=e463] [cursor=pointer]:
+              - /url: /promotions
+          - listitem [ref=e464]:
+            - link "Liên hệ" [ref=e465] [cursor=pointer]:
+              - /url: /contact
+      - generic [ref=e466]:
+        - heading "Hỗ trợ khách hàng" [level=3] [ref=e467]: Hỗ trợ khách hàng
+        - list [ref=e469]:
+          - listitem [ref=e470]:
+            - link "Tra cứu đơn hàng" [ref=e471] [cursor=pointer]:
+              - /url: /tracking
+          - listitem [ref=e472]:
+            - link "Hỗ trợ" [ref=e473] [cursor=pointer]:
+              - /url: /support
+          - listitem [ref=e474]:
+            - link "Sản phẩm" [ref=e475] [cursor=pointer]:
+              - /url: /products
+          - listitem [ref=e476]:
+            - link "FAQ" [ref=e477] [cursor=pointer]:
+              - /url: /support
+      - generic [ref=e478]:
+        - heading "Đăng ký nhận tin" [level=3] [ref=e479]: Đăng ký nhận tin
+        - paragraph [ref=e481]: Nhận thông tin khuyến mãi mới nhất
+        - generic [ref=e482]:
+          - textbox "Nhập email của bạn" [ref=e483]
+          - button [ref=e484] [cursor=pointer]:
+            - img [ref=e485]
+        - generic [ref=e488]:
+          - heading "Phương thức thanh toán" [level=4] [ref=e489]
+          - generic [ref=e490]:
+            - generic "Visa" [ref=e491]:
+              - img [ref=e492]
+              - generic [ref=e494]: Visa
+            - generic "MC" [ref=e495]:
+              - img [ref=e496]
+              - generic [ref=e498]: MC
+            - generic "ZaloPay" [ref=e499]:
+              - img [ref=e500]
+              - generic [ref=e503]: ZaloPay
+            - generic "MoMo" [ref=e504]:
+              - img [ref=e505]
+              - generic [ref=e508]: MoMo
+            - generic "VNPAY" [ref=e509]:
+              - img [ref=e510]
+              - generic [ref=e513]: VNPAY
+    - generic [ref=e515]:
+      - paragraph [ref=e516]: © 2026 VNVT Store. Tất cả quyền được bảo lưu.
+      - generic [ref=e517]:
+        - button "�" [ref=e518] [cursor=pointer]
+        - link "Về chúng tôi" [ref=e519] [cursor=pointer]:
+          - /url: /about
+        - link "Hỗ trợ" [ref=e520] [cursor=pointer]:
+          - /url: /support
+  - button [ref=e521] [cursor=pointer]:
+    - img [ref=e522]
+```

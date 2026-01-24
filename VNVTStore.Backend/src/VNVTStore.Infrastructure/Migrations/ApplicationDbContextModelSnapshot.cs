@@ -82,10 +82,20 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<bool?>("IsDefault")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("PostalCode")
                         .HasMaxLength(100)
@@ -95,6 +105,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<string>("UserCode")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -103,7 +118,7 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasKey("Code")
                         .HasName("TblAddress_pkey");
 
-                    b.HasIndex("UserCode");
+                    b.HasIndex(new[] { "UserCode" }, "idx_address_user");
 
                     b.ToTable("TblAddress", (string)null);
                 });
@@ -154,7 +169,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Code")
                         .HasName("TblBanner_pkey");
@@ -174,6 +191,16 @@ namespace VNVTStore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -214,6 +241,21 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Color")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
                     b.Property<string>("ProductCode")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -226,6 +268,11 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Property<string>("Size")
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Code")
                         .HasName("TblCartItem_pkey");
@@ -246,7 +293,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasDefaultValueSql("('CAT'::text || lpad((nextval('category_code_seq'::regclass))::text, 6, '0'::text))");
 
                     b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -276,12 +325,16 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Code")
                         .HasName("TblCategory_pkey");
 
-                    b.HasIndex("ParentCode");
+                    b.HasIndex(new[] { "Name" }, "idx_category_name");
+
+                    b.HasIndex(new[] { "ParentCode" }, "idx_category_parent");
 
                     b.ToTable("TblCategory", (string)null);
                 });
@@ -295,10 +348,14 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasDefaultValueSql("('CPN'::text || lpad((nextval('coupon_code_seq'::regclass))::text, 6, '0'::text))");
 
                     b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("ModifiedType")
                         .ValueGeneratedOnAdd()
@@ -310,7 +367,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("UsageCount")
                         .ValueGeneratedOnAdd()
@@ -413,6 +472,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<decimal?>("DiscountAmount")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(15, 2)
@@ -422,6 +486,11 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<decimal>("FinalAmount")
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("ModifiedType")
                         .ValueGeneratedOnAdd()
@@ -447,6 +516,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<string>("UserCode")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -465,9 +539,11 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.HasIndex("CouponCode");
 
-                    b.HasIndex("UserCode");
+                    b.HasIndex(new[] { "OrderDate" }, "idx_order_date");
 
                     b.HasIndex(new[] { "Status" }, "idx_order_status");
+
+                    b.HasIndex(new[] { "UserCode" }, "idx_order_user");
 
                     b.ToTable("TblOrder", (string)null);
                 });
@@ -483,11 +559,26 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Color")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<decimal?>("DiscountAmount")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)")
                         .HasDefaultValueSql("0");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("OrderCode")
                         .IsRequired()
@@ -514,6 +605,11 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Size")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.HasKey("Code")
                         .HasName("TblOrderItem_pkey");
 
@@ -536,10 +632,25 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Method")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
 
                     b.Property<string>("OrderCode")
                         .IsRequired()
@@ -563,6 +674,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("TransactionID");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.HasKey("Code")
                         .HasName("TblPayment_pkey");
 
@@ -585,7 +701,8 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("Color")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Color");
 
                     b.Property<decimal?>("CostPrice")
                         .HasPrecision(15, 2)
@@ -605,7 +722,8 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<string>("Material")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Material");
 
                     b.Property<string>("ModifiedType")
                         .ValueGeneratedOnAdd()
@@ -618,14 +736,16 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("Power")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Power");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
 
                     b.Property<string>("Size")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Size");
 
                     b.Property<int?>("StockQuantity")
                         .ValueGeneratedOnAdd()
@@ -636,10 +756,13 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Voltage")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Voltage");
 
                     b.Property<decimal?>("Weight")
                         .HasPrecision(8, 2)
@@ -648,11 +771,15 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasKey("Code")
                         .HasName("TblProduct_pkey");
 
-                    b.HasIndex("CategoryCode");
+                    b.HasIndex(new[] { "IsActive" }, "idx_product_active");
 
-                    b.HasIndex("SupplierCode");
+                    b.HasIndex(new[] { "CategoryCode" }, "idx_product_category");
+
+                    b.HasIndex(new[] { "Code" }, "idx_product_code");
 
                     b.HasIndex(new[] { "Name" }, "idx_product_name");
+
+                    b.HasIndex(new[] { "SupplierCode" }, "idx_product_supplier");
 
                     b.ToTable("TblProduct", (string)null);
                 });
@@ -665,6 +792,21 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValueSql("('PPROM'::text || lpad((nextval('productpromotion_code_seq'::regclass))::text, 6, '0'::text))");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
                     b.Property<string>("ProductCode")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -674,6 +816,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Code")
                         .HasName("TblProductPromotion_pkey");
@@ -694,6 +841,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValueSql("('PROM'::text || lpad((nextval('promotion_code_seq'::regclass))::text, 6, '0'::text))");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -709,7 +861,7 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
@@ -722,6 +874,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
 
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -729,6 +886,11 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("UsageLimit")
                         .HasColumnType("integer");
@@ -765,7 +927,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("ModifiedType")
                         .ValueGeneratedOnAdd()
@@ -797,7 +961,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasDefaultValueSql("'pending'::character varying");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("UserCode")
                         .HasMaxLength(100)
@@ -830,7 +996,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<bool?>("IsApproved")
                         .ValueGeneratedOnAdd()
@@ -850,7 +1018,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("UserCode")
                         .IsRequired()
@@ -885,7 +1055,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying");
 
                     b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Email")
                         .HasColumnType("character varying");
@@ -914,7 +1086,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Code")
                         .HasName("TblSupplier_pkey");
@@ -945,10 +1119,16 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LoyaltyPoints")
+                        .HasColumnType("integer")
+                        .HasColumnName("LoyaltyPoints");
 
                     b.Property<string>("ModifiedType")
                         .ValueGeneratedOnAdd()
@@ -995,6 +1175,8 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.HasIndex(new[] { "Username" }, "TblUser_Username_key")
                         .IsUnique();
+
+                    b.HasIndex(new[] { "Phone" }, "idx_user_phone");
 
                     b.ToTable("TblUser", (string)null);
                 });

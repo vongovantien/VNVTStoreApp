@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="eb411612-bea6-4008-be9e-50b6cdc4fdfd" name="ADMIN@TIENVO 2026-01-22 10:45:36" runUser="TIENVO\ADMIN" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-01-22T10:45:36.9820108+07:00" queuing="2026-01-22T10:45:36.9820117+07:00" start="2026-01-22T10:45:36.1742991+07:00" finish="2026-01-22T10:45:37.2093401+07:00" />
+  <TestSettings name="default" id="1571a24b-66fc-47f4-a59a-5888f6cc9797">
+    <Deployment runDeploymentRoot="ADMIN_TIENVO_2026-01-22_10_45_36" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c9666f3d-621d-4ef9-ba67-c5c71f9744b3" testId="6ced8d0b-8c41-1656-965e-3f1f045e102a" testName="VNVTStore.Application.Tests.GetPagedDapperAsyncTests.GetPagedDapperAsync_WithAllParameters_ShouldExecuteQuery" computerName="TIENVO" duration="00:00:00.2552305" startTime="2026-01-22T10:45:37.1152199+07:00" endTime="2026-01-22T10:45:37.1152206+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9666f3d-621d-4ef9-ba67-c5c71f9744b3" />
+    <UnitTestResult executionId="f1d66ca9-50b9-4725-a635-e279ba94c80c" testId="c1223f71-2000-3113-b501-1ca1a9afc8de" testName="VNVTStore.Application.Tests.ReferenceAttributeTests.ReferenceAttribute_ShouldBeApplied_ToProductDtoCategoryName" computerName="TIENVO" duration="00:00:00.0001696" startTime="2026-01-22T10:45:36.8734249+07:00" endTime="2026-01-22T10:45:36.8734250+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f1d66ca9-50b9-4725-a635-e279ba94c80c" />
+    <UnitTestResult executionId="27235023-4df0-44cb-bc2f-d96d343d0be2" testId="8742d8f4-b925-4a7e-3b3b-6251025bd93c" testName="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithNoSearchFields_ShouldGenerateBasicQuery" computerName="TIENVO" duration="00:00:00.0030896" startTime="2026-01-22T10:45:36.9382390+07:00" endTime="2026-01-22T10:45:36.9382392+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="27235023-4df0-44cb-bc2f-d96d343d0be2">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Contains() Failure: Sub-string not found&#xD;
+String:    "WITH TempResult AS(\r\n                    "···&#xD;
+Not found: "LIMIT"</Message>
+          <StackTrace>   at VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithNoSearchFields_ShouldGenerateBasicQuery() in D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\QueryBuilderTests.cs:line 26&#xD;
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f5c924b6-df3d-492e-91d9-9543d56abd07" testId="3d23b117-6b70-30ed-b6e1-e566d087762b" testName="VNVTStore.Application.Tests.UnitTest1.Test1" computerName="TIENVO" duration="00:00:00.0025789" startTime="2026-01-22T10:45:36.8687274+07:00" endTime="2026-01-22T10:45:36.8687520+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f5c924b6-df3d-492e-91d9-9543d56abd07" />
+    <UnitTestResult executionId="96524eea-d358-44e9-8bb3-b9f347aa3be2" testId="b7c44786-b7c4-5182-c9f1-3cc65a243547" testName="VNVTStore.Application.Tests.ReferenceAttributeTests.CategoryDto_ParentName_ShouldHaveReferenceAttribute" computerName="TIENVO" duration="00:00:00.0001580" startTime="2026-01-22T10:45:36.8734851+07:00" endTime="2026-01-22T10:45:36.8734851+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="96524eea-d358-44e9-8bb3-b9f347aa3be2" />
+    <UnitTestResult executionId="3f141640-0662-441a-8765-cf00281f5225" testId="cfe212fb-1831-e8c7-c389-ad3da2f66f56" testName="VNVTStore.Application.Tests.ReferenceAttributeTests.ReviewDto_UserName_ShouldHaveReferenceAttribute" computerName="TIENVO" duration="00:00:00.0004993" startTime="2026-01-22T10:45:36.8733847+07:00" endTime="2026-01-22T10:45:36.8733848+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f141640-0662-441a-8765-cf00281f5225" />
+    <UnitTestResult executionId="9ed3a8f9-4f8b-4b78-b0fb-8f45294b55b0" testId="8c2ebaf0-490e-8c66-755b-34ee08c24150" testName="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithReferenceTables_ShouldIncludeJoins" computerName="TIENVO" duration="00:00:00.0007762" startTime="2026-01-22T10:45:36.9053197+07:00" endTime="2026-01-22T10:45:36.9053199+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9ed3a8f9-4f8b-4b78-b0fb-8f45294b55b0" />
+    <UnitTestResult executionId="d7eb43d9-8b59-43e4-ad25-fb0cb434ba7a" testId="598faac3-b940-ad73-b63e-d6d0f4a0330a" testName="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithSearchField_ShouldIncludeWhereClause" computerName="TIENVO" duration="00:00:00.0007045" startTime="2026-01-22T10:45:36.9044001+07:00" endTime="2026-01-22T10:45:36.9044003+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d7eb43d9-8b59-43e4-ad25-fb0cb434ba7a" />
+    <UnitTestResult executionId="f7dede16-f7b0-4e07-8528-364ea216f48f" testId="234083e1-97a6-ac0a-a4db-0b69b852c630" testName="VNVTStore.Application.Tests.GetPagedDapperAsyncTests.GetPagedDapperAsync_WithSomeParameters_ShouldExecuteQuery" computerName="TIENVO" duration="00:00:00.0027472" startTime="2026-01-22T10:45:37.1201737+07:00" endTime="2026-01-22T10:45:37.1201740+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7dede16-f7b0-4e07-8528-364ea216f48f" />
+    <UnitTestResult executionId="54df57de-9906-4635-99e8-9ea08325a751" testId="afdb51c0-8cc9-d35e-65c5-030ddbbd4969" testName="VNVTStore.Application.Tests.ReferenceAttributeTests.ReferenceCollectionAttribute_ShouldBeApplied_ToProductDtoProductImages" computerName="TIENVO" duration="00:00:00.0076904" startTime="2026-01-22T10:45:36.8730876+07:00" endTime="2026-01-22T10:45:36.8730877+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="54df57de-9906-4635-99e8-9ea08325a751" />
+    <UnitTestResult executionId="5c868494-9176-466e-821b-7c3cdee05b8f" testId="033761a5-b1e6-1bd2-0b9e-9620f76c6e12" testName="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithDescendingSort_ShouldHaveDescOrder" computerName="TIENVO" duration="00:00:00.0407687" startTime="2026-01-22T10:45:36.9036047+07:00" endTime="2026-01-22T10:45:36.9036052+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5c868494-9176-466e-821b-7c3cdee05b8f" />
+    <UnitTestResult executionId="7d3776c9-42c3-4640-9194-6746fb24cb8a" testId="836e5ce3-3358-10f8-a74d-882e6b3050a4" testName="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithPagination_ShouldCalculateCorrectOffset" computerName="TIENVO" duration="00:00:00.0004137" startTime="2026-01-22T10:45:36.9389341+07:00" endTime="2026-01-22T10:45:36.9389342+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7d3776c9-42c3-4640-9194-6746fb24cb8a">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Contains() Failure: Sub-string not found&#xD;
+String:    "WITH TempResult AS(\r\n                    "···&#xD;
+Not found: "OFFSET 20"</Message>
+          <StackTrace>   at VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithPagination_ShouldCalculateCorrectOffset() in D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\QueryBuilderTests.cs:line 119&#xD;
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="aeb90076-eaff-4d1a-941f-06728f1cb1ae" testId="2956d39e-5c23-000a-89f4-56ff7a004880" testName="VNVTStore.Application.Tests.GetPagedDapperAsyncTests.GetPagedDapperAsync_WithMinimalParameters_ShouldExecuteQuery" computerName="TIENVO" duration="00:00:00.0020718" startTime="2026-01-22T10:45:37.1174739+07:00" endTime="2026-01-22T10:45:37.1174743+07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aeb90076-eaff-4d1a-941f-06728f1cb1ae" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="VNVTStore.Application.Tests.GetPagedDapperAsyncTests.GetPagedDapperAsync_WithAllParameters_ShouldExecuteQuery" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="6ced8d0b-8c41-1656-965e-3f1f045e102a">
+      <Execution id="c9666f3d-621d-4ef9-ba67-c5c71f9744b3" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.GetPagedDapperAsyncTests" name="GetPagedDapperAsync_WithAllParameters_ShouldExecuteQuery" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithReferenceTables_ShouldIncludeJoins" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="8c2ebaf0-490e-8c66-755b-34ee08c24150">
+      <Execution id="9ed3a8f9-4f8b-4b78-b0fb-8f45294b55b0" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.QueryBuilderTests" name="BuildRawQueryPaging_WithReferenceTables_ShouldIncludeJoins" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithNoSearchFields_ShouldGenerateBasicQuery" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="8742d8f4-b925-4a7e-3b3b-6251025bd93c">
+      <Execution id="27235023-4df0-44cb-bc2f-d96d343d0be2" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.QueryBuilderTests" name="BuildRawQueryPaging_WithNoSearchFields_ShouldGenerateBasicQuery" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithSearchField_ShouldIncludeWhereClause" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="598faac3-b940-ad73-b63e-d6d0f4a0330a">
+      <Execution id="d7eb43d9-8b59-43e4-ad25-fb0cb434ba7a" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.QueryBuilderTests" name="BuildRawQueryPaging_WithSearchField_ShouldIncludeWhereClause" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.GetPagedDapperAsyncTests.GetPagedDapperAsync_WithSomeParameters_ShouldExecuteQuery" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="234083e1-97a6-ac0a-a4db-0b69b852c630">
+      <Execution id="f7dede16-f7b0-4e07-8528-364ea216f48f" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.GetPagedDapperAsyncTests" name="GetPagedDapperAsync_WithSomeParameters_ShouldExecuteQuery" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.ReferenceAttributeTests.ReferenceCollectionAttribute_ShouldBeApplied_ToProductDtoProductImages" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="afdb51c0-8cc9-d35e-65c5-030ddbbd4969">
+      <Execution id="54df57de-9906-4635-99e8-9ea08325a751" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.ReferenceAttributeTests" name="ReferenceCollectionAttribute_ShouldBeApplied_ToProductDtoProductImages" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.GetPagedDapperAsyncTests.GetPagedDapperAsync_WithMinimalParameters_ShouldExecuteQuery" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="2956d39e-5c23-000a-89f4-56ff7a004880">
+      <Execution id="aeb90076-eaff-4d1a-941f-06728f1cb1ae" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.GetPagedDapperAsyncTests" name="GetPagedDapperAsync_WithMinimalParameters_ShouldExecuteQuery" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithPagination_ShouldCalculateCorrectOffset" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="836e5ce3-3358-10f8-a74d-882e6b3050a4">
+      <Execution id="7d3776c9-42c3-4640-9194-6746fb24cb8a" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.QueryBuilderTests" name="BuildRawQueryPaging_WithPagination_ShouldCalculateCorrectOffset" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.ReferenceAttributeTests.CategoryDto_ParentName_ShouldHaveReferenceAttribute" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="b7c44786-b7c4-5182-c9f1-3cc65a243547">
+      <Execution id="96524eea-d358-44e9-8bb3-b9f347aa3be2" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.ReferenceAttributeTests" name="CategoryDto_ParentName_ShouldHaveReferenceAttribute" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.UnitTest1.Test1" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="3d23b117-6b70-30ed-b6e1-e566d087762b">
+      <Execution id="f5c924b6-df3d-492e-91d9-9543d56abd07" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.UnitTest1" name="Test1" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithDescendingSort_ShouldHaveDescOrder" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="033761a5-b1e6-1bd2-0b9e-9620f76c6e12">
+      <Execution id="5c868494-9176-466e-821b-7c3cdee05b8f" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.QueryBuilderTests" name="BuildRawQueryPaging_WithDescendingSort_ShouldHaveDescOrder" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.ReferenceAttributeTests.ReviewDto_UserName_ShouldHaveReferenceAttribute" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="cfe212fb-1831-e8c7-c389-ad3da2f66f56">
+      <Execution id="3f141640-0662-441a-8765-cf00281f5225" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.ReferenceAttributeTests" name="ReviewDto_UserName_ShouldHaveReferenceAttribute" />
+    </UnitTest>
+    <UnitTest name="VNVTStore.Application.Tests.ReferenceAttributeTests.ReferenceAttribute_ShouldBeApplied_ToProductDtoCategoryName" storage="d:\vnvtstoreapp\vnvtstore.backend\tests\vnvtstore.application.tests\bin\debug\net9.0\vnvtstore.application.tests.dll" id="c1223f71-2000-3113-b501-1ca1a9afc8de">
+      <Execution id="f1d66ca9-50b9-4725-a635-e279ba94c80c" />
+      <TestMethod codeBase="D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\bin\Debug\net9.0\VNVTStore.Application.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="VNVTStore.Application.Tests.ReferenceAttributeTests" name="ReferenceAttribute_ShouldBeApplied_ToProductDtoCategoryName" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6ced8d0b-8c41-1656-965e-3f1f045e102a" executionId="c9666f3d-621d-4ef9-ba67-c5c71f9744b3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c1223f71-2000-3113-b501-1ca1a9afc8de" executionId="f1d66ca9-50b9-4725-a635-e279ba94c80c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8742d8f4-b925-4a7e-3b3b-6251025bd93c" executionId="27235023-4df0-44cb-bc2f-d96d343d0be2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3d23b117-6b70-30ed-b6e1-e566d087762b" executionId="f5c924b6-df3d-492e-91d9-9543d56abd07" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b7c44786-b7c4-5182-c9f1-3cc65a243547" executionId="96524eea-d358-44e9-8bb3-b9f347aa3be2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cfe212fb-1831-e8c7-c389-ad3da2f66f56" executionId="3f141640-0662-441a-8765-cf00281f5225" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8c2ebaf0-490e-8c66-755b-34ee08c24150" executionId="9ed3a8f9-4f8b-4b78-b0fb-8f45294b55b0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="598faac3-b940-ad73-b63e-d6d0f4a0330a" executionId="d7eb43d9-8b59-43e4-ad25-fb0cb434ba7a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="234083e1-97a6-ac0a-a4db-0b69b852c630" executionId="f7dede16-f7b0-4e07-8528-364ea216f48f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="afdb51c0-8cc9-d35e-65c5-030ddbbd4969" executionId="54df57de-9906-4635-99e8-9ea08325a751" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="033761a5-b1e6-1bd2-0b9e-9620f76c6e12" executionId="5c868494-9176-466e-821b-7c3cdee05b8f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="836e5ce3-3358-10f8-a74d-882e6b3050a4" executionId="7d3776c9-42c3-4640-9194-6746fb24cb8a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2956d39e-5c23-000a-89f4-56ff7a004880" executionId="aeb90076-eaff-4d1a-941f-06728f1cb1ae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="13" executed="13" passed="11" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 9.0.8)&#xD;
+[xUnit.net 00:00:00.07]   Discovering: VNVTStore.Application.Tests&#xD;
+[xUnit.net 00:00:00.11]   Discovered:  VNVTStore.Application.Tests&#xD;
+[xUnit.net 00:00:00.12]   Starting:    VNVTStore.Application.Tests&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r.*  FROM "TblProduct" AS r &#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."Price" DESC&#xD;
+                                OFFSET(1 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r.*  FROM "TblProduct" AS r WHERE "r"."Name"::text ILIKE N'%test%'&#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."CreatedAt" DESC&#xD;
+                                OFFSET(1 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r.* , t1."Name" AS "CategoryName" FROM "TblProduct" AS r LEFT JOIN "TblCategory" AS t1 ON r."CategoryCode"=t1."Code" &#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."CreatedAt" DESC&#xD;
+                                OFFSET(1 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r.*  FROM "TblProduct" AS r &#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."CreatedAt" DESC&#xD;
+                                OFFSET(1 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r.*  FROM "TblProduct" AS r &#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."CreatedAt" DESC&#xD;
+                                OFFSET(3 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[xUnit.net 00:00:00.23]       Assert.Contains() Failure: Sub-string not found&#xD;
+[xUnit.net 00:00:00.23]       String:    "WITH TempResult AS(\r\n                    "···&#xD;
+[xUnit.net 00:00:00.23]       Not found: "LIMIT"&#xD;
+[xUnit.net 00:00:00.23]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.23]         D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\QueryBuilderTests.cs(26,0): at VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithNoSearchFields_ShouldGenerateBasicQuery()&#xD;
+[xUnit.net 00:00:00.23]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+[xUnit.net 00:00:00.23]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.23]       Assert.Contains() Failure: Sub-string not found&#xD;
+[xUnit.net 00:00:00.23]       String:    "WITH TempResult AS(\r\n                    "···&#xD;
+[xUnit.net 00:00:00.23]       Not found: "OFFSET 20"&#xD;
+[xUnit.net 00:00:00.23]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.23]         D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.Application.Tests\QueryBuilderTests.cs(119,0): at VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithPagination_ShouldCalculateCorrectOffset()&#xD;
+[xUnit.net 00:00:00.23]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+[xUnit.net 00:00:00.23]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r."Name",r."Price",r."CompanyCode"  FROM "TblProduct" AS r WHERE "r"."Name"::text ILIKE N'%Test%' AND "r"."ModifiedType" != 'Delete'&#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."Price" DESC&#xD;
+                                OFFSET(1 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[Dapper Debug] SQL Generation took: 112ms&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r.* , t1."Name" AS "CategoryName" FROM "TblProduct" AS r LEFT JOIN "TblCategory" AS t1 ON r."CategoryCode"=t1."Code" WHERE "r"."ModifiedType" != 'Delete'&#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."CreatedAt" DESC&#xD;
+                                OFFSET(1 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[Dapper Debug] SQL Generation took: 0ms&#xD;
+[DEBUG-SQL-PAGING] WITH TempResult AS(&#xD;
+                                SELECT r.* , t1."Name" AS "CategoryName" FROM "TblProduct" AS r LEFT JOIN "TblCategory" AS t1 ON r."CategoryCode"=t1."Code" WHERE "r"."IsActive" = True AND "r"."ModifiedType" != 'Delete'&#xD;
+                            ), TempCount AS(&#xD;
+                                SELECT COUNT(*) AS "TotalRow"FROM TempResult&#xD;
+                            )&#xD;
+                            SELECT * FROM TempResult, TempCount&#xD;
+                            ORDER BY TempResult."CreatedAt" DESC&#xD;
+                                OFFSET(1 - 1) * 10&#xD;
+                                   FETCH NEXT 10 ROWS ONLY&#xD;
+[Dapper Debug] SQL Generation took: 0ms&#xD;
+[xUnit.net 00:00:00.42]   Finished:    VNVTStore.Application.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="TIENVO" outcome="Error" timestamp="2026-01-22T10:45:36.9994150+07:00">
+        <Text>[xUnit.net 00:00:00.23]     VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithNoSearchFields_ShouldGenerateBasicQuery [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="TIENVO" outcome="Error" timestamp="2026-01-22T10:45:37.0001808+07:00">
+        <Text>[xUnit.net 00:00:00.23]     VNVTStore.Application.Tests.QueryBuilderTests.BuildRawQueryPaging_WithPagination_ShouldCalculateCorrectOffset [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

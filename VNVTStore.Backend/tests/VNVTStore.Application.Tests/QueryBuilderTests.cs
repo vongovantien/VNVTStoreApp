@@ -23,7 +23,7 @@ public class QueryBuilderTests
         Assert.NotNull(sql);
         Assert.Contains("TblProduct", sql);
         Assert.Contains("ORDER BY", sql);
-        Assert.Contains("LIMIT", sql);
+        Assert.Contains("FETCH NEXT", sql);
         Assert.Contains("OFFSET", sql);
     }
 
@@ -116,7 +116,8 @@ public class QueryBuilderTests
 
         // Assert
         Assert.NotNull(sql);
-        Assert.Contains("OFFSET 20", sql); // (3-1) * 10 = 20
-        Assert.Contains("LIMIT 10", sql);
+        // SQL format uses: OFFSET(pageIndex - 1) * pageSize, so for page 3: OFFSET(3 - 1) * 10
+        Assert.Contains("OFFSET(3 - 1) * 10", sql);
+        Assert.Contains("FETCH NEXT 10 ROWS ONLY", sql);
     }
 }

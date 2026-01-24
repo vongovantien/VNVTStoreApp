@@ -44,6 +44,8 @@
     "edit": "Sửa",
     "cancel": "Hủy",
     "close": "Đóng",
+    "back": "Quay lại",
+    "apply": "Áp dụng",
     "actions": {
         "save": "Lưu",
         "cancel": "Hủy",
@@ -596,6 +598,7 @@
   "account": {
     "profile": "Thông tin cá nhân",
     "orders": "Đơn hàng của tôi",
+    "quotes": "Yêu cầu báo giá",
     "wishlist": "Sản phẩm yêu thích",
     "addresses": "Địa chỉ giao hàng",
     "notifications": "Thông báo",

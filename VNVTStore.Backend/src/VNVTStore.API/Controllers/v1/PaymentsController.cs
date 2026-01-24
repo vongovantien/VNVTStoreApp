@@ -55,6 +55,7 @@ public class PaymentsController : BaseApiController
     /// Get payment details by order
     /// </summary>
     [HttpGet("order/{orderCode}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetPaymentByOrder(string orderCode)
     {
         var result = await Mediator.Send(new GetPaymentByOrderQuery(orderCode));

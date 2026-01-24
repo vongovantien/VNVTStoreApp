@@ -9,8 +9,8 @@ describe('uploadService', () => {
         // Spy on the axios instance post method
         postSpy = vi.spyOn(apiClient.instance, 'post');
 
-        // Mock env var
-        vi.stubGlobal('import.meta', { env: { VITE_API_URL: 'http://test-api.com/api/v1' } });
+        // Mock env var using vi.stubEnv
+        vi.stubEnv('VITE_API_URL', 'http://test-api.com/api/v1');
     });
 
     afterEach(() => {
@@ -42,7 +42,7 @@ describe('uploadService', () => {
 
     it('should handle API URL without v1 suffix correctly', async () => {
         // Arrange
-        vi.stubGlobal('import.meta', { env: { VITE_API_URL: 'http://other-api.com' } });
+        vi.stubEnv('VITE_API_URL', 'http://other-api.com');
         const mockFile = new File(['content'], 'test.png', { type: 'image/png' });
         const mockResponse = { data: { url: '/uploads/image.jpg' } };
         postSpy.mockResolvedValue(mockResponse);

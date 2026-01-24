@@ -93,7 +93,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                     dto.ProductImages = productFiles.Select(f => new ProductImageDto
                     {
                         Code = f.Code,
-                        ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
+                        ImageURL = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
                         AltText = f.OriginalName,
                         IsPrimary = productFiles.IndexOf(f) == 0 
                     }).ToList();
@@ -128,7 +128,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             result.Value.ProductImages = files.Select(f => new ProductImageDto
             {
                  Code = f.Code,
-                 ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
+                 ImageURL = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
                  AltText = f.OriginalName,
                  IsPrimary = files.IndexOf(f) == 0
             }).ToList();
@@ -224,7 +224,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             productDto.ProductImages = finalFiles.Select(f => new ProductImageDto
             {
                  Code = f.Code,
-                 ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
+                 ImageURL = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
                  AltText = f.OriginalName,
                  IsPrimary = finalFiles.IndexOf(f) == 0
             }).ToList();
@@ -365,7 +365,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             productDto.ProductImages = finalFiles.Select(f => new ProductImageDto
             {
                  Code = f.Code,
-                 ImageUrl = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
+                 ImageURL = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
                  AltText = f.OriginalName,
                  IsPrimary = finalFiles.IndexOf(f) == 0
             }).ToList();

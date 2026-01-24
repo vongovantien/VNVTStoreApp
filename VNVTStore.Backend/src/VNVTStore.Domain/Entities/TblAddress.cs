@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
@@ -11,11 +12,11 @@ public record AddressDetails(
     string? Country = "Vietnam"
 );
 
-public partial class TblAddress
+public partial class TblAddress : IEntity
 {
     private TblAddress() { }
 
-    public string Code { get; private set; } = null!;
+    public string Code { get; set; } = null!;
 
     public string UserCode { get; private set; } = null!;
 
@@ -31,7 +32,13 @@ public partial class TblAddress
 
     public bool? IsDefault { get; private set; }
 
-    public DateTime? CreatedAt { get; private set; }
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public string? ModifiedType { get; set; }
+
+    public bool IsActive { get; set; } = true;
 
     public virtual ICollection<TblOrder> TblOrders { get; private set; } = new List<TblOrder>();
 

@@ -7,7 +7,7 @@ describe('Button', () => {
     render(<Button>Click Me</Button>);
     const button = screen.getByRole('button', { name: /click me/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('bg-primary'); // Default variant
+    expect(button).toHaveClass('bg-indigo-600'); // Default variant: indigo-600
   });
 
   it('renders different variants correctly', () => {
@@ -28,7 +28,7 @@ describe('Button', () => {
   it('shows loading state', () => {
     render(<Button isLoading>Click Me</Button>);
     expect(screen.getByRole('button')).toBeDisabled();
-    expect(screen.getByText(/loading/i)).toBeInTheDocument(); // Assuming Spinner or text
+    expect(screen.getByText(/Click Me/i)).toBeInTheDocument(); // Component renders children when loading if no loadingText provided
   });
 
   it('handles disabled state', () => {

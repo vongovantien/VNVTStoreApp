@@ -33,7 +33,7 @@ describe('cartService', () => {
 
             const result = await cartService.getMyCart();
 
-            expect(mockGet).toHaveBeenCalledWith('/carts/my-cart');
+            expect(mockGet).toHaveBeenCalledWith('/carts');
             expect(result).toBe(mockResponse);
         });
     });

@@ -72,8 +72,8 @@ describe('Header Component', () => {
 
         // Expect dropdown options to appear
         await waitFor(() => {
-            expect(screen.getByText('🇻🇳 Tiếng Việt')).toBeInTheDocument();
-            expect(screen.getByText('🇺🇸 English')).toBeInTheDocument();
+            expect(screen.getByText(/Tiếng Việt/i)).toBeInTheDocument();
+            expect(screen.getByText(/English/i)).toBeInTheDocument();
         });
     });
 });

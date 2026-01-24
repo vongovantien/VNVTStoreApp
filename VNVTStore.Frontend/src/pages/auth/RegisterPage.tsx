@@ -3,16 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, Check } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
-import { useAuthStore, useToast } from '@/store';
+import { useToast } from '@/store';
 import { authService } from '@/services';
 import { AuthLayout } from '@/layouts/AuthLayout';
 
 export const RegisterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuthStore();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -82,17 +82,10 @@ export const RegisterPage = () => {
       });
 
       if (response.success && response.data) {
-        toast.success(t('messages.registerSuccess') || 'Đăng ký thành công!');
-        // Auto-login after registration
-        login({
-          code: response.data.code,
-          email: response.data.email,
-          fullName: response.data.fullName || response.data.username,
-          phone: formData.phone,
-          role: (response.data.role as 'customer' | 'admin') || 'customer',
-          createdAt: new Date().toISOString(),
-        });
-        navigate('/');
+        toast.success(t('messages.registerSuccess') || 'Đăng ký thành công! Vui lòng đăng nhập.');
+        // Redirect to login page instead of auto-login
+        // (auto-login without token causes 401 on cart fetch)
+        navigate('/login');
       } else {
         toast.error(response.message || 'Đăng ký thất bại');
       }
@@ -156,32 +149,32 @@ export const RegisterPage = () => {
           error={errors.phone}
         />
 
-        <div className="relative">
-          <Input
-            label={t('register.password')}
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={(e) => {
-                setFormData({ ...formData, password: e.target.value });
-                if (errors.password) setErrors({...errors, password: ''});
-            }}
-            leftIcon={<Lock size={18} />}
-            required
-            error={errors.password}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-9 text-tertiary hover:text-primary"
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-        </div>
+        <Input
+          label={t('register.password')}
+          type={showPassword ? 'text' : 'password'}
+          placeholder="••••••••"
+          value={formData.password}
+          onChange={(e) => {
+              setFormData({ ...formData, password: e.target.value });
+              if (errors.password) setErrors({...errors, password: ''});
+          }}
+          leftIcon={<Lock size={18} />}
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-tertiary hover:text-primary focus:outline-none"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          }
+          required
+          error={errors.password}
+        />
 
         <Input
           label={t('register.confirmPassword')}
-          type="password"
+          type={showConfirmPassword ? 'text' : 'password'}
           placeholder="••••••••"
           value={formData.confirmPassword}
           onChange={(e) => {
@@ -189,6 +182,15 @@ export const RegisterPage = () => {
                if (errors.confirmPassword) setErrors({...errors, confirmPassword: ''});
           }}
           leftIcon={<Lock size={18} />}
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="text-tertiary hover:text-primary focus:outline-none"
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          }
           required
           error={errors.confirmPassword}
         />

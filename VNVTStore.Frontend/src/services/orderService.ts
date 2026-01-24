@@ -21,7 +21,7 @@ export interface OrderDto {
     status: string;
     totalAmount: number;
     finalAmount: number;
-    createdAt: string;
+    orderDate: string;
     orderItems: OrderItemDto[];
     shippingFee: number;
     discountAmount: number;

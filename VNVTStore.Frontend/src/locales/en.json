@@ -14,6 +14,8 @@
     "search": "Search",
     "viewAll": "View All",
     "refresh": "Refresh",
+    "back": "Back",
+    "apply": "Apply",
     "actions": {
         "save": "Save",
         "cancel": "Cancel",

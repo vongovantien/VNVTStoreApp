@@ -86,6 +86,9 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Priority).HasDefaultValue(0);
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
@@ -108,6 +111,11 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
             entity.Property(e => e.IsDefault).HasDefaultValue(false);
             entity.Property(e => e.PostalCode).HasMaxLength(100);
             entity.Property(e => e.State).HasMaxLength(50);
@@ -138,6 +146,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
             entity.Property(e => e.UserCode).HasMaxLength(100);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
 
             entity.HasOne(d => d.UserCodeNavigation).WithMany(p => p.TblCarts)
                 .HasForeignKey(d => d.UserCode)
@@ -159,6 +169,14 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.CartCode).HasMaxLength(100);
             entity.Property(e => e.ProductCode).HasMaxLength(100);
             entity.Property(e => e.Quantity).HasDefaultValue(1);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
 
             entity.HasOne(d => d.CartCodeNavigation).WithMany(p => p.TblCartItems)
                 .HasForeignKey(d => d.CartCode)
@@ -190,6 +208,12 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("TblCategory_ParentCode_fkey");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
             
             entity.HasIndex(e => e.ParentCode, "idx_category_parent");
             entity.HasIndex(e => e.Name, "idx_category_name");
@@ -212,6 +236,13 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("TblCoupon_PromotionCode_fkey");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
         });
 
         modelBuilder.Entity<TblOrder>(entity =>
@@ -252,6 +283,13 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .HasConstraintName("TblOrder_UserCode_fkey");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
 
             entity.HasIndex(e => e.OrderDate, "idx_order_date");
             entity.HasIndex(e => e.UserCode, "idx_order_user");
@@ -272,6 +310,14 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.OrderCode).HasMaxLength(100);
             entity.Property(e => e.PriceAtOrder).HasPrecision(15, 2);
             entity.Property(e => e.ProductCode).HasMaxLength(100);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
 
             entity.HasOne(d => d.OrderCodeNavigation).WithMany(p => p.TblOrderItems)
                 .HasForeignKey(d => d.OrderCode)
@@ -306,6 +352,14 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.TransactionId)
                 .HasMaxLength(100)
                 .HasColumnName("TransactionID");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
 
             entity.HasOne(d => d.OrderCodeNavigation).WithOne(p => p.TblPayment)
                 .HasForeignKey<TblPayment>(d => d.OrderCode)
@@ -328,6 +382,9 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.CategoryCode).HasMaxLength(100);
             entity.Property(e => e.CostPrice).HasPrecision(15, 2);
             entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
@@ -369,6 +426,14 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("('PPROM'::text || lpad((nextval('productpromotion_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.ProductCode).HasMaxLength(100);
             entity.Property(e => e.PromotionCode).HasMaxLength(100);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
 
             entity.HasOne(d => d.ProductCodeNavigation).WithMany(p => p.TblProductPromotions)
                 .HasForeignKey(d => d.ProductCode)
@@ -396,6 +461,13 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.MinOrderAmount).HasPrecision(15, 2);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.StartDate).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         modelBuilder.Entity<TblReview>(entity =>
@@ -422,6 +494,10 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("TblReview_UserCode_fkey");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
@@ -442,6 +518,12 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Phone).HasColumnType("character varying");
             entity.Property(e => e.TaxCode).HasColumnType("character varying");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
         });
 
         modelBuilder.Entity<TblQuote>(entity =>
@@ -472,6 +554,10 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.ProductCode)
                 .HasConstraintName("TblQuote_ProductCode_fkey");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
         });
 
 
@@ -502,6 +588,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Username).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.ModifiedType).HasDefaultValue("Add");
 
             entity.HasIndex(e => e.Phone, "idx_user_phone");

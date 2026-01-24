@@ -47,7 +47,7 @@ public class MappingProfile : Profile
         // CreateMap<TblProductImage, ProductImageDto>().ReverseMap(); // Removed
 
         CreateMap<TblCategory, CategoryDto>()
-            .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom<ImageUrlResolver, string?>(src => src.ImageUrl))
+            .ForMember(dest => dest.ImageURL, opt => opt.MapFrom<ImageUrlResolver, string?>(src => src.ImageUrl))
             .ReverseMap();
 
         // Order mappings

@@ -30,7 +30,8 @@ public class UserHandlers : BaseHandler<TblUser>,
         IRepository<TblOrder> orderRepository,
         IPasswordHasher passwordHasher,
         IUnitOfWork unitOfWork,
-        IMapper mapper) : base(userRepository, unitOfWork, mapper)
+        IMapper mapper,
+        IDapperContext dapperContext) : base(userRepository, unitOfWork, mapper, dapperContext)
 
     {
         _passwordHasher = passwordHasher;

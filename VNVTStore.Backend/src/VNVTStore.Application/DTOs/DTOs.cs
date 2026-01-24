@@ -128,7 +128,7 @@ public class ProductImageDto
 {
     public string Code { get; set; } = null!;
     public string? MasterCode { get; set; }
-    public string? ImageUrl { get; set; }
+    public string? ImageURL { get; set; }
     public string? AltText { get; set; }
     public int? SortOrder { get; set; }
     public bool? IsPrimary { get; set; }
@@ -140,7 +140,7 @@ public class CategoryDto : IBaseDto
     public string? Code { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-    public string? ImageUrl { get; set; }
+    public string? ImageURL { get; set; }
     public string? ParentCode { get; set; }
     [Reference("TblCategory", "ParentCode", "Name")]
     public string? ParentName { get; set; }
@@ -152,7 +152,7 @@ public class CreateCategoryDto
     public string? Code { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-    public string? ImageUrl { get; set; }
+    public string? ImageURL { get; set; }
     public string? ParentCode { get; set; }
 }
 
@@ -160,7 +160,7 @@ public class UpdateCategoryDto
 {
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public string? ImageUrl { get; set; }
+    public string? ImageURL { get; set; }
     public string? ParentCode { get; set; }
     public bool? IsActive { get; set; }
 }
@@ -205,6 +205,9 @@ public class OrderItemDto
     
     [Reference("TblProduct", "ProductCode", "Name")]
     public string? ProductName { get; set; }
+    
+    [Reference("TblFile", "ProductCode", "Path", TargetColumn = "MasterCode", FilterColumn = "MasterType", FilterValue = "Product")]
+    public string? ProductImage { get; set; }
     
     public string? Size { get; set; }
     public string? Color { get; set; }

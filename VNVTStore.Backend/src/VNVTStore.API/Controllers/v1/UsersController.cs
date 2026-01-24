@@ -104,7 +104,7 @@ public class UsersController : BaseApiController
         var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
         var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
         
-        var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, null, request.SortDTO, filters));
+        var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, null, null, request.SortDTO, request.Searching));
         return HandleResult(result);
     }
 

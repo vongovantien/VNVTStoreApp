@@ -58,7 +58,7 @@ describe('useCartStore', () => {
     it('addItem should call service when authenticated', async () => {
         act(() => useAuthStore.setState({ isAuthenticated: true }));
 
-        const mockProduct = { id: 'P1', name: 'Test', price: 100, image: 'img.jpg' };
+        const mockProduct = { code: 'P1', name: 'Test', price: 100, image: 'img.jpg' };
         const mockResponse = { success: true, data: [] };
         (cartService.addToCart as Mock).mockResolvedValue(mockResponse);
         (cartService.getMyCart as Mock).mockResolvedValue({ success: true, data: [] });
@@ -75,7 +75,7 @@ describe('useCartStore', () => {
 
     it('addItem should update local state when NOT authenticated (Guest)', async () => {
         // isAuthenticated false
-        const mockProduct = { id: 'P1', name: 'Test', price: 100, image: 'img.jpg' } as any;
+        const mockProduct = { code: 'P1', name: 'Test', price: 100, image: 'img.jpg' } as any;
 
         const { result } = renderHook(() => useCartStore());
 

@@ -16,6 +16,7 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
     IRequestHandler<DeleteCommand<TblQuote>, Result>,
     IRequestHandler<GetAllQuery<QuoteDto>, Result<IEnumerable<QuoteDto>>>,
     IRequestHandler<GetByCodeQuery<QuoteDto>, Result<QuoteDto>>,
+    IRequestHandler<GetPagedQuery<QuoteDto>, Result<PagedResult<QuoteDto>>>,
     IRequestHandler<GetMyQuotesQuery, ApiResponse<List<QuoteDto>>>
 {
     private readonly ICurrentUser _currentUser;
@@ -171,5 +172,17 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
             .ToListAsync(cancellationToken);
 
         return new ApiResponse<List<QuoteDto>> { Success = true, Data = quotes };
+    }
+
+    public async Task<Result<PagedResult<QuoteDto>>> Handle(GetPagedQuery<QuoteDto> request, CancellationToken cancellationToken)
+    {
+        return await GetPagedDapperAsync<QuoteDto>(
+            request.PageIndex,
+            request.PageSize,
+            request.Searching,
+            request.SortDTO,
+            null,
+            null,
+            cancellationToken);
     }
 }

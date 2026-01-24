@@ -56,52 +56,51 @@ public class CartHandlers :
             return Result.Failure<CartDto>(Error.NotFound(MessageConstants.Product, request.ProductCode));
         }
 
-        var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
-
-        try
+        return await ExecuteWithRetryAsync(async () =>
         {
-            cart.AddItem(request.ProductCode, request.Quantity, request.Size, request.Color, product.StockQuantity ?? 0);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
-        }
+            var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
 
-        await _unitOfWork.CommitAsync(cancellationToken);
-        return Result.Success(_mapper.Map<CartDto>(cart));
+            try
+            {
+                cart.AddItem(request.ProductCode, request.Quantity, request.Size, request.Color, product.StockQuantity ?? 0);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
+            }
+
+            await _unitOfWork.CommitAsync(cancellationToken);
+            return Result.Success(_mapper.Map<CartDto>(cart));
+        }, cancellationToken);
     }
 
     public async Task<Result<CartDto>> Handle(UpdateCartItemCommand request, CancellationToken cancellationToken)
     {
-        var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
-        
-        // Need to load product to check stock if increasing quantity. 
-        // But UpdateItem logic in Domain checks against MaxStock passed in.
-        // So we need to find the product associated with the cart item.
-        // However, Domain method `UpdateItem` takes `maxStock`.
-        // We first find the item to get ProductCode. Is that available? 
-        // TblCartItems might be loaded.
-        
-        var cartItem = cart.TblCartItems.FirstOrDefault(ci => ci.Code == request.CartItemCode);
-        if (cartItem == null)
+        return await ExecuteWithRetryAsync(async () =>
         {
-             return Result.Failure<CartDto>(Error.NotFound(MessageConstants.OrderItem, request.CartItemCode));
-        }
+            var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
+            
+            var cartItem = cart.TblCartItems.FirstOrDefault(ci => ci.Code == request.CartItemCode);
+            if (cartItem == null)
+            {
+                 return Result.Failure<CartDto>(Error.NotFound(MessageConstants.OrderItem, request.CartItemCode));
+            }
 
-        var product = await _productRepository.GetByCodeAsync(cartItem.ProductCode, cancellationToken);
-        int maxStock = product?.StockQuantity ?? 0;
+            var product = await _productRepository.GetByCodeAsync(cartItem.ProductCode, cancellationToken);
+            int maxStock = product?.StockQuantity ?? 0;
 
-        try
-        {
-            cart.UpdateItem(request.CartItemCode, request.Quantity, maxStock);
-        }
-        catch (InvalidOperationException ex)
-        {
-             return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
-        }
+            try
+            {
+                cart.UpdateItem(request.CartItemCode, request.Quantity, maxStock);
+            }
+            catch (InvalidOperationException ex)
+            {
+                 return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
+            }
 
-        await _unitOfWork.CommitAsync(cancellationToken);
-        return Result.Success(_mapper.Map<CartDto>(cart));
+            await _unitOfWork.CommitAsync(cancellationToken);
+            return Result.Success(_mapper.Map<CartDto>(cart));
+        }, cancellationToken);
     }
 
     public async Task<Result<CartDto>> Handle(RemoveFromCartCommand request, CancellationToken cancellationToken)
@@ -120,5 +119,29 @@ public class CartHandlers :
         cart.Clear();
         await _unitOfWork.CommitAsync(cancellationToken);
         return Result.Success(true);
+    }
+
+    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken, int maxRetries = 10)
+    {
+        int retryCount = 0;
+        while (true)
+        {
+            try
+            {
+                return await action();
+            }
+            catch (Exception ex) when (ex is DbUpdateConcurrencyException || ex is DbUpdateException)
+            {
+                retryCount++;
+                if (retryCount >= maxRetries) throw;
+
+                // Clear tracking to reload fresh entities in next attempt
+                _unitOfWork.ClearChangeTracker();
+                
+                // Exponential backoff with jitter
+                var delay = TimeSpan.FromMilliseconds(new Random().Next(100, 300) * retryCount);
+                await Task.Delay(delay, cancellationToken);
+            }
+        }
     }
 }

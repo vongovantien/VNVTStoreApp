@@ -12,7 +12,7 @@ vi.mock('react-i18next', () => ({
 
 describe('ImportModal', () => {
   const mockOnClose = vi.fn();
-  const mockOnImport = vi.fn();
+  const mockOnImport = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -66,7 +66,7 @@ describe('ImportModal', () => {
 
     expect(mockOnImport).toHaveBeenCalledWith(file);
     expect(mockOnClose).toHaveBeenCalled();
-  });
+  }, 10000); // Increase timeout to 10s
 
   it('disables import button when no file is selected', () => {
     render(

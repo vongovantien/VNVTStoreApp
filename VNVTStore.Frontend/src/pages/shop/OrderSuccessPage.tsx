@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, Printer, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -11,6 +11,7 @@ const OrderSuccessPage = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const orderCode = searchParams.get('code');
   const [order, setOrder] = useState<OrderDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,14 +22,21 @@ const OrderSuccessPage = () => {
             .then(res => {
                 if (res.success && res.data) {
                     setOrder(res.data);
+                } else {
+                    // Logic failed (not found) -> Redirect
+                    navigate('/products');
                 }
             })
-            .catch(err => console.error(err))
+            .catch(err => {
+                console.error(err);
+                navigate('/products');
+            })
             .finally(() => setLoading(false));
     } else {
-        setLoading(false);
+        // No code -> Redirect
+        navigate('/products');
     }
-  }, [orderCode]);
+  }, [orderCode, navigate]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -36,12 +44,7 @@ const OrderSuccessPage = () => {
     </div>
   );
 
-  if (!order) return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center p-4">
-        <h1 className="text-2xl font-bold">Không tìm thấy đơn hàng</h1>
-        <Link to="/"><Button>Về trang chủ</Button></Link>
-    </div>
-  );
+  if (!order) return null; // Should have redirected
 
   // Helper to get formatted date if we wanted to show it
   // const orderDate = new Date(order.createdAt).toLocaleDateString('vi-VN');

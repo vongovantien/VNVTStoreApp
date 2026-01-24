@@ -1,5 +1,6 @@
 ﻿using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VNVTStore.Domain.Entities;
 
@@ -42,6 +43,9 @@ public partial class TblUser : IEntity
     public string? RefreshToken { get; private set; }
 
     public DateTime? RefreshTokenExpiryTime { get; private set; }
+
+    [Column("LoyaltyPoints")]
+    public int LoyaltyPoints { get; private set; } = 0;
 
     public virtual ICollection<TblAddress> TblAddresses { get; private set; }
 
@@ -110,6 +114,13 @@ public partial class TblUser : IEntity
     {
         RefreshToken = token;
         RefreshTokenExpiryTime = expiry;
+    }
+
+    public void AddLoyaltyPoints(int points)
+    {
+        if (points < 0) throw new ArgumentException("Points cannot be negative", nameof(points));
+        LoyaltyPoints += points;
+        UpdatedAt = DateTime.UtcNow;
     }
 
 }

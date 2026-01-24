@@ -1,0 +1,686 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]:
+        - strong [ref=e11]: Khuyến mãi cực hot 2026
+        - img [ref=e12]
+        - text: Giảm giá tới 50% cho tất cả sản phẩm.
+      - link "Mua ngay" [ref=e14] [cursor=pointer]:
+        - /url: /shop
+        - text: Mua ngay →
+    - button "Dismiss" [ref=e16] [cursor=pointer]:
+      - generic [ref=e17]: Dismiss
+      - img [ref=e18]
+  - banner [ref=e21]:
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - 'link "Hotline: 1900 123 456" [ref=e25] [cursor=pointer]':
+          - /url: tel:1900123456
+          - img [ref=e26]
+          - generic [ref=e28]: "Hotline: 1900 123 456"
+        - link "Chat Zalo" [ref=e29] [cursor=pointer]:
+          - /url: https://zalo.me
+          - img [ref=e30]
+          - generic [ref=e32]: Chat Zalo
+      - generic [ref=e33]:
+        - link "Tra cứu đơn hàng" [ref=e34] [cursor=pointer]:
+          - /url: /tracking
+        - link "Hỗ trợ" [ref=e35] [cursor=pointer]:
+          - /url: /support
+        - link "Về chúng tôi" [ref=e36] [cursor=pointer]:
+          - /url: /about
+    - generic [ref=e38]:
+      - link "🏠 VNVT Store" [ref=e39] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e40]: 🏠
+        - generic [ref=e41]:
+          - generic [ref=e42]: VNVT
+          - generic [ref=e43]: Store
+      - generic [ref=e45]:
+        - img [ref=e46]
+        - textbox "Tìm kiếm sản phẩm..." [ref=e50]
+        - button "Tìm kiếm" [ref=e51] [cursor=pointer]
+      - generic [ref=e52]:
+        - button "vi" [ref=e54] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e59]: vi
+        - button [ref=e60] [cursor=pointer]:
+          - img [ref=e61]
+        - link [ref=e63] [cursor=pointer]:
+          - /url: /compare
+          - button [ref=e64]:
+            - img [ref=e65]
+        - link [ref=e71] [cursor=pointer]:
+          - /url: /wishlist
+          - button [ref=e72]:
+            - img [ref=e73]
+        - button [ref=e75] [cursor=pointer]:
+          - img [ref=e76]
+        - button [ref=e81] [cursor=pointer]:
+          - img [ref=e82]
+          - img [ref=e85]
+  - navigation [ref=e87]:
+    - generic [ref=e88]:
+      - button "Danh mục sản phẩm" [ref=e90] [cursor=pointer]:
+        - img [ref=e91]
+        - text: Danh mục sản phẩm
+        - img [ref=e95]
+      - generic [ref=e97]:
+        - link "Trang chủ" [ref=e98] [cursor=pointer]:
+          - /url: /
+        - link "Sản phẩm" [ref=e99] [cursor=pointer]:
+          - /url: /products
+        - link "Khuyến mãi" [ref=e100] [cursor=pointer]:
+          - /url: /promotions
+        - link "Tin tức" [ref=e101] [cursor=pointer]:
+          - /url: /news
+        - link "Liên hệ" [ref=e102] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e103]:
+        - generic [ref=e104]: 🔥 HOT
+        - generic [ref=e105]: Miễn phí ship đơn từ 500K
+  - main [ref=e106]:
+    - generic [ref=e107]:
+      - generic [ref=e109]:
+        - link "Trang chủ" [ref=e110] [cursor=pointer]:
+          - /url: /
+        - img [ref=e111]
+        - generic [ref=e113]: Sản phẩm
+      - generic [ref=e115]:
+        - complementary [ref=e117]:
+          - heading "Bộ lọc" [level=3] [ref=e119]:
+            - img [ref=e120]
+            - text: Bộ lọc
+          - generic [ref=e130]:
+            - heading "Danh mục" [level=4] [ref=e131]
+            - generic [ref=e132]:
+              - generic [ref=e135] [cursor=pointer]: Nhà bếp
+              - generic [ref=e138] [cursor=pointer]: Dây & Cáp điện
+              - generic [ref=e141] [cursor=pointer]: Thiết bị đóng cắt
+              - generic [ref=e144] [cursor=pointer]: Công tắc & Ổ cắm
+              - generic [ref=e147] [cursor=pointer]: Ống luồn & Vật tư điện
+              - generic [ref=e150] [cursor=pointer]: Tủ điện & Phụ kiện
+              - generic [ref=e153] [cursor=pointer]: Vật tư Nước & Kim khí
+              - generic [ref=e156] [cursor=pointer]: Kim khí & Ngũ kim
+              - generic [ref=e159] [cursor=pointer]: Chiếu sáng dân dụng
+              - generic [ref=e162] [cursor=pointer]: Chiếu sáng trang trí
+              - generic [ref=e165] [cursor=pointer]: Chiếu sáng ngoại thất
+              - generic [ref=e168] [cursor=pointer]: Thiết bị điều khiển
+              - generic [ref=e171] [cursor=pointer]: Thiết bị Điện
+              - generic [ref=e174] [cursor=pointer]: Làm mát & Thông gió
+              - generic [ref=e177] [cursor=pointer]: Điện gia dụng nhỏ
+              - generic [ref=e180] [cursor=pointer]: Máy bơm & Máy công cụ
+              - generic [ref=e183] [cursor=pointer]: Nhà thông minh
+              - generic [ref=e186] [cursor=pointer]: Điều khiển thông minh
+              - generic [ref=e189] [cursor=pointer]: Keo & Chất tẩy rửa
+              - generic [ref=e192] [cursor=pointer]: tes11
+              - generic [ref=e195] [cursor=pointer]: Electronics
+              - generic [ref=e198] [cursor=pointer]: Hệ thống ống nước
+              - generic [ref=e201] [cursor=pointer]: Thiết bị Chiếu sáng
+              - generic [ref=e204] [cursor=pointer]: Thiết bị Gia dụng
+              - generic [ref=e207] [cursor=pointer]: Phòng tắm 2
+              - generic [ref=e210] [cursor=pointer]: Phụ kiện đường ống
+              - generic [ref=e213] [cursor=pointer]: Clothing
+              - generic [ref=e216] [cursor=pointer]: Thiết bị Vệ sinh & Nhà bếp
+              - generic [ref=e219] [cursor=pointer]: Bình nóng lạnh
+              - generic [ref=e222] [cursor=pointer]: Computers mobile
+              - generic [ref=e225] [cursor=pointer]: Clothing Rustic
+              - generic [ref=e228] [cursor=pointer]: Outdoors Response
+              - generic [ref=e231] [cursor=pointer]: Movies Haven
+              - generic [ref=e234] [cursor=pointer]: Books magenta
+              - generic [ref=e237] [cursor=pointer]: Electronics Pula
+              - generic [ref=e240] [cursor=pointer]: Grocery Dale
+              - generic [ref=e243] [cursor=pointer]: Sports XSS
+              - generic [ref=e246] [cursor=pointer]: Tools orange
+              - generic [ref=e249] [cursor=pointer]: Sports Jewelery, Jewelery & Toys
+              - generic [ref=e252] [cursor=pointer]: Sports Principal
+              - generic [ref=e255] [cursor=pointer]: Toys Borders
+              - generic [ref=e258] [cursor=pointer]: Movies Movies & Garden
+              - generic [ref=e261] [cursor=pointer]: Sports invoice
+              - generic [ref=e264] [cursor=pointer]: Jewelery Lead
+              - generic [ref=e267] [cursor=pointer]: Music Cotton
+              - generic [ref=e270] [cursor=pointer]: Tools Points
+              - generic [ref=e273] [cursor=pointer]: Computers Enhanced
+              - generic [ref=e276] [cursor=pointer]: Jewelery Yuan Renminbi
+              - generic [ref=e279] [cursor=pointer]: Music quantify
+          - generic [ref=e280]:
+            - heading "Loại giá" [level=4] [ref=e281]
+            - generic [ref=e282]:
+              - generic [ref=e286] [cursor=pointer]: Chọn giá trị
+              - generic [ref=e289] [cursor=pointer]: Giá cố định
+              - generic [ref=e292] [cursor=pointer]: Liên hệ báo giá
+          - generic [ref=e293]:
+            - heading "Khoảng giá" [level=4] [ref=e294]
+            - generic [ref=e295]:
+              - spinbutton [ref=e296]
+              - generic [ref=e297]: "-"
+              - spinbutton [ref=e298]
+            - generic [ref=e299]:
+              - button "Dưới 1 triệu" [ref=e300] [cursor=pointer]
+              - button "1 - 5 triệu" [ref=e301] [cursor=pointer]
+              - button "5 - 10 triệu" [ref=e302] [cursor=pointer]
+              - button "Trên 10 triệu" [ref=e303] [cursor=pointer]
+          - generic [ref=e304]:
+            - heading "Thương hiệu" [level=4] [ref=e305]
+            - generic [ref=e309] [cursor=pointer]: VNVT
+          - generic [ref=e310]:
+            - heading "Đánh giá" [level=4] [ref=e311]
+            - generic [ref=e312]:
+              - button "trở lên" [ref=e313] [cursor=pointer]:
+                - img [ref=e314]
+                - img [ref=e316]
+                - img [ref=e318]
+                - img [ref=e320]
+                - img [ref=e322]
+                - generic [ref=e324]: trở lên
+              - button "trở lên" [ref=e325] [cursor=pointer]:
+                - img [ref=e326]
+                - img [ref=e328]
+                - img [ref=e330]
+                - img [ref=e332]
+                - img [ref=e334]
+                - generic [ref=e336]: trở lên
+              - button "trở lên" [ref=e337] [cursor=pointer]:
+                - img [ref=e338]
+                - img [ref=e340]
+                - img [ref=e342]
+                - img [ref=e344]
+                - img [ref=e346]
+                - generic [ref=e348]: trở lên
+              - button "trở lên" [ref=e349] [cursor=pointer]:
+                - img [ref=e350]
+                - img [ref=e352]
+                - img [ref=e354]
+                - img [ref=e356]
+                - img [ref=e358]
+                - generic [ref=e360]: trở lên
+              - button "trở lên" [ref=e361] [cursor=pointer]:
+                - img [ref=e362]
+                - img [ref=e364]
+                - img [ref=e366]
+                - img [ref=e368]
+                - img [ref=e370]
+                - generic [ref=e372]: trở lên
+        - generic [ref=e373]:
+          - generic [ref=e374]:
+            - generic [ref=e375]:
+              - button "Ẩn bộ lọc" [ref=e376] [cursor=pointer]:
+                - img [ref=e377]
+                - text: Ẩn bộ lọc
+              - generic [ref=e387]:
+                - img [ref=e388]
+                - textbox "Tìm kiếm" [ref=e391]
+              - generic [ref=e392]: Hiển thị 12 sản phẩm
+            - generic [ref=e393]:
+              - generic [ref=e394]:
+                - generic [ref=e395]: "Sắp xếp:"
+                - combobox [ref=e396] [cursor=pointer]:
+                  - option "Mới nhất" [selected]
+                  - option "Giá thấp đến cao"
+                  - option "Giá cao đến thấp"
+                  - option "Đánh giá cao"
+                  - option "Bán chạy"
+                - img
+              - generic [ref=e397]:
+                - button [ref=e398] [cursor=pointer]:
+                  - img [ref=e399]
+                - button [ref=e405] [cursor=pointer]:
+                  - img [ref=e406]
+          - generic [ref=e413]:
+            - generic [ref=e414]:
+              - link "Awesome Cotton Pants Mới Outdoors Response Awesome Cotton Pants (0) 3.356.422 ₫" [ref=e415] [cursor=pointer]:
+                - /url: /product/PRD156D21B2
+                - generic [ref=e416]:
+                  - img "Awesome Cotton Pants" [ref=e417]
+                  - generic [ref=e419]: Mới
+                  - generic [ref=e420]:
+                    - button [ref=e421]:
+                      - img [ref=e422]
+                    - button [ref=e424]:
+                      - img [ref=e425]
+                    - button [ref=e431]:
+                      - img [ref=e432]
+                - generic [ref=e435]:
+                  - generic [ref=e436]: Outdoors Response
+                  - heading "Awesome Cotton Pants" [level=3] [ref=e437]
+                  - generic [ref=e438]:
+                    - img [ref=e439]
+                    - img [ref=e441]
+                    - img [ref=e443]
+                    - img [ref=e445]
+                    - img [ref=e447]
+                    - generic [ref=e449]: (0)
+                  - generic [ref=e451]: 3.356.422 ₫
+              - button "Thêm vào giỏ" [ref=e453] [cursor=pointer]:
+                - img [ref=e454]
+                - text: Thêm vào giỏ
+            - generic [ref=e458]:
+              - link "Gorgeous Rubber Fish Mới Movies Movies & Garden Gorgeous Rubber Fish (0) 2.131.379 ₫" [ref=e459] [cursor=pointer]:
+                - /url: /product/PRD7F32979F
+                - generic [ref=e460]:
+                  - img "Gorgeous Rubber Fish" [ref=e461]
+                  - generic [ref=e463]: Mới
+                  - generic [ref=e464]:
+                    - button [ref=e465]:
+                      - img [ref=e466]
+                    - button [ref=e468]:
+                      - img [ref=e469]
+                    - button [ref=e475]:
+                      - img [ref=e476]
+                - generic [ref=e479]:
+                  - generic [ref=e480]: Movies Movies & Garden
+                  - heading "Gorgeous Rubber Fish" [level=3] [ref=e481]
+                  - generic [ref=e482]:
+                    - img [ref=e483]
+                    - img [ref=e485]
+                    - img [ref=e487]
+                    - img [ref=e489]
+                    - img [ref=e491]
+                    - generic [ref=e493]: (0)
+                  - generic [ref=e495]: 2.131.379 ₫
+              - button "Thêm vào giỏ" [ref=e497] [cursor=pointer]:
+                - img [ref=e498]
+                - text: Thêm vào giỏ
+            - generic [ref=e502]:
+              - link "Unbranded Soft Cheese Mới Toys Borders Unbranded Soft Cheese (0) 2.389.107 ₫" [ref=e503] [cursor=pointer]:
+                - /url: /product/PRD993CB1FC
+                - generic [ref=e504]:
+                  - img "Unbranded Soft Cheese" [ref=e505]
+                  - generic [ref=e507]: Mới
+                  - generic [ref=e508]:
+                    - button [ref=e509]:
+                      - img [ref=e510]
+                    - button [ref=e512]:
+                      - img [ref=e513]
+                    - button [ref=e519]:
+                      - img [ref=e520]
+                - generic [ref=e523]:
+                  - generic [ref=e524]: Toys Borders
+                  - heading "Unbranded Soft Cheese" [level=3] [ref=e525]
+                  - generic [ref=e526]:
+                    - img [ref=e527]
+                    - img [ref=e529]
+                    - img [ref=e531]
+                    - img [ref=e533]
+                    - img [ref=e535]
+                    - generic [ref=e537]: (0)
+                  - generic [ref=e539]: 2.389.107 ₫
+              - button "Thêm vào giỏ" [ref=e541] [cursor=pointer]:
+                - img [ref=e542]
+                - text: Thêm vào giỏ
+            - generic [ref=e546]:
+              - link "Rustic Granite Hat Mới Computers Enhanced Rustic Granite Hat (0) 746.772 ₫" [ref=e547] [cursor=pointer]:
+                - /url: /product/PRD1C89B278
+                - generic [ref=e548]:
+                  - img "Rustic Granite Hat" [ref=e549]
+                  - generic [ref=e551]: Mới
+                  - generic [ref=e552]:
+                    - button [ref=e553]:
+                      - img [ref=e554]
+                    - button [ref=e556]:
+                      - img [ref=e557]
+                    - button [ref=e563]:
+                      - img [ref=e564]
+                - generic [ref=e567]:
+                  - generic [ref=e568]: Computers Enhanced
+                  - heading "Rustic Granite Hat" [level=3] [ref=e569]
+                  - generic [ref=e570]:
+                    - img [ref=e571]
+                    - img [ref=e573]
+                    - img [ref=e575]
+                    - img [ref=e577]
+                    - img [ref=e579]
+                    - generic [ref=e581]: (0)
+                  - generic [ref=e583]: 746.772 ₫
+              - button "Thêm vào giỏ" [ref=e585] [cursor=pointer]:
+                - img [ref=e586]
+                - text: Thêm vào giỏ
+            - generic [ref=e590]:
+              - link "Awesome Plastic Chips Mới Computers Enhanced Awesome Plastic Chips (0) 863.504 ₫" [ref=e591] [cursor=pointer]:
+                - /url: /product/PRDAD846A88
+                - generic [ref=e592]:
+                  - img "Awesome Plastic Chips" [ref=e593]
+                  - generic [ref=e595]: Mới
+                  - generic [ref=e596]:
+                    - button [ref=e597]:
+                      - img [ref=e598]
+                    - button [ref=e600]:
+                      - img [ref=e601]
+                    - button [ref=e607]:
+                      - img [ref=e608]
+                - generic [ref=e611]:
+                  - generic [ref=e612]: Computers Enhanced
+                  - heading "Awesome Plastic Chips" [level=3] [ref=e613]
+                  - generic [ref=e614]:
+                    - img [ref=e615]
+                    - img [ref=e617]
+                    - img [ref=e619]
+                    - img [ref=e621]
+                    - img [ref=e623]
+                    - generic [ref=e625]: (0)
+                  - generic [ref=e627]: 863.504 ₫
+              - button "Thêm vào giỏ" [ref=e629] [cursor=pointer]:
+                - img [ref=e630]
+                - text: Thêm vào giỏ
+            - generic [ref=e634]:
+              - link "Licensed Metal Fish Mới Movies Haven Licensed Metal Fish (0) 3.024.119 ₫" [ref=e635] [cursor=pointer]:
+                - /url: /product/PRD04D597E0
+                - generic [ref=e636]:
+                  - img "Licensed Metal Fish" [ref=e637]
+                  - generic [ref=e639]: Mới
+                  - generic [ref=e640]:
+                    - button [ref=e641]:
+                      - img [ref=e642]
+                    - button [ref=e644]:
+                      - img [ref=e645]
+                    - button [ref=e651]:
+                      - img [ref=e652]
+                - generic [ref=e655]:
+                  - generic [ref=e656]: Movies Haven
+                  - heading "Licensed Metal Fish" [level=3] [ref=e657]
+                  - generic [ref=e658]:
+                    - img [ref=e659]
+                    - img [ref=e661]
+                    - img [ref=e663]
+                    - img [ref=e665]
+                    - img [ref=e667]
+                    - generic [ref=e669]: (0)
+                  - generic [ref=e671]: 3.024.119 ₫
+              - button "Thêm vào giỏ" [ref=e673] [cursor=pointer]:
+                - img [ref=e674]
+                - text: Thêm vào giỏ
+            - generic [ref=e678]:
+              - link "Ergonomic Steel Ball Mới Electronics Pula Ergonomic Steel Ball (0) 1.294.895 ₫" [ref=e679] [cursor=pointer]:
+                - /url: /product/PRDAF7EA350
+                - generic [ref=e680]:
+                  - img "Ergonomic Steel Ball" [ref=e681]
+                  - generic [ref=e683]: Mới
+                  - generic [ref=e684]:
+                    - button [ref=e685]:
+                      - img [ref=e686]
+                    - button [ref=e688]:
+                      - img [ref=e689]
+                    - button [ref=e695]:
+                      - img [ref=e696]
+                - generic [ref=e699]:
+                  - generic [ref=e700]: Electronics Pula
+                  - heading "Ergonomic Steel Ball" [level=3] [ref=e701]
+                  - generic [ref=e702]:
+                    - img [ref=e703]
+                    - img [ref=e705]
+                    - img [ref=e707]
+                    - img [ref=e709]
+                    - img [ref=e711]
+                    - generic [ref=e713]: (0)
+                  - generic [ref=e715]: 1.294.895 ₫
+              - button "Thêm vào giỏ" [ref=e717] [cursor=pointer]:
+                - img [ref=e718]
+                - text: Thêm vào giỏ
+            - generic [ref=e722]:
+              - link "Generic Frozen Mouse Mới Clothing Rustic Generic Frozen Mouse (0) 728.438 ₫" [ref=e723] [cursor=pointer]:
+                - /url: /product/PRD8F8EECFD
+                - generic [ref=e724]:
+                  - img "Generic Frozen Mouse" [ref=e725]
+                  - generic [ref=e727]: Mới
+                  - generic [ref=e728]:
+                    - button [ref=e729]:
+                      - img [ref=e730]
+                    - button [ref=e732]:
+                      - img [ref=e733]
+                    - button [ref=e739]:
+                      - img [ref=e740]
+                - generic [ref=e743]:
+                  - generic [ref=e744]: Clothing Rustic
+                  - heading "Generic Frozen Mouse" [level=3] [ref=e745]
+                  - generic [ref=e746]:
+                    - img [ref=e747]
+                    - img [ref=e749]
+                    - img [ref=e751]
+                    - img [ref=e753]
+                    - img [ref=e755]
+                    - generic [ref=e757]: (0)
+                  - generic [ref=e759]: 728.438 ₫
+              - button "Thêm vào giỏ" [ref=e761] [cursor=pointer]:
+                - img [ref=e762]
+                - text: Thêm vào giỏ
+            - generic [ref=e766]:
+              - link "Intelligent Soft Fish Mới Sports XSS Intelligent Soft Fish (0) 4.519.973 ₫" [ref=e767] [cursor=pointer]:
+                - /url: /product/PRDB3B20F41
+                - generic [ref=e768]:
+                  - img "Intelligent Soft Fish" [ref=e769]
+                  - generic [ref=e771]: Mới
+                  - generic [ref=e772]:
+                    - button [ref=e773]:
+                      - img [ref=e774]
+                    - button [ref=e776]:
+                      - img [ref=e777]
+                    - button [ref=e783]:
+                      - img [ref=e784]
+                - generic [ref=e787]:
+                  - generic [ref=e788]: Sports XSS
+                  - heading "Intelligent Soft Fish" [level=3] [ref=e789]
+                  - generic [ref=e790]:
+                    - img [ref=e791]
+                    - img [ref=e793]
+                    - img [ref=e795]
+                    - img [ref=e797]
+                    - img [ref=e799]
+                    - generic [ref=e801]: (0)
+                  - generic [ref=e803]: 4.519.973 ₫
+              - button "Thêm vào giỏ" [ref=e805] [cursor=pointer]:
+                - img [ref=e806]
+                - text: Thêm vào giỏ
+            - generic [ref=e810]:
+              - link "Awesome Soft Car Mới Grocery Dale Awesome Soft Car (0) 1.099.279 ₫" [ref=e811] [cursor=pointer]:
+                - /url: /product/PRDCCB78419
+                - generic [ref=e812]:
+                  - img "Awesome Soft Car" [ref=e813]
+                  - generic [ref=e815]: Mới
+                  - generic [ref=e816]:
+                    - button [ref=e817]:
+                      - img [ref=e818]
+                    - button [ref=e820]:
+                      - img [ref=e821]
+                    - button [ref=e827]:
+                      - img [ref=e828]
+                - generic [ref=e831]:
+                  - generic [ref=e832]: Grocery Dale
+                  - heading "Awesome Soft Car" [level=3] [ref=e833]
+                  - generic [ref=e834]:
+                    - img [ref=e835]
+                    - img [ref=e837]
+                    - img [ref=e839]
+                    - img [ref=e841]
+                    - img [ref=e843]
+                    - generic [ref=e845]: (0)
+                  - generic [ref=e847]: 1.099.279 ₫
+              - button "Thêm vào giỏ" [ref=e849] [cursor=pointer]:
+                - img [ref=e850]
+                - text: Thêm vào giỏ
+            - generic [ref=e854]:
+              - link "Incredible Metal Sausages Mới Jewelery Lead Incredible Metal Sausages (0) 4.623.988 ₫" [ref=e855] [cursor=pointer]:
+                - /url: /product/PRD687533C2
+                - generic [ref=e856]:
+                  - img "Incredible Metal Sausages" [ref=e857]
+                  - generic [ref=e859]: Mới
+                  - generic [ref=e860]:
+                    - button [ref=e861]:
+                      - img [ref=e862]
+                    - button [ref=e864]:
+                      - img [ref=e865]
+                    - button [ref=e871]:
+                      - img [ref=e872]
+                - generic [ref=e875]:
+                  - generic [ref=e876]: Jewelery Lead
+                  - heading "Incredible Metal Sausages" [level=3] [ref=e877]
+                  - generic [ref=e878]:
+                    - img [ref=e879]
+                    - img [ref=e881]
+                    - img [ref=e883]
+                    - img [ref=e885]
+                    - img [ref=e887]
+                    - generic [ref=e889]: (0)
+                  - generic [ref=e891]: 4.623.988 ₫
+              - button "Thêm vào giỏ" [ref=e893] [cursor=pointer]:
+                - img [ref=e894]
+                - text: Thêm vào giỏ
+            - generic [ref=e898]:
+              - link "Refined Soft Pants Mới Grocery Dale Refined Soft Pants (0) 1.748.028 ₫" [ref=e899] [cursor=pointer]:
+                - /url: /product/PRDD92E215C
+                - generic [ref=e900]:
+                  - img "Refined Soft Pants" [ref=e901]
+                  - generic [ref=e903]: Mới
+                  - generic [ref=e904]:
+                    - button [ref=e905]:
+                      - img [ref=e906]
+                    - button [ref=e908]:
+                      - img [ref=e909]
+                    - button [ref=e915]:
+                      - img [ref=e916]
+                - generic [ref=e919]:
+                  - generic [ref=e920]: Grocery Dale
+                  - heading "Refined Soft Pants" [level=3] [ref=e921]
+                  - generic [ref=e922]:
+                    - img [ref=e923]
+                    - img [ref=e925]
+                    - img [ref=e927]
+                    - img [ref=e929]
+                    - img [ref=e931]
+                    - generic [ref=e933]: (0)
+                  - generic [ref=e935]: 1.748.028 ₫
+              - button "Thêm vào giỏ" [ref=e937] [cursor=pointer]:
+                - img [ref=e938]
+                - text: Thêm vào giỏ
+          - generic [ref=e942]:
+            - button "‹" [disabled] [ref=e943] [cursor=pointer]
+            - button "1" [ref=e944] [cursor=pointer]
+            - button "2" [ref=e945] [cursor=pointer]
+            - button "3" [ref=e946] [cursor=pointer]
+            - button "4" [ref=e947] [cursor=pointer]
+            - button "5" [ref=e948] [cursor=pointer]
+            - generic [ref=e949]: ...
+            - button "17" [ref=e950] [cursor=pointer]
+            - button "›" [ref=e951] [cursor=pointer]
+  - contentinfo [ref=e952]:
+    - generic [ref=e955]:
+      - generic [ref=e956]:
+        - img [ref=e958]
+        - generic [ref=e964]:
+          - heading "Miễn phí vận chuyển" [level=4] [ref=e965]
+          - paragraph [ref=e966]: Đơn hàng từ 500K
+      - generic [ref=e967]:
+        - img [ref=e969]
+        - generic [ref=e971]:
+          - heading "Bảo hành chính hãng" [level=4] [ref=e972]
+          - paragraph [ref=e973]: 12-24 tháng
+      - generic [ref=e974]:
+        - img [ref=e976]
+        - generic [ref=e979]:
+          - heading "Đổi trả dễ dàng" [level=4] [ref=e980]
+          - paragraph [ref=e981]: Trong vòng 7 ngày
+      - generic [ref=e982]:
+        - img [ref=e984]
+        - generic [ref=e986]:
+          - heading "Hỗ trợ 24/7" [level=4] [ref=e987]
+          - paragraph [ref=e988]: Tư vấn nhiệt tình
+    - generic [ref=e991]:
+      - generic [ref=e992]:
+        - link "🏠 VNVT Store" [ref=e993] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e994]: 🏠
+          - generic [ref=e995]:
+            - generic [ref=e996]: VNVT
+            - generic [ref=e997]: Store
+        - paragraph [ref=e998]: Cửa hàng đồ gia dụng cao cấp - Chất lượng tạo nên sự khác biệt
+        - generic [ref=e999]:
+          - generic [ref=e1000]:
+            - img [ref=e1001]
+            - generic [ref=e1004]: 123 Nguyễn Huệ, Q.1, TP.HCM
+          - generic [ref=e1005]:
+            - img [ref=e1006]
+            - generic [ref=e1008]: 1900 123 456
+          - generic [ref=e1009]:
+            - img [ref=e1010]
+            - generic [ref=e1013]: contact@vnvtstore.com
+        - generic [ref=e1014]:
+          - link [ref=e1015] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e1016]
+          - link [ref=e1018] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e1019]
+          - link [ref=e1023] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e1024]
+          - link "Zalo" [ref=e1027] [cursor=pointer]:
+            - /url: https://zalo.me
+            - generic [ref=e1028]: Zalo
+      - generic [ref=e1029]:
+        - heading "Về VNVT Store" [level=3] [ref=e1030]: Về VNVT Store
+        - list [ref=e1032]:
+          - listitem [ref=e1033]:
+            - link "Về chúng tôi" [ref=e1034] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=e1035]:
+            - link "Tin tức" [ref=e1036] [cursor=pointer]:
+              - /url: /news
+          - listitem [ref=e1037]:
+            - link "Khuyến mãi" [ref=e1038] [cursor=pointer]:
+              - /url: /promotions
+          - listitem [ref=e1039]:
+            - link "Liên hệ" [ref=e1040] [cursor=pointer]:
+              - /url: /contact
+      - generic [ref=e1041]:
+        - heading "Hỗ trợ khách hàng" [level=3] [ref=e1042]: Hỗ trợ khách hàng
+        - list [ref=e1044]:
+          - listitem [ref=e1045]:
+            - link "Tra cứu đơn hàng" [ref=e1046] [cursor=pointer]:
+              - /url: /tracking
+          - listitem [ref=e1047]:
+            - link "Hỗ trợ" [ref=e1048] [cursor=pointer]:
+              - /url: /support
+          - listitem [ref=e1049]:
+            - link "Sản phẩm" [ref=e1050] [cursor=pointer]:
+              - /url: /products
+          - listitem [ref=e1051]:
+            - link "FAQ" [ref=e1052] [cursor=pointer]:
+              - /url: /support
+      - generic [ref=e1053]:
+        - heading "Đăng ký nhận tin" [level=3] [ref=e1054]: Đăng ký nhận tin
+        - paragraph [ref=e1056]: Nhận thông tin khuyến mãi mới nhất
+        - generic [ref=e1057]:
+          - textbox "Nhập email của bạn" [ref=e1058]
+          - button [ref=e1059] [cursor=pointer]:
+            - img [ref=e1060]
+        - generic [ref=e1063]:
+          - heading "Phương thức thanh toán" [level=4] [ref=e1064]
+          - generic [ref=e1065]:
+            - generic "Visa" [ref=e1066]:
+              - img [ref=e1067]
+              - generic [ref=e1070]: Visa
+            - generic "MC" [ref=e1071]:
+              - img [ref=e1072]
+              - generic [ref=e1075]: MC
+            - generic "ZaloPay" [ref=e1076]:
+              - img [ref=e1077]
+              - generic [ref=e1080]: ZaloPay
+            - generic "MoMo" [ref=e1081]:
+              - img [ref=e1082]
+              - generic [ref=e1085]: MoMo
+            - generic "VNPAY" [ref=e1086]:
+              - img [ref=e1087]
+              - generic [ref=e1090]: VNPAY
+    - generic [ref=e1092]:
+      - paragraph [ref=e1093]: © 2026 VNVT Store. Tất cả quyền được bảo lưu.
+      - generic [ref=e1094]:
+        - button "�" [ref=e1095] [cursor=pointer]
+        - link "Về chúng tôi" [ref=e1096] [cursor=pointer]:
+          - /url: /about
+        - link "Hỗ trợ" [ref=e1097] [cursor=pointer]:
+          - /url: /support
+  - button [ref=e1098] [cursor=pointer]:
+    - img [ref=e1099]
+```

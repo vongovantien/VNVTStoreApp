@@ -44,7 +44,7 @@ public class PaymentHandlers :
         if (order == null)
             return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Order, request.orderCode));
 
-        if (order.UserCode != _currentUser.UserCode)
+        if (!string.IsNullOrEmpty(_currentUser.UserCode) && order.UserCode != _currentUser.UserCode)
             return Result.Failure<PaymentDto>(Error.Forbidden("Cannot pay for another user's order"));
 
         var payment = TblPayment.Create(
@@ -94,7 +94,10 @@ public class PaymentHandlers :
 
         // Check ownership via order
         var order = await _orderRepository.GetByCodeAsync(request.orderCode, cancellationToken);
-        if (order == null || order.UserCode != _currentUser.UserCode)
+        if (order == null)
+             return Result.Failure<PaymentDto>(Error.NotFound(MessageConstants.Order, request.orderCode));
+
+        if (!string.IsNullOrEmpty(_currentUser.UserCode) && order.UserCode != _currentUser.UserCode)
              return Result.Failure<PaymentDto>(Error.Forbidden("Cannot view payment of another user"));
 
         return Result.Success(_mapper.Map<PaymentDto>(payment));

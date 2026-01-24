@@ -47,6 +47,11 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
+    public void ClearChangeTracker()
+    {
+        _context.ChangeTracker.Clear();
+    }
+
     public void Dispose()
     {
         _transaction?.Dispose();

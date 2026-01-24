@@ -200,7 +200,7 @@ public class OrderHandlers : BaseHandler<TblOrder>,
                 orderItems.Add(TblOrderItem.Create(
                     item.ProductCode!,
                     item.ProductCodeNavigation.Name,
-                    item.ImageUrl,
+                    item.ImageURL,
                     item.Quantity,
                     item.ProductCodeNavigation.Price,
                     item.Size,
@@ -266,6 +266,22 @@ public class OrderHandlers : BaseHandler<TblOrder>,
             await _orderRepository.AddAsync(order, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
+            // 6. Award Loyalty Points (Registered Users only)
+            if (!string.IsNullOrEmpty(request.userCode) && userCode != "USR_GUEST") // Assuming logic for USR_GUEST
+            {
+                 var user = await _userRepository.GetByCodeAsync(userCode, cancellationToken);
+                 if (user != null)
+                 {
+                      int points = (int)(totalAmount / 10000);
+                      if (points > 0)
+                      {
+                           user.AddLoyaltyPoints(points);
+                           _userRepository.Update(user);
+                           await _unitOfWork.CommitAsync(cancellationToken);
+                      }
+                 }
+            }
+
             // Publish Domain Event -> CartClearedEventHandler will pick this up
             await _mediator.Publish(new OrderCreatedEvent(order, userCode, request.dto.CartCode), cancellationToken);
             
@@ -317,7 +333,7 @@ public class OrderHandlers : BaseHandler<TblOrder>,
                 "guest",
                 "guest@vnvtstore.com",
                 "guest_pwd_hash_placeholder",
-                "Guest User",
+                "Khách vãng lai",
                 UserRole.Customer
             );
             await _userRepository.AddAsync(guestUser, cancellationToken);
@@ -431,7 +447,7 @@ public class OrderHandlers : BaseHandler<TblOrder>,
         }
     }
 
-    private record ProcessableOrderItem(string ProductCode, TblProduct ProductCodeNavigation, int Quantity, string? Size, string? Color, string? ImageUrl);
+    private record ProcessableOrderItem(string ProductCode, TblProduct ProductCodeNavigation, int Quantity, string? Size, string? Color, string? ImageURL);
 
     public async Task<Result<string>> Handle(VerifyOrderCommand request, CancellationToken cancellationToken)
     {

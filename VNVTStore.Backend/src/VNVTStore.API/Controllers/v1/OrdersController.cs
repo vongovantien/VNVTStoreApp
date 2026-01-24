@@ -75,7 +75,7 @@ public class OrdersController : BaseApiController
     }
 
     [HttpGet("{code}")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<OrderDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOrder(string code)
     {

@@ -12,7 +12,6 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
-using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
 
 using Dapper;
@@ -68,16 +67,16 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
         }
 
         string? uploadedPath = null;
-        if (!string.IsNullOrEmpty(request.Dto.ImageUrl) && request.Dto.ImageUrl.StartsWith("data:image"))
+        if (!string.IsNullOrEmpty(request.Dto.ImageURL) && request.Dto.ImageURL.StartsWith("data:image"))
         {
             var fileName = $"category_{DateTime.Now.Ticks}.png"; 
-            var uploadResult = await _imageUploadService.UploadBase64Async(request.Dto.ImageUrl, fileName, "categories");
+            var uploadResult = await _imageUploadService.UploadBase64Async(request.Dto.ImageURL, fileName, "categories");
             if (uploadResult.IsFailure)
             {
                 return Result.Failure<CategoryDto>(uploadResult.Error);
             }
             uploadedPath = uploadResult.Value.Url;
-            request.Dto.ImageUrl = uploadedPath;
+            request.Dto.ImageURL = uploadedPath;
         }
 
         var result = await CreateAsync<CreateCategoryDto, CategoryDto>(
@@ -117,18 +116,18 @@ public class CategoriesHandler : BaseHandler<TblCategory>,
 
             // 1. Upload Logic
             string? uploadedPath = null;
-            if (!string.IsNullOrEmpty(request.Dto.ImageUrl) && request.Dto.ImageUrl.StartsWith("data:image"))
-            {
-                var fileName = $"category_{DateTime.Now.Ticks}.png"; 
-                var uploadResult = await _imageUploadService.UploadBase64Async(request.Dto.ImageUrl, fileName, "categories");
-                if (uploadResult.IsFailure)
+                if (!string.IsNullOrEmpty(request.Dto.ImageURL) && request.Dto.ImageURL.StartsWith("data:image"))
                 {
-                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<CategoryDto>(uploadResult.Error);
+                    var fileName = $"category_{DateTime.Now.Ticks}.png"; 
+                    var uploadResult = await _imageUploadService.UploadBase64Async(request.Dto.ImageURL, fileName, "categories");
+                    if (uploadResult.IsFailure)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<CategoryDto>(uploadResult.Error);
+                    }
+                    uploadedPath = uploadResult.Value.Url;
+                    request.Dto.ImageURL = uploadedPath;
                 }
-                uploadedPath = uploadResult.Value.Url;
-                request.Dto.ImageUrl = uploadedPath;
-            }
 
             // 2. Fetch Entity
             var entity = await _repository.GetByCodeAsync(request.Code, cancellationToken);

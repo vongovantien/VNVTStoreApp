@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
@@ -30,14 +31,19 @@ public partial class TblProduct : IEntity
 
     public decimal? Weight { get; private set; }
 
+    [Column("Color")]
     public string? Color { get; private set; }
 
+    [Column("Power")]
     public string? Power { get; private set; }
 
+    [Column("Voltage")]
     public string? Voltage { get; private set; }
 
+    [Column("Material")]
     public string? Material { get; private set; }
 
+    [Column("Size")]
     public string? Size { get; private set; }
 
     public bool IsActive { get; set; }

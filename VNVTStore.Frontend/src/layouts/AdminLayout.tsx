@@ -158,8 +158,19 @@ export const AdminLayout = () => {
   }, [showLangMenu, showUserMenu]);
 
 
-  if (!isAuthenticated || !user || user.role !== UserRole.ADMIN) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  // Case-insensitive check
+  if (String(user.role).toLowerCase() !== 'admin') {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen bg-gray-50 text-gray-800">
+            <h1 className="text-2xl font-bold mb-2">403 - {t('common.forbidden', 'Truy cập bị từ chối')}</h1>
+            <p className="mb-4">{t('messages.adminOnly', 'Bạn không có quyền truy cập trang quản trị.')}</p>
+            <Button onClick={() => navigate('/')}>{t('common.backToHome', 'Về trang chủ')}</Button>
+        </div>
+      );
   }
 
   const handleLogout = () => {

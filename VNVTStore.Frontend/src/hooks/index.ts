@@ -13,7 +13,9 @@ export {
     productKeys,
 } from './useProducts';
 
-export { useSuppliers, useSuppliersList } from './useSuppliers';
+export { useSuppliers, useSuppliersPaged } from './useSuppliers';
+export { useUnits } from './useUnits';
+export { useBrands } from './useBrands';
 
 // Re-export order hooks
 export { useOrders, useAdminOrders, useUpdateOrderStatus } from './useOrders';

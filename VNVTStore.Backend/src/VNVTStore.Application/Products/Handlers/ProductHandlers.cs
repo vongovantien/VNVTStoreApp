@@ -18,13 +18,13 @@ using Newtonsoft.Json.Linq;
 namespace VNVTStore.Application.Products.Handlers;
 
 public class ProductHandlers : BaseHandler<TblProduct>,
-    IRequestHandler<GetProductsQuery, Result<PagedResult<ProductDto>>>,
     IRequestHandler<GetPagedQuery<ProductDto>, Result<PagedResult<ProductDto>>>,
     IRequestHandler<GetByCodeQuery<ProductDto>, Result<ProductDto>>,
     IRequestHandler<CreateCommand<CreateProductDto, ProductDto>, Result<ProductDto>>,
     IRequestHandler<UpdateCommand<UpdateProductDto, ProductDto>, Result<ProductDto>>,
     IRequestHandler<DeleteCommand<TblProduct>, Result>,
-    IRequestHandler<ImportProductsCommand, Result<int>>
+    IRequestHandler<ImportProductsCommand, Result<int>>,
+    IRequestHandler<GetProductStatsQuery, Result<ProductStatsDto>>
 {
 
     private readonly IImageUploadService _imageUploadService;
@@ -52,30 +52,20 @@ public class ProductHandlers : BaseHandler<TblProduct>,
         // Use request.Searching directly (already contains search conditions from frontend)
         var searchFields = request.Searching ?? new List<SearchDTO>();
 
-        // // Add IsActive filter by default
-        // if (!searchFields.Any(s => s.SearchField == "IsActive"))
-        // {
-        //     searchFields.Add(new SearchDTO { SearchField = "IsActive", SearchCondition = SearchCondition.Equal, SearchValue = true });
-        // }
-        
-        // // Category Filter (for GetProductsQuery)
-        // string? categoryCode = null;
-        // if (request is GetProductsQuery productsQuery)
-        // {
-        //     categoryCode = productsQuery.CategoryCode;
-        // }
-
-        // if (!string.IsNullOrWhiteSpace(categoryCode))
-        // {
-        //      searchFields.Add(new SearchDTO { SearchField = "CategoryCode", SearchCondition = SearchCondition.Equal, SearchValue = categoryCode });
-        // }
+        // Handle generic Search string -> Grouped OR condition
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            searchFields.Add(new SearchDTO { SearchField = "Name", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+            searchFields.Add(new SearchDTO { SearchField = "Code", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+            searchFields.Add(new SearchDTO { SearchField = "Description", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+        }
 
         var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
 
         // Call Base Handler
         var result = await GetPagedDapperAsync<ProductDto>(request.PageIndex, request.PageSize, searchFields, sortDTO, null, request.Fields, cancellationToken);
 
-        // 6. Populate Images Logic
+        // Populate Images Logic
         if (result.IsSuccess && result.Value.Items.Any())
         {
             using var connection = _dapperContext.CreateConnection();
@@ -103,12 +93,6 @@ public class ProductHandlers : BaseHandler<TblProduct>,
 
         return result;
     }
-    
-    // Explicit handler for GetProductsQuery - delegates to the generic handler
-    public Task<Result<PagedResult<ProductDto>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
-    {
-        return Handle((GetPagedQuery<ProductDto>)request, cancellationToken);
-    }
 
     public async Task<Result<ProductDto>> Handle(GetByCodeQuery<ProductDto> request, CancellationToken cancellationToken)
     {
@@ -116,7 +100,7 @@ public class ProductHandlers : BaseHandler<TblProduct>,
             request.Code, 
             MessageConstants.Product, 
             cancellationToken,
-            includes: q => q.Include(p => p.CategoryCodeNavigation));
+            includes: q => q.Include(p => p.CategoryCodeNavigation).Include(p => p.TblProductUnits).ThenInclude(pu => pu.Unit));
 
         if (result.IsSuccess)
         {
@@ -220,6 +204,38 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                 }
             }
 
+            if (dto.ProductUnits != null && dto.ProductUnits.Any())
+            {
+                foreach (var unitDto in dto.ProductUnits)
+                {
+                    // Resolve Unit Catalog
+                    var unitCatalog = await _context.TblUnits
+                        .FirstOrDefaultAsync(u => u.Name == unitDto.UnitName, cancellationToken);
+                    
+                    if (unitCatalog == null)
+                    {
+                        unitCatalog = new TblUnit { 
+                            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                            Name = unitDto.UnitName, 
+                            IsActive = true 
+                        };
+                        await _context.TblUnits.AddAsync(unitCatalog, cancellationToken);
+                        await _context.SaveChangesAsync(cancellationToken); 
+                    }
+
+                    product.TblProductUnits.Add(new TblProductUnit
+                    {
+                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                        ProductCode = product.Code,
+                        UnitCode = unitCatalog.Code,
+                        ConversionRate = unitDto.ConversionRate,
+                        Price = unitDto.Price,
+                        IsBaseUnit = unitDto.IsBaseUnit,
+                        IsActive = true
+                    });
+                }
+            }
+
             // product.SetAttributes...
 
             await _repository.AddAsync(product, cancellationToken);
@@ -256,7 +272,10 @@ public class ProductHandlers : BaseHandler<TblProduct>,
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            var product = await _repository.GetByCodeAsync(request.Code, cancellationToken);
+            var product = await _repository.AsQueryable()
+                .Include(p => p.TblProductDetails)
+                .Include(p => p.TblProductUnits).ThenInclude(pu => pu.Unit)
+                .FirstOrDefaultAsync(p => p.Code == request.Code, cancellationToken);
                 
             if (product == null)
             {
@@ -300,6 +319,41 @@ public class ProductHandlers : BaseHandler<TblProduct>,
                         DetailType = detail.DetailType,
                         SpecName = detail.SpecName,
                         SpecValue = detail.SpecValue
+                    });
+                }
+            }
+
+            // Handle Units update
+            if (request.Dto.ProductUnits != null)
+            {
+                // Simple replacement logic for consistency
+                product.TblProductUnits.Clear();
+                foreach (var unitDto in request.Dto.ProductUnits)
+                {
+                    // Resolve Unit Catalog
+                    var unitCatalog = await _context.TblUnits
+                        .FirstOrDefaultAsync(u => u.Name == unitDto.UnitName, cancellationToken);
+                    
+                    if (unitCatalog == null)
+                    {
+                        unitCatalog = new TblUnit { 
+                            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                            Name = unitDto.UnitName, 
+                            IsActive = true 
+                        };
+                        await _context.TblUnits.AddAsync(unitCatalog, cancellationToken);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+
+                    product.TblProductUnits.Add(new TblProductUnit
+                    {
+                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                        ProductCode = product.Code,
+                        UnitCode = unitCatalog.Code,
+                        ConversionRate = unitDto.ConversionRate,
+                        Price = unitDto.Price,
+                        IsBaseUnit = unitDto.IsBaseUnit,
+                        IsActive = true
                     });
                 }
             }
@@ -465,6 +519,20 @@ public class ProductHandlers : BaseHandler<TblProduct>,
     private bool IsBase64String(string s)
     {
         return s.StartsWith("data:image");
+    }
+
+    public async Task<Result<ProductStatsDto>> Handle(GetProductStatsQuery request, CancellationToken cancellationToken)
+    {
+        var total = await _repository.CountAsync(p => p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
+        var lowStock = await _repository.CountAsync(p => p.ModifiedType != ModificationType.Delete.ToString() && p.StockQuantity > 0 && p.StockQuantity <= (p.MinStockLevel ?? 10), cancellationToken);
+        var outOfStock = await _repository.CountAsync(p => p.ModifiedType != ModificationType.Delete.ToString() && (p.StockQuantity == null || p.StockQuantity <= 0), cancellationToken);
+
+        return Result.Success(new ProductStatsDto
+        {
+            Total = total,
+            LowStock = lowStock,
+            OutOfStock = outOfStock
+        });
     }
 
     public async Task<Result<int>> Handle(ImportProductsCommand request, CancellationToken cancellationToken)

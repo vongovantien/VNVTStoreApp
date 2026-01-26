@@ -1,13 +1,15 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Building2, Phone, Mail, RefreshCw } from 'lucide-react';
+import { Building2, RefreshCw, Mail, Truck, UserCheck, Phone } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supplierService, type SupplierDto, type CreateSupplierRequest, type UpdateSupplierRequest } from '@/services';
 import { DataTable, type DataTableColumn } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
-import { useEntityManager, useSuppliers } from '@/hooks';
+import { useEntityManager, useSuppliersPaged } from '@/hooks';
+import { SearchCondition } from '@/services/baseService';
+import { useMemo } from 'react';
 import { SupplierForm, type SupplierFormData } from './forms';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 import { useQuery } from '@tanstack/react-query';
@@ -17,12 +19,34 @@ export default function SuppliersPage() {
   const queryClient = useQueryClient();
 
   // Data Fetching
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filters, setFilters] = useState<Record<string, string>>({});
+
+  const searchParams = useMemo(() => {
+     const filterParams = [];
+     if (filters.Name) filterParams.push({ field: 'Name', value: filters.Name, operator: SearchCondition.Contains });
+     if (filters.TaxCode) filterParams.push({ field: 'TaxCode', value: filters.TaxCode, operator: SearchCondition.Contains });
+     if (filters.Phone) filterParams.push({ field: 'Phone', value: filters.Phone, operator: SearchCondition.Contains });
+     if (filters.IsActive) filterParams.push({ field: 'IsActive', value: filters.IsActive === 'true', operator: SearchCondition.Equal });
+     
+     return {
+        pageIndex: page,
+        pageSize,
+        filters: filterParams
+     };
+  }, [page, pageSize, filters]);
+
   const { 
-    data: suppliers = [], 
+    data: result, 
     isLoading, 
     isFetching,
     refetch 
-  } = useSuppliers();
+  } = useSuppliersPaged(searchParams);
+
+  const suppliers = result?.items || [];
+  const totalItems = result?.totalItems || 0;
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   // Entity Manager (for CRUD state)
   const {
@@ -195,7 +219,7 @@ export default function SuppliersPage() {
       {
           label: t('admin.stats.totalSuppliers'),
           value: statsData?.total || 0,
-          icon: <Building2 size={24} />,
+          icon: <Truck size={24} />,
           color: 'blue',
           loading: isStatsLoading
       },
@@ -204,13 +228,6 @@ export default function SuppliersPage() {
           value: statsData?.active || 0,
           icon: <RefreshCw size={24} />,
           color: 'emerald',
-          loading: isStatsLoading
-      },
-      {
-          label: t('admin.stats.newContacts'),
-          value: 0, // Placeholder as service might not return this yet
-          icon: <Mail size={24} />,
-          color: 'rose',
           loading: isStatsLoading
       }
   ];
@@ -240,9 +257,32 @@ export default function SuppliersPage() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
 
+        // Pagination
+        currentPage={page}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        
         onBulkDelete={handleBulkDelete}
         onAdd={() => openCreate()}
         onRefresh={() => refetch()}
+
+        // Advanced Filter
+        advancedFilterDefs={[
+             { id: 'Name', label: t('common.fields.name'), type: 'text', placeholder: t('common.placeholders.search') },
+             { id: 'TaxCode', label: t('common.fields.taxCode'), type: 'text', placeholder: 'MST...' },
+             { id: 'Phone', label: t('common.fields.phone'), type: 'text', placeholder: 'SDT...' },
+             { id: 'IsActive', label: t('common.fields.status'), type: 'select', options: [{ value: 'true', label: t('admin.status.active') }, { value: 'false', label: t('admin.status.inactive') }] }
+        ]}
+        onAdvancedSearch={setFilters}
+
+        // Export
+         onExportAllData={async () => {
+           const res = await supplierService.getAll(10000);
+           return res.data?.items || [];
+        }}
 
         onEdit={(item) => openEdit(item)}
         onDelete={(item) => confirmDelete(item)}

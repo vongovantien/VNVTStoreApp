@@ -36,6 +36,9 @@ export interface ChangePasswordRequest {
 export interface AddressDto {
     code: string;
     userCode?: string;
+    fullName?: string;
+    phone?: string;
+    category?: string;
     addressLine: string;
     city: string;
     state?: string;
@@ -45,6 +48,9 @@ export interface AddressDto {
 }
 
 export interface CreateAddressRequest {
+    fullName?: string;
+    phone?: string;
+    category?: string;
     addressLine: string;
     city?: string;
     state?: string;

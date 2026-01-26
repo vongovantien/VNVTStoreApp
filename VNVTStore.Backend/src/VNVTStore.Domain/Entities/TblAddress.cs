@@ -6,6 +6,9 @@ namespace VNVTStore.Domain.Entities;
 
 public record AddressDetails(
     string AddressLine,
+    string? FullName = null,
+    string? Phone = null,
+    string? Category = null,
     string? City = null,
     string? State = null,
     string? PostalCode = null,
@@ -21,6 +24,12 @@ public partial class TblAddress : IEntity
     public string UserCode { get; private set; } = null!;
 
     public string AddressLine { get; private set; } = null!;
+
+    public string? FullName { get; private set; }
+
+    public string? Phone { get; private set; }
+
+    public string? Category { get; private set; }
 
     public string? City { get; private set; }
 
@@ -50,6 +59,9 @@ public partial class TblAddress : IEntity
     public void Update(AddressDetails details, bool? isDefault = null)
     {
         AddressLine = details.AddressLine;
+        FullName = details.FullName;
+        Phone = details.Phone;
+        Category = details.Category;
         City = details.City;
         State = details.State;
         PostalCode = details.PostalCode;
@@ -69,9 +81,9 @@ public partial class TblAddress : IEntity
             return this;
         }
 
-        public Builder AtLocation(string addressLine, string? city = null, string? state = null, string? postalCode = null, string? country = "Vietnam")
+        public Builder AtLocation(string addressLine, string? fullName = null, string? phone = null, string? category = null, string? city = null, string? state = null, string? postalCode = null, string? country = "Vietnam")
         {
-            _details = new AddressDetails(addressLine, city, state, postalCode, country);
+            _details = new AddressDetails(addressLine, fullName, phone, category, city, state, postalCode, country);
             return this;
         }
 
@@ -91,6 +103,9 @@ public partial class TblAddress : IEntity
                 Code = Guid.NewGuid().ToString("N").Substring(0, 10),
                 UserCode = _userCode,
                 AddressLine = _details.AddressLine,
+                FullName = _details.FullName,
+                Phone = _details.Phone,
+                Category = _details.Category,
                 City = _details.City,
                 State = _details.State,
                 PostalCode = _details.PostalCode,

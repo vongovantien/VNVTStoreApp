@@ -33,6 +33,12 @@ public abstract class BaseApiController : ControllerBase
             return HandleError(result.Error!);
         }
 
+        // Debug log
+        if (result.Value != null)
+        {
+             Console.WriteLine($"[API Debug] Result Type: {typeof(T).Name}. Data: {Newtonsoft.Json.JsonConvert.SerializeObject(result.Value)}");
+        }
+
         successMessage ??= MessageConstants.Get(MessageConstants.Success);
         return Ok(ApiResponse<T>.Ok(result.Value!, successMessage));
     }
@@ -72,6 +78,9 @@ public abstract class BaseApiController : ControllerBase
     /// </summary>
     protected IActionResult HandleError(Error error)
     {
+        // Debug log
+        Console.WriteLine($"[API Error Debug] Code: {error.Code}. Message: {error.Message}");
+
         // Translate message key to human-readable message
         var message = error.Message != null ? MessageConstants.Get(error.Message) : null;
         

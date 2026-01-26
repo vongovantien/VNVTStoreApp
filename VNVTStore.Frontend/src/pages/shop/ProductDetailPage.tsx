@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { ProductDetailType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -273,7 +274,7 @@ export const ProductDetailPage = () => {
 
   // Group: RELATION for accessories/cross-selling
   const relations = useMemo(() => 
-    product?.details?.filter(d => d.detailType === 'RELATION') || [],
+    product?.details?.filter(d => d.detailType === ProductDetailType.RELATION) || [],
     [product?.details]
   );
 
@@ -439,9 +440,9 @@ export const ProductDetailPage = () => {
                     </div>
                     {product.wholesalePrice && (
                        <div className="flex items-center gap-2 text-sm text-secondary">
-                          <Badge color="secondary" className="font-normal">Giá sỉ</Badge>
+                          <Badge color="secondary" className="font-normal">{t('product.wholesalePrice', 'Giá sỉ')}</Badge>
                           <span className="font-bold">{formatCurrency(product.wholesalePrice)}</span>
-                          <span className="text-[11px] opacity-70">(Liên hệ để nhận ưu đãi tốt nhất)</span>
+                          <span className="text-[11px] opacity-70">({t('product.contactForBestPrice', 'Liên hệ để nhận ưu đãi tốt nhất')})</span>
                        </div>
                     )}
                 </div>
@@ -455,23 +456,23 @@ export const ProductDetailPage = () => {
 
             {/* Core Info Details */}
             <div className="grid grid-cols-2 gap-y-2 text-sm">
-                <div className="text-tertiary">Mã sản phẩm:</div>
+                <div className="text-tertiary">{t('product.code', 'Mã sản phẩm')}:</div>
                 <div className="text-primary font-medium">{product.code}</div>
                 
-                <div className="text-tertiary">Đơn vị tính:</div>
-                <div className="text-primary">{product.baseUnit || 'Cái'}</div>
+                <div className="text-tertiary">{t('product.unit', 'Đơn vị tính')}:</div>
+                <div className="text-primary">{product.baseUnit || t('product.defaultUnit', 'Cái')}</div>
                 
-                <div className="text-tertiary">Vị trí kho:</div>
-                <div className="text-primary">{product.binLocation || 'Đang cập nhật'}</div>
+                <div className="text-tertiary">{t('product.binLocation', 'Vị trí kho')}:</div>
+                <div className="text-primary">{product.binLocation || t('common.updating', 'Đang cập nhật')}</div>
             </div>
 
             {/* Description */}
             <p className="text-secondary leading-relaxed line-clamp-3">{product.description}</p>
 
             {/* Dynamic Logistics Cards */}
-            {product.details?.filter(d => d.detailType === 'LOGISTICS').length ? (
+            {product.details?.filter(d => d.detailType === ProductDetailType.LOGISTICS).length ? (
                 <div className="flex flex-wrap gap-3 py-2">
-                    {product.details.filter(d => d.detailType === 'LOGISTICS').map((detail, idx) => {
+                    {product.details.filter(d => d.detailType === ProductDetailType.LOGISTICS).map((detail, idx) => {
                         const lowerName = detail.specName.toLowerCase();
                         let Icon = Truck;
                         if (lowerName.includes('weight') || lowerName.includes('cân') || lowerName.includes('nặng') || lowerName.includes('kg')) Icon = Scale;
@@ -491,7 +492,7 @@ export const ProductDetailPage = () => {
                         <div className="flex items-center gap-2 p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
                             <Globe size={16} className="text-blue-500" />
                             <div className="text-xs">
-                                <span className="text-tertiary">Xuất xứ: </span>
+                                <span className="text-tertiary">{t('product.origin', 'Xuất xứ')}: </span>
                                 <span className="font-bold text-primary">{product.countryOfOrigin}</span>
                             </div>
                         </div>
@@ -609,8 +610,8 @@ export const ProductDetailPage = () => {
 
           {activeTab === 'specs' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
-              {product.details?.filter(d => d.detailType === 'SPEC').length ? (
-                  product.details.filter(d => d.detailType === 'SPEC').map((detail, idx) => (
+              {product.details?.filter(d => d.detailType === ProductDetailType.SPEC).length ? (
+                  product.details.filter(d => d.detailType === ProductDetailType.SPEC).map((detail, idx) => (
                      <div key={idx} className="flex border-b border-slate-100 py-3 text-sm">
                         <span className="w-1/2 font-medium text-secondary">{detail.specName}</span>
                         <span className="flex-1 text-primary font-semibold">{detail.specValue}</span>
@@ -618,7 +619,7 @@ export const ProductDetailPage = () => {
                   ))
               ) : (
                   <div className="col-span-2 text-center py-8 text-tertiary">
-                      Không có thông số kỹ thuật chi tiết.
+                      {t('product.noSpecs', 'Không có thông số kỹ thuật chi tiết.')}
                   </div>
               )}
             </div>
@@ -661,7 +662,7 @@ export const ProductDetailPage = () => {
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                 <RefreshCw className="text-indigo-500" size={24} />
-                Thường được mua cùng (Phụ kiện)
+                {t('product.frequentlyBoughtTogether', 'Thường được mua cùng (Phụ kiện)')}
             </h2>
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
               {relations.map((rel, idx) => (
@@ -671,7 +672,7 @@ export const ProductDetailPage = () => {
                     className="flex-shrink-0"
                 >
                     <Button variant="outline" className="h-auto py-3 px-6 rounded-2xl border-indigo-100 hover:border-indigo-500 hover:bg-indigo-50 transition-all flex flex-col items-center gap-1 group">
-                        <span className="text-xs text-tertiary">M gợi ý:</span>
+                        <span className="text-xs text-tertiary">{t('product.suggestion', 'Gợi ý')}:</span>
                         <span className="font-bold text-indigo-600 group-hover:scale-105 transition-transform">{rel.specValue}</span>
                     </Button>
                 </Link>

@@ -64,7 +64,7 @@ const OrdersContent = () => {
                   <p className="text-sm font-medium truncate">{item.productName}</p>
                   <p className="text-xs text-tertiary">x{item.quantity}</p>
                 </div>
-                <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                <p className="text-sm font-medium">{formatCurrency(item.priceAtOrder * item.quantity)}</p>
               </div>
             ))}
           </div>

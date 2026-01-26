@@ -6,9 +6,8 @@ using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Promotions.Queries;
 using VNVTStore.Application.Interfaces;
-using VNVTStore.Domain.Entities;
-
 using VNVTStore.Application.Promotions.Commands;
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.API.Controllers.v1;
 

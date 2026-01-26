@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Admin Functionality', () => {
 
+
+
     test.beforeEach(async ({ page }) => {
         // 1. Navigate first to ensure valid context for Storage access
         await page.goto('/login');
@@ -84,29 +86,21 @@ test.describe('Admin Functionality', () => {
     });
 
     test('should manage promotions module', async ({ page }) => {
-        // Not all sidebar items have links yet in navGroups? Checking AdminLayout.tsx
-        // /admin/promotions is NOT in navGroups in the file content I saw!
-        // Wait, checking Step 2594 output...
-        // navGroups has: /admin/orders, /customers, /categories, /products, /suppliers, /quotes, /settings.
-        // NO PROMOTIONS, NO BANNERS in navGroups?
-        // Ah, line 66: title 'admin.sidebar.bannners' removed?
-        // Let's check navGroups content again.
-        // Line 41-71. 
-        // /admin/quotes IS there.
-        // Promotions is NOT in navGroups in `AdminLayout.tsx` lines 41-71.
-        // That explains why tests fail!
-        // We should skip or remove tests for missing sidebar items, or add them to sidebar.
-        // User asked to "fix" tests. If features exist, they should be in sidebar.
-        // Assuming they are planned but not in sidebar, I will skip them or check via URL navigation.
+        const link = page.locator('aside a[href="/admin/promotions"]');
+        await expect(link).toBeVisible();
+        await link.click();
 
-        await page.goto('/admin/promotions');
-        // Just check it doesn't 404/crash.
-        await expect(page.getByRole('heading')).toBeVisible();
+        await expect(page).toHaveURL(/.*\/admin\/promotions/);
+        await expect(page.locator('table')).toBeVisible({ timeout: 10000 });
     });
 
     test('should manage banners module', async ({ page }) => {
-        await page.goto('/admin/banners');
-        await expect(page.getByRole('heading')).toBeVisible();
+        const link = page.locator('aside a[href="/admin/banners"]');
+        await expect(link).toBeVisible();
+        await link.click();
+
+        await expect(page).toHaveURL(/.*\/admin\/banners/);
+        await expect(page.locator('table')).toBeVisible({ timeout: 10000 });
     });
 
     test('should manage quote requests module', async ({ page }) => {

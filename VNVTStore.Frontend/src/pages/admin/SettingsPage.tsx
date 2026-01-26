@@ -1,18 +1,28 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Save, Store, CreditCard, Truck, Bell, Shield, Globe, Eye, EyeOff } from 'lucide-react';
-import { Button, Input, Select } from '@/components/ui';
+import { Save, Store, CreditCard, Truck, Bell, Shield, Globe, Eye, EyeOff, Lock } from 'lucide-react';
+import { Button, Input, Select, Switch } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { useToast, useSettings } from '@/store';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { createSchemas } from '@/utils/schemas';
 
 export const SettingsPage = () => {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
+    const { 
+        generalSettingsSchema, 
+        paymentSettingsSchema, 
+        shippingSettingsSchema, 
+        notificationsSettingsSchema, 
+        changePasswordSchema 
+    } = createSchemas(t);
   const toast = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const { settings, updateSettings } = useSettings();
 
-  const handleSave = (section: any, data: any) => {
+  const handleSave = (section: keyof typeof settings, data: any) => {
     updateSettings(section, data);
     toast.success(t('messages.saveSuccess'));
   };
@@ -26,7 +36,8 @@ export const SettingsPage = () => {
   ];
 
   const GeneralSettings = () => {
-    const { register, handleSubmit } = useForm({
+    const { register, handleSubmit, formState: { errors } } = useForm({
+      resolver: zodResolver(generalSettingsSchema),
       defaultValues: settings.general
     });
 
@@ -38,19 +49,46 @@ export const SettingsPage = () => {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input label={t('admin.settingsPage.general.storeName')} {...register('storeName')} />
-          <Input label={t('admin.settingsPage.general.email')} type="email" {...register('email')} />
-          <Input label={t('admin.settingsPage.general.phone')} {...register('phone')} />
-          <Input label={t('admin.settingsPage.general.website')} {...register('website')} />
+          <Input 
+            label={t('admin.settingsPage.general.storeName')} 
+            placeholder={t('common.placeholders.storeName')}
+            {...register('storeName')} 
+            error={errors.storeName?.message} 
+          />
+          <Input 
+            label={t('admin.settingsPage.general.email')} 
+            type="email" 
+            placeholder={t('common.placeholders.email')}
+            {...register('email')} 
+            error={errors.email?.message} 
+          />
+          <Input 
+            label={t('admin.settingsPage.general.phone')} 
+            placeholder={t('common.placeholders.phone')}
+            {...register('phone')} 
+            error={errors.phone?.message} 
+          />
+          <Input 
+            label={t('admin.settingsPage.general.website')} 
+            placeholder={t('common.placeholders.website')}
+            {...register('website')} 
+            error={errors.website?.message} 
+          />
           <div className="md:col-span-2">
-            <Input label={t('admin.settingsPage.general.address')} {...register('address')} />
+            <Input 
+                label={t('admin.settingsPage.general.address')} 
+                placeholder={t('common.placeholders.address')}
+                {...register('address')} 
+                error={errors.address?.message} 
+            />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2">{t('admin.settingsPage.general.description')}</label>
+            <label className="block text-sm font-bold text-primary mb-2">{t('admin.settingsPage.general.description')}</label>
             <textarea
               rows={3}
               {...register('description')}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-primary resize-none"
+              placeholder={t('common.placeholders.description')}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none placeholder:text-tertiary text-sm"
             />
           </div>
         </div>
@@ -61,9 +99,12 @@ export const SettingsPage = () => {
   };
 
   const PaymentSettings = () => {
-    const { register, handleSubmit, watch } = useForm({
+    const { register, handleSubmit, setValue, watch } = useForm({
+        resolver: zodResolver(paymentSettingsSchema),
         defaultValues: settings.payment
     });
+
+    const formState = watch();
 
     return (
       <form onSubmit={handleSubmit((data) => handleSave('payment', data))} className="space-y-6">
@@ -75,24 +116,19 @@ export const SettingsPage = () => {
         <div className="space-y-4">
           {[
             { id: 'cod', name: t('admin.settingsPage.payment.cod'), desc: t('admin.settingsPage.payment.codDesc') },
-            { id: 'zaloPay', name: t('admin.settingsPage.payment.zaloPay'), desc: t('admin.settingsPage.payment.zaloPayDesc') },
-            { id: 'momo', name: t('admin.settingsPage.payment.momo'), desc: t('admin.settingsPage.payment.momoDesc') },
-            { id: 'vnpay', name: t('admin.settingsPage.payment.vnpay'), desc: t('admin.settingsPage.payment.vnpayDesc') },
+            { id: 'zaloPay', name: t('shared.zaloPay'), desc: t('admin.settingsPage.payment.zaloPayDesc') },
+            { id: 'momo', name: t('shared.momo'), desc: t('admin.settingsPage.payment.momoDesc') },
+            { id: 'vnpay', name: t('shared.vnpay'), desc: t('admin.settingsPage.payment.vnpayDesc') },
             { id: 'bankTransfer', name: t('admin.settingsPage.payment.bankTransfer'), desc: t('admin.settingsPage.payment.bankTransferDesc') },
           ].map((method) => (
-            <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="font-medium">{method.name}</p>
-                <p className="text-sm text-tertiary">{method.desc}</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                    type="checkbox" 
-                    {...register(method.id as any)}
-                    className="sr-only peer" 
+            <div key={method.id} className="p-1">
+                <Switch
+                    label={method.name}
+                    description={method.desc}
+                    checked={formState[method.id as keyof typeof formState] as boolean}
+                    onChange={(val) => setValue(method.id as any, val)}
+                    className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl"
                 />
-                <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-              </label>
             </div>
           ))}
         </div>
@@ -103,7 +139,8 @@ export const SettingsPage = () => {
   };
 
   const ShippingSettings = () => {
-      const { register, handleSubmit } = useForm({
+      const { register, handleSubmit, formState: { errors } } = useForm({
+          resolver: zodResolver(shippingSettingsSchema),
           defaultValues: settings.shipping
       });
       
@@ -118,18 +155,22 @@ export const SettingsPage = () => {
             <Input
               label={t('admin.settingsPage.shipping.defaultFee')}
               type="number"
-              helperText={t('admin.settingsPage.shipping.currencyUnit')}
+              placeholder={t('common.placeholders.shippingFee')}
               {...register('defaultFee', { valueAsNumber: true })}
+              error={errors.defaultFee?.message}
             />
             <Input
               label={t('admin.settingsPage.shipping.freeShippingThreshold')}
               type="number"
-              helperText={t('admin.settingsPage.shipping.freeShippingDesc')}
+              placeholder={t('common.placeholders.shippingThreshold')}
               {...register('freeShippingThreshold', { valueAsNumber: true })}
+              error={errors.freeShippingThreshold?.message}
             />
             <Input
               label={t('admin.settingsPage.shipping.estimatedDelivery')}
+              placeholder={t('common.placeholders.deliveryTime')}
               {...register('estimatedDelivery')}
+              error={errors.estimatedDelivery?.message}
             />
           </div>
 
@@ -139,9 +180,12 @@ export const SettingsPage = () => {
   };
 
   const NotificationSettings = () => {
-    const { register, handleSubmit } = useForm({
+    const { register, handleSubmit, setValue, watch } = useForm({
+        resolver: zodResolver(notificationsSettingsSchema),
         defaultValues: settings.notifications
     });
+
+    const formState = watch();
 
     return (
         <form onSubmit={handleSubmit((data) => handleSave('notifications', data))} className="space-y-6">
@@ -157,12 +201,13 @@ export const SettingsPage = () => {
                 { id: 'emailOrderStatus', label: t('admin.settingsPage.notifications.emailOrderStatus') },
                 { id: 'lowStockAlert', label: t('admin.settingsPage.notifications.lowStockAlert') },
             ].map((setting) => (
-                <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <p className="font-medium">{setting.label}</p>
-                <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" {...register(setting.id as any)} className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                </label>
+                <div key={setting.id} className="p-1">
+                    <Switch
+                        label={setting.label}
+                        checked={formState[setting.id as keyof typeof formState] as boolean}
+                        onChange={(val) => setValue(setting.id as any, val)}
+                        className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl"
+                    />
                 </div>
             ))}
             </div>
@@ -173,7 +218,10 @@ export const SettingsPage = () => {
   };
 
   // Helper for password fields with toggle
-  const PasswordInput = ({ label, ...props }: any) => {
+  interface PasswordInputProps extends React.ComponentProps<typeof Input> {
+    label: string;
+  }
+  const PasswordInput = ({ label, ...props }: PasswordInputProps) => {
     const [show, setShow] = useState(false);
     return (
       <Input
@@ -183,7 +231,8 @@ export const SettingsPage = () => {
           <button
             type="button"
             onClick={() => setShow(!show)}
-            className="hover:text-primary focus:outline-none transition-colors"
+            className="flex items-center justify-center p-1 text-slate-400 opacity-50 hover:opacity-100 hover:text-primary focus:outline-none transition-all"
+            tabIndex={-1}
           >
             {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -194,35 +243,70 @@ export const SettingsPage = () => {
   };
 
   // Security Mock - no persistence needed for password/modal logic yet
-  const SecuritySettings = () => (
-    <div className="space-y-6">
-        <h2 className="text-lg font-bold flex items-center gap-2">
-        <Shield size={20} />
-        {t('admin.settingsPage.security.title')}
-        </h2>
+  const SecuritySettings = () => {
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(changePasswordSchema),
+        defaultValues: {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        }
+    });
 
-        <div className="p-4 border rounded-lg">
-        <h3 className="font-medium mb-4">{t('admin.settingsPage.security.changePassword')}</h3>
-        <div className="space-y-4">
-            <PasswordInput label={t('admin.settingsPage.security.currentPassword')} />
-            <PasswordInput label={t('admin.settingsPage.security.newPassword')} />
-            <PasswordInput label={t('admin.settingsPage.security.confirmNewPassword')} />
-        </div>
-        </div>
+    const onSubmit = (data: z.infer<typeof changePasswordSchema>) => {
+        // Logic to call API or update store
+        toast.success(t('messages.saveSuccess'));
+        reset();
+    };
 
-        <div className="p-4 border rounded-lg">
-        <div className="flex items-center justify-between">
-            <div>
-            <p className="font-medium">{t('admin.settingsPage.security.twoFactor')}</p>
-            <p className="text-sm text-tertiary">{t('admin.settingsPage.security.twoFactorDesc')}</p>
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+            <Shield size={20} />
+            {t('admin.settingsPage.security.title')}
+            </h2>
+
+            <div className="p-4 border border-gray-100 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
+            <h3 className="font-bold text-md mb-4 flex items-center gap-2">
+                <Lock size={18} className="text-tertiary" />
+                {t('admin.settingsPage.security.changePassword')}
+            </h3>
+            <div className="space-y-4">
+                <PasswordInput 
+                    label={t('admin.settingsPage.security.currentPassword')} 
+                    placeholder={t('common.placeholders.currentPassword')}
+                    {...register('currentPassword')} 
+                    error={errors.currentPassword?.message}
+                />
+                <PasswordInput 
+                    label={t('admin.settingsPage.security.newPassword')} 
+                    placeholder={t('common.placeholders.newPassword')}
+                    {...register('newPassword')} 
+                    error={errors.newPassword?.message}
+                />
+                <PasswordInput 
+                    label={t('admin.settingsPage.security.confirmNewPassword')} 
+                    placeholder={t('common.placeholders.confirmPassword')}
+                    {...register('confirmPassword')} 
+                    error={errors.confirmPassword?.message}
+                />
             </div>
-            <Button variant="outline" size="sm">{t('admin.settingsPage.security.enable')}</Button>
-        </div>
-        </div>
+            </div>
 
-        <Button leftIcon={<Save size={18} />} onClick={() => toast.success(t('messages.saveSuccess'))}>{t('common.save')}</Button>
-    </div>
-  );
+            <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+                <div>
+                <p className="font-medium">{t('admin.settingsPage.security.twoFactor')}</p>
+                <p className="text-sm text-tertiary">{t('admin.settingsPage.security.twoFactorDesc')}</p>
+                </div>
+                <Button variant="outline" size="sm" type="button">{t('admin.settingsPage.security.enable')}</Button>
+            </div>
+            </div>
+
+            <Button type="submit" leftIcon={<Save size={18} />}>{t('common.save')}</Button>
+        </form>
+    );
+  };
 
   return (
     <div className="space-y-6">

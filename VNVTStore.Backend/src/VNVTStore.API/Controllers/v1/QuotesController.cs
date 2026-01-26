@@ -17,28 +17,10 @@ public class QuotesController : BaseApiController<QuoteDto, CreateQuoteDto, Upda
     {
     }
 
+    // Use standard Create from base
     [HttpPost]
     [AllowAnonymous]
-    public override async Task<IActionResult> Create([FromBody] RequestDTO<CreateQuoteDto> request)
-    {
-        if (request.PostObject == null)
-            return BadRequest(new { message = MessageConstants.Get(MessageConstants.BadRequest) });
-            
-        var dto = request.PostObject;
-        var command = new Application.Quotes.Commands.CreateQuoteCommand
-        {
-            ProductCode = dto.ProductCode,
-            Quantity = dto.Quantity,
-            Note = dto.Note,
-            CustomerName = dto.CustomerName,
-            CustomerEmail = dto.CustomerEmail,
-            CustomerPhone = dto.CustomerPhone
-        };
-        var result = await Mediator.Send(command);
-        
-        if (result.Success) return Ok(result.Data);
-        return BadRequest(new { message = result.Message });
-    }
+    public override Task<IActionResult> Create([FromBody] RequestDTO<CreateQuoteDto> request) => base.Create(request);
 
     [HttpGet]
     public async Task<IActionResult> GetMyQuotes()
@@ -62,6 +44,13 @@ public class QuotesController : BaseApiController<QuoteDto, CreateQuoteDto, Upda
 
     protected override IRequest<Result> CreateDeleteCommand(string code)
         => new DeleteCommand<TblQuote>(code);
+
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        var result = await Mediator.Send(new GetStatsQuery<TblQuote>());
+        return HandleResult(result);
+    }
 }
 
 

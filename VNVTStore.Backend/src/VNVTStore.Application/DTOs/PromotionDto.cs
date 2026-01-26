@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace VNVTStore.Application.DTOs;
 
-public class PromotionDto
+public class PromotionDto : IBaseDto
 {
     public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;

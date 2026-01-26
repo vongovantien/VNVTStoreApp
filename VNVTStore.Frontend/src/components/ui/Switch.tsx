@@ -50,17 +50,17 @@ export const Switch = ({
         disabled={disabled}
         onClick={() => onChange?.(!checked)}
         className={cn(
-          'relative inline-flex items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+          'relative inline-flex items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50',
           currentSize.track,
           checked 
-            ? 'bg-green-500' 
-            : 'bg-gray-300 dark:bg-gray-600',
+            ? 'bg-indigo-600 shadow-inner' 
+            : 'bg-slate-200 dark:bg-slate-700',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       >
         <span
           className={cn(
-            'inline-block transform rounded-full bg-white shadow-sm transition-transform',
+            'inline-block transform rounded-full bg-white shadow-xl transition-all duration-200 ease-in-out',
             currentSize.thumb,
             checked ? currentSize.translate : 'translate-x-1'
           )}

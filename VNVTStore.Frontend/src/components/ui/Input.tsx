@@ -43,7 +43,7 @@ const variantStyles: Record<InputVariant, string> = {
 const sizeStyles: Record<InputSize, { input: string; label: string }> = {
   sm: { input: 'px-3 py-1.5 text-sm', label: 'text-xs' },
   md: { input: 'px-4 py-2 text-sm', label: 'text-sm' },
-  lg: { input: 'px-4 py-3 text-base', label: 'text-base' },
+  lg: { input: 'px-4 py-3 h-12 text-base', label: 'text-base' },
 };
 
 // ============ Input Component ============
@@ -100,7 +100,7 @@ export const Input = memo(
             <label
               htmlFor={inputId}
               className={cn(
-                'font-medium text-primary',
+                'font-bold text-primary',
                 sizeStyles[size].label
               )}
             >
@@ -139,7 +139,7 @@ export const Input = memo(
 
             {/* Right Icon */}
             {rightIcon && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
                 {rightIcon}
               </div>
             )}

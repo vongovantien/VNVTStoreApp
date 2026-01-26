@@ -1,0 +1,13 @@
+﻿d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(39,71): error CS0246: The type or namespace name 'UnitDto' could not be found (are you missing a using directive or an assembly reference?) [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
+d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(39,80): error CS0246: The type or namespace name 'CreateUnitDto' could not be found (are you missing a using directive or an assembly reference?) [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
+d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(39,95): error CS0246: The type or namespace name 'UpdateUnitDto' could not be found (are you missing a using directive or an assembly reference?) [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
+d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(40,70): error CS0246: The type or namespace name 'TagDto' could not be found (are you missing a using directive or an assembly reference?) [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
+d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(40,78): error CS0246: The type or namespace name 'CreateTagDto' could not be found (are you missing a using directive or an assembly reference?) [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
+d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(40,92): error CS0246: The type or namespace name 'UpdateTagDto' could not be found (are you missing a using directive or an assembly reference?) [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
+d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(41,18): error CS0311: The type 'VNVTStore.Application.DTOs.PromotionDto' cannot be used as type parameter 'TResponse' in the generic type or method 'DependencyInjection.AddGenericHandler<TEntity, TResponse, TCreateDto, TUpdateDto>(IServiceCollection)'. There is no implicit reference conversion from 'VNVTStore.Application.DTOs.PromotionDto' to 'VNVTStore.Application.DTOs.IBaseDto'. [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
+
+Build FAILED.
+    35 Warning(s)
+    7 Error(s)
+
+Time Elapsed 00:00:03.88

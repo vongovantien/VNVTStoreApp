@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Tailwind CSS v4 Theme Configuration */
+/* stylelint-disable at-rule-no-unknown */
 @theme {
   /* Font family */
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -11,6 +11,9 @@
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
+  /* Colors */
+  --color-primary: var(--accent-primary);
+  --color-error: var(--error);
 }
 
 /* Color Variables */
@@ -147,6 +150,14 @@ button {
 
 .bg-error {
   background-color: var(--error);
+}
+
+.border-error {
+  border-color: var(--error);
+}
+
+.focus\:border-error:focus {
+  border-color: var(--error);
 }
 
 .border-b {

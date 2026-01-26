@@ -84,7 +84,7 @@ public static class QueryBuilder
         var parameters = new DynamicParameters();
         
         const string rootAlias = "r";
-        sortDTO ??= new SortDTO { SortBy = "CreatedAt", Sort = "DESC" };
+        sortDTO ??= new SortDTO { SortBy = "Name", Sort = "ASC" };
         if (string.IsNullOrEmpty(sortDTO.Sort)) 
             sortDTO.Sort = sortDTO.SortDescending ? "DESC" : "ASC";
         
@@ -141,7 +141,7 @@ public static class QueryBuilder
         var sw = System.Diagnostics.Stopwatch.StartNew();
         
         const string rootAlias = "r";
-        sortDTO ??= new SortDTO { SortBy = "CreatedAt", Sort = "DESC" };
+        sortDTO ??= new SortDTO { SortBy = "Code", Sort = "DESC" };
         if (string.IsNullOrEmpty(sortDTO.Sort)) 
             sortDTO.Sort = sortDTO.SortDescending ? "DESC" : "ASC";
         

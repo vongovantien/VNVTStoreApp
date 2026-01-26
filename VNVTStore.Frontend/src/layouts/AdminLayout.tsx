@@ -29,6 +29,9 @@ import {
   AlertTriangle,
   Command,
   Home,
+  Tag,
+  Ruler,
+
   ChevronRight as BreadcrumbSeparator,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -53,13 +56,16 @@ const navGroups = [
       { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories' },
       { path: '/admin/products', icon: Package, label: 'admin.sidebar.products' },
       { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers' },
+      { path: '/admin/brands', icon: Tag, label: 'admin.sidebar.brands' },
+      { path: '/admin/units', icon: Ruler, label: 'admin.sidebar.units' },
     ]
   },
   {
     title: 'admin.sidebar.marketing',
     items: [
       { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes' },
-      // Add Coupons/FlashSale when available
+      { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions' },
+      { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners' },
     ]
   },
   {
@@ -121,7 +127,22 @@ export const AdminLayout = () => {
     let currentPath = '';
     for (const part of pathParts) {
       currentPath += `/${part}`;
-      const label = part === 'admin' ? 'Dashboard' : t(`admin.sidebar.${part}`, t(`common.modules.${part}`, part.charAt(0).toUpperCase() + part.slice(1)));
+      let label = part.charAt(0).toUpperCase() + part.slice(1);
+      
+      if (part === 'admin') {
+          label = t('admin.sidebar.dashboard');
+      } else {
+          // Try to find localized label
+          const translated = t(`admin.sidebar.${part}`);
+          if (translated !== `admin.sidebar.${part}`) {
+              label = translated;
+          } else {
+              const commonModule = t(`common.modules.${part}`);
+              if (commonModule !== `common.modules.${part}`) {
+                  label = commonModule;
+              }
+          }
+      }
       crumbs.push({ label, path: currentPath });
     }
     return crumbs;
@@ -596,7 +617,7 @@ export const AdminLayout = () => {
               {/* Quick Links */}
               <div className="p-4">
                 <p className="mb-3 text-xs font-semibold text-tertiary uppercase tracking-widest">
-                  ⚡ Truy cập nhanh
+                  ⚡ {t('common.quickAccess', 'Truy cập nhanh')}
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   <button 
@@ -606,7 +627,7 @@ export const AdminLayout = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
                       <ShoppingCart size={18} className="text-white" />
                     </div>
-                    <span className="text-xs font-medium text-secondary group-hover:text-primary">Đơn hàng</span>
+                    <span className="text-xs font-medium text-secondary group-hover:text-primary">{t('admin.sidebar.orders')}</span>
                   </button>
                   <button 
                     onClick={() => { setShowSearchModal(false); navigate('/admin/products'); }}
@@ -615,7 +636,7 @@ export const AdminLayout = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
                       <Package size={18} className="text-white" />
                     </div>
-                    <span className="text-xs font-medium text-secondary group-hover:text-primary">Sản phẩm</span>
+                    <span className="text-xs font-medium text-secondary group-hover:text-primary">{t('admin.sidebar.products')}</span>
                   </button>
                   <button 
                     onClick={() => { setShowSearchModal(false); navigate('/admin/customers'); }}
@@ -624,7 +645,7 @@ export const AdminLayout = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
                       <Users size={18} className="text-white" />
                     </div>
-                    <span className="text-xs font-medium text-secondary group-hover:text-primary">Khách hàng</span>
+                    <span className="text-xs font-medium text-secondary group-hover:text-primary">{t('admin.sidebar.customers')}</span>
                   </button>
                 </div>
               </div>

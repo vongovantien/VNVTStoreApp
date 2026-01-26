@@ -116,7 +116,7 @@ export default function CategoriesPage() {
     {
       id: 'imageUrl',
       header: t('common.fields.image'),
-      width: '80px',
+      width: '120px',
       className: 'text-center',
       accessor: (category) => {
 
@@ -217,14 +217,14 @@ export default function CategoriesPage() {
       },
       {
           label: t('admin.stats.mainCategories'),
-          value: statsData?.mainCategories || 0,
+          value: statsData?.main || 0,
           icon: <Folder size={24} />, // Maybe distinct icon?
           color: 'emerald',
           loading: isStatsLoading
       },
       {
           label: t('admin.stats.active'),
-          value: statsData?.active || 0, // Assuming active count returned or we calculate? For now use total or returned val
+          value: statsData?.active || 0, 
           icon: <RefreshCw size={24} />,
           color: 'amber',
           loading: isStatsLoading

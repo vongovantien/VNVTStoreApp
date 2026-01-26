@@ -1,0 +1,53 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - link "🏠 VNVT Store" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: 🏠
+        - generic [ref=e9]: VNVT Store
+      - heading "Đăng nhập" [level=1] [ref=e10]
+      - paragraph [ref=e11]: Chào mừng bạn trở lại
+    - button "Zalo Đăng nhập với Zalo" [ref=e12] [cursor=pointer]:
+      - generic [ref=e13]: Zalo
+      - generic [ref=e14]: Đăng nhập với Zalo
+    - generic [ref=e15]:
+      - separator [ref=e16]
+      - generic [ref=e17]: hoặc
+      - separator [ref=e18]
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]: Email
+        - generic [ref=e22]:
+          - img [ref=e24]
+          - textbox "Email" [ref=e27]:
+            - /placeholder: email@example.com
+            - text: admin@vnvt.com
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]: Mật khẩu
+          - generic [ref=e31]:
+            - img [ref=e33]
+            - textbox "Mật khẩu" [active] [ref=e36]:
+              - /placeholder: ••••••••
+              - text: Password123!
+        - button [ref=e37] [cursor=pointer]:
+          - img [ref=e38]
+      - generic [ref=e41]:
+        - generic [ref=e42] [cursor=pointer]:
+          - checkbox "Ghi nhớ đăng nhập" [ref=e43]
+          - generic [ref=e44]: Ghi nhớ đăng nhập
+        - link "Quên mật khẩu?" [ref=e45] [cursor=pointer]:
+          - /url: /forgot-password
+      - button "Đăng nhập" [ref=e46] [cursor=pointer]:
+        - text: Đăng nhập
+        - img [ref=e47]
+    - paragraph [ref=e50]:
+      - text: Chưa có tài khoản?
+      - link "Đăng ký ngay" [ref=e51] [cursor=pointer]:
+        - /url: /register
+  - link "← Về trang chủ" [ref=e53] [cursor=pointer]:
+    - /url: /
+```

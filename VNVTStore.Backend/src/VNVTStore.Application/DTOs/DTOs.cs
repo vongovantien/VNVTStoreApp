@@ -24,6 +24,7 @@ public class UserDto : IBaseDto
     public DateTime? CreatedAt { get; set; }
     public DateTime? LastLogin { get; set; }
     public string? Token { get; set; }
+    public string? Avatar { get; set; }
 }
 
 public class CreateUserDto
@@ -45,6 +46,7 @@ public class UpdateUserDto
     public string? Role { get; set; }
     public bool? IsActive { get; set; }
     public string? Password { get; set; } // Optional: Admin resetting password
+    public string? AvatarUrl { get; set; }
 }
 
 public class AuthResponseDto
@@ -76,6 +78,8 @@ public class ProductDto : IBaseDto
     public decimal? VatRate { get; set; }
     public string? CountryOfOrigin { get; set; }
     public string? SupplierCode { get; set; }
+    [Reference("TblSupplier", "SupplierCode", "Name")]
+    public string? SupplierName { get; set; }
 
     public bool? IsActive { get; set; }
     public bool IsNew { get; set; }
@@ -87,6 +91,9 @@ public class ProductDto : IBaseDto
 
     [ReferenceCollection(typeof(ProductImageDto), "TblFile", "MasterCode", "Code", "MasterType", "Product")]
     public List<ProductImageDto> ProductImages { get; set; } = new();
+
+    [ReferenceCollection(typeof(UnitDto), "TblProductUnit", "ProductCode", "Code")]
+    public List<UnitDto> ProductUnits { get; set; } = new();
 }
 
 public class ProductDetailDto : IBaseDto
@@ -117,6 +124,7 @@ public class CreateProductDto
     public bool IsFeatured { get; set; }
     public List<string>? Images { get; set; }
     public List<CreateProductDetailDto>? Details { get; set; }
+    public List<CreateUnitDto>? ProductUnits { get; set; }
 }
 
 public class CreateProductDetailDto
@@ -147,6 +155,7 @@ public class UpdateProductDto
     public bool? IsFeatured { get; set; }
     public List<string>? Images { get; set; }
     public List<CreateProductDetailDto>? Details { get; set; } // reuse Create dto for list replacement
+    public List<CreateUnitDto>? ProductUnits { get; set; }
 }
 
 public class ProductImageDto
@@ -157,6 +166,38 @@ public class ProductImageDto
     public string? AltText { get; set; }
     public int? SortOrder { get; set; }
     public bool? IsPrimary { get; set; }
+}
+
+public class ProductStatsDto
+{
+    public int Total { get; set; }
+    public int LowStock { get; set; }
+    public int OutOfStock { get; set; }
+}
+
+// ==================== BRAND ====================
+public class BrandDto : IBaseDto
+{
+    public string Code { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public string? LogoUrl { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class CreateBrandDto
+{
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public string? LogoUrl { get; set; }
+}
+
+public class UpdateBrandDto
+{
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public string? LogoUrl { get; set; }
+    public bool? IsActive { get; set; }
 }
 
 // ==================== CATEGORY ====================
@@ -229,6 +270,15 @@ public class OrderDto : IBaseDto
     public string? CustomerName { get; set; } // Map FullName to here
 }
 
+public class OrderStatsDto
+{
+    public int Total { get; set; }
+    public int Pending { get; set; }
+    public int Shipping { get; set; }
+    public int Delivered { get; set; }
+    public int Cancelled { get; set; }
+}
+
 public class OrderItemDto
 {
     public string Code { get; set; } = null!;
@@ -292,6 +342,9 @@ public class AddressDto : IBaseDto
 {
     public string Code { get; set; } = null!;
     public string UserCode { get; set; } = null!;
+    public string? FullName { get; set; }
+    public string? Phone { get; set; }
+    public string? Category { get; set; }
     public string? AddressLine { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
@@ -302,7 +355,10 @@ public class AddressDto : IBaseDto
 
 public class CreateAddressDto
 {
-    public string UserCode { get; set; } = null!;
+    public string? UserCode { get; set; }
+    public string? FullName { get; set; }
+    public string? Phone { get; set; }
+    public string? Category { get; set; }
     public string? AddressLine { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
@@ -313,6 +369,9 @@ public class CreateAddressDto
 
 public class UpdateAddressDto
 {
+    public string? FullName { get; set; }
+    public string? Phone { get; set; }
+    public string? Category { get; set; }
     public string? AddressLine { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
@@ -509,4 +568,59 @@ public class UpdateQuoteDto
     public string? Status { get; set; }
     public decimal? QuotedPrice { get; set; }
     public string? AdminNote { get; set; }
+}
+
+// ==================== UNIT DTO ====================
+public class UnitDto : IBaseDto
+{
+    public string Code { get; set; } = null!; // ProductUnit Code
+    public string ProductCode { get; set; } = null!;
+    public string? UnitCode { get; set; } // MasterUnit Code
+    public string UnitName { get; set; } = null!; // MasterUnit Name
+    public decimal ConversionRate { get; set; }
+    public decimal Price { get; set; }
+    public bool IsBaseUnit { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class CreateUnitDto
+{
+    public string? ProductCode { get; set; } 
+    public string UnitName { get; set; } = null!;
+    public decimal ConversionRate { get; set; }
+    public decimal Price { get; set; }
+    public bool IsBaseUnit { get; set; }
+}
+
+public class UpdateUnitDto
+{
+    public string? UnitName { get; set; }
+    public decimal? ConversionRate { get; set; }
+    public decimal? Price { get; set; }
+    public bool? IsActive { get; set; }
+}
+
+// ==================== TAG DTO ====================
+public class TagDto : IBaseDto
+{
+    public string Code { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public bool IsActive { get; set; }
+}
+
+public class CreateTagDto
+{
+    public string Name { get; set; } = null!;
+}
+
+public class UpdateTagDto
+{
+    public string? Name { get; set; }
+    public bool? IsActive { get; set; }
+}
+
+public class EntityStatsDto
+{
+    public int Total { get; set; }
+    public int Active { get; set; }
 }

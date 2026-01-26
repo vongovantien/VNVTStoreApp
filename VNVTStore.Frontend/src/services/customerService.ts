@@ -45,14 +45,14 @@ export interface UpdateCustomerRequest {
 }
 
 // ============ Service ============
-export const customerService = createEntityService<CustomerDto, CreateCustomerRequest, UpdateCustomerRequest>({
+const baseService = createEntityService<CustomerDto, CreateCustomerRequest, UpdateCustomerRequest>({
     endpoint: API_ENDPOINTS.USERS.BASE,
     resourceName: 'Customer'
 });
 
 // Extend with stats
 const extendedService = {
-    ...customerService,
+    ...baseService,
     getStats: async () => {
         const [totalRes, activeRes, unverifiedRes] = await Promise.all([
             // Total
@@ -79,5 +79,5 @@ const extendedService = {
     }
 };
 
-export const customerServiceApi = extendedService;
+export const customerService = extendedService;
 export default extendedService;

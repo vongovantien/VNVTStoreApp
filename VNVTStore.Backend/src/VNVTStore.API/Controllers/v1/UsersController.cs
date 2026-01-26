@@ -85,13 +85,17 @@ public class UsersController : BaseApiController
         [FromQuery] string? search = null,
         [FromQuery] string? role = null)
     {
-        UserRole? userRole = null;
-        if (!string.IsNullOrEmpty(role) && Enum.TryParse<UserRole>(role, true, out var parsedRole))
+        List<SearchDTO>? searching = null;
+        if (!string.IsNullOrEmpty(role))
         {
-            userRole = parsedRole;
+            searching = new List<SearchDTO> 
+            { 
+                new SearchDTO { SearchField = "Role", SearchValue = role, SearchCondition = SearchCondition.Equal } 
+            };
         }
 
-        var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, search, userRole));
+        var query = new GetPagedQuery<UserDto>(pageIndex, pageSize, search, null, searching);
+        var result = await Mediator.Send(query);
         return HandleResult(result);
     }
     /// <summary>
@@ -104,7 +108,15 @@ public class UsersController : BaseApiController
         var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
         var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
         
-        var result = await Mediator.Send(new GetAllUsersQuery(pageIndex, pageSize, null, null, request.SortDTO, request.Searching));
+        var query = new GetPagedQuery<UserDto>(
+            pageIndex, 
+            pageSize, 
+            null, 
+            request.SortDTO, 
+            request.Searching, 
+            request.Fields
+        );
+        var result = await Mediator.Send(query);
         return HandleResult(result);
     }
 
@@ -115,7 +127,7 @@ public class UsersController : BaseApiController
     [Authorize(Roles = "admin,Admin")]
     public async Task<IActionResult> GetByCode(string code)
     {
-        var result = await Mediator.Send(new GetUserByCodeQuery(code));
+        var result = await Mediator.Send(new GetByCodeQuery<UserDto>(code));
         return HandleResult(result);
     }
 
@@ -143,4 +155,4 @@ public class UsersController : BaseApiController
 }
 
 public record UpdateProfileRequest(string? fullName, string? phone, string? email);
-public record ChangePasswordRequest(string currentPassword, string newPassword);
+public record ChangePasswordRequest(string currentPassword, string newPassword, string confirmNewPassword);

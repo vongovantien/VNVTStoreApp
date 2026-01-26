@@ -1,4 +1,5 @@
 using AutoMapper;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using VNVTStore.Application.Common;
@@ -136,7 +137,6 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         }
 
         await _unitOfWork.CommitAsync(cancellationToken);
-        await _unitOfWork.CommitAsync(cancellationToken); // Why commit twice? Legacy? I'll keep one.
         return Result.Success();
     }
 
@@ -308,18 +308,8 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             var names = new List<string>();
             foreach (var entity in blockedEntities)
             {
-                // Try to find a display name property
-                var nameProp = entity.GetType().GetProperty("Name") ?? entity.GetType().GetProperty("Username") ?? entity.GetType().GetProperty("FullName");
-                if (nameProp != null)
-                {
-                    var val = nameProp.GetValue(entity)?.ToString();
-                    if (!string.IsNullOrEmpty(val)) names.Add(val);
-                    else names.Add(entity.Code);
-                }
-                else
-                {
-                    names.Add(entity.Code);
-                }
+                var name = GetEntityDisplayName(entity);
+                names.Add(name);
             }
 
             return Result.Failure(Error.Conflict(MessageConstants.Conflict,
@@ -327,6 +317,24 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         }
 
         return Result.Success();
+    }
+
+    private string GetEntityDisplayName(TEntity entity)
+    {
+        var type = entity.GetType();
+        var displayNameProps = new[] { "Name", "Username", "FullName", "Title", "Code" };
+        
+        foreach (var propName in displayNameProps)
+        {
+            var prop = type.GetProperty(propName);
+            if (prop != null)
+            {
+                var val = prop.GetValue(entity)?.ToString();
+                if (!string.IsNullOrEmpty(val)) return val;
+            }
+        }
+        
+        return entity.Code;
     }
     
     /// <summary>
@@ -594,3 +602,71 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         return list;
     }
 }
+
+/// <summary>
+/// Generic Base Handler that implements MediatR IRequestHandler for standard CRUD operations.
+/// This allows removing explicit handler files for simple entities.
+/// Made abstract to avoid automatic discovery by MediatR assembly scanner which would fail on open generic parameters.
+/// </summary>
+public class BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseHandler<TEntity>,
+    IRequestHandler<GetPagedQuery<TResponse>, Result<PagedResult<TResponse>>>,
+    IRequestHandler<GetByCodeQuery<TResponse>, Result<TResponse>>,
+    IRequestHandler<CreateCommand<TCreateDto, TResponse>, Result<TResponse>>,
+    IRequestHandler<UpdateCommand<TUpdateDto, TResponse>, Result<TResponse>>,
+    IRequestHandler<DeleteCommand<TEntity>, Result>,
+    IRequestHandler<DeleteMultipleCommand<TEntity>, Result>,
+    IRequestHandler<GetStatsQuery<TEntity>, Result<EntityStatsDto>>
+    where TEntity : class, IEntity
+    where TResponse : class, IBaseDto, new()
+    where TCreateDto : class
+    where TUpdateDto : class
+{
+    private readonly string _entityName;
+
+    public BaseHandler(
+        IRepository<TEntity> repository,
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IDapperContext dapperContext)
+        : base(repository, unitOfWork, mapper, dapperContext)
+    {
+        _entityName = typeof(TEntity).Name.Replace("Tbl", "");
+    }
+
+    public virtual Task<Result<PagedResult<TResponse>>> Handle(GetPagedQuery<TResponse> request, CancellationToken cancellationToken)
+        => GetPagedDapperAsync<TResponse>(request.PageIndex, request.PageSize, request.Searching, request.SortDTO, null, request.Fields, cancellationToken);
+
+    public virtual Task<Result<TResponse>> Handle(GetByCodeQuery<TResponse> request, CancellationToken cancellationToken)
+        => GetByCodeAsync<TResponse>(request.Code, _entityName, cancellationToken);
+
+    public virtual Task<Result<TResponse>> Handle(CreateCommand<TCreateDto, TResponse> request, CancellationToken cancellationToken)
+        => CreateAsync<TCreateDto, TResponse>(request.Dto, cancellationToken, c => {
+            // Auto-generate code if not provided
+            if (string.IsNullOrEmpty(c.Code))
+            {
+                c.Code = $"{_entityName.Substring(0, Math.Min(3, _entityName.Length)).ToUpper()}{DateTime.Now.Ticks.ToString().Substring(12)}";
+            }
+            c.IsActive = true;
+        });
+
+    public virtual Task<Result<TResponse>> Handle(UpdateCommand<TUpdateDto, TResponse> request, CancellationToken cancellationToken)
+        => UpdateAsync<TUpdateDto, TResponse>(request.Code, request.Dto, _entityName, cancellationToken);
+
+    public virtual Task<Result> Handle(DeleteCommand<TEntity> request, CancellationToken cancellationToken)
+        => DeleteAsync(request.Code, _entityName, cancellationToken);
+
+    public virtual Task<Result> Handle(DeleteMultipleCommand<TEntity> request, CancellationToken cancellationToken)
+        => DeleteMultipleAsync(request.Codes, _entityName, cancellationToken);
+
+    public virtual async Task<Result<EntityStatsDto>> Handle(GetStatsQuery<TEntity> request, CancellationToken cancellationToken)
+    {
+         var query = _repository.AsQueryable()
+                .Where(e => e.ModifiedType != ModificationType.Delete.ToString());
+
+         var total = await query.CountAsync(cancellationToken);
+         var active = await query.CountAsync(e => e.IsActive, cancellationToken);
+         
+         return Result.Success(new EntityStatsDto { Total = total, Active = active });
+    }
+}
+

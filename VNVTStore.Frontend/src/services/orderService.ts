@@ -62,7 +62,14 @@ export interface UpdateOrderRequest {
 
 // ============ Service ============
 import { SearchParams } from './baseService';
-import apiClient from './api'; // Import apiClient directly
+import apiClient from './api';
+
+export interface OrderStats {
+    total: number;
+    pending: number;
+    shipping: number;
+    delivered: number;
+}
 
 const baseService = createEntityService<OrderDto, CreateOrderRequest, UpdateOrderRequest>({
     endpoint: API_ENDPOINTS.ORDERS.BASE,
@@ -82,8 +89,8 @@ export const orderService = {
     verify: async (token: string) => {
         return await apiClient.get<string>(`${API_ENDPOINTS.ORDERS.BASE}/verify`, { params: { token } });
     },
-    getStats: async () => {
-        const response = await apiClient.get<any>(`${API_ENDPOINTS.ORDERS.BASE}/stats`);
+    getStats: async (): Promise<OrderStats> => {
+        const response = await apiClient.get<OrderStats>(`${API_ENDPOINTS.ORDERS.BASE}/stats`);
         if (!response.success && response.message?.includes('404')) {
             return { total: 0, pending: 0, shipping: 0, delivered: 0 }
         }

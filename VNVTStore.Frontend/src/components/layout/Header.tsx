@@ -78,9 +78,10 @@ export const Header = memo(() => {
     const initSignalR = async () => {
         try {
             await signalRService.startConnection();
-            signalRService.on('ReceiveOrderNotification', (message) => {
-                addNotification(message);
-                info(`${t('common.newOrder')}: ${message}`);
+            signalRService.on('ReceiveOrderNotification', (data) => {
+                const msg = typeof data === 'string' ? data : data.Message || '';
+                addNotification(msg);
+                info(`${t('common.newOrder')}: ${msg}`);
             });
         } catch (error) {
             console.error('SignalR failed', error);
@@ -135,11 +136,11 @@ export const Header = memo(() => {
           <div className="flex gap-6">
             <a href="tel:1900123456" className="flex items-center gap-1 hover:text-white transition-colors">
               <Phone size={12} />
-              <span>{t('header.hotline')}</span>
+              <span>{t('shared.hotlineFull')}</span>
             </a>
             <a href="https://zalo.me" className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors">
               <MessageCircle size={12} />
-              <span>{t('header.chatZalo')}</span>
+              <span>{t('shared.chatZalo')}</span>
             </a>
           </div>
           <div className="hidden md:flex gap-4">
@@ -278,7 +279,7 @@ export const Header = memo(() => {
               <Button variant="ghost" size="sm" className="relative">
                 <Scale size={20} />
                 {compareCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-secondary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                     {compareCount}
                   </span>
                 )}
@@ -290,7 +291,7 @@ export const Header = memo(() => {
               <Button variant="ghost" size="sm" className="relative">
                 <Heart size={20} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-secondary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
@@ -309,8 +310,12 @@ export const Header = memo(() => {
 
             {/* User Menu */}
             <div className="relative hidden lg:block z-20" ref={userMenuRef}>
-              <Button variant="ghost" size="sm" onClick={() => setShowUserMenu(!showUserMenu)}>
-                <User size={20} />
+              <Button variant="ghost" size="sm" onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={user.fullName} className="w-6 h-6 rounded-full object-cover border" />
+                ) : (
+                  <User size={20} />
+                )}
                 <ChevronDown size={14} />
               </Button>
               <AnimatePresence>
@@ -335,7 +340,7 @@ export const Header = memo(() => {
                         )}
                         <Link to="/account" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
                           <User size={16} className="text-tertiary" />
-                          {t('common.account')}
+                          {t('account.title')}
                         </Link>
                         <Link to="/account/orders" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
                           <Package size={16} className="text-tertiary" />
@@ -388,7 +393,7 @@ export const Header = memo(() => {
               {t('header.categoryMenu')}
             </Button>
             {showCategories && (
-              <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overscroll-contain z-[999] grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overflow-y-auto overscroll-contain z-[999] grid grid-cols-1 md:grid-cols-3 gap-6">
                 {isLoadingCategories ? (
                    <div className="col-span-3 text-center py-8 text-secondary">Loading categories...</div>
                 ) : (
@@ -501,7 +506,7 @@ export const Header = memo(() => {
                     { path: '/promotions', label: 'header.promotions' },
                     { path: '/wishlist', label: 'common.wishlist' },
                     { path: '/compare', label: 'common.compare' },
-                    { path: '/account', label: 'common.account' },
+                     { path: '/account', label: 'account.title' },
                   ].map((link) => (
                     <Link
                       key={link.path}

@@ -17,7 +17,7 @@ export const VerifyEmailPage = () => {
 
         if (!email || !token) {
             setStatus('error');
-            setMessage('Invalid verification link.');
+            setMessage(t('auth.verifyEmail.invalidLink'));
             return;
         }
 
@@ -26,19 +26,20 @@ export const VerifyEmailPage = () => {
                 const response = await authService.verifyEmail(email, token);
                 if (response.success) {
                     setStatus('success');
-                    setMessage('Your email has been successfully verified! You can now log in.');
+                    setMessage(t('auth.verifyEmail.successDesc'));
                 } else {
                     setStatus('error');
-                    setMessage(response.message || 'Verification failed.');
+                    setMessage(response.message || t('auth.verifyEmail.failed'));
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setStatus('error');
-                setMessage(err.response?.data?.message || 'Something went wrong.');
+                const msg = err instanceof Error ? err.message : t('messages.error');
+                setMessage(msg);
             }
         };
 
         verify();
-    }, [searchParams]);
+    }, [searchParams, t]);
 
     return (
         <div className="min-h-[60vh] flex items-center justify-center px-4">
@@ -46,18 +47,18 @@ export const VerifyEmailPage = () => {
                 {status === 'loading' && (
                     <div className="space-y-4">
                         <Loader2 className="w-16 h-16 text-blue-500 animate-spin mx-auto" />
-                        <h2 className="text-2xl font-bold">Verifying Email...</h2>
-                        <p className="text-secondary">Please wait while we activate your account.</p>
+                        <h2 className="text-2xl font-bold">{t('auth.verifyEmail.loading')}</h2>
+                        <p className="text-secondary">{t('auth.verifyEmail.waitData')}</p>
                     </div>
                 )}
 
                 {status === 'success' && (
                     <div className="space-y-6">
                         <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto" />
-                        <h2 className="text-2xl font-bold">Account Activated!</h2>
+                        <h2 className="text-2xl font-bold">{t('auth.verifyEmail.success')}</h2>
                         <p className="text-secondary">{message}</p>
                         <Link to="/login" className="block w-full py-2.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors text-center">
-                            Go to Login
+                            {t('auth.verifyEmail.goToLogin')}
                         </Link>
                     </div>
                 )}
@@ -65,14 +66,14 @@ export const VerifyEmailPage = () => {
                 {status === 'error' && (
                     <div className="space-y-6">
                         <XCircle className="w-16 h-16 text-rose-500 mx-auto" />
-                        <h2 className="text-2xl font-bold">Verification Failed</h2>
-                        <p className="text-red-500">{message}</p>
+                        <h2 className="text-2xl font-bold">{t('auth.verifyEmail.failed')}</h2>
+                        <p className="text-error">{message}</p>
                         <div className="flex flex-col gap-3">
                             <Link to="/register" className="block w-full py-2.5 border-2 border-indigo-500 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-600 hover:text-white transition-colors text-center">
-                                Try Registering Again
+                                {t('auth.verifyEmail.tryRegister')}
                             </Link>
                             <Link to="/contact" className="text-sm text-secondary hover:text-primary transition-colors">
-                                Need help? Contact Support
+                                {t('auth.verifyEmail.contactSupport')}
                             </Link>
                         </div>
                     </div>

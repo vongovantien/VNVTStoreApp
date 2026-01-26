@@ -22,7 +22,8 @@ public class OrderHandlers : BaseHandler<TblOrder>,
     IRequestHandler<GetAllOrdersQuery, Result<PagedResult<OrderDto>>>,
     IRequestHandler<UpdateOrderStatusCommand, Result<OrderDto>>,
     IRequestHandler<CancelOrderCommand, Result<bool>>,
-    IRequestHandler<VerifyOrderCommand, Result<string>>
+    IRequestHandler<VerifyOrderCommand, Result<string>>,
+    IRequestHandler<GetOrderStatsQuery, Result<OrderStatsDto>>
 {
     private readonly IRepository<TblOrder> _orderRepository;
     private readonly ICartService _cartService;
@@ -474,7 +475,20 @@ public class OrderHandlers : BaseHandler<TblOrder>,
         
         _orderRepository.Update(order);
         await _unitOfWork.CommitAsync(cancellationToken);
-
         return Result.Success(order.Code);
+    }
+
+    public async Task<Result<OrderStatsDto>> Handle(GetOrderStatsQuery request, CancellationToken cancellationToken)
+    {
+        var stats = new OrderStatsDto
+        {
+            Total = await _orderRepository.CountAsync(null, cancellationToken),
+            Pending = await _orderRepository.CountAsync(o => o.Status == OrderStatus.Pending, cancellationToken),
+            Shipping = await _orderRepository.CountAsync(o => o.Status == OrderStatus.Shipped, cancellationToken),
+            Delivered = await _orderRepository.CountAsync(o => o.Status == OrderStatus.Delivered, cancellationToken),
+            Cancelled = await _orderRepository.CountAsync(o => o.Status == OrderStatus.Cancelled, cancellationToken)
+        };
+
+        return Result.Success(stats);
     }
 }

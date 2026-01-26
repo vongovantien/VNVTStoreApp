@@ -16,7 +16,9 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         // User mappings
-        CreateMap<TblUser, UserDto>();
+        CreateMap<TblUser, UserDto>()
+            .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.AvatarUrl)); // Map AvatarUrl to Avatar
+
 
         // Banner mappings
         CreateMap<TblBanner, BannerDto>().ReverseMap();
@@ -24,11 +26,18 @@ public class MappingProfile : Profile
         CreateMap<UpdateBannerDto, TblBanner>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
+        // Brand mappings
+        CreateMap<TblBrand, BrandDto>().ReverseMap();
+        CreateMap<CreateBrandDto, TblBrand>();
+        CreateMap<UpdateBrandDto, TblBrand>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
         // Product mappings
         CreateMap<TblProduct, ProductDto>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.CategoryCodeNavigation != null ? src.CategoryCodeNavigation.Name : null))
             .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.Name : null))
             .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.TblProductDetails))
+            .ForMember(dest => dest.ProductUnits, opt => opt.MapFrom(src => src.TblProductUnits))
             .ForMember(dest => dest.ProductImages, opt => opt.Ignore())
             .ReverseMap()
             .ForMember(dest => dest.CategoryCodeNavigation, opt => opt.Ignore())
@@ -41,10 +50,24 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Code, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.IsActive, opt => opt.Ignore())
-            .ForMember(dest => dest.SupplierCode, opt => opt.Ignore());
+            .ForMember(dest => dest.TblProductDetails, opt => opt.MapFrom(src => src.Details))
+            .ForMember(dest => dest.TblProductUnits, opt => opt.Ignore()); // Handled manually in Handler
         
         CreateMap<UpdateProductDto, TblProduct>()
+            .ForMember(dest => dest.TblProductDetails, opt => opt.MapFrom(src => src.Details))
+            .ForMember(dest => dest.TblProductUnits, opt => opt.Ignore()) // Handled manually
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+        // CreateMap<CreateUnitDto, TblUnit>() ... Removed, we use TblProductUnit 
+
+        CreateMap<TblUnit, CatalogUnitDto>().ReverseMap();
+        CreateMap<CreateCatalogUnitDto, TblUnit>();
+        CreateMap<UpdateCatalogUnitDto, TblUnit>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+        CreateMap<TblProductUnit, UnitDto>()
+            .ForMember(dest => dest.UnitName, opt => opt.MapFrom(src => src.Unit != null ? src.Unit.Name : null))
+            .ReverseMap();
 
         
         // CreateMap<TblProductImage, ProductImageDto>().ReverseMap(); // Removed
@@ -108,10 +131,10 @@ public class MappingProfile : Profile
     CreateMap<UpdateCategoryDto, TblCategory>()
         .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-    // Address Create/Update - Handled by factory methods in AddressHandlers
-    // CreateMap<CreateAddressDto, TblAddress>();
-    // CreateMap<UpdateAddressDto, TblAddress>()
-    //         .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+    // Address Create/Update
+    CreateMap<CreateAddressDto, TblAddress>();
+    CreateMap<UpdateAddressDto, TblAddress>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
     // Review Create/Update
     CreateMap<CreateReviewDto, TblReview>();

@@ -6,9 +6,10 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 
 import { Product } from '@/types';
-import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
+import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest, type ProductDto } from '@/services/productService';
 import { SearchCondition } from '@/services/baseService';
 import { getImageUrl } from '@/utils/format';
+import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
 
 // ============ Query Keys ============
 export const productKeys = {
@@ -26,11 +27,32 @@ export const productKeys = {
 /**
  * Hook for fetching all categories for selection
  */
-export function useCategories(options?: { enabled?: boolean }) {
+export function useCategories(params?: {
+    pageIndex?: number;
+    pageSize?: number;
+    search?: string;
+    enabled?: boolean;
+    fields?: string[];
+}) {
+    const {
+        enabled,
+        pageIndex = 1,
+        pageSize = 1000,
+        search,
+        fields = CATEGORY_LIST_FIELDS
+    } = params || {};
+
     return useQuery({
-        queryKey: productKeys.categories,
-        queryFn: () => categoryService.getAll(),
-        enabled: options?.enabled,
+        queryKey: [...productKeys.categories, { pageIndex, pageSize, search, fields }],
+        queryFn: () => categoryService.search({
+            pageIndex,
+            pageSize,
+            search,
+            filters: [{ field: 'IsActive', value: true, operator: SearchCondition.Equal }],
+            searchField: 'name',
+            fields
+        }),
+        enabled: enabled,
         select: (response) => {
             if (response.success && response.data) {
                 return response.data.items || [];
@@ -56,7 +78,7 @@ export function useCategoriesList(params: {
     // Build filters
     const filters: { field: string; value: string; operator?: SearchCondition }[] = [];
     if (searchParams.parentCode) filters.push({ field: 'parentCode', value: searchParams.parentCode });
-    if (searchParams.isActive) filters.push({ field: 'isActive', value: searchParams.isActive });
+    if (searchParams.isActive) filters.push({ field: 'isActive', value: searchParams.isActive, operator: SearchCondition.Equal });
     if (searchParams.search) filters.push({ field: 'name', value: searchParams.search, operator: SearchCondition.Contains });
 
 
@@ -214,16 +236,16 @@ export function useProducts(params: {
                 const uniqueItems = Array.from(new Map((response.data.items || []).map(item => [item.code, item])).values());
 
                 // Map ProductDto to Frontend Product model
-                const products: Product[] = uniqueItems.map(item => ({
+                const products: Product[] = uniqueItems.map((item: any) => ({
                     code: item.code,
                     name: item.name,
                     slug: item.code, // Use code as slug for now
                     description: item.description || '',
                     price: item.price,
-                    image: getImageUrl(item.productImages?.find(img => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
-                    images: item.productImages?.map(img => getImageUrl(img.imageUrl)) || [],
+                    image: getImageUrl(item.productImages?.find((img: any) => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
+                    images: item.productImages?.map((img: any) => getImageUrl(img.imageUrl)) || [],
                     category: item.categoryName || '',
-                    categoryId: item.categoryCode || '',
+                    categoryCode: item.categoryCode || '',
                     stock: item.stockQuantity || 0,
                     // Attributes
                     color: item.color,
@@ -273,7 +295,7 @@ export function useProduct(code: string) {
         enabled: !!code,
         select: (response): Product | null => {
             if (response.success && response.data) {
-                const item = response.data;
+                const item = response.data as any;
                 // Map ProductDto to Frontend Product model
                 return {
                     code: item.code,
@@ -281,10 +303,10 @@ export function useProduct(code: string) {
                     slug: item.code,
                     description: item.description || '',
                     price: item.price,
-                    image: getImageUrl(item.productImages?.find(img => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
-                    images: item.productImages?.map(img => getImageUrl(img.imageUrl)) || [],
+                    image: getImageUrl(item.productImages?.find((img: any) => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
+                    images: item.productImages?.map((img: any) => getImageUrl(img.imageUrl)) || [],
                     category: item.categoryName || '',
-                    categoryId: item.categoryCode || '',
+                    categoryCode: item.categoryCode || '',
                     stock: item.stockQuantity || 0,
                     // Mock/Default values
                     brand: 'VNVT',
@@ -293,11 +315,6 @@ export function useProduct(code: string) {
                     isFeatured: false,
                     isNew: true,
                     originalPrice: item.price * 1.2, // Fake original price for demo
-                    specifications: {
-                        'Thương hiệu': 'VNVT',
-                        'Xuất xứ': 'Việt Nam',
-                        'Bảo hành': '12 tháng'
-                    },
                     createdAt: item.createdAt || new Date().toISOString()
                 };
             }

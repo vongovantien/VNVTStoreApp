@@ -28,6 +28,7 @@ export interface AuthResponseDto {
         email: string;
         fullName?: string;
         role?: string;
+        avatar?: string;
     };
 }
 
@@ -37,6 +38,7 @@ export interface UserDto {
     email: string;
     fullName?: string;
     role?: string;
+    avatar?: string;
 }
 
 // ============ Auth Service ============
@@ -79,8 +81,18 @@ export const authService = {
     /**
      * Reset password with token
      */
+    /**
+     * Reset password with token
+     */
     async resetPassword(data: { email: string; token: string; newPassword: string }): Promise<ApiResponse<boolean>> {
         return apiClient.post<boolean>('/auth/reset-password', data);
+    },
+
+    /**
+     * Login with Google/Facebook
+     */
+    async externalLogin(provider: string, token: string): Promise<ApiResponse<AuthResponseDto>> {
+        return apiClient.post<AuthResponseDto>('/auth/external-login', { provider, token });
     },
 };
 

@@ -39,7 +39,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
 const sizeStyles: Record<SelectSize, { select: string; label: string }> = {
   sm: { select: 'px-3 py-1.5 text-sm pr-8', label: 'text-xs' },
   md: { select: 'px-4 py-2 text-sm pr-10', label: 'text-sm' },
-  lg: { select: 'px-4 py-3 text-base pr-12', label: 'text-base' },
+  lg: { select: 'px-4 py-3 h-12 text-base pr-12', label: 'text-base' },
 };
 
 // ============ Select Component ============
@@ -70,8 +70,8 @@ export const Select = memo(
           cn(
             // Base styles
             'w-full bg-primary text-primary appearance-none cursor-pointer',
-            'border-2 border-gray-200 rounded-lg',
-            'transition-all duration-200 outline-none focus:border-primary',
+            'border border-gray-200 rounded-lg',
+            'transition-all duration-200 outline-none focus:border-primary focus:ring-1 focus:ring-primary',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             // Size
             sizeStyles[size].select,
@@ -91,7 +91,7 @@ export const Select = memo(
           {label && (
             <label
               htmlFor={selectId}
-              className={cn('font-medium text-primary', sizeStyles[size].label)}
+              className={cn('font-bold text-primary', sizeStyles[size].label)}
             >
               {label}
               {isRequired && <span className="text-red-500 ml-1">*</span>}

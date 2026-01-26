@@ -19,8 +19,9 @@ import { useProducts, useCategories } from '@/hooks/useProducts';
 import { useQuery } from '@tanstack/react-query';
 import { promotionService, type Promotion } from '@/services/promotionService';
 
-import { HOME_BANNERS, BRAND_PARTNERS, FLASH_SALE_TIMES } from '@/data/homeData';
+import { HOME_BANNERS, FLASH_SALE_TIMES } from '@/data/homeData';
 import { formatCurrency } from '@/utils/format';
+import { useBrands } from '@/hooks/useBrands';
 
 
 // ============ Component ============
@@ -45,6 +46,9 @@ export const HomePage = () => {
   // Fetch categories from API
   const { data: categories = [], isLoading: loadingCategories } = useCategories();
 
+
+  const { data: brandsData, isLoading: isLoadingBrands } = useBrands();
+  const brandPartners = brandsData?.data?.items || [];
 
   const products = productsData?.products || [];
 
@@ -242,7 +246,7 @@ export const HomePage = () => {
           <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
             <div className="flex items-center gap-4">
               <Zap className="text-yellow-400 animate-pulse" size={28} />
-              <h2 className="text-xl md:text-2xl font-bold">{t('home.flashSale')}</h2>
+              <h2 className="text-xl md:text-2xl font-bold">{t('shared.flashSale')}</h2>
               {/* Dynamic Countdown */}
               <div className="flex gap-2 font-mono text-lg font-bold">
                  <div className="bg-error px-2 py-1 rounded">{String(timeLeft.hours).padStart(2, '0')}</div>
@@ -394,16 +398,19 @@ export const HomePage = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-xl font-bold text-center mb-8">{t('home.brands')}</h2>
           <div className="flex flex-wrap justify-center gap-4">
-            {BRAND_PARTNERS.map(
-              (brand) => (
-
-                <div
-                  key={brand}
-                  className="px-6 py-3 bg-primary rounded-lg font-semibold text-secondary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                >
-                  {brand}
-                </div>
-              )
+            {isLoadingBrands ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                    <div key={idx} className="w-32 h-12 bg-primary animate-pulse rounded-lg" />
+                ))
+            ) : (
+                brandPartners.map((brand) => (
+                    <div
+                      key={brand.code}
+                      className="px-6 py-3 bg-primary rounded-lg font-semibold text-secondary hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                    >
+                      {brand.name}
+                    </div>
+                ))
             )}
           </div>
         </div>

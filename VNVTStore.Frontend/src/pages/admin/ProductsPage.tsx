@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Edit2, Trash2, Eye, Star, Plus, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart, Package, AlertTriangle } from 'lucide-react';
+import { Package, AlertTriangle, Trash2, Edit, Eye, XCircle, Star, Search, PlusCircle, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart, Plus, X, Upload } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { Dropdown, DropdownItem } from '@/components/ui/Dropdown';
 import { formatCurrency, getImageUrl } from '@/utils/format';
@@ -9,6 +9,7 @@ import {
   useProducts,
   useEntityManager,
 } from '@/hooks';
+import { useQuery } from '@tanstack/react-query';
 import { productService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
 import { useToast } from '@/store';
 import type { Product } from '@/types';
@@ -73,27 +74,27 @@ export const ProductsPage = () => {
   });
 
   const stats: StatItem[] = [
-      {
-          label: t('admin.stats.totalProducts'),
-          value: statsData?.total || 0,
-          icon: <Package size={24} />,
-          color: 'blue',
-          loading: isStatsLoading
-      },
-      {
-          label: t('admin.stats.lowStock'),
-          value: statsData?.lowStock || 0,
-          icon: <AlertTriangle size={24} />,
-          color: 'amber',
-          loading: isStatsLoading
-      },
-      {
-          label: t('admin.stats.outOfStock'),
-          value: statsData?.outOfStock || 0,
-          icon: <Trash2 size={24} />,
-          color: 'rose',
-          loading: isStatsLoading
-      }
+    {
+      label: t('admin.stats.totalProducts'),
+      value: statsData?.total || 0,
+      icon: <Package size={24} />,
+      color: 'blue',
+      loading: isStatsLoading
+    },
+    {
+      label: t('admin.stats.lowStock'),
+      value: statsData?.lowStock || 0,
+      icon: <AlertTriangle size={24} />,
+      color: 'amber',
+      loading: isStatsLoading
+    },
+    {
+      label: t('admin.stats.outOfStock'),
+      value: statsData?.outOfStock || 0,
+      icon: <XCircle size={24} />,
+      color: 'rose',
+      loading: isStatsLoading
+    }
   ];
 
   const products: Product[] = productsData?.products || [];
@@ -162,8 +163,8 @@ export const ProductsPage = () => {
         costPrice: data.costPrice,
 
         weight: data.weight,
-        supplierCode: data.supplierCode,
-        brand: data.brand,
+        supplierCode: data.supplierCode || undefined,
+        brandCode: data.brandCode || undefined,
         color: data.color,
         power: data.power,
         voltage: data.voltage,
@@ -171,6 +172,13 @@ export const ProductsPage = () => {
         size: data.size,
         images: data.images,
         isActive: data.isActive,
+        details: data.details,
+        baseUnit: data.baseUnit,
+        minStockLevel: data.minStockLevel,
+        binLocation: data.binLocation,
+        vatRate: data.vatRate,
+        countryOfOrigin: data.countryOfOrigin,
+        productUnits: data.productUnits || [],
       });
     } catch (err) {
       // Error handled by hook
@@ -191,8 +199,8 @@ export const ProductsPage = () => {
           costPrice: data.costPrice,
 
           weight: data.weight,
-          supplierCode: data.supplierCode,
-          brand: data.brand,
+          supplierCode: data.supplierCode || undefined,
+          brandCode: data.brandCode || undefined,
           color: data.color,
           power: data.power,
           voltage: data.voltage,
@@ -200,6 +208,13 @@ export const ProductsPage = () => {
           size: data.size,
           images: data.images,
           isActive: data.isActive,
+          details: data.details,
+          baseUnit: data.baseUnit,
+          minStockLevel: data.minStockLevel,
+          binLocation: data.binLocation,
+          vatRate: data.vatRate,
+          countryOfOrigin: data.countryOfOrigin,
+          productUnits: data.productUnits || [],
         },
       });
     } catch (err) {
@@ -234,7 +249,7 @@ export const ProductsPage = () => {
     {
       id: 'image',
       header: t('common.fields.image'),
-      width: '80px',
+      width: '120px',
       className: 'text-center',
       accessor: (product) => (
         <div className="flex flex-col items-center">
@@ -278,7 +293,7 @@ export const ProductsPage = () => {
         product.price > 0 ? (
           <span className="font-semibold text-rose-600">{formatCurrency(product.price)}</span>
         ) : (
-          <Badge color="primary" size="sm">{t('common.contact')}</Badge>
+          <Badge color="primary" size="sm">{t('common.fields.contact')}</Badge>
         )
       ),
       className: 'text-right',
@@ -453,7 +468,7 @@ export const ProductsPage = () => {
         isOpen={isFormOpen}
         onClose={closeForm}
         title={editingProduct ? t('common.actions.edit') : t('common.actions.create')}
-        size="3xl"
+        size="6xl"
         // Force unmount on close to reset form state
       >
         <ProductForm
@@ -471,8 +486,17 @@ export const ProductsPage = () => {
             size: editingProduct.size,
             weight: editingProduct.weight,
             supplierCode: editingProduct.supplierCode,
-            brand: editingProduct.brand,
+            brandCode: editingProduct.brandCode,
             isActive: editingProduct.isActive,
+            categoryName: editingProduct.category,
+            brandName: editingProduct.brand,
+            supplierName: editingProduct.supplierName,
+            baseUnit: editingProduct.baseUnit,
+            vatRate: editingProduct.vatRate,
+            minStockLevel: editingProduct.minStockLevel,
+            binLocation: editingProduct.binLocation,
+            countryOfOrigin: editingProduct.countryOfOrigin,
+            productUnits: editingProduct.productUnits,
           } : undefined}
           onSubmit={editingProduct ? handleUpdate : handleCreate}
           onCancel={closeForm}

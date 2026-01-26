@@ -1,6 +1,8 @@
-import { create } from 'zustand';
+import { create, StoreApi } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Product, CartItem, User } from '@/types';
+import { authService, cartService } from '@/services';
+import { injectStore, AuthState } from '@/services/api';
 
 // ============ Cart Store ============
 interface CartState {
@@ -14,8 +16,6 @@ interface CartState {
     getItemCount: () => number;
     fetchCart: () => Promise<void>;
 }
-
-import { cartService } from '@/services';
 
 export const useCartStore = create<CartState>()(
     persist(
@@ -175,34 +175,24 @@ export const useCartStore = create<CartState>()(
 );
 
 // ============ Auth Store ============
-interface AuthState {
-    user: User | null;
-    isAuthenticated: boolean;
-    token: string | null;
-    refreshToken: string | null;
-    login: (user: User, token?: string, refreshToken?: string) => Promise<void>;
-    logout: () => void;
-    updateUser: (userData: Partial<User>) => void;
-    setTokens: (token: string, refreshToken: string) => void;
-}
+// AuthState interface is now imported from @/services/api to avoid circular dependency
 
 // Custom storage to handle "Remember me" (localStorage vs sessionStorage)
 // Custom storage to handle "Remember me" (localStorage vs sessionStorage)
+// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
+// Modified to strict sessionStorage for Auth Isolation as per user request
+// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
 const authStorage = {
     getItem: (name: string) => {
-        // Check local first, then session (priority to persistent storage)
         return localStorage.getItem(name) || sessionStorage.getItem(name);
     },
     setItem: (name: string, value: string) => {
-        // Check the remember flag which we set in LoginPage
         const isRemember = localStorage.getItem('vnvt-remember') === 'true';
         if (isRemember) {
             localStorage.setItem(name, value);
-            // Clean session just in case
             sessionStorage.removeItem(name);
         } else {
             sessionStorage.setItem(name, value);
-            // Clean local to prevent persistence
             localStorage.removeItem(name);
         }
     },
@@ -219,36 +209,33 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             token: null,
             refreshToken: null,
-            login: async (user, token, refreshToken) => {
+            login: async (user: User, token?: string, refreshToken?: string) => {
                 set({ user, isAuthenticated: true, token: token || null, refreshToken: refreshToken || null });
 
                 // Sync local cart items to backend
+                // Use optimistic sync - don't block login
                 const { items, fetchCart } = useCartStore.getState();
                 if (items.length > 0) {
-                    for (const item of items) {
-                        try {
-                            await cartService.addToCart({
-                                productCode: item.product.code,
-                                quantity: item.quantity,
-                                size: item.size,
-                                color: item.color
-                            });
-                        } catch (err) {
-                            console.error('Failed to sync item', item);
-                        }
-                    }
+                    Promise.all(items.map(item =>
+                        cartService.addToCart({
+                            productCode: item.product.code,
+                            quantity: item.quantity,
+                            size: item.size,
+                            color: item.color
+                        }).catch(err => console.error('Failed to sync item', item))
+                    )).then(() => fetchCart());
+                } else {
+                    await fetchCart();
                 }
-                // Fetch latest cart from backend (merges backend state)
-                await fetchCart();
             },
             logout: () => set({ user: null, isAuthenticated: false, token: null, refreshToken: null }),
-            updateUser: (userData) => {
+            updateUser: (userData: Partial<User>) => {
                 const currentUser = get().user;
                 if (currentUser) {
-                    set({ user: { ...currentUser, ...userData } });
+                    set({ user: { ...currentUser, ...userData } as User });
                 }
             },
-            setTokens: (token, refreshToken) => set({ token, refreshToken }),
+            setTokens: (token: string, refreshToken: string) => set({ token, refreshToken }),
         }),
         {
             name: 'vnvt-auth',
@@ -256,6 +243,9 @@ export const useAuthStore = create<AuthState>()(
         }
     )
 );
+
+// Inject store to axios interceptor
+injectStore(useAuthStore as unknown as StoreApi<AuthState>);
 
 // ============ Wishlist Store ============
 interface WishlistState {

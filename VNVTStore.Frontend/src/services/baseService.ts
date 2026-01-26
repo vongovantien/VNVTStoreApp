@@ -26,7 +26,7 @@ export interface SearchParams {
     searchField?: string;
     sortBy?: string;
     sortDesc?: boolean;
-    filters?: Array<{ field: string; value: string | number | boolean | null | Array<string | number>; operator?: SearchCondition }>;
+    filters?: Array<{ field: string; value: string | number | boolean | null | string[] | number[]; operator?: SearchCondition }>;
     fields?: string[];  // List of columns to select (reduces data transfer)
 }
 

@@ -91,8 +91,9 @@ export const AdminToolbar = ({
   selectedCount = 0,
   className,
   searchRef,
+  searchInput, // New prop
   children,
-}: AdminToolbarProps) => {
+}: AdminToolbarProps & { searchInput?: React.ReactNode }) => {
   const { t } = useTranslation();
 
   const Item = ({ icon, onClick, title, disabled, className: itemClassName }: AdminToolbarAction) => (
@@ -128,6 +129,7 @@ export const AdminToolbar = ({
 
       {/* Group 2: Search & Refresh */}
       <div className="flex items-center gap-1">
+        {searchInput}
         <BlueItem
           ref={searchRef}
           icon={<Search size={20} className="stroke-[2.5]" />}
@@ -135,7 +137,7 @@ export const AdminToolbar = ({
           title={t('common.search')}
           className={isSearchActive ? "bg-blue-100 dark:bg-blue-900/30" : ""}
         />
-        <BlueItem icon={<RotateCcw size={18} className="stroke-[2.5]" />} onClick={onReset} title={t('admin.resetFilters')} />
+        <BlueItem icon={<RefreshCw size={18} className="stroke-[2.5]" />} onClick={onRefresh} title={t('admin.refreshData')} />
       </div>
 
       <div className="h-6 w-px bg-gray-200 dark:bg-slate-600 mx-2" />

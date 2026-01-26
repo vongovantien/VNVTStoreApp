@@ -48,6 +48,7 @@ export interface CreateProductRequest {
     weight?: number;
     supplierCode?: string;
     brand?: string;
+    brandCode?: string;
     color?: string;
     power?: string;
     voltage?: string;
@@ -55,6 +56,17 @@ export interface CreateProductRequest {
     size?: string;
     images?: string[];
     isActive?: boolean;
+    details?: Array<{
+        detailType: 'SPEC' | 'LOGISTICS' | 'RELATION' | 'IMAGE';
+        specName: string;
+        specValue: string;
+    }>;
+    baseUnit?: string;
+    minStockLevel?: number;
+    binLocation?: string;
+    vatRate?: number;
+    countryOfOrigin?: string;
+    productUnits?: any[];
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {
@@ -83,6 +95,18 @@ export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
     isActive?: boolean;
 }
 
+export interface ProductStats {
+    total: number;
+    outOfStock: number;
+    lowStock: number;
+}
+
+export interface CategoryStats {
+    total: number;
+    main: number; // Backend returns "main" (Main Categories count)
+    active: number;
+}
+
 // ============ Services ============
 export const productService = {
     ...createEntityService<ProductDto, CreateProductRequest, UpdateProductRequest>({
@@ -101,8 +125,8 @@ export const productService = {
         });
         return response.data;
     },
-    getStats: async () => {
-        const response = await apiClient.get<any>(`${API_ENDPOINTS.PRODUCTS.BASE}/stats`);
+    getStats: async (): Promise<ProductStats> => {
+        const response = await apiClient.get<ProductStats>(`${API_ENDPOINTS.PRODUCTS.BASE}/stats`);
         // Fallback if backend doesn't implement stats
         if (!response.success && response.message?.includes('404')) {
             return {
@@ -111,7 +135,6 @@ export const productService = {
                 lowStock: 0
             }
         }
-        // Mock data structure if response.data is null/undefined but call succeeded (or fallback)
         return response.data || { total: 0, outOfStock: 0, lowStock: 0 };
     }
 };
@@ -121,12 +144,12 @@ export const categoryService = {
         endpoint: API_ENDPOINTS.CATEGORIES.BASE,
         resourceName: 'Category'
     }),
-    getStats: async () => {
-        const response = await apiClient.get<any>(`${API_ENDPOINTS.CATEGORIES.BASE}/stats`);
+    getStats: async (): Promise<CategoryStats> => {
+        const response = await apiClient.get<CategoryStats>(`${API_ENDPOINTS.CATEGORIES.BASE}/stats`);
         if (!response.success && response.message?.includes('404')) {
-            return { total: 0, mainCategories: 0 }
+            return { total: 0, main: 0, active: 0 }
         }
-        return response.data || { total: 0, mainCategories: 0 };
+        return response.data || { total: 0, main: 0, active: 0 };
     }
 };
 

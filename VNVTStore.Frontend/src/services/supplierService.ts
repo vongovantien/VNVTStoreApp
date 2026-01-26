@@ -40,15 +40,17 @@ export interface UpdateSupplierRequest extends Partial<CreateSupplierRequest> {
 }
 
 // ============ Service ============
+export interface SupplierStats {
+    total: number;
+    active: number;
+}
+
 export const supplierService = {
     ...createEntityService<SupplierDto, CreateSupplierRequest, UpdateSupplierRequest>({
         endpoint: API_ENDPOINTS.SUPPLIERS.BASE,
     }),
-    getStats: async () => {
-        const response = await apiClient.get<any>(`${API_ENDPOINTS.SUPPLIERS.BASE}/stats`);
-        if (!response.success && response.message?.includes('404')) {
-            return { total: 0, active: 0 }
-        }
+    getStats: async (): Promise<SupplierStats> => {
+        const response = await apiClient.get<SupplierStats>(`${API_ENDPOINTS.SUPPLIERS.BASE}/stats`);
         return response.data || { total: 0, active: 0 };
     }
 };

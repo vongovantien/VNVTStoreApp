@@ -300,7 +300,7 @@ export const CheckoutPage = () => {
                   />
                   <div className="md:col-span-2">
                     <Input
-                      label={t('checkout.email')}
+                      label={t('shared.email')}
                       type="email"
                       placeholder="email@example.com"
                       value={formData.email}

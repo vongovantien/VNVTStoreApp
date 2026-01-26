@@ -96,6 +96,7 @@ export interface DataTableProps<T extends Record<string, any>> {
   // Reset
   onReset?: () => void;
   initialFilters?: Record<string, string>;
+  onSearch?: (query: string) => void;
 }
 
 // ============ DataTable Component ============
@@ -143,8 +144,9 @@ function DataTableInner<T extends Record<string, any>>({
   onSelectionChange,
   onBulkDelete,
   enableSelection = true,
-  renderRowActions, // Destructure new prop
-  initialFilters
+  renderRowActions,
+  initialFilters,
+  onSearch, // New prop
 }: DataTableProps<T>) {
   const { t } = useTranslation();
 
@@ -157,6 +159,16 @@ function DataTableInner<T extends Record<string, any>>({
   const [searchField, setSearchField] = useState('all');
   const [showSearch, setShowSearch] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
+
+  // Debounce search callback
+  useEffect(() => {
+    if (onSearch) {
+      const timer = setTimeout(() => {
+        onSearch(searchQuery);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, onSearch]);
 
   // Selection State (controlled or uncontrolled)
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
@@ -453,7 +465,7 @@ function DataTableInner<T extends Record<string, any>>({
               selectedCount={selectedIds.size}
               searchRef={searchButtonRef}
               className="w-full"
-              searchInput={showSearch && (
+              searchInput={(!advancedFilterDefs && showSearch) && (
                 <div className="flex items-center mr-2 animate-in fade-in slide-in-from-right-4 duration-200">
                   <div className="relative">
                      <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">

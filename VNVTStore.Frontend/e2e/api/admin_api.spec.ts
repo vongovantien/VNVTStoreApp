@@ -21,8 +21,9 @@ test.describe.serial('Admin API Verification', () => {
     });
 
     test('Get Suppliers', async ({ request }) => {
-        const response = await request.get('/api/v1/suppliers', {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+        const response = await request.post('/api/v1/suppliers/search', {
+            headers: { 'Authorization': `Bearer ${authToken}` },
+            data: {}
         });
         if (!response.ok()) console.log('Get Suppliers failed:', await response.text());
         expect(response.ok()).toBeTruthy();

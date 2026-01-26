@@ -62,7 +62,7 @@ public partial class TblProduct : IEntity
     public virtual ICollection<TblQuote> TblQuotes { get; private set; }
     
     public virtual ICollection<TblProductDetail> TblProductDetails { get; private set; } = new List<TblProductDetail>();
-    public virtual ICollection<TblUnit> TblUnits { get; private set; } = new List<TblUnit>();
+    public virtual ICollection<TblProductUnit> TblProductUnits { get; private set; } = new List<TblProductUnit>();
     public virtual ICollection<TblProductTag> TblProductTags { get; private set; } = new List<TblProductTag>();
 
     public static TblProduct Create(string name, decimal price, decimal? wholesalePrice, int stock, string? categoryCode, decimal? costPrice, 

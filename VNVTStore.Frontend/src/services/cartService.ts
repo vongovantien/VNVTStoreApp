@@ -33,28 +33,26 @@ export interface UpdateCartItemRequest {
 }
 
 // ============ Mapper ============
-// ============ Mapper ============
 function mapCartDtoToCartItems(dto: CartDto): CartItem[] {
     if (!dto || !dto.cartItems) return [];
 
     return dto.cartItems.map(item => {
-        // Handle potential PascalCase or different naming from backend
-        const rawItem = item as any;
-        const productName = item.productName || rawItem.ProductName || 'Unknown Product';
-        const productPrice = item.price || rawItem.ProductPrice || rawItem.Price || 0;
-        const productImage = item.productImage || rawItem.ProductImage || 'https://picsum.photos/seed/product/400/400';
+        // Use property checking instead of any
+        const productName = item.productName || 'Unknown Product';
+        const productPrice = item.price || 0;
+        const productImage = item.productImage || 'https://picsum.photos/seed/product/400/400';
 
         return {
-            code: item.code || rawItem.Code,
-            quantity: item.quantity || rawItem.Quantity,
-            size: item.size || rawItem.Size,
-            color: item.color || rawItem.Color,
+            code: item.code,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
             product: {
-                code: item.productCode || rawItem.ProductCode,
+                code: item.productCode,
                 name: productName,
                 price: productPrice,
                 image: productImage,
-                slug: (item.productCode || rawItem.ProductCode || '').toLowerCase(),
+                slug: (item.productCode || '').toLowerCase(),
                 description: '',
                 category: '',
                 categoryId: '',

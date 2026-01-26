@@ -6,8 +6,8 @@
 export const API_ENDPOINTS = {
     // Banners
     BANNERS: {
-        BASE: '/banner',
-        BY_CODE: (code: string) => `/banner/${code}`,
+        BASE: '/banners',
+        BY_CODE: (code: string) => `/banners/${code}`,
     },
 
     // Auth
@@ -70,6 +70,13 @@ export const API_ENDPOINTS = {
         BY_CODE: (code: string) => `/quotes/${code}`,
     },
 
+    // Units
+    UNITS: {
+        BASE: '/units',
+        SEARCH: '/units/search',
+        BY_CODE: (code: string) => `/units/${code}`,
+    },
+
     // Reviews
     REVIEWS: {
         BASE: '/reviews',
@@ -84,6 +91,9 @@ export const API_ENDPOINTS = {
         INITIATE: '/payments/initiate',
         BY_ORDER: (orderCode: string) => `/payments/order/${orderCode}`,
     },
+
+    // Brands
+    BRANDS: '/brands',
 
     // Dashboard
     DASHBOARD: {

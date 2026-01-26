@@ -17,7 +17,7 @@ import {
 // Let's use `useQuery` from `@tanstack/react-query` directly here or import a standard hook.
 // I'll assume I need to fetch data.
 
-import { promotionService, Promotion, CreatePromotionRequest, UpdatePromotionRequest } from '@/services/promotionService';
+import { promotionService, Promotion, CreatePromotionRequest, UpdatePromotionRequest, PromotionFilter } from '@/services/promotionService';
 import { useQuery } from '@tanstack/react-query';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { ImportModal } from '@/components/common/ImportModal';
@@ -26,7 +26,7 @@ import { useToast } from '@/store';
 import { AdminPageHeader } from '@/components/admin';
 
 // We need a hook to fetch promotions compatible with DataTable
-const usePromotions = (params: any) => {
+const usePromotions = (params: PromotionFilter) => {
   return useQuery({
     queryKey: ['promotions', params],
     queryFn: () => promotionService.getAll(params),
@@ -73,8 +73,8 @@ export const PromotionsPage = () => {
     pageIndex: currentPage,
     pageSize,
     search: searchQuery || undefined,
-    sortField,
-    sortDir,
+    sortBy: sortField,
+    sortDesc: sortDir === SortDirection.DESC,
     ...advancedFilters
   });
 
@@ -191,6 +191,8 @@ export const PromotionsPage = () => {
       maxDiscountAmount: data.maxDiscountAmount ?? undefined,
       usageLimit: data.usageLimit ?? undefined,
       productCodes: data.productCodes ?? undefined,
+      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
+      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
     };
     await createMutation.mutateAsync(cleanData);
   };
@@ -203,6 +205,8 @@ export const PromotionsPage = () => {
       maxDiscountAmount: data.maxDiscountAmount ?? undefined,
       usageLimit: data.usageLimit ?? undefined,
       productCodes: data.productCodes ?? undefined,
+      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
+      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
     };
     await updateMutation.mutateAsync({
       id: editingPromotion.code,
@@ -282,7 +286,7 @@ export const PromotionsPage = () => {
         }}
         advancedFilterDefs={[
           { id: 'search', label: t('common.search'), type: 'text', placeholder: t('common.placeholders.search') },
-          { id: 'type', label: t('common.fields.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('admin.types.flashSale') }] },
+          { id: 'type', label: t('common.fields.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('shared.flashSale') }] },
           { id: 'isActive', label: t('common.fields.status'), type: 'select', options: [{ value: 'true', label: t('common.status.active') }, { value: 'false', label: t('common.status.inactive') }] }
         ]}
       />

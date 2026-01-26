@@ -136,7 +136,7 @@ export const QuoteRequestPage = () => {
                     required
                   />
                   <Input
-                    label={t('quote.email')}
+                    label={t('shared.email')}
                     type="email"
                     placeholder="email@example.com"
                     value={formData.email}

@@ -11,3 +11,5 @@ export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { NumberInput, type NumberInputProps } from './NumberInput';
 export { TableActions } from './TableActions';
 export { Switch, FormSwitch, type SwitchProps, type FormSwitchProps } from './Switch';
+export { default as LazySelect, type LazySelectOption } from './LazySelect';
+export { Checkbox, type CheckboxProps } from './Checkbox';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Eye, Truck, Check, X, Printer, Package, ChevronUp, ChevronDown, Loader2, Download, Trash2, ShoppingCart, FileText } from 'lucide-react';
+import { ShoppingCart, FileText, Truck, Eye, Trash2, Package, ClipboardList, ChevronUp, ChevronDown, Loader2, Download, Check, X, Printer } from 'lucide-react';
 import defaultImage from '@/assets/default-image.png';
 import { Button, Badge, Modal, Pagination, ConfirmDialog, TableActions } from '@/components/ui';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
@@ -217,22 +217,22 @@ export const OrdersPage = () => {
         {
             label: t('admin.stats.totalOrders'),
             value: statsData?.total || 0,
-            icon: <ShoppingCart size={24} />,
+            icon: <ClipboardList size={24} />,
             color: 'blue',
             loading: isStatsLoading
         },
         {
             label: t('admin.stats.pendingOrders'),
             value: statsData?.pending || 0,
-            icon: <FileText size={24} />,
+            icon: <Package size={24} />,
             color: 'amber',
             loading: isStatsLoading
         },
         {
             label: t('admin.stats.shippingOrders'),
-             value: statsData?.shipping || 0,
+            value: statsData?.shipping || 0,
             icon: <Truck size={24} />,
-            color: 'indigo',
+            color: 'purple',
             loading: isStatsLoading
         }
     ]} />

@@ -4,10 +4,15 @@ import { initReactI18next } from 'react-i18next';
 // Import translations
 import viTranslation from '@/locales/vi.json';
 import enTranslation from '@/locales/en.json';
+import sharedTranslation from '@/locales/shared.json';
 
 const resources = {
-    vi: { translation: viTranslation },
-    en: { translation: enTranslation },
+    vi: {
+        translation: { ...viTranslation, shared: sharedTranslation }
+    },
+    en: {
+        translation: { ...enTranslation, shared: sharedTranslation }
+    },
 };
 
 i18n.use(initReactI18next).init({

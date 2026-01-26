@@ -52,9 +52,11 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblUser> TblUsers { get; set; }
 
     public virtual DbSet<TblBrand> TblBrands { get; set; }
-    public virtual DbSet<TblUnit> TblUnits { get; set; } // Renamed from TblProductUnit
-    public virtual DbSet<TblProductDetail> TblProductDetails { get; set; } // New
+    public virtual DbSet<TblUnit> TblUnits { get; set; }
+    public virtual DbSet<TblProductUnit> TblProductUnits { get; set; }
+    public virtual DbSet<TblProductDetail> TblProductDetails { get; set; }
     public virtual DbSet<TblTag> TblTags { get; set; }
+    public virtual DbSet<TblUserLogin> TblUserLogins { get; set; }
     public virtual DbSet<TblProductTag> TblProductTags { get; set; }
 
 
@@ -109,11 +111,14 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasKey(e => e.Code).HasName("TblAddress_pkey");
 
             entity.ToTable("TblAddress");
+            
+            entity.Property(e => e.Category).HasColumnName("Category").HasMaxLength(50);
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
+            entity.Property(e => e.Code).HasMaxLength(100)
                 .HasDefaultValueSql("('ADR'::text || lpad((nextval('address_code_seq'::regclass))::text, 6, '0'::text))");
             entity.Property(e => e.AddressLine).HasMaxLength(255);
+            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.City).HasMaxLength(50);
             entity.Property(e => e.Country)
                 .HasMaxLength(50)
@@ -672,23 +677,42 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
         });
 
-        // Product Unit Configuration (Renamed TblUnit)
+        // Unit Catalog Configuration (TblUnit)
         modelBuilder.Entity<TblUnit>(entity =>
         {
             entity.HasKey(e => e.Code).HasName("TblUnit_pkey");
             entity.ToTable("TblUnit");
             entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+        });
+
+        // Product Unit Configuration (TblProductUnit)
+        modelBuilder.Entity<TblProductUnit>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblProductUnit_pkey");
+            entity.ToTable("TblProductUnit");
+            entity.Property(e => e.Code).HasMaxLength(50);
             entity.Property(e => e.ProductCode).HasMaxLength(100);
-            entity.Property(e => e.UnitName).HasMaxLength(50);
+            entity.Property(e => e.UnitCode).HasMaxLength(50);
             entity.Property(e => e.Price).HasPrecision(15, 2);
             entity.Property(e => e.ConversionRate).HasPrecision(10, 2);
+            entity.Property(e => e.IsBaseUnit).HasDefaultValue(false);
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
 
-            entity.HasOne(d => d.Product).WithMany(p => p.TblUnits)
+            entity.HasOne(d => d.Product).WithMany(p => p.TblProductUnits)
                 .HasForeignKey(d => d.ProductCode)
-                .HasConstraintName("TblUnit_ProductCode_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblProductUnit_ProductCode_fkey");
+
+            entity.HasOne(d => d.Unit).WithMany(p => p.TblProductUnits)
+                .HasForeignKey(d => d.UnitCode)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("TblProductUnit_UnitCode_fkey");
         });
 
         // Product Detail Configuration
@@ -706,7 +730,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.Property(e => e.DetailType)
                   .HasMaxLength(50)
-                  .HasConversion<EnumStringConverter<VNVTStore.Domain.Enums.ProductDetailType>>();
+                  .HasConversion<EnumToStringConverter<VNVTStore.Domain.Enums.ProductDetailType>>();
 
             entity.HasOne(d => d.Product).WithMany(p => p.TblProductDetails)
                 .HasForeignKey(d => d.ProductCode)
@@ -751,6 +775,23 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
 
 
+
+        // User Login Configuration
+        modelBuilder.Entity<TblUserLogin>(entity =>
+        {
+            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey }).HasName("TblUserLogin_pkey");
+            entity.ToTable("TblUserLogin");
+            
+            entity.Property(e => e.LoginProvider).HasMaxLength(50);
+            entity.Property(e => e.ProviderKey).HasMaxLength(255);
+            entity.Property(e => e.ProviderDisplayName).HasMaxLength(100);
+            entity.Property(e => e.UserId).HasMaxLength(100);
+
+            entity.HasOne(d => d.User).WithMany(p => p.TblUserLogins)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblUserLogin_UserId_fkey");
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

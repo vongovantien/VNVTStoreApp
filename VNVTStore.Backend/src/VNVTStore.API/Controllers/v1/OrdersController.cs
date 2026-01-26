@@ -74,6 +74,15 @@ public class OrdersController : BaseApiController
         return HandleResult(result, MessageConstants.Get(MessageConstants.OrderRetrieved));
     }
 
+    [HttpGet("stats")]
+    [Authorize(Roles = "admin,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<OrderStatsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOrderStats()
+    {
+        var result = await Mediator.Send(new GetOrderStatsQuery());
+        return HandleResult(result);
+    }
+
     [HttpGet("{code}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<OrderDto>), StatusCodes.Status200OK)]

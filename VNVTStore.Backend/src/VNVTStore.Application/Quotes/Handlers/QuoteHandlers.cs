@@ -17,7 +17,7 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
     IRequestHandler<GetAllQuery<QuoteDto>, Result<IEnumerable<QuoteDto>>>,
     IRequestHandler<GetByCodeQuery<QuoteDto>, Result<QuoteDto>>,
     IRequestHandler<GetPagedQuery<QuoteDto>, Result<PagedResult<QuoteDto>>>,
-    IRequestHandler<GetMyQuotesQuery, ApiResponse<List<QuoteDto>>>
+    IRequestHandler<GetMyQuotesQuery, Result<List<QuoteDto>>>
 {
     private readonly ICurrentUser _currentUser;
     private readonly IRepository<TblProduct> _productRepository;
@@ -142,12 +142,12 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
         return Result.Success(_mapper.Map<QuoteDto>(quote));
     }
 
-    public async Task<ApiResponse<List<QuoteDto>>> Handle(GetMyQuotesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<QuoteDto>>> Handle(GetMyQuotesQuery request, CancellationToken cancellationToken)
     {
         var userCode = _currentUser.UserCode;
         if (string.IsNullOrEmpty(userCode))
         {
-             return new ApiResponse<List<QuoteDto>> { Success = false, Message = "User not authenticated" };
+             return Result.Failure<List<QuoteDto>>(Error.Unauthorized("User not authenticated"));
         }
 
         var quotes = await _repository.AsQueryable()
@@ -171,7 +171,7 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
             })
             .ToListAsync(cancellationToken);
 
-        return new ApiResponse<List<QuoteDto>> { Success = true, Data = quotes };
+        return Result.Success(quotes);
     }
 
     public async Task<Result<PagedResult<QuoteDto>>> Handle(GetPagedQuery<QuoteDto> request, CancellationToken cancellationToken)

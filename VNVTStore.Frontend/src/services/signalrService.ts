@@ -1,10 +1,18 @@
 import * as signalR from '@microsoft/signalr';
 
-const HUB_URL = 'http://localhost:5176/notificationHub'; // Generic Hub
+const HUB_URL = 'http://localhost:5176/notificationHub';
+
+export interface SignalRNotification {
+    Key?: string;
+    Args?: Record<string, unknown>;
+    Message?: string;
+}
+
+type SignalRCallback = (data: string | SignalRNotification) => void;
 
 class SignalRService {
     private connection: signalR.HubConnection | null = null;
-    private callbacks: Record<string, ((message: any) => void)[]> = {};
+    private callbacks: Record<string, SignalRCallback[]> = {};
 
     public async startConnection() {
         if (this.connection?.state === signalR.HubConnectionState.Connected) return;
@@ -18,15 +26,8 @@ class SignalRService {
             this.notifyListeners('ReceiveOrderNotification', message);
         });
 
-        this.connection.on('ReceiveSystemNotification', (data: any) => {
-            // Support both string messages and localized notification objects
-            if (typeof data === 'object' && data.Key) {
-                // If it's a localized object, we'll notify listeners with the key/args
-                // Listeners should use i18n.t(data.Key, data.Args)
-                this.notifyListeners('ReceiveSystemNotification', data);
-            } else {
-                this.notifyListeners('ReceiveSystemNotification', data);
-            }
+        this.connection.on('ReceiveSystemNotification', (data: string | SignalRNotification) => {
+            this.notifyListeners('ReceiveSystemNotification', data);
         });
 
         try {
@@ -34,23 +35,22 @@ class SignalRService {
             console.log('SignalR Connected');
         } catch (err) {
             console.error('SignalR Connection Error: ', err);
-            // Retry logic could go here
         }
     }
 
-    public on(event: string, callback: (message: any) => void) {
+    public on(event: string, callback: SignalRCallback) {
         if (!this.callbacks[event]) {
             this.callbacks[event] = [];
         }
         this.callbacks[event].push(callback);
     }
 
-    public off(event: string, callback: (message: any) => void) {
+    public off(event: string, callback: SignalRCallback) {
         if (!this.callbacks[event]) return;
         this.callbacks[event] = this.callbacks[event].filter(cb => cb !== callback);
     }
 
-    private notifyListeners(event: string, message: any) {
+    private notifyListeners(event: string, message: string | SignalRNotification) {
         if (this.callbacks[event]) {
             this.callbacks[event].forEach(callback => callback(message));
         }

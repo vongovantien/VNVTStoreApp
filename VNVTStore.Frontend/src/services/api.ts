@@ -1,8 +1,21 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { StoreApi } from 'zustand';
+import { User } from '@/types';
 
-// Circular dependency fix: Inject store instead of importing it directly
-let authStore: any = null;
-export const injectStore = (store: any) => {
+// Define minimal AuthState interface here to avoid circular dependency with store/index.ts
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  token: string | null;
+  refreshToken: string | null;
+  login: (user: User, token?: string, refreshToken?: string) => Promise<void>;
+  logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
+  setTokens: (token: string, refreshToken: string) => void;
+}
+
+let authStore: StoreApi<AuthState> | null = null;
+export const injectStore = (store: StoreApi<AuthState>) => {
   authStore = store;
 };
 
@@ -36,6 +49,11 @@ export interface ApiResponse<T> {
 export interface PagedResult<T> {
   items: T[];
   totalItems: number;
+  pageIndex: number;
+  pageSize: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
 export enum SearchCondition {
@@ -60,7 +78,7 @@ export enum SearchCondition {
 export interface SearchDTO {
   field: string;
   operator: SearchCondition;
-  value: any;
+  value: string | number | boolean | string[] | number[] | null;
 }
 
 export interface SortDTO {
@@ -103,11 +121,11 @@ axiosInstance.interceptors.request.use(
 // Variables for 401 Refresh Logic
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
+  resolve: (value: string | null) => void;
+  reject: (reason: unknown) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -121,13 +139,10 @@ const processQueue = (error: any, token: string | null = null) => {
 // Response Interceptor: Handle Errors & Refresh Token
 axiosInstance.interceptors.response.use(
   (response) => {
-    // Return data directly if needed, or keeping full response based on preference.
-    // However, existing code expects specific wrapper/handling.
-    // Axios puts body in `data`.
     return response;
   },
   async (error: AxiosError) => {
-    const originalRequest = error.config as any;
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     if (error.response) {
       switch (error.response.status) {
@@ -141,11 +156,13 @@ axiosInstance.interceptors.response.use(
 
           if (!originalRequest._retry) {
             if (isRefreshing) {
-              return new Promise(function (resolve, reject) {
+              return new Promise<string | null>(function (resolve, reject) {
                 failedQueue.push({ resolve, reject });
               })
                 .then((token) => {
-                  originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                  if (originalRequest.headers) {
+                    originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                  }
                   return axiosInstance(originalRequest);
                 })
                 .catch((err) => {
@@ -167,7 +184,7 @@ axiosInstance.interceptors.response.use(
                 throw new Error('No tokens available');
               }
 
-              const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+              const response = await axios.post<ApiResponse<{ token: string; refreshToken: string }>>(`${API_BASE_URL}/auth/refresh-token`, {
                 token,
                 refreshToken
               });
@@ -178,7 +195,9 @@ axiosInstance.interceptors.response.use(
                 axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + data.data.token;
                 processQueue(null, data.data.token);
 
-                originalRequest.headers['Authorization'] = 'Bearer ' + data.data.token;
+                if (originalRequest.headers) {
+                  originalRequest.headers['Authorization'] = 'Bearer ' + data.data.token;
+                }
                 return axiosInstance(originalRequest);
               } else {
                 console.error("Làm mới token thất bại.");

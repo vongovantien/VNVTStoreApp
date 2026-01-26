@@ -193,10 +193,10 @@ export const CustomersPage = () => {
       if (!resettingCustomer || !newPassword) return;
       try {
           await customerService.update(resettingCustomer.code, { password: newPassword });
-          toast.success("Mật khẩu đã được cập nhật thành công.");
+          toast.success(t('messages.saveSuccess'));
           setResettingCustomer(null);
       } catch (err) {
-          toast.error("Không thể cập nhật mật khẩu.");
+          toast.error(t('messages.error'));
       }
   };
 
@@ -324,11 +324,6 @@ export const CustomersPage = () => {
         onAdd={handleOpenCreate}
         initialFilters={{ role: 'customer' }}
         renderRowActions={(customer) => (
-        <TableActions
-          onView={() => setSelectedCustomer(customer)}
-          onEdit={() => handleOpenEdit(customer)}
-          onDelete={() => confirmDelete(customer)}
-          customActions={
             <button
               className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
               title="Reset Password"
@@ -336,8 +331,6 @@ export const CustomersPage = () => {
             >
               <Key size={18} />
             </button>
-          }
-        />
         )}
 
         // Sorting
@@ -437,12 +430,12 @@ export const CustomersPage = () => {
                   </p>
                 )}
                 <p className="flex items-center gap-2">
-                  <span className="font-semibold w-24">Username:</span>
+                  <span className="font-semibold w-24">{t('common.fields.username')}:</span>
                   {selectedCustomer.username}
                 </p>
                 <p className="flex items-center gap-2">
-                  <span className="font-semibold w-24">Address:</span>
-                  {selectedCustomer.address ? `${selectedCustomer.address}, ${selectedCustomer.ward}, ${selectedCustomer.district}, ${selectedCustomer.city}` : 'N/A'}
+                  <span className="font-semibold w-24">{t('common.fields.address')}:</span>
+                  {selectedCustomer.address ? `${selectedCustomer.address}, ${selectedCustomer.ward}, ${selectedCustomer.district}, ${selectedCustomer.city}` : t('common.actions.none')}
                 </p>
               </div>
             </div>
@@ -570,21 +563,21 @@ export const CustomersPage = () => {
       <Modal
         isOpen={!!resettingCustomer}
         onClose={() => setResettingCustomer(null)}
-        title={`Reset Password for ${resettingCustomer?.fullName}`}
+        title={t('admin.actions.resetPasswordTitle', { name: resettingCustomer?.fullName || resettingCustomer?.username })}
         size="sm"
       >
         <div className="space-y-4">
             <Input
-                label="New Password"
+                label={t('common.fields.newPassword')}
                 type="password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                placeholder="Enter new strong password"
+                placeholder={t('common.placeholders.enterPassword')}
                 isRequired
             />
             <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setResettingCustomer(null)}>Cancel</Button>
-                <Button onClick={confirmResetPassword} disabled={!newPassword}>Update Password</Button>
+                <Button variant="outline" onClick={() => setResettingCustomer(null)}>{t('common.cancel')}</Button>
+                <Button onClick={confirmResetPassword} disabled={!newPassword}>{t('common.update')}</Button>
             </div>
         </div>
       </Modal>

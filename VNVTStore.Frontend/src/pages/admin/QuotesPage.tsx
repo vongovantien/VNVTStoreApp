@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Check, X, MessageSquare, DollarSign, Eye } from 'lucide-react';
+import { Search, MessageSquare, DollarSign, Check, Eye, Trash2, ClipboardList, FileText, X, Printer } from 'lucide-react';
 import { Button, Badge, Modal, Input } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { quoteService } from '@/services/quoteService';
@@ -115,16 +115,16 @@ export const QuotesPage = () => {
 
       <StatsCards stats={[
         {
-            label: t('admin.stats.totalQuotes'),
+            label: t('admin.stats.totalOrders'),
             value: statsData?.total || 0,
-            icon: <MessageSquare size={24} />,
+            icon: <ClipboardList size={24} />,
             color: 'blue',
             loading: isStatsLoading
         },
         {
-            label: t('admin.stats.pendingQuotes'),
+            label: t('admin.stats.pending'),
             value: statsData?.pending || 0,
-            icon: <DollarSign size={24} />,
+            icon: <FileText size={24} />,
             color: 'amber',
             loading: isStatsLoading
         },

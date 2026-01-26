@@ -48,3 +48,8 @@ public record DeleteCommand<TMarker>(string Code) : IRequest<Result>;
 /// Base Command cho Delete Multiple operations - REUSABLE
 /// </summary>
 public record DeleteMultipleCommand<TMarker>(List<string> Codes) : IRequest<Result>;
+
+/// <summary>
+/// Base Query to get simple stats (Total, Active) - REUSABLE
+/// </summary>
+public record GetStatsQuery<TMarker> : IRequest<Result<EntityStatsDto>>;

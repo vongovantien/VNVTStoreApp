@@ -98,7 +98,7 @@ export const SupportPage = () => {
                                         <Phone className="text-green-600" size={24} />
                                     </div>
                                     <div>
-                                        <p className="font-medium">{t('support.hotline')}</p>
+                                        <p className="font-medium">{t('shared.hotline')}</p>
                                         <p className="text-xl font-bold text-green-600">1900 123 456</p>
                                     </div>
                                 </div>

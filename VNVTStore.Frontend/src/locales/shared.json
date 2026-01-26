@@ -1,0 +1,14 @@
+{
+  "email": "Email",
+  "hotline": "Hotline",
+  "hotlineFull": "Hotline: 1900 123 456",
+  "chatZalo": "Chat Zalo",
+  "flashSale": "Flash Sale",
+  "zaloPay": "ZaloPay",
+  "momo": "MoMo",
+  "vnpay": "VNPAY",
+  "placeholders": {
+    "phone": "09xx xxx xxx"
+  },
+  "brand": "VNVT Store"
+}

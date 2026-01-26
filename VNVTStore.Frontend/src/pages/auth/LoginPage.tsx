@@ -4,12 +4,26 @@ import { useTranslation } from 'react-i18next';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { useAuthStore, useToast } from '@/store';
-import { UserRole } from '@/types';
+import { UserRole, UserStatus } from '@/types';
 import { authService } from '@/services/authService';
 import { AuthLayout } from '@/layouts/AuthLayout';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { createSchemas } from '@/utils/schemas';
+import { signInWithPopup, type AuthProvider } from 'firebase/auth';
+import { auth, googleProvider, facebookProvider } from '@/config/firebase';
 
 export const LoginPage = () => {
   const { t } = useTranslation();
+  const { loginSchema } = createSchemas(t);
+  
+  interface LoginFormData {
+    email: string;
+    password: string;
+    remember: boolean;
+  }
+
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isAuthenticated, user } = useAuthStore();
@@ -17,16 +31,25 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    remember: false,
+
+  const {
+      register,
+      handleSubmit,
+      setValue,
+      formState: { errors },
+  } = useForm<LoginFormData>({
+      resolver: zodResolver(loginSchema),
+      defaultValues: {
+          email: '',
+          password: '',
+          remember: false,
+      }
   });
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-        if (user.role === UserRole.Admin) { 
+        if (String(user.role).toLowerCase() === 'admin') { 
             navigate('/admin', { replace: true });
         } else {
             navigate('/', { replace: true });
@@ -34,58 +57,37 @@ export const LoginPage = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const from = (location.state as { from?: string })?.from || '/';
-  const [formErrors, setFormErrors] = useState<Record<string, string | undefined>>({});
-
-  const validate = () => {
-    const errors: Record<string, string | undefined> = {};
-    if (!formData.email) {
-      errors.email = 'Vui lòng nhập email';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Email không hợp lệ';
-    }
-    
-    if (!formData.password) {
-      errors.password = 'Vui lòng nhập mật khẩu';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    }
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   /* Load saved email if 'Remember Me' was checked */
   useEffect(() => {
       const isRemembered = localStorage.getItem('vnvt-remember') === 'true';
       if (isRemembered) {
           const savedEmail = localStorage.getItem('vnvt-email');
           if (savedEmail) {
-              setFormData(prev => ({ ...prev, email: savedEmail, remember: true }));
+              setValue('email', savedEmail);
+              setValue('remember', true);
           }
       }
-  }, []);
+  }, [setValue]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
+  const from = (location.state as { from?: string })?.from || '/';
 
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await authService.login({
-        username: formData.email,
-        password: formData.password,
+        username: data.email,
+        password: data.password,
       });
 
       if (response.success && response.data) {
         const { token, refreshToken, user } = response.data;
 
         // Handle Remember Me preference
-        if (formData.remember) {
+        if (data.remember) {
             localStorage.setItem('vnvt-remember', 'true');
-            localStorage.setItem('vnvt-email', formData.email);
+            localStorage.setItem('vnvt-email', data.email);
         } else {
             localStorage.removeItem('vnvt-remember');
             localStorage.removeItem('vnvt-email');
@@ -97,6 +99,7 @@ export const LoginPage = () => {
             email: user.email,
             fullName: user.fullName || user.username,
             role: (user.role as UserRole) || UserRole.Customer,
+            status: UserStatus.Active,
             createdAt: new Date().toISOString(),
           },
           token,
@@ -107,7 +110,7 @@ export const LoginPage = () => {
         
         // Redirect to admin if admin role, otherwise to original destination
         // backend returns PascalCase 'Admin', Enum is 'Admin'
-        if (user.role === UserRole.Admin) { 
+        if (String(user.role).toLowerCase() === 'admin') { 
             navigate('/admin', { replace: true });
         } else {
             navigate(from, { replace: true });
@@ -124,13 +127,77 @@ export const LoginPage = () => {
     }
   };
 
+  const handleSocialLogin = async (provider: string, authProvider: AuthProvider) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await signInWithPopup(auth, authProvider);
+      const token = await result.user.getIdToken();
+      
+      const response = await authService.externalLogin(provider, token);
+      
+      if (response.success && response.data) {
+        const { token: accessToken, refreshToken, user: userData } = response.data;
+        
+        login(
+          {
+            code: userData.code,
+            email: userData.email,
+            fullName: userData.fullName || userData.username,
+            role: (userData.role as UserRole) || UserRole.Customer,
+            status: UserStatus.Active,
+            createdAt: new Date().toISOString(),
+            avatar: userData.avatar
+          },
+          accessToken,
+          refreshToken
+        );
+
+        toast.success(t('messages.loginSuccess'));
+        
+        if (String(userData.role).toLowerCase() === 'admin') { 
+            navigate('/admin', { replace: true });
+        } else {
+            navigate(from, { replace: true });
+        }
+      } else {
+        setError(response.message || t('messages.error'));
+      }
+    } catch (err: unknown) {
+      console.error(`${provider} login error:`, err);
+      const isPopupClosed = err instanceof Error && (err as any).code === 'auth/popup-closed-by-user';
+      if (!isPopupClosed) {
+        toast.error(t('messages.error'));
+        setError(t('messages.error'));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthLayout title={t('login.title')} subtitle={t('login.subtitle')}>
-      {/* Zalo Login */}
-      <button className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 rounded-xl font-medium hover:bg-blue-50 transition-colors mb-6">
-        <span className="text-blue-500 font-bold">Zalo</span>
-        <span>{t('login.withZalo')}</span>
-      </button>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Google Login */}
+        <button 
+          onClick={() => handleSocialLogin('google', googleProvider)}
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 py-3 px-4 border rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+          <span>Google</span>
+        </button>
+
+        {/* Facebook Login */}
+        <button 
+          onClick={() => handleSocialLogin('facebook', facebookProvider)}
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 py-3 px-4 border rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/facebook.svg" alt="Facebook" className="w-5 h-5" />
+          <span>Facebook</span>
+        </button>
+      </div>
 
       <div className="flex items-center gap-4 mb-6">
         <hr className="flex-1" />
@@ -139,9 +206,9 @@ export const LoginPage = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {error && (
-          <div className="p-3 bg-red-50 text-red-500 text-sm rounded-lg">
+          <div className="p-3 border border-error bg-error/10 text-error text-sm rounded-lg">
             {error}
           </div>
         )}
@@ -149,39 +216,37 @@ export const LoginPage = () => {
           label="Email"
           type="email"
           placeholder="email@example.com"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          {...register('email')}
           leftIcon={<Mail size={18} />}
           required
-          error={formErrors.email}
+          error={errors.email?.message}
         />
 
-        <div className="relative">
-          <Input
-            label={t('login.password')}
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            leftIcon={<Lock size={18} />}
-            required
-            error={formErrors.password}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-9 text-tertiary hover:text-primary"
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-        </div>
+        <Input
+          label={t('login.password')}
+          type={showPassword ? 'text' : 'password'}
+          placeholder="••••••••"
+          {...register('password')}
+          leftIcon={<Lock size={18} />}
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="flex items-center justify-center p-1 text-slate-400 opacity-50 hover:opacity-100 hover:text-primary focus:outline-none transition-all"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          }
+          required
+          error={errors.password?.message}
+        />
 
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={formData.remember}
-              onChange={(e) => setFormData({ ...formData, remember: e.target.checked })}
+              {...register('remember')}
               className="w-4 h-4 rounded"
             />
             <span className="text-sm text-secondary">{t('login.remember')}</span>

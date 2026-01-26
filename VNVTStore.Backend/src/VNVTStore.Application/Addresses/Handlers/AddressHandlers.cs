@@ -52,6 +52,9 @@ public class AddressHandlers :
             .WithUser(userCode)
             .AtLocation(
                 request.Dto.AddressLine!,
+                request.Dto.FullName,
+                request.Dto.Phone,
+                request.Dto.Category,
                 request.Dto.City,
                 request.Dto.State,
                 request.Dto.PostalCode,
@@ -87,6 +90,9 @@ public class AddressHandlers :
         address.Update(
             new AddressDetails(
                 request.Dto.AddressLine ?? address.AddressLine,
+                request.Dto.FullName ?? address.FullName,
+                request.Dto.Phone ?? address.Phone,
+                request.Dto.Category ?? address.Category,
                 request.Dto.City ?? address.City,
                 request.Dto.State ?? address.State,
                 request.Dto.PostalCode ?? address.PostalCode,

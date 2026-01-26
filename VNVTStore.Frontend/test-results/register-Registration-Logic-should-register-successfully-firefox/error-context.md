@@ -1,0 +1,87 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - link "🏠 VNVT Store" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: 🏠
+        - generic [ref=e9]: VNVT Store
+      - heading "Đăng ký tài khoản" [level=1] [ref=e10]
+      - paragraph [ref=e11]: Tạo tài khoản để mua sắm dễ dàng hơn
+    - button "Zalo Đăng ký với Zalo" [ref=e12] [cursor=pointer]:
+      - generic [ref=e13]: Zalo
+      - generic [ref=e14]: Đăng ký với Zalo
+    - generic [ref=e15]:
+      - separator [ref=e16]
+      - generic [ref=e17]: hoặc
+      - separator [ref=e18]
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]: Họ và tên
+        - generic [ref=e22]:
+          - img [ref=e24]
+          - textbox "Họ và tên" [ref=e27]:
+            - /placeholder: Nguyễn Văn A
+            - text: Auto Tester
+      - generic [ref=e28]:
+        - generic [ref=e29]: Email
+        - generic [ref=e30]:
+          - img [ref=e32]
+          - textbox "Email" [ref=e35]:
+            - /placeholder: email@example.com
+            - text: testuser1769394792083@example.com
+      - generic [ref=e36]:
+        - generic [ref=e37]: Số điện thoại
+        - generic [ref=e38]:
+          - img [ref=e40]
+          - textbox "Số điện thoại" [ref=e42]:
+            - /placeholder: "0901234567"
+            - text: "0901234567"
+      - generic [ref=e43]:
+        - generic [ref=e44]: Mật khẩu
+        - generic [ref=e45]:
+          - img [ref=e47]
+          - textbox "Mật khẩu" [ref=e50]:
+            - /placeholder: ••••••••
+            - text: Password123!
+          - button [ref=e52] [cursor=pointer]:
+            - img [ref=e53]
+      - generic [ref=e56]:
+        - generic [ref=e57]: Xác nhận mật khẩu
+        - generic [ref=e58]:
+          - img [ref=e60]
+          - textbox "Xác nhận mật khẩu" [ref=e63]:
+            - /placeholder: ••••••••
+            - text: Password123!
+          - button [ref=e65] [cursor=pointer]:
+            - img [ref=e66]
+      - generic [ref=e70] [cursor=pointer]:
+        - checkbox "Tôi đồng ý với Điều khoản sử dụng" [checked] [active] [ref=e71]
+        - generic [ref=e72]:
+          - text: Tôi đồng ý với
+          - link "Điều khoản sử dụng" [ref=e73]:
+            - /url: /terms
+      - button "Đăng ký" [ref=e74] [cursor=pointer]:
+        - text: Đăng ký
+        - img [ref=e75]
+    - generic [ref=e78]:
+      - paragraph [ref=e79]: "Lợi ích khi đăng ký:"
+      - list [ref=e80]:
+        - listitem [ref=e81]:
+          - img [ref=e82]
+          - text: Theo dõi đơn hàng dễ dàng
+        - listitem [ref=e84]:
+          - img [ref=e85]
+          - text: Ưu đãi dành riêng cho thành viên
+        - listitem [ref=e87]:
+          - img [ref=e88]
+          - text: Tích điểm đổi quà
+    - paragraph [ref=e90]:
+      - text: Đã có tài khoản?
+      - link "Đăng nhập" [ref=e91] [cursor=pointer]:
+        - /url: /login
+  - link "← Về trang chủ" [ref=e93] [cursor=pointer]:
+    - /url: /
+```

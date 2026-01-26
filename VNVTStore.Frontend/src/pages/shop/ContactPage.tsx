@@ -1,25 +1,33 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { useToast } from '@/store';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { createSchemas } from '@/utils/schemas';
 
 export const ContactPage = () => {
     const { t } = useTranslation();
+    const { contactSchema } = createSchemas(t);
+    type ContactFormData = z.infer<typeof contactSchema>;
     const toast = useToast();
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
+    
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>({
+        resolver: zodResolver(contactSchema),
+        defaultValues: {
+            fullName: '',
+            email: '',
+            phone: '',
+            subject: '',
+            message: '',
+        }
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const onSubmit = (data: ContactFormData) => {
         toast.success('Cảm ơn bạn! Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.');
-        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        reset();
     };
 
     const contactInfo = [
@@ -52,21 +60,21 @@ export const ContactPage = () => {
                         className="bg-primary rounded-2xl p-8 shadow-lg"
                     >
                         <h2 className="text-2xl font-bold mb-6">Gửi tin nhắn</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <Input
                                     label="Họ tên *"
                                     placeholder="Nguyễn Văn A"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    {...register('fullName')}
+                                    error={errors.fullName?.message}
                                     required
                                 />
                                 <Input
                                     label="Email *"
                                     type="email"
                                     placeholder="email@example.com"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    {...register('email')}
+                                    error={errors.email?.message}
                                     required
                                 />
                             </div>
@@ -74,14 +82,15 @@ export const ContactPage = () => {
                                 <Input
                                     label="Số điện thoại"
                                     placeholder="0901 234 567"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    {...register('phone')}
+                                    error={errors.phone?.message}
                                 />
                                 <Input
-                                    label="Chủ đề"
+                                    label="Chủ đề *"
                                     placeholder="Hỗ trợ sản phẩm"
-                                    value={formData.subject}
-                                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                                    {...register('subject')}
+                                    error={errors.subject?.message}
+                                    required
                                 />
                             </div>
                             <div>
@@ -89,11 +98,11 @@ export const ContactPage = () => {
                                 <textarea
                                     rows={5}
                                     placeholder="Nhập nội dung tin nhắn..."
-                                    value={formData.message}
-                                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-primary resize-none"
+                                    {...register('message')}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-primary resize-none ${errors.message ? 'border-red-500' : ''}`}
                                     required
                                 />
+                                {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
                             </div>
                             <Button type="submit" fullWidth rightIcon={<Send size={18} />}>
                                 Gửi tin nhắn

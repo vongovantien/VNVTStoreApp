@@ -1,6 +1,7 @@
 ﻿using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace VNVTStore.Domain.Entities;
 
@@ -14,6 +15,7 @@ public partial class TblUser : IEntity
         TblOrders = new List<TblOrder>();
         TblReviews = new List<TblReview>();
         TblQuotes = new List<TblQuote>();
+        TblUserLogins = new List<TblUserLogin>();
     }
 
     public string Code { get; set; } = null!;
@@ -55,7 +57,59 @@ public partial class TblUser : IEntity
 
     public DateTime? ResetTokenExpiry { get; private set; }
 
+    public string? AvatarUrl { get; private set; }
+
     public virtual ICollection<TblAddress> TblAddresses { get; private set; }
+    public virtual ICollection<TblUserLogin> TblUserLogins { get; private set; }
+
+    // ... (Keep other collections)
+
+    // Factory method to create a new user (Rich Domain Model)
+    // ... (Keep Create method)
+    
+    // ...
+
+    public void AddLogin(string loginProvider, string providerKey, string? displayName)
+    {
+        var existing = TblUserLogins.FirstOrDefault(x => x.LoginProvider == loginProvider && x.ProviderKey == providerKey);
+        if (existing == null)
+        {
+            TblUserLogins.Add(new TblUserLogin 
+            { 
+                LoginProvider = loginProvider, 
+                ProviderKey = providerKey, 
+                ProviderDisplayName = displayName,
+                UserId = this.Code 
+            });
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public static TblUser CreateExternal(string email, string? fullName, string loginProvider, string providerKey, string? providerDisplayName, string? avatarUrl = null)
+    {
+         if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email cannot be empty", nameof(email));
+         
+         var user = new TblUser
+         {
+             Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+             Username = email, 
+             Email = email,
+             FullName = fullName,
+             Role = UserRole.Customer,
+             IsActive = true,
+             CreatedAt = DateTime.UtcNow,
+             UpdatedAt = DateTime.UtcNow,
+             IsEmailVerified = true, 
+             PasswordHash = "",
+             AvatarUrl = avatarUrl
+         };
+         
+         user.AddLogin(loginProvider, providerKey, providerDisplayName);
+         
+         return user;
+    }
+    
+    // ...
 
     public virtual ICollection<TblCart> TblCarts { get; private set; }
 
@@ -90,16 +144,29 @@ public partial class TblUser : IEntity
         return user;
     }
     
-    public void UpdateProfile(string? fullName, string? phone, string? email)
+    public void UpdateProfile(string? fullName, string? phone, string? email, string? avatarUrl = null)
     {
         FullName = fullName ?? FullName;
         Phone = phone ?? Phone;
+        if (!string.IsNullOrWhiteSpace(avatarUrl))
+        {
+            AvatarUrl = avatarUrl;
+        }
         // Business rule: Email change might require verification or check, but for now we allow update.
         if (!string.IsNullOrWhiteSpace(email))
         {
             Email = email;
         }
         UpdatedAt = DateTime.UtcNow;
+    }
+    
+    public void UpdateAvatar(string avatarUrl)
+    {
+         if (!string.IsNullOrWhiteSpace(avatarUrl))
+         {
+             AvatarUrl = avatarUrl;
+             UpdatedAt = DateTime.UtcNow;
+         }
     }
 
     public void UpdatePassword(string passwordHash)
@@ -149,6 +216,8 @@ public partial class TblUser : IEntity
         ResetTokenExpiry = DateTime.UtcNow.AddHours(24);
         UpdatedAt = DateTime.UtcNow;
     }
+
+
 
     public void ResetPassword(string token, string passwordHash)
     {

@@ -14,11 +14,12 @@ namespace VNVTStore.Application.Users.Handlers;
 
 public class UserHandlers : BaseHandler<TblUser>,
     IRequestHandler<GetUserProfileQuery, Result<UserDto>>,
-    IRequestHandler<GetAllUsersQuery, Result<PagedResult<UserDto>>>,
+    IRequestHandler<GetPagedQuery<UserDto>, Result<PagedResult<UserDto>>>,
     IRequestHandler<UpdateProfileCommand, Result<UserDto>>,
     IRequestHandler<ChangePasswordCommand, Result<bool>>,
     IRequestHandler<DeleteCommand<TblUser>, Result>,
     IRequestHandler<DeleteMultipleCommand<TblUser>, Result>,
+    IRequestHandler<GetByCodeQuery<UserDto>, Result<UserDto>>,
     IRequestHandler<CreateCommand<CreateUserDto, UserDto>, Result<UserDto>>,
     IRequestHandler<UpdateCommand<UpdateUserDto, UserDto>, Result<UserDto>>
 {
@@ -38,78 +39,38 @@ public class UserHandlers : BaseHandler<TblUser>,
         _orderRepository = orderRepository;
     }
 
-    public async Task<Result<UserDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(GetByCodeQuery<UserDto> request, CancellationToken cancellationToken)
     {
-        var user = await _repository.GetByCodeAsync(request.userCode, cancellationToken);
-        
-        if (user == null)
-            return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.userCode));
-
-        return Result.Success(_mapper.Map<UserDto>(user));
+        return await GetByCodeAsync<UserDto>(request.Code, MessageConstants.User, cancellationToken);
     }
 
-    public async Task<Result<PagedResult<UserDto>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
     {
-        var query = _repository.AsQueryable();
-        
-        // Filter Soft Deleted
-        query = query.Where(u => u.ModifiedType != ModificationType.Delete.ToString());
+        return await GetByCodeAsync<UserDto>(request.userCode, MessageConstants.User, cancellationToken);
+    }
 
-        if (!string.IsNullOrEmpty(request.search))
+    public async Task<Result<PagedResult<UserDto>>> Handle(GetPagedQuery<UserDto> request, CancellationToken cancellationToken)
+    {
+        var searchFields = request.Searching ?? new List<SearchDTO>();
+
+        if (!string.IsNullOrEmpty(request.Search))
         {
-            query = query.Where(u => 
-                u.Username.Contains(request.search) ||
-                u.Email.Contains(request.search) ||
-                (u.FullName != null && u.FullName.Contains(request.search)));
+            // Search across Username, Email, FullName with OR condition
+            searchFields.Add(new SearchDTO { SearchField = "Username", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+            searchFields.Add(new SearchDTO { SearchField = "Email", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+            searchFields.Add(new SearchDTO { SearchField = "FullName", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
         }
 
-        // ... (rest of query building is same) ...
-        if (request.role.HasValue)
-        {
-            query = query.Where(u => u.Role == request.role.Value);
-        }
+        // Role filter is passed via Searching list from Controller if present
 
-        // Apply advanced filters
-        query = QueryHelper.ApplyFilters(query, request.filters);
-
-        var totalItems = await query.CountAsync(cancellationToken);
-
-        // Sort
-        if (request.sort != null && !string.IsNullOrEmpty(request.sort.SortBy))
-        {
-            // Simple manual sort for common fields to avoid reflection/dynamic linq complexity
-            // Ideally should use a helper or Dynamic Linq
-            switch (request.sort.SortBy.ToLower())
-            {
-                case "fullname":
-                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.FullName) : query.OrderBy(u => u.FullName);
-                    break;
-                case "email":
-                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email);
-                    break;
-                case "createdat":
-                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.CreatedAt) : query.OrderBy(u => u.CreatedAt);
-                    break;
-                 case "role":
-                    query = request.sort.SortDescending ? query.OrderByDescending(u => u.Role) : query.OrderBy(u => u.Role);
-                    break;
-                default:
-                    query = query.OrderByDescending(u => u.CreatedAt);
-                    break;
-            }
-        }
-        else
-        {
-            query = query.OrderByDescending(u => u.CreatedAt);
-        }
-
-        var items = await query
-            .Skip((request.pageIndex - 1) * request.pageSize)
-            .Take(request.pageSize)
-            .ToListAsync(cancellationToken);
-
-        var dtos = _mapper.Map<List<UserDto>>(items);
-        return Result.Success(new PagedResult<UserDto>(dtos, totalItems));
+        return await GetPagedDapperAsync<UserDto>(
+            request.PageIndex, 
+            request.PageSize, 
+            searchFields, 
+            request.SortDTO, 
+            null, // referenceTables
+            request.Fields, 
+            cancellationToken);
     }
 
     public async Task<Result<UserDto>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
@@ -124,7 +85,8 @@ public class UserHandlers : BaseHandler<TblUser>,
         user.UpdateProfile(
             request.fullName, 
             request.phone, 
-            request.email);
+            request.email,
+            request.avatarUrl);
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -208,7 +170,7 @@ public class UserHandlers : BaseHandler<TblUser>,
             var dto = request.Dto;
 
             // Update Profile
-            user.UpdateProfile(dto.FullName, dto.Phone, dto.Email);
+            user.UpdateProfile(dto.FullName, dto.Phone, dto.Email, dto.AvatarUrl);
 
             // Update Role
             if (!string.IsNullOrEmpty(dto.Role) && Enum.TryParse<UserRole>(dto.Role, true, out var role))

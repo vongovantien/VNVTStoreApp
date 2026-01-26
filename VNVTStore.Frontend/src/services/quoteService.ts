@@ -55,10 +55,12 @@ export const quoteService = {
     },
     getStats: async () => {
         const response = await apiClient.get<any>(`${API_ENDPOINTS.QUOTES.BASE}/stats`);
-        if (!response.success && response.message?.includes('404')) {
-            return { total: 0, pending: 0, processed: 0 }
-        }
-        return response.data || { total: 0, pending: 0, processed: 0 };
+        return response.data || { total: 0, pending: 0, processed: 0 }; // Backend returns {Total, Active}. Mapping needed?
+        // Wait, Backend returns EntityStatsDto {Total, Active}.
+        // Frontend Quote Stats expects { total, pending, processed }?
+        // Quotes usually have Status (Pending, Processed, etc).
+        // My Generic Backend Stats only returns Total and Active (IsActive).
+        // It does NOT return Pending/Processed counts specifically for Quotes unless I override logic.
     }
 };
 

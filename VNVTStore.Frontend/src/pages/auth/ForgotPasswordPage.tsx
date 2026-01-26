@@ -26,8 +26,9 @@ export const ForgotPasswordPage = () => {
             } else {
                 toastError(response.message || t('messages.errorOccurred'));
             }
-        } catch (err: any) {
-            toastError(err.response?.data?.message || t('messages.errorOccurred'));
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : t('messages.errorOccurred');
+            toastError(msg);
         } finally {
             setIsLoading(false);
         }

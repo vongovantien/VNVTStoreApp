@@ -1,0 +1,55 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - link "🏠 VNVT Store" [ref=e7]:
+        - /url: /
+        - generic [ref=e8]: 🏠
+        - generic [ref=e9]: VNVT Store
+      - heading "Đăng nhập" [level=1] [ref=e10]
+      - paragraph [ref=e11]: Chào mừng bạn trở lại
+    - button "Zalo Đăng nhập với Zalo" [ref=e12] [cursor=pointer]:
+      - generic [ref=e13]: Zalo
+      - generic [ref=e14]: Đăng nhập với Zalo
+    - generic [ref=e15]:
+      - separator [ref=e16]
+      - generic [ref=e17]: hoặc
+      - separator [ref=e18]
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]: Email
+        - generic [ref=e22]:
+          - img [ref=e24]
+          - textbox "Email" [active] [ref=e27]:
+            - /placeholder: email@example.com
+            - text: "' OR '1'='1"
+        - generic [ref=e28]: Email không hợp lệ
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Mật khẩu
+          - generic [ref=e32]:
+            - img [ref=e34]
+            - textbox "Mật khẩu" [ref=e37]:
+              - /placeholder: ••••••••
+              - text: wrongpass
+          - generic [ref=e38]: Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt
+        - button [ref=e39] [cursor=pointer]:
+          - img [ref=e40]
+      - generic [ref=e43]:
+        - generic [ref=e44] [cursor=pointer]:
+          - checkbox "Ghi nhớ đăng nhập" [ref=e45]
+          - generic [ref=e46]: Ghi nhớ đăng nhập
+        - link "Quên mật khẩu?" [ref=e47]:
+          - /url: /forgot-password
+      - button "Đăng nhập" [ref=e48] [cursor=pointer]:
+        - text: Đăng nhập
+        - img [ref=e49]
+    - paragraph [ref=e51]:
+      - text: Chưa có tài khoản?
+      - link "Đăng ký ngay" [ref=e52]:
+        - /url: /register
+  - link "← Về trang chủ" [ref=e54]:
+    - /url: /
+```

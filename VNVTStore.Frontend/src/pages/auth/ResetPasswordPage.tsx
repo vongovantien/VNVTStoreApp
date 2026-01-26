@@ -24,15 +24,15 @@ export const ResetPasswordPage = () => {
 
     useEffect(() => {
         if (!email || !token) {
-            setError('Invalid or expired reset link.');
+            setError(t('auth.resetPassword.invalidLink'));
         }
-    }, [email, token]);
+    }, [email, token, t]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         if (password !== confirmPassword) {
-            toastError("Passwords do not match.");
+            toastError(t('validation.passwordMismatch'));
             return;
         }
 
@@ -50,14 +50,14 @@ export const ResetPasswordPage = () => {
 
             if (response.success) {
                 setIsSuccess(true);
-                success("Password has been reset successfully!");
+                success(t('auth.resetPassword.success'));
                 setTimeout(() => navigate('/login'), 3000);
             } else {
-                setError(response.message || 'Failed to reset password.');
-                toastError(response.message || 'Failed to reset password.');
+                setError(response.message || t('messages.error'));
+                toastError(response.message || t('messages.error'));
             }
-        } catch (err: any) {
-            const msg = err.response?.data?.message || 'Something went wrong.';
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : t('messages.error');
             setError(msg);
             toastError(msg);
         } finally {
@@ -70,12 +70,12 @@ export const ResetPasswordPage = () => {
             <div className="min-h-[60vh] flex items-center justify-center px-4">
                 <div className="max-w-md w-full bg-primary p-8 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 text-center space-y-6">
                     <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto" />
-                    <h2 className="text-2xl font-bold">Success!</h2>
+                    <h2 className="text-2xl font-bold">{t('auth.resetPassword.success')}</h2>
                     <p className="text-secondary">
-                        Your password has been successfully reset. Redirecting you to login...
+                        {t('auth.resetPassword.successDesc')}
                     </p>
                     <Link to="/login" className="block w-full py-2.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors text-center">
-                        Go to Login Now
+                        {t('auth.resetPassword.backToLogin')}
                     </Link>
                 </div>
             </div>
@@ -86,8 +86,8 @@ export const ResetPasswordPage = () => {
         <div className="min-h-[60vh] flex items-center justify-center px-4">
             <div className="max-w-md w-full bg-primary p-8 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold mb-2">Reset Password</h1>
-                    <p className="text-secondary">Set a new strong password for your account.</p>
+                    <h1 className="text-3xl font-bold mb-2">{t('auth.resetPassword.title')}</h1>
+                    <p className="text-secondary">{t('auth.resetPassword.subtitle')}</p>
                 </div>
 
                 {error && (
@@ -98,33 +98,44 @@ export const ResetPasswordPage = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="relative">
-                        <Input
-                            label="New Password"
-                            type={showPassword ? "text" : "password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            leftIcon={<Lock size={18} />}
-                            isRequired
-                            disabled={!!error || isLoading}
-                        />
-                        <button
+                    <Input
+                        label={t('auth.resetPassword.newPassword')}
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        leftIcon={<Lock size={18} />}
+                        rightIcon={
+                          <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-[38px] text-slate-400 hover:text-indigo-500 transition-colors"
-                        >
+                            className="flex items-center justify-center p-1 text-slate-400 opacity-50 hover:opacity-100 hover:text-primary transition-all focus:outline-none"
+                            tabIndex={-1}
+                          >
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                    </div>
+                          </button>
+                        }
+                        isRequired
+                        disabled={!!error || isLoading}
+                    />
 
                     <Input
-                        label="Confirm New Password"
+                        label={t('auth.resetPassword.confirmPassword')}
                         type={showPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
                         leftIcon={<Lock size={18} />}
+                        rightIcon={
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="flex items-center justify-center p-1 text-slate-400 opacity-50 hover:opacity-100 hover:text-primary transition-all focus:outline-none"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        }
                         isRequired
                         disabled={!!error || isLoading}
                     />
@@ -135,7 +146,7 @@ export const ResetPasswordPage = () => {
                         isLoading={isLoading} 
                         disabled={!!error || !password || password !== confirmPassword}
                     >
-                        Update Password
+                        {t('auth.resetPassword.submit')}
                     </Button>
                 </form>
 
@@ -144,7 +155,7 @@ export const ResetPasswordPage = () => {
                         to="/login" 
                         className="text-sm text-secondary hover:text-primary transition-colors font-medium"
                     >
-                        Back to Login
+                        {t('auth.resetPassword.backToLogin')}
                     </Link>
                 </div>
             </div>

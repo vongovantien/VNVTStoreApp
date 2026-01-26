@@ -11,5 +11,8 @@ public enum ProductDetailType
     Logistics,
     
     [Description("RELATION")]
-    Relation
+    Relation,
+
+    [Description("IMAGE")]
+    Image
 }

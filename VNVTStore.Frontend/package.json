@@ -23,6 +23,7 @@
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
     "exceljs": "^4.4.0",
+    "firebase": "^12.8.0",
     "framer-motion": "^12.24.7",
     "i18next": "^25.7.3",
     "lodash-es": "^4.17.22",

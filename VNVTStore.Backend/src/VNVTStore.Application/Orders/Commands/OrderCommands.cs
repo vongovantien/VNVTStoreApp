@@ -33,3 +33,10 @@ public class OrderCreationItemDto
     public string? Size { get; set; }
     public string? Color { get; set; }
 }
+
+public class UpdateOrderDto
+{
+    public string? Status { get; set; }
+    public string? Note { get; set; }
+    public string? ShippingAddress { get; set; }
+}

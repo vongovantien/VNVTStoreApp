@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useForm, Controller, UseFormReturn, Path, DefaultValues } from 'react-hook-form';
+import { useForm, Controller, UseFormReturn, Path, DefaultValues, FieldValues, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ZodSchema } from 'zod';
 import { Button, Input, Select, NumberInput, Switch, Modal } from '@/components/ui';
@@ -18,7 +18,9 @@ export type FieldType =
   | 'select' 
   | 'switch' 
   | 'image' 
-  | 'password';
+  | 'multi-image'
+  | 'password'
+  | 'custom';
 
 export interface SelectOption {
   value: string;
@@ -39,8 +41,13 @@ export interface FieldDefinition {
   step?: number;
   rows?: number;
   colSpan?: 1 | 2 | 3 | 4 | 6 | 12;
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
   hidden?: boolean;
+  /** For 'custom' type */
+  render?: (form: UseFormReturn<any>) => React.ReactNode; 
+  /** For 'image' or other supporting types */
+  multiple?: boolean;
 }
 
 export interface FieldGroup {
@@ -50,7 +57,7 @@ export interface FieldGroup {
 }
 
 // ============ BaseForm Props ============
-export interface BaseFormProps<T extends Record<string, unknown>> {
+export interface BaseFormProps<T extends FieldValues> {
   schema: ZodSchema<T>;
   defaultValues: DefaultValues<T>;
   fields?: FieldDefinition[];
@@ -63,23 +70,26 @@ export interface BaseFormProps<T extends Record<string, unknown>> {
   isModal?: boolean;
   modalOpen?: boolean;
   modalTitle?: string;
-  modalSize?: 'sm' | 'md' | 'lg' | 'xl';
+  modalSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
   onModalClose?: () => void;
   renderBefore?: (form: UseFormReturn<T>) => React.ReactNode;
   renderAfter?: (form: UseFormReturn<T>) => React.ReactNode;
   className?: string;
+  groupLayoutClassName?: string; // New prop for controlling groups container layout
   imageBaseUrl?: string; // New prop for image preview base URL
+  layout?: 'vertical' | 'sidebar' | 'tabs'; // sidebar will use a Grid layout for groups
+  sidebarColSpan?: number; // Span for sidebar if layout is sidebar
 }
 
 // ============ Field Renderer Component ============
-interface FieldRendererProps<T extends Record<string, unknown>> {
+interface FieldRendererProps<T extends FieldValues> {
   field: FieldDefinition;
   form: UseFormReturn<T>;
   onPreviewImage: (url: string) => void;
   imageBaseUrl?: string;
 }
 
-function FieldRenderer<T extends Record<string, unknown>>({ 
+function FieldRenderer<T extends FieldValues>({ 
   field, 
   form,
   onPreviewImage,
@@ -105,7 +115,7 @@ function FieldRenderer<T extends Record<string, unknown>>({
         const reader = new FileReader();
         reader.onload = () => {
           const base64 = reader.result as string;
-          setValue(field.name as Path<T>, base64 as T[keyof T]);
+          setValue(field.name as Path<T>, base64 as any);
           setIsUploading(false);
         };
         reader.onerror = () => {
@@ -156,6 +166,7 @@ function FieldRenderer<T extends Record<string, unknown>>({
             label={field.label}
             placeholder={field.placeholder}
             disabled={field.disabled}
+            size={field.size || 'md'}
             error={error}
             isRequired={field.required}
             {...register(field.name as Path<T>)}
@@ -191,18 +202,18 @@ function FieldRenderer<T extends Record<string, unknown>>({
       return (
         <div className={colSpanClass}>
           <div className="space-y-1">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label className="text-sm font-bold text-primary mb-1 block">
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             <textarea
-              className="w-full min-h-[100px] px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-slate-900 transition-all resize-y text-sm"
+              className="w-full min-h-[100px] px-4 py-3 border rounded-xl focus:outline-none focus:ring-4 focus:ring-accent-primary/5 bg-primary transition-all resize-y text-base text-primary placeholder:text-tertiary"
               placeholder={field.placeholder}
               rows={field.rows || 4}
               disabled={field.disabled}
               {...register(field.name as Path<T>)}
             />
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-xs text-error font-medium">{error}</p>}
           </div>
         </div>
       );
@@ -228,10 +239,23 @@ function FieldRenderer<T extends Record<string, unknown>>({
         </div>
       );
 
+    case 'custom':
+      return (
+        <div className={colSpanClass}>
+          {field.render?.(form)}
+        </div>
+      );
+    
+    case 'multi-image':
+      // Basic multi-image handled in ProductForm via custom render for now 
+      // but we could implement generic one here too.
+      // For now, let's keep ProductForm specific parts in custom render until generic enough.
+      return null;
+
     case 'switch':
       return (
         <div className={colSpanClass}>
-          <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
+          <div className="p-4 bg-tertiary/30 dark:bg-slate-900/10 rounded-xl border border-border-color">
             <Controller
               name={field.name as Path<T>}
               control={control}
@@ -255,18 +279,18 @@ function FieldRenderer<T extends Record<string, unknown>>({
       return (
         <div className={colSpanClass}>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label className="text-sm font-semibold text-primary">
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             
             {currentValue && (
               <div className="relative w-32 h-32 border rounded-lg overflow-hidden group">
-                  <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                  <div className="w-full h-full flex items-center justify-center bg-secondary">
                     {imageError ? (
-                      <div className="flex flex-col items-center text-gray-400">
+                      <div className="flex flex-col items-center text-tertiary">
                         <ImageOff size={24} />
-                        <span className="text-[10px] mt-1">Error</span>
+                        <span className="text-[10px] mt-1 uppercase font-bold">Error</span>
                       </div>
                     ) : (
                       <img 
@@ -274,7 +298,7 @@ function FieldRenderer<T extends Record<string, unknown>>({
                         alt="Preview" 
                         className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" 
                         onClick={() => onPreviewImage(previewUrl)}
-                        onError={(e) => {
+                        onError={() => {
                           console.error("Image load failed:", previewUrl);
                           setImageError(true);
                         }}
@@ -283,8 +307,8 @@ function FieldRenderer<T extends Record<string, unknown>>({
                   </div>
                 <button
                   type="button"
-                  onClick={() => setValue(field.name as Path<T>, '' as T[keyof T])}
-                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => setValue(field.name as Path<T>, '' as any)}
+                  className="absolute top-1 right-1 p-1 bg-error text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X size={12} />
                 </button>
@@ -293,19 +317,19 @@ function FieldRenderer<T extends Record<string, unknown>>({
             
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+              className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
                 isDragActive 
-                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                  : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400'
+                  ? 'border-accent-primary bg-accent-primary/5' 
+                  : 'border-border-color hover:border-accent-primary/50'
               } ${currentValue ? 'h-16' : 'h-24'}`}
             >
               <input {...getInputProps()} />
               {isUploading ? (
-                <p className="text-sm text-indigo-600">{t('common.uploading', 'Đang tải lên...')}</p>
+                <p className="text-sm text-accent-primary font-medium">{t('common.uploading', 'Đang tải lên...')}</p>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full">
-                  <Upload size={20} className="text-gray-400 mb-2" />
-                  <p className="text-xs text-gray-500">
+                  <Upload size={20} className="text-tertiary mb-2" />
+                  <p className="text-xs text-secondary font-medium">
                     {isDragActive 
                       ? t('common.dropHere', 'Thả file vào đây') 
                       : t('common.dragOrClick', 'Kéo thả hoặc click để chọn file')}
@@ -313,18 +337,17 @@ function FieldRenderer<T extends Record<string, unknown>>({
                 </div>
               )}
             </div>
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-xs text-error font-medium">{error}</p>}
           </div>
         </div>
       );
-
     default:
       return null;
   }
 }
 
 // ============ BaseForm Component ============
-export function BaseForm<T extends Record<string, unknown>>({
+export function BaseForm<T extends FieldValues>({
   schema,
   defaultValues,
   fields,
@@ -342,14 +365,18 @@ export function BaseForm<T extends Record<string, unknown>>({
   renderBefore,
   renderAfter,
   className,
+  groupLayoutClassName,
   imageBaseUrl,
+  layout = 'vertical',
+  sidebarColSpan = 4
 }: BaseFormProps<T>) {
   const { t } = useTranslation();
   const formId = useMemo(() => `form-${Math.random().toString(36).substr(2, 9)}`, []);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   const form = useForm<T>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues,
   });
 
@@ -360,33 +387,89 @@ export function BaseForm<T extends Record<string, unknown>>({
     reset(defaultValues);
   }, [defaultValues, reset]);
 
-  const handleSubmit = handleFormSubmit(onSubmit);
+  const handleSubmit = (e?: React.BaseSyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    return handleFormSubmit(onSubmit as any)(e);
+  };
+
+  const handleManualSubmit = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    handleFormSubmit(onSubmit as any)();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isModal && e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.type !== 'textarea') {
+      handleManualSubmit(e);
+    }
+    // Prevent bubbling to parent forms
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.stopPropagation();
+    }
+  };
   
   const allFields = fields || (fieldGroups ? fieldGroups.flatMap(g => g.fields) : []);
 
   // Pass imageBaseUrl to FieldRenderer
   const renderFields = () => {
-    // ... logic for fieldGroups or flat fields
-     // in .map:
-     // <FieldRenderer ... imageBaseUrl={imageBaseUrl} />
-     // ...
      if (fieldGroups) {
-      return fieldGroups.map((group, groupIndex) => (
-        <div key={groupIndex} className="space-y-4">
-          {/* ... title logic ... */}
-          <div className="grid grid-cols-12 gap-4">
-            {group.fields.map((field, fieldIndex) => (
-              <FieldRenderer
-                key={`${groupIndex}-${fieldIndex}`}
-                field={field}
-                form={form as UseFormReturn<Record<string, unknown>>}
-                onPreviewImage={setPreviewImage}
-                imageBaseUrl={imageBaseUrl}
-              />
-            ))}
+      if (layout === 'sidebar') {
+           const mainGroups = fieldGroups.slice(0, fieldGroups.length - 1);
+           const sidebarGroup = fieldGroups[fieldGroups.length - 1];
+
+           return (
+            <div className="grid grid-cols-12 gap-6">
+                <div className={`col-span-12 lg:col-span-${12 - sidebarColSpan} space-y-8`}>
+                    {mainGroups.map((group, groupIndex) => renderGroup(group, groupIndex))}
+                </div>
+                <div className={`col-span-12 lg:col-span-${sidebarColSpan} space-y-8`}>
+                    {renderGroup(sidebarGroup, mainGroups.length)}
+                </div>
+            </div>
+           );
+      }
+
+      if (layout === 'tabs') {
+        return (
+          <div className="space-y-4">
+            <div className="flex flex-wrap border-b border-border-color">
+              {fieldGroups.map((group, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setActiveTab(index)}
+                  className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                    activeTab === index
+                      ? 'border-accent-primary text-accent-primary'
+                      : 'border-transparent text-secondary hover:text-primary'
+                  }`}
+                >
+                  {group.title || `Tab ${index + 1}`}
+                </button>
+              ))}
+            </div>
+            
+            <div className="pt-2">
+              {fieldGroups.map((group, index) => (
+                <div key={index} className={activeTab === index ? 'block animate-in fade-in duration-200' : 'hidden'}>
+                  {renderGroup(group, index, layout === 'tabs')}
+                </div>
+              ))}
+            </div>
           </div>
+        );
+      }
+
+      return (
+        <div className={groupLayoutClassName || 'space-y-8'}>
+          {fieldGroups.map((group, groupIndex) => renderGroup(group, groupIndex))}
         </div>
-      ));
+      );
     }
 
     return (
@@ -395,7 +478,7 @@ export function BaseForm<T extends Record<string, unknown>>({
           <FieldRenderer 
             key={index} 
             field={field} 
-            form={form as UseFormReturn<Record<string, unknown>>}
+            form={form}
             onPreviewImage={setPreviewImage}
             imageBaseUrl={imageBaseUrl}
           />
@@ -403,6 +486,35 @@ export function BaseForm<T extends Record<string, unknown>>({
       </div>
     );
   };
+
+  const renderGroup = (group: FieldGroup, groupIndex: number, hideTitle: boolean = false) => (
+    <div key={groupIndex} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-border-color p-6 space-y-4">
+        {(!hideTitle && (group.title || group.description)) && (
+            <div className="space-y-1 mb-6">
+                {group.title && (
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-accent-primary/10 flex items-center justify-center text-accent-primary font-bold text-base">
+                            {groupIndex + 1}
+                        </div>
+                        <h3 className="text-base font-extrabold text-primary uppercase tracking-widest">{group.title}</h3>
+                    </div>
+                )}
+                {group.description && <p className="text-sm text-secondary ml-13">{group.description}</p>}
+            </div>
+        )}
+        <div className="grid grid-cols-12 gap-4">
+            {group.fields.map((field, fieldIndex) => (
+                <FieldRenderer
+                    key={`${groupIndex}-${fieldIndex}`}
+                    field={field}
+                    form={form}
+                    onPreviewImage={setPreviewImage}
+                    imageBaseUrl={imageBaseUrl}
+                />
+            ))}
+        </div>
+    </div>
+  );
    // ... rest of component
 
 
@@ -418,17 +530,25 @@ export function BaseForm<T extends Record<string, unknown>>({
         </Button>
       )}
       <Button 
-        type="submit" 
+        type={isModal ? "button" : "submit"} 
         isLoading={isLoading} 
-        form={isModal ? formId : undefined} // Link to form if outside
+        form={isModal ? undefined : formId}
+        onClick={isModal ? handleManualSubmit : (e) => e.stopPropagation()}
       >
         {submitLabel || t('common.save')}
       </Button>
     </>
   );
 
+  const FormTag = isModal ? 'div' : 'form';
+
   const formContent = (
-    <form id={formId} onSubmit={handleSubmit} className={`space-y-6 ${className || ''}`}>
+    <FormTag 
+      id={formId} 
+      onSubmit={isModal ? undefined : handleSubmit} 
+      onKeyDown={handleKeyDown}
+      className={`space-y-6 ${className || ''}`}
+    >
       {renderBefore?.(form)}
       
       {renderFields()}
@@ -441,7 +561,7 @@ export function BaseForm<T extends Record<string, unknown>>({
           {actionButtons}
         </div>
       )}
-    </form>
+    </FormTag>
   );
 
   const previewModal = previewImage && (

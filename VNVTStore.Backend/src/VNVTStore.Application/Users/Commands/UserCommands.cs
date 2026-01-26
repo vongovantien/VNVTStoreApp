@@ -8,7 +8,8 @@ public record UpdateProfileCommand(
     string userCode,
     string? fullName,
     string? phone,
-    string? email
+    string? email,
+    string? avatarUrl = null
 ) : IRequest<Result<UserDto>>;
 
 public record ChangePasswordCommand(

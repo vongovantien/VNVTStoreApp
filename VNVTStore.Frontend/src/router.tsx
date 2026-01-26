@@ -27,6 +27,7 @@ const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const AccountPage = lazy(() => import('@/pages/shop/AccountPage'));
 const PromotionsPage = lazy(() => import('@/pages/shop/PromotionsPage'));
 const NewsPage = lazy(() => import('@/pages/shop/NewsPage'));
+const NewsDetailPage = lazy(() => import('@/pages/shop/NewsDetailPage'));
 const ContactPage = lazy(() => import('@/pages/shop/ContactPage'));
 const AboutPage = lazy(() => import('@/pages/shop/AboutPage'));
 const SupportPage = lazy(() => import('@/pages/shop/SupportPage'));
@@ -42,6 +43,8 @@ const AdminQuotes = lazy(() => import('@/pages/admin/QuotesPage'));
 const AdminSettings = lazy(() => import('@/pages/admin/SettingsPage'));
 const AdminCategories = lazy(() => import('@/pages/admin/CategoriesPage'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/SuppliersPage'));
+const AdminBrands = lazy(() => import('@/pages/admin/BrandsPage'));
+const AdminUnits = lazy(() => import('@/pages/admin/UnitsPage'));
 const AdminBanners = lazy(() => import('@/pages/admin/BannersPage'));
 
 // Error pages
@@ -154,6 +157,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <NewsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'news/:id',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <NewsDetailPage />
               </Suspense>
             ),
           },
@@ -329,6 +340,22 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminSuppliers />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'brands',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminBrands />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'units',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminUnits />
               </Suspense>
             ),
           },

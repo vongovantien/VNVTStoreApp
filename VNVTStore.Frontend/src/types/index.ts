@@ -14,6 +14,8 @@ export interface Product {
     categoryCode?: string;
     brand?: string;
     brandCode?: string; // New
+    supplierCode?: string; // New
+    supplierName?: string; // New
     stock: number;
     stockQuantity?: number; // Sync with backend name
     minStockLevel?: number; // New
@@ -37,16 +39,22 @@ export interface Product {
 
     // Relations
     details?: ProductDetail[];
-    units?: ProductUnit[];
+    productUnits?: ProductUnit[];
     tags?: ProductTag[];
 }
 
-export type DetailType = 'SPEC' | 'LOGISTICS' | 'RELATION' | 'IMAGE';
+export enum ProductDetailType {
+    SPEC = 'SPEC',
+    LOGISTICS = 'LOGISTICS',
+    RELATION = 'RELATION',
+    IMAGE = 'IMAGE'
+}
+
 
 export interface ProductDetail {
     code: string;
     productCode: string;
-    detailType: DetailType;
+    detailType: ProductDetailType;
     specName: string;
     specValue: string;
 }

@@ -20,6 +20,15 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
     {
     }
 
+    [HttpGet("stats")]
+    [Authorize(Roles = "admin,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<ProductStatsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetStats()
+    {
+        var result = await Mediator.Send(new GetProductStatsQuery());
+        return HandleResult(result);
+    }
+
 
 
     [HttpGet("{code}")]

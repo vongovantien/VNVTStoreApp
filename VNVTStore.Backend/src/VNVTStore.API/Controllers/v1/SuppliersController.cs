@@ -6,8 +6,6 @@ using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Domain.Entities;
 
-using VNVTStore.Application.Suppliers.Queries;
-
 namespace VNVTStore.API.Controllers.v1;
 
 [ApiController]
@@ -17,17 +15,6 @@ public class SuppliersController : BaseApiController<SupplierDto, CreateSupplier
 {
     public SuppliersController(IMediator mediator) : base(mediator)
     {
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> GetAllSuppliers(
-        [FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber,
-        [FromQuery] int pageSize = AppConstants.Paging.DefaultPageSize,
-        [FromQuery] string? search = null,
-        [FromQuery] bool? isActive = null)
-    {
-        var result = await Mediator.Send(new GetAllSuppliersQuery(pageIndex, pageSize, search, isActive));
-        return HandleResult(result);
     }
 
     protected override IRequest<Result<PagedResult<SupplierDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
@@ -50,5 +37,12 @@ public class SuppliersController : BaseApiController<SupplierDto, CreateSupplier
     {
         var result = await Mediator.Send(new DeleteMultipleCommand<TblSupplier>(codes));
         return HandleDelete(result);
+    }
+
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        var result = await Mediator.Send(new GetStatsQuery<TblSupplier>());
+        return HandleResult(result);
     }
 }

@@ -44,7 +44,7 @@ public class UpdateProductHandlerTests : IDisposable
                 // Initialize collections to avoid null issues in other parts if accessed
                 ProductImages = new List<ProductImageDto>(),
                 Details = new List<ProductDetailDto>(),
-                ProductUnits = new List<ProductUnitDto>(),
+                ProductUnits = new List<UnitDto>(),
                 Variants = new List<ProductVariantDto>()
             });
 

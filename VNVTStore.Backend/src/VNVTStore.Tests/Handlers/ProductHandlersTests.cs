@@ -15,6 +15,7 @@ using VNVTStore.Application.Products.Handlers;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Infrastructure.Persistence;
 using Xunit;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
@@ -23,27 +24,50 @@ using VNVTStore.Tests.Common;
 
 namespace VNVTStore.Tests.Handlers
 {
-    public class ProductHandlersTests
+    public class ProductHandlersTests : IDisposable
     {
         private readonly Mock<IRepository<TblProduct>> _mockRepo;
-        private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+        private readonly Mock<IUnitOfWork> _mockUnitOfWork; // Keep for now as handlers might use strict UoW pattern, or we can mock it to do nothing/proxy
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<IDapperContext> _mockDapperContext;
         private readonly Mock<IBaseUrlService> _mockBaseUrlService;
         private readonly Mock<IFileService> _mockFileService;
-        private readonly Mock<IApplicationDbContext> _mockContext;
+        private readonly ApplicationDbContext _context; // Real In-Memory Context
         private readonly CreateProductHandler _createHandler;
         private readonly DeleteProductHandler _deleteHandler;
 
         public ProductHandlersTests()
         {
+            _context = TestDbContextFactory.Create();
+
             _mockRepo = new Mock<IRepository<TblProduct>>();
+            // Setup Repo to use the real DbSet for Add/Update if possible, or just Verify calls.
+            // For simple handlers, we can stick to mocks for Repo if they just call AddAsync.
+            // But better to use the real Context-backed repository or just mock the Repo's behavior 
+            // to persist to the in-memory DB if we want integration-style testing.
+            // However, handlers usually take IRepository. Let's start by mocking Repo behavior to write to context.
+            
+            _mockRepo.Setup(r => r.AddAsync(It.IsAny<TblProduct>(), It.IsAny<CancellationToken>()))
+                .Callback<TblProduct, CancellationToken>((p, c) => _context.TblProducts.Add(p))
+                .Returns(Task.CompletedTask);
+            
+            _mockRepo.Setup(r => r.Update(It.IsAny<TblProduct>()))
+                .Callback<TblProduct>(p => _context.TblProducts.Update(p));
+
+            _mockRepo.Setup(r => r.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns<string, CancellationToken>(async (code, c) => 
+                     await _context.TblProducts.FirstOrDefaultAsync(p => p.Code == code, c));
+
             _mockUnitOfWork = new Mock<IUnitOfWork>();
+            _mockUnitOfWork.Setup(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()))
+                .Returns(async (CancellationToken c) => await _context.SaveChangesAsync(c));
+            _mockUnitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>()))
+                .Returns(async (CancellationToken c) => await _context.SaveChangesAsync(c));
+
             _mockMapper = new Mock<IMapper>();
             _mockDapperContext = new Mock<IDapperContext>();
             _mockBaseUrlService = new Mock<IBaseUrlService>();
             _mockFileService = new Mock<IFileService>();
-            _mockContext = new Mock<IApplicationDbContext>();
 
             _createHandler = new CreateProductHandler(
                 _mockRepo.Object,
@@ -52,7 +76,7 @@ namespace VNVTStore.Tests.Handlers
                 _mockDapperContext.Object,
                 _mockBaseUrlService.Object,
                 _mockFileService.Object,
-                _mockContext.Object
+                _context // Use real context here
             );
 
             _deleteHandler = new DeleteProductHandler(
@@ -61,38 +85,44 @@ namespace VNVTStore.Tests.Handlers
                 _mockMapper.Object,
                 _mockDapperContext.Object,
                 _mockFileService.Object,
-                _mockContext.Object
+                _context // Use real context here
             );
 
             // Default Mocks
             _mockBaseUrlService.Setup(x => x.GetBaseUrl()).Returns("http://test.com");
-            SetupEmptyDbSets();
+            _mockFileService.Setup(x => x.DeleteLinkedFilesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success());
+                
+            SeedDatabase();
         }
-
-        private void SetupEmptyDbSets()
+        
+        private void SeedDatabase()
         {
-            var mockFiles = MockDbSet(new List<TblFile>());
-            var mockUnits = MockDbSet(new List<TblUnit>());
-            var mockProductUnits = MockDbSet(new List<TblProductUnit>());
+            var category = new TblCategory { Code = "CAT1", Name = "Category 1", IsActive = true };
+            if (!_context.TblCategories.Any(c => c.Code == category.Code))
+            {
+                _context.TblCategories.Add(category);
+            }
 
-            _mockContext.Setup(c => c.TblFiles).Returns(mockFiles.Object);
-            _mockContext.Setup(c => c.TblUnits).Returns(mockUnits.Object);
-            _mockContext.Setup(c => c.TblProductUnits).Returns(mockProductUnits.Object);
-        }
+            var brand = new TblBrand { Code = "BRAND1", Name = "Brand 1", IsActive = true };
+             if (!_context.TblBrands.Any(b => b.Code == brand.Code))
+            {
+                _context.TblBrands.Add(brand);
+            }
 
-        private Mock<DbSet<T>> MockDbSet<T>(List<T> list) where T : class
-        {
-            var queryable = list.AsQueryable();
-            var mockSet = new Mock<DbSet<T>>();
-            mockSet.As<IQueryable<T>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<T>(queryable.Provider));
-            mockSet.As<IQueryable<T>>().Setup(m => m.Expression).Returns(queryable.Expression);
-            mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
-            mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(queryable.GetEnumerator());
+            var supplier = new TblSupplier { Code = "SUP1", Name = "Supplier 1", IsActive = true };
+             if (!_context.TblSuppliers.Any(s => s.Code == supplier.Code))
+            {
+                _context.TblSuppliers.Add(supplier);
+            }
             
-            mockSet.As<IAsyncEnumerable<T>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
-              .Returns(new TestAsyncEnumerator<T>(queryable.GetEnumerator()));
+            var unit = new TblUnit { Code = "UNIT1", Name = "Piece", IsActive = true };
+             if (!_context.TblUnits.Any(u => u.Code == unit.Code))
+            {
+                _context.TblUnits.Add(unit);
+            }
             
-            return mockSet;
+            _context.SaveChanges();
         }
 
         [Fact]
@@ -109,7 +139,7 @@ namespace VNVTStore.Tests.Handlers
             var request = new CreateCommand<CreateProductDto, ProductDto>(createDto);
             
             _mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<TblProduct>()))
-                .Returns(new ProductDto { Code = "TEST_CODE", Name = "New Product" });
+                .Returns((TblProduct source) => new ProductDto { Code = source.Code, Name = source.Name });
 
             // Act
             var result = await _createHandler.Handle(request, CancellationToken.None);
@@ -117,8 +147,11 @@ namespace VNVTStore.Tests.Handlers
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Name.Should().Be("New Product");
-            _mockRepo.Verify(r => r.AddAsync(It.IsAny<TblProduct>(), It.IsAny<CancellationToken>()), Times.Once);
-            _mockUnitOfWork.Verify(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+            
+            // Verify DB State
+            var dbProduct = await _context.TblProducts.FirstOrDefaultAsync(p => p.Name == "New Product");
+            dbProduct.Should().NotBeNull();
+            dbProduct.Price.Should().Be(100);
         }
         
         [Fact]
@@ -130,20 +163,24 @@ namespace VNVTStore.Tests.Handlers
 
             var product = TblProduct.Create("Product 1", 100, null, 10, "CAT1", null, null);
             product.Code = productCode;
+            product.IsActive = false; // Must be inactive to delete
+            _context.TblProducts.Add(product);
+            await _context.SaveChangesAsync();
             
-            _mockRepo.Setup(r => r.GetByCodeAsync(productCode, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(product);
-
-            _mockFileService.Setup(f => f.DeleteLinkedFilesAsync(productCode, "Product", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Result.Success());
-
             // Act
             var result = await _deleteHandler.Handle(request, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockRepo.Verify(r => r.Update(It.Is<TblProduct>(p => p.Code == productCode && p.ModifiedType == "Delete")), Times.Once);
-            _mockUnitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+            
+            var deletedProduct = await _context.TblProducts.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Code == productCode);
+            deletedProduct.Should().NotBeNull();
+            deletedProduct.ModifiedType.Should().Be("Delete");
+        }
+
+        public void Dispose()
+        {
+            TestDbContextFactory.Destroy(_context);
         }
     }
 }

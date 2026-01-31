@@ -20,4 +20,10 @@ public static class TestDbContextFactory
 
         return context;
     }
+
+    public static void Destroy(ApplicationDbContext context)
+    {
+        context.Database.EnsureDeleted();
+        context.Dispose();
+    }
 }

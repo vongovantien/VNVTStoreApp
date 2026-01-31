@@ -8,6 +8,6 @@ namespace VNVTStore.Application.Products.Queries;
 
 
 
-public record GetProductByCodeQuery(string Code) : GetByCodeQuery<ProductDto>(Code);
+public record GetProductByCodeQuery(string Code, bool IncludeChildren = false) : GetByCodeQuery<ProductDto>(Code, IncludeChildren);
 
 public record GetProductStatsQuery() : IRequest<Result<ProductStatsDto>>;

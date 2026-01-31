@@ -48,7 +48,7 @@ public class ProductApiTests : ApiTestBase
             
             if (isAdmin)
             {
-                user.UpdateRole(UserRole.Admin);
+                user.UpdateRole("ADMIN");
             }
             userRepo.Update(user);
             await scope.ServiceProvider.GetRequiredService<IUnitOfWork>().CommitAsync();

@@ -4,7 +4,7 @@ using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Application.Carts.Commands;
 
-public record AddToCartCommand(string UserCode, string ProductCode, int Quantity, string? Size, string? Color) : IRequest<Result<CartDto>>;
+public record AddToCartCommand(string UserCode, string ProductCode, int Quantity, string? Size, string? Color, string? UnitCode = null) : IRequest<Result<CartDto>>;
 public record UpdateCartItemCommand(string UserCode, string CartItemCode, int Quantity) : IRequest<Result<CartDto>>;
 public record RemoveFromCartCommand(string UserCode, string CartItemCode) : IRequest<Result<CartDto>>;
 public record ClearCartCommand(string UserCode) : IRequest<Result<bool>>;
@@ -15,6 +15,7 @@ public class AddCartItemDto
     public int Quantity { get; set; }
     public string? Size { get; set; }
     public string? Color { get; set; }
+    public string? UnitCode { get; set; }
 }
 
 public class UpdateCartItemDto

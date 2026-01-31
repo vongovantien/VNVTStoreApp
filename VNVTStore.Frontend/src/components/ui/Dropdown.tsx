@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/cn';
 
 interface DropdownProps {
-  trigger: React.ReactNode;
-  children: React.ReactNode;
+  trigger: ReactNode;
+  children: ReactNode;
   align?: 'left' | 'right';
   className?: string;
   width?: string;
@@ -56,7 +57,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                     return React.cloneElement(child, {
                         // @ts-ignore
                         onClick: (e: any) => {
-                            child.props.onClick?.(e);
+                            (child as any).props.onClick?.(e);
                             setIsOpen(false);
                         }
                     });

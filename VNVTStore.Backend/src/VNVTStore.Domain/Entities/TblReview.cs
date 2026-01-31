@@ -23,6 +23,8 @@ public partial class TblReview : IEntity
     public bool? IsApproved { get; set; } // Keep original IsApproved logic separate if needed, or map to IsActive?
     
     public bool IsActive { get; set; } = true;
+    
+    public string? AdminReply { get; set; }
 
     public string? ModifiedType { get; set; }
 

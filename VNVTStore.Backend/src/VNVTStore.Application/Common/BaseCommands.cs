@@ -7,7 +7,7 @@ namespace VNVTStore.Application.Common;
 /// <summary>
 /// Base Query cho việc lấy single entity theo Code - REUSABLE
 /// </summary>
-public record GetByCodeQuery<TResponse>(string Code) : IRequest<Result<TResponse>>;
+public record GetByCodeQuery<TResponse>(string Code, bool IncludeChildren = false) : IRequest<Result<TResponse>>;
 
 /// <summary>
 /// Base Query cho việc lấy danh sách với phân trang - REUSABLE

@@ -5,6 +5,7 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using FirebaseAdmin.Auth;
+using FirebaseAdmin;
 
 namespace VNVTStore.Application.Auth.Commands;
 
@@ -21,27 +22,69 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
 
     public async Task<Result<AuthResponseDto>> Handle(ExternalLoginCommand request, CancellationToken cancellationToken)
     {
+        // 0. Check Firebase Initialization
+        if (FirebaseApp.DefaultInstance == null)
+        {
+            return Result<AuthResponseDto>.Failure("Firebase Admin SDK is not initialized. Please check backend logs.");
+        }
+
         // 1. Verify token with Firebase
         string email;
         string name;
         string providerKey;
         string? avatar = null;
 
+        FirebaseToken decodedToken;
         try
         {
-            var decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(request.Token);
-            email = decodedToken.Claims["email"].ToString()!;
-            name = decodedToken.Claims.ContainsKey("name") ? decodedToken.Claims["name"].ToString()! : email.Split('@')[0];
-            providerKey = decodedToken.Uid;
-            avatar = decodedToken.Claims.ContainsKey("picture") ? decodedToken.Claims["picture"].ToString() : null;
+            if (FirebaseAuth.DefaultInstance == null)
+            {
+                return Result<AuthResponseDto>.Failure("FirebaseAuth.DefaultInstance is null even though app is initialized.");
+            }
+
+            decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(request.Token);
+            if (decodedToken == null)
+            {
+                return Result<AuthResponseDto>.Failure("Firebase token verification returned null.");
+            }
+
+            if (decodedToken.Claims == null)
+            {
+                return Result<AuthResponseDto>.Failure("Firebase token claims are null.");
+            }
+
+            email = decodedToken.Claims.ContainsKey("email") && decodedToken.Claims["email"] != null 
+                ? decodedToken.Claims["email"].ToString()! 
+                : null!;
             
-            // Validate provider consistency (optional but recommended)
-            // Firebase handles multiple providers under the same UID if configured, 
-            // but for our tracking we use the request.Provider
+            if (string.IsNullOrEmpty(email))
+            {
+                return Result<AuthResponseDto>.Failure("Email claim is missing or empty in Firebase token.");
+            }
+
+            name = decodedToken.Claims.ContainsKey("name") && decodedToken.Claims["name"] != null 
+                ? decodedToken.Claims["name"].ToString()! 
+                : email.Split('@')[0];
+            
+            providerKey = decodedToken.Uid;
+            if (string.IsNullOrEmpty(providerKey))
+            {
+                return Result<AuthResponseDto>.Failure("UID is missing in Firebase token.");
+            }
+
+            avatar = decodedToken.Claims.ContainsKey("picture") && decodedToken.Claims["picture"] != null 
+                ? decodedToken.Claims["picture"].ToString() 
+                : null;
         }
         catch (Exception ex)
         {
-            return Result<AuthResponseDto>.Failure($"Invalid Firebase Token: {ex.Message}");
+            var fullError = $"Invalid Firebase Token: {ex.Message} | StackTrace: {ex.StackTrace}";
+            if (ex.InnerException != null)
+            {
+                fullError += $" | Inner: {ex.InnerException.Message}";
+            }
+            Console.WriteLine($"[Error] Firebase verification failed: {fullError}");
+            return Result<AuthResponseDto>.Failure(fullError);
         }
 
         // 2. Check if this External Login exists

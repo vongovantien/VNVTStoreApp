@@ -166,6 +166,22 @@ describe('ProductForm', () => {
             const nameInput = screen.getByPlaceholderText(/tên sản phẩm|product name/i);
             await user.type(nameInput, 'Test Product');
 
+            // Fill Category (Required)
+            const categorySelect = screen.getByLabelText(/danh mục|category/i);
+            await user.click(categorySelect);
+            const categoryOption = await screen.findByText('Test Category 1');
+            await user.click(categoryOption);
+
+            // Fill Price (Required)
+            const priceInput = screen.getByLabelText(/giá bán|price/i);
+            await user.clear(priceInput);
+            await user.type(priceInput, '100000');
+
+            // Fill Stock (Required)
+            const stockInput = screen.getByLabelText(/tồn kho|stock/i);
+            await user.clear(stockInput);
+            await user.type(stockInput, '10');
+
             // Find and click submit button
             const submitButton = screen.getByRole('button', { name: /lưu|save/i });
             await user.click(submitButton);

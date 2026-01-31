@@ -291,7 +291,7 @@ export function useProducts(params: {
 export function useProduct(code: string) {
     return useQuery({
         queryKey: productKeys.detail(code),
-        queryFn: () => productService.getByCode(code),
+        queryFn: () => productService.getByCode(code, { includeChildren: true }),
         enabled: !!code,
         select: (response): Product | null => {
             if (response.success && response.data) {
@@ -303,17 +303,33 @@ export function useProduct(code: string) {
                     slug: item.code,
                     description: item.description || '',
                     price: item.price,
+                    wholesalePrice: item.wholesalePrice,
+                    costPrice: item.costPrice,
                     image: getImageUrl(item.productImages?.find((img: any) => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
                     images: item.productImages?.map((img: any) => getImageUrl(img.imageUrl)) || [],
                     category: item.categoryName || '',
                     categoryCode: item.categoryCode || '',
                     stock: item.stockQuantity || 0,
+                    stockQuantity: item.stockQuantity,
+                    // Attributes
+                    color: item.color,
+                    power: item.power,
+                    voltage: item.voltage,
+                    material: item.material,
+                    size: item.size,
+                    countryOfOrigin: item.countryOfOrigin,
+                    baseUnit: item.baseUnit,
+                    binLocation: item.binLocation,
+                    // Relations
+                    details: item.details || [],
+                    productUnits: item.productUnits || [],
+                    variants: item.variants || [],
                     // Mock/Default values
-                    brand: 'VNVT',
+                    brand: item.brand || 'VNVT',
                     rating: 5,
                     reviewCount: 0,
-                    isFeatured: false,
-                    isNew: true,
+                    isFeatured: item.isFeatured || false,
+                    isNew: item.isNew ?? true,
                     originalPrice: item.price * 1.2, // Fake original price for demo
                     createdAt: item.createdAt || new Date().toISOString()
                 };

@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/VNVTStore.Application.Tests/VNVTStore.Application.Tests.csproj" />
+    <Project Path="tests/VNVTStore.IntegrationTests/VNVTStore.IntegrationTests.csproj" />
   </Folder>
 </Solution>

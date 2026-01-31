@@ -29,6 +29,7 @@ import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/sto
 import { useProduct, useProducts } from '@/hooks';
 import { formatCurrency } from '@/utils/format';
 import { reviewService, type ReviewDto } from '@/services';
+import ReviewsList from '@/components/reviews/ReviewsList';
 
 // ============ Image Gallery Component ============
 interface ImageGalleryProps {
@@ -163,10 +164,23 @@ const ImageLightbox = ({
   );
 };
 
-const ImageGallery = memo(({ images, productName }: ImageGalleryProps) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+interface ImageGalleryProps {
+  images: string[];
+  productName: string;
+  selectedIndex: number;
+  onSelectIndex: (index: number) => void;
+  lightboxOpen: boolean;
+  setLightboxOpen: (open: boolean) => void;
+}
 
+const ImageGallery = memo(({ 
+  images, 
+  productName, 
+  selectedIndex, 
+  onSelectIndex, 
+  lightboxOpen, 
+  setLightboxOpen 
+}: ImageGalleryProps) => {
   return (
     <div className="space-y-4">
       {/* Main Image */}
@@ -202,7 +216,7 @@ const ImageGallery = memo(({ images, productName }: ImageGalleryProps) => {
           {images.map((img, index) => (
             <button
               key={index}
-              onClick={() => setSelectedIndex(index)}
+              onClick={() => onSelectIndex(index)}
               className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${index === selectedIndex ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'
                 }`}
             >
@@ -237,7 +251,9 @@ export const ProductDetailPage = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false); // New state
   const [selectedSize, setSelectedSize] = useState<string>('M'); // Default
   const [selectedColor, setSelectedColor] = useState<string>('Black'); // Default
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'units' | 'variants' | 'images' | 'reviews'>('description');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [reviews, setReviews] = useState<ReviewDto[]>([]);
 
   // Store actions
@@ -394,7 +410,14 @@ export const ProductDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
           {/* Image Gallery */}
           <div className="lg:col-span-2">
-            <ImageGallery images={images} productName={product.name} />
+            <ImageGallery 
+              images={images} 
+              productName={product.name} 
+              selectedIndex={selectedIndex}
+              onSelectIndex={setSelectedIndex}
+              lightboxOpen={lightboxOpen}
+              setLightboxOpen={setLightboxOpen}
+            />
           </div>
 
           {/* Product Info */}
@@ -587,7 +610,7 @@ export const ProductDetailPage = () => {
         {/* Tabs */}
         <div className="bg-primary rounded-xl p-6 mb-12">
           <div className="flex border-b mb-6 overflow-x-auto">
-            {(['description', 'specs', 'reviews'] as const).map((tab) => (
+            {(['description', 'specs', 'units', 'variants', 'images', 'reviews'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -624,36 +647,86 @@ export const ProductDetailPage = () => {
               )}
             </div>
           )}
-
-          {activeTab === 'reviews' && (
-            <div className="space-y-6">
-              {reviews.length > 0 ? (
-                reviews.map((review) => (
-                  <div key={review.code} className="border-b pb-6 last:border-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-purple-500 flex items-center justify-center text-white font-bold">
-                        {review.userName?.charAt(0) || 'U'}
-                      </div>
-                      <div>
-                        <p className="font-medium">{review.userName || 'Người dùng ẩn danh'}</p>
-                        <div className="flex gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              size={12}
-                              className={i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-secondary">{review.comment}</p>
+          {activeTab === 'units' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
+              {product.productUnits && product.productUnits.length ? (
+                product.productUnits.map((unit, idx) => (
+                  <div key={idx} className="flex border-b border-slate-100 py-3 text-sm">
+                    <span className="w-1/2 font-medium text-secondary">{unit.unitName}</span>
+                    <span className="flex-1 text-primary font-semibold">
+                      {formatCurrency(unit.price)} (x{unit.conversionRate})
+                    </span>
                   </div>
                 ))
               ) : (
-                <p className="text-center text-tertiary py-8">{t('product.noReviews')}</p>
+                <div className="col-span-2 text-center py-8 text-tertiary">
+                  {t('product.noUnits', 'Không có thông tin đơn vị tính.')}
+                </div>
               )}
             </div>
+          )}
+
+          {activeTab === 'variants' && (
+            <div className="overflow-x-auto">
+              {product.variants && product.variants.length ? (
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-secondary/50 text-tertiary font-medium">
+                    <tr>
+                      <th className="px-4 py-3 border-b">{t('common.fields.code')}</th>
+                      <th className="px-4 py-3 border-b">{t('common.fields.specs')}</th>
+                      <th className="px-4 py-3 border-b text-right">{t('common.fields.price')}</th>
+                      <th className="px-4 py-3 border-b text-right">{t('common.fields.stock')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {product.variants.map((v, idx) => (
+                      <tr key={idx} className="border-b border-slate-50 hover:bg-secondary/20">
+                        <td className="px-4 py-3 font-medium text-primary">{v.sku}</td>
+                        <td className="px-4 py-3 text-secondary">{v.attributes}</td>
+                        <td className="px-4 py-3 text-right font-bold text-error">{formatCurrency(v.price)}</td>
+                        <td className="px-4 py-3 text-right text-secondary">{v.stockQuantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-8 text-tertiary">
+                  {t('product.noVariants', 'Không có phiên bản nào cho sản phẩm này.')}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'images' && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {images.length > 0 ? (
+                images.map((img, idx) => (
+                  <div 
+                    key={idx} 
+                    className="aspect-square rounded-xl overflow-hidden border border-slate-100 bg-white group cursor-zoom-in relative"
+                    onClick={() => {
+                        setSelectedIndex(idx);
+                        setLightboxOpen(true);
+                    }}
+                  >
+                    <SharedImage 
+                      src={img} 
+                      alt={`${product.name} gallery ${idx + 1}`} 
+                      className="w-full h-full object-contain transition-transform group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12 text-secondary bg-secondary/30 rounded-xl">
+                  {t('product.noImages', 'Không có hình ảnh nào.')}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'reviews' && (
+             <ReviewsList productCode={product.code} />
           )}
         </div>
 

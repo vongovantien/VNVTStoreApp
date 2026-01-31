@@ -44,7 +44,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
   const { data: productsData } = useProducts({ pageSize: 100, pageIndex: PaginationDefaults.PAGE_INDEX });
   const products = productsData?.products || [];
 
-  const defaultValues: PromotionFormData = {
+  const defaultValues: PromotionFormData = React.useMemo(() => ({
     code: initialData?.code || '',
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -56,7 +56,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
     productCodes: initialData?.productCodes || [],
     startDate: initialData?.startDate ? new Date(initialData.startDate) : new Date(),
     endDate: initialData?.endDate ? new Date(initialData.endDate) : new Date(new Date().setDate(new Date().getDate() + 7)),
-  };
+  }), [initialData]);
 
   const fieldGroups: FieldGroup[] = [
     {
@@ -68,10 +68,11 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             name: 'discountType', 
             type: 'select', 
             label: t('common.fields.discountType'), 
-            colSpan: 6, 
+            colSpan: 6,
             options: [
-                { value: 'PERCENTAGE', label: t('common.fields.discountTypeOptions.percentage') },
-                { value: 'AMOUNT', label: t('common.fields.discountTypeOptions.amount') }
+                { value: 'PERCENTAGE', label: t('admin.promotions.percentage') },
+                { value: 'AMOUNT', label: t('admin.promotions.fixedAmount') },
+                { value: 'FIXED_PRICE', label: t('admin.promotions.fixedPrice') }
             ] 
         },
         { name: 'discountValue', type: 'number', label: t('common.fields.value'), required: true, colSpan: 6, placeholder: t('common.placeholders.enterValue') },

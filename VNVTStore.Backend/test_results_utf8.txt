@@ -1,0 +1,33 @@
+﻿Test run for D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.IntegrationTests\bin\Debug\net9.0\VNVTStore.IntegrationTests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 17.14.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+  Failed VNVTStore.IntegrationTests.PromotionsTests.GetPromotions_ShouldReturnSuccess [7 s]
+  Error Message:
+   Expected response.StatusCode to be HttpStatusCode.OK {value: 200}, but found HttpStatusCode.MethodNotAllowed {value: 405}.
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+   at FluentAssertions.Primitives.EnumAssertions`2.Be(TEnum expected, String because, Object[] becauseArgs)
+   at VNVTStore.IntegrationTests.PromotionsTests.GetPromotions_ShouldReturnSuccess() in D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.IntegrationTests\PromotionsTests.cs:line 23
+--- End of stack trace from previous location ---
+  Failed VNVTStore.IntegrationTests.PromotionsTests.CreatePromotion_WithValidData_ShouldReturnSuccess [229 ms]
+  Error Message:
+   Expected response.StatusCode to be HttpStatusCode.OK {value: 200}, but found HttpStatusCode.BadRequest {value: 400}.
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+   at FluentAssertions.Primitives.EnumAssertions`2.Be(TEnum expected, String because, Object[] becauseArgs)
+   at VNVTStore.IntegrationTests.PromotionsTests.CreatePromotion_WithValidData_ShouldReturnSuccess() in D:\VNVTStoreApp\VNVTStore.Backend\tests\VNVTStore.IntegrationTests\PromotionsTests.cs:line 48
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     2, Skipped:     0, Total:     4, Duration: 7 s - VNVTStore.IntegrationTests.dll (net9.0)

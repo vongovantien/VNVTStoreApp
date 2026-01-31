@@ -11,7 +11,7 @@ namespace VNVTStore.API.Controllers.v1;
 
 [Route("api/v1/[controller]")]
 [Authorize]
-public class QuotesController : BaseApiController<QuoteDto, CreateQuoteDto, UpdateQuoteDto>
+public class QuotesController : BaseApiController<TblQuote, QuoteDto, CreateQuoteDto, UpdateQuoteDto>
 {
     public QuotesController(IMediator mediator) : base(mediator)
     {
@@ -28,22 +28,6 @@ public class QuotesController : BaseApiController<QuoteDto, CreateQuoteDto, Upda
         var result = await Mediator.Send(new GetAllQuery<QuoteDto>());
         return HandleResult(result);
     }
-
-    // Abstract methods implementation
-    protected override IRequest<Result<PagedResult<QuoteDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<QuoteDto>(pageIndex, pageSize, search, sort, filters, fields);
-
-    protected override IRequest<Result<QuoteDto>> CreateGetByCodeQuery(string code)
-        => new GetByCodeQuery<QuoteDto>(code);
-
-    protected override IRequest<Result<QuoteDto>> CreateCreateCommand(CreateQuoteDto dto)
-        => new CreateCommand<CreateQuoteDto, QuoteDto>(dto);
-
-    protected override IRequest<Result<QuoteDto>> CreateUpdateCommand(string code, UpdateQuoteDto dto)
-        => new UpdateCommand<UpdateQuoteDto, QuoteDto>(code, dto);
-
-    protected override IRequest<Result> CreateDeleteCommand(string code)
-        => new DeleteCommand<TblQuote>(code);
 
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats()

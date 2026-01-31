@@ -3,34 +3,61 @@
  * Uses only baseService CRUD methods
  */
 
-import { createEntityService, API_ENDPOINTS } from './baseService';
+import { createEntityService, API_ENDPOINTS, type PagedResult } from './baseService';
+import { apiClient } from './api';
 
 // ============ Types ============
 export interface ReviewDto {
     code: string;
-    productCode: string;
     userCode: string;
     userName?: string;
+    orderItemCode?: string;
+    productCode?: string;
+    productName?: string;
     rating: number;
     comment: string;
+    adminReply?: string;
     createdAt: string;
-    status?: string;
+    isApproved?: boolean;
+}
+
+export interface ReviewSearchParams {
+    pageIndex?: number;
+    pageSize?: number;
+    search?: string;
+    isApproved?: boolean;
 }
 
 export interface CreateReviewRequest {
-    productCode: string;
     orderItemCode: string;
     rating: number;
     comment: string;
+    userCode: string;
 }
 
 export interface UpdateReviewRequest {
-    status?: string;
+    rating?: number;
+    comment?: string;
+    isApproved?: boolean;
+    adminReply?: string;
 }
 
 // ============ Service ============
-export const reviewService = createEntityService<ReviewDto, CreateReviewRequest, UpdateReviewRequest>({
+const baseReviewService = createEntityService<ReviewDto, CreateReviewRequest, UpdateReviewRequest>({
     endpoint: API_ENDPOINTS.REVIEWS.BASE,
 });
+
+export const reviewService = {
+    ...baseReviewService,
+
+    approve: (code: string) =>
+        apiClient.post(`${API_ENDPOINTS.REVIEWS.BASE}/${code}/approve`),
+
+    reject: (code: string) =>
+        apiClient.post(`${API_ENDPOINTS.REVIEWS.BASE}/${code}/reject`),
+
+    getByProduct: (productCode: string, pageIndex: number = 1, pageSize: number = 10) =>
+        apiClient.get<PagedResult<ReviewDto>>(`${API_ENDPOINTS.REVIEWS.BY_PRODUCT(productCode)}?pageIndex=${pageIndex}&pageSize=${pageSize}`),
+};
 
 export default reviewService;

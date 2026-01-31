@@ -9,8 +9,7 @@ public class TblProductDetail : IEntity
 {
     public string Code { get; set; } = Guid.NewGuid().ToString("N");
     public string ProductCode { get; set; } = null!;
-    [Column("DetailType")]
-    public ProductDetailType DetailType { get; set; } = ProductDetailType.Spec; // SPEC, LOGISTICS, RELATION, IMAGE
+    public ProductDetailType DetailType { get; set; } = ProductDetailType.SPEC; // SPEC, LOGISTICS, RELATION, IMAGE
     public string SpecName { get; set; } = null!;
     public string SpecValue { get; set; } = null!;
     public bool IsActive { get; set; } = true;

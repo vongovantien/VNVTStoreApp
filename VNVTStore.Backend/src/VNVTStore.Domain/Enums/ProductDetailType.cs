@@ -5,14 +5,14 @@ namespace VNVTStore.Domain.Enums;
 public enum ProductDetailType
 {
     [Description("SPEC")]
-    Spec,
+    SPEC,
     
     [Description("LOGISTICS")]
-    Logistics,
+    LOGISTICS,
     
     [Description("RELATION")]
-    Relation,
+    RELATION,
 
     [Description("IMAGE")]
-    Image
+    IMAGE
 }

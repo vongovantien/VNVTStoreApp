@@ -1,4 +1,5 @@
-import { memo, forwardRef, useMemo, type SelectHTMLAttributes, type ReactNode } from 'react';
+import React, { memo, forwardRef, useMemo, type SelectHTMLAttributes } from 'react';
+import type { ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/cn';
 

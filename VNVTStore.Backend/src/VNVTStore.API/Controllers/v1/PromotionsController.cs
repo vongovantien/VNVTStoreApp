@@ -11,7 +11,7 @@ using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.API.Controllers.v1;
 
-public class PromotionsController : BaseApiController<PromotionDto, CreatePromotionDto, UpdatePromotionDto>
+public class PromotionsController : BaseApiController<TblPromotion, PromotionDto, CreatePromotionDto, UpdatePromotionDto>
 {
     private readonly ICurrentUser _currentUser;
 
@@ -20,30 +20,10 @@ public class PromotionsController : BaseApiController<PromotionDto, CreatePromot
         _currentUser = currentUser;
     }
 
-    // Factory methods for Generic Base Controller
-    protected override IRequest<Result<PagedResult<PromotionDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+    [HttpGet]
+    public async Task<IActionResult> GetPromotions([FromQuery] GetPagedQuery<PromotionDto> query)
     {
-        return new GetPagedQuery<PromotionDto>(pageIndex, pageSize, search, sort, filters, fields);
-    }
-
-    protected override IRequest<Result<PromotionDto>> CreateGetByCodeQuery(string code)
-    {
-        return new GetByCodeQuery<PromotionDto>(code);
-    }
-
-    protected override IRequest<Result<PromotionDto>> CreateCreateCommand(CreatePromotionDto dto)
-    {
-        return new CreateCommand<CreatePromotionDto, PromotionDto>(dto);
-    }
-
-    protected override IRequest<Result<PromotionDto>> CreateUpdateCommand(string code, UpdatePromotionDto dto)
-    {
-        return new UpdateCommand<UpdatePromotionDto, PromotionDto>(code, dto);
-    }
-
-    protected override IRequest<Result> CreateDeleteCommand(string code)
-    {
-        return new DeleteCommand<TblPromotion>(code);
+        return HandleResult(await Mediator.Send(query));
     }
 
     // Specific endpoints

@@ -242,6 +242,39 @@
     "display": "Display"
   },
   "admin": {
+    "reviews": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "reply": "Reply",
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "all": "All Reviews"
+    },
+    "coupons": {
+      "add": "Add Coupon",
+      "edit": "Edit Coupon",
+      "validate": "Validate Code",
+      "code": "Code",
+      "promotion": "Promotion",
+      "usage": "Usage",
+      "isActive": "Is Active"
+    },
+    "news": {
+      "add": "Add Article",
+      "edit": "Edit Article",
+      "title": "Title",
+      "author": "Author",
+      "summary": "Summary",
+      "content": "Content",
+      "thumbnailUrl": "Thumbnail (URL)",
+      "contentTab": "Content",
+      "seoTab": "SEO & Slug",
+      "slug": "Slug",
+      "metaTitle": "Meta Title",
+      "metaDescription": "Meta Description",
+      "metaKeywords": "Meta Keywords"
+    },
     "products": "Products",
     "categories": "Categories",
     "suppliers": "Suppliers",
@@ -276,7 +309,10 @@
       "brands": "Brands",
       "units": "Units",
       "promotions": "Promotions",
-      "banners": "Banners"
+      "banners": "Banners",
+      "coupons": "Coupons",
+      "news": "News/Posts",
+      "reviews": "Reviews"
     },
     "userMenu": {
       "signedInAs": "Signed in as",
@@ -294,7 +330,10 @@
       "suppliers": "Supplier Management",
       "quotes": "Quote Management",
       "promotions": "Promotion Management",
-      "settings": "System Settings"
+      "settings": "System Settings",
+      "coupons": "Coupon Management",
+      "news": "News & Blog Management",
+      "reviews": "Customer Review Management"
     },
     "titles": {
       "productEdit": "Edit Product",
@@ -606,7 +645,15 @@
     "minOrderAmount": "Minimum order amount",
     "voucherApplied": "Coupon applied successfully",
     "voucherInvalid": "Coupon does not exist",
-    "voucherError": "Error validating coupon"
+    "voucherError": "Error validating coupon",
+    "bankInfo": "Bank Transfer Information:",
+    "bankName": "Vietcombank",
+    "accountNumber": "0071001234567",
+    "accountHolder": "VO NGO VAN TIEN",
+    "transferContent": "VNVT [Phone Number]"
+  },
+  "search": {
+    "resultsFor": "Search results for"
   },
   "wishlist": {
     "title": "Wishlist",

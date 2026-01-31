@@ -117,7 +117,7 @@ export const Header = memo(() => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+      window.location.href = `/search?search=${encodeURIComponent(searchQuery)}`;
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Edit2, Trash2, Eye, Tag, Clock } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
@@ -236,78 +236,80 @@ export const PromotionsPage = () => {
 
   };
 
-  return (
-    <div className="space-y-6">
-      <AdminPageHeader
-        title="promotions.title"
-        subtitle="promotions.subtitle"
-      />
+      const promotionInitialData = useMemo(() => editingPromotion ? {
+        ...editingPromotion,
+        startDate: new Date(editingPromotion.startDate),
+        endDate: new Date(editingPromotion.endDate),
+      } : undefined, [editingPromotion]);
 
-      <DataTable
-        columns={columns}
-        data={promotions}
-        keyField="code"
-        isLoading={isLoading || isFetching}
-        isFetching={isFetching}
-        error={isError ? (error as Error) : null}
-        onAdd={() => openCreate()}
-        onRefresh={() => refetch()}
-        onImport={handleImportPromotion}
-        importTemplateUrl="/templates/promotions_template.xlsx" 
+      return (
+        <div className="space-y-6">
+          <AdminPageHeader
+            title="promotions.title"
+            subtitle="promotions.subtitle"
+          />
+
+          <DataTable
+            columns={columns}
+            data={promotions}
+            keyField="code"
+            isLoading={isLoading || isFetching}
+            isFetching={isFetching}
+            error={isError ? (error as Error) : null}
+            onAdd={() => openCreate()}
+            onRefresh={() => refetch()}
+            onImport={handleImportPromotion}
+            importTemplateUrl="/templates/promotions_template.xlsx" 
 
 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setCurrentPage(PaginationDefaults.PAGE_INDEX);
-        }}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(PaginationDefaults.PAGE_INDEX);
+            }}
 
-        externalSortField={sortField}
-        externalSortDir={sortDir}
-        onExternalSort={(f, d) => { setSortField(f); setSortDir(d as any); }}
-        
-        onEdit={openEdit}
-        onDelete={confirmDelete}
-        onView={setViewingPromotion}
+            externalSortField={sortField}
+            externalSortDir={sortDir}
+            onExternalSort={(f, d) => { setSortField(f); setSortDir(d as any); }}
+            
+            onEdit={openEdit}
+            onDelete={confirmDelete}
+            onView={setViewingPromotion}
 
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onBulkDelete={() => setShowBulkConfirm(true)}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            onBulkDelete={() => setShowBulkConfirm(true)}
 
-        // Search
-        onReset={handleReset}
-        onAdvancedSearch={(filters) => {
-          setAdvancedFilters(filters);
-          setCurrentPage(PaginationDefaults.PAGE_INDEX);
-        }}
-        advancedFilterDefs={[
-          { id: 'search', label: t('common.search'), type: 'text', placeholder: t('common.placeholders.search') },
-          { id: 'type', label: t('common.fields.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('shared.flashSale') }] },
-          { id: 'isActive', label: t('common.fields.status'), type: 'select', options: [{ value: 'true', label: t('common.status.active') }, { value: 'false', label: t('common.status.inactive') }] }
-        ]}
-      />
+            // Search
+            onReset={handleReset}
+            onAdvancedSearch={(filters) => {
+              setAdvancedFilters(filters);
+              setCurrentPage(PaginationDefaults.PAGE_INDEX);
+            }}
+            advancedFilterDefs={[
+              { id: 'search', label: t('common.search'), type: 'text', placeholder: t('common.placeholders.search') },
+              { id: 'type', label: t('common.fields.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('shared.flashSale') }] },
+              { id: 'isActive', label: t('common.fields.status'), type: 'select', options: [{ value: 'true', label: t('common.status.active') }, { value: 'false', label: t('common.status.inactive') }] }
+            ]}
+          />
 
-      <Modal
-        isOpen={isFormOpen}
-        onClose={closeForm}
-        title={editingPromotion ? t('admin.actions.edit') : t('admin.actions.create')}
-        size="2xl"
-      >
-        <PromotionForm
-          initialData={editingPromotion ? {
-            ...editingPromotion,
-            startDate: new Date(editingPromotion.startDate),
-            endDate: new Date(editingPromotion.endDate),
-          } : undefined}
-          onSubmit={editingPromotion ? handleUpdate : handleCreate}
-          onCancel={closeForm}
-          isLoading={isSubmitting}
-        />
-      </Modal>
+          <Modal
+            isOpen={isFormOpen}
+            onClose={closeForm}
+            title={editingPromotion ? t('admin.actions.edit') : t('admin.actions.create')}
+            size="2xl"
+          >
+            <PromotionForm
+              initialData={promotionInitialData}
+              onSubmit={editingPromotion ? handleUpdate : handleCreate}
+              onCancel={closeForm}
+              isLoading={isSubmitting}
+            />
+          </Modal>
 
       <ConfirmDialog
         isOpen={!!promotionToDelete || showBulkConfirm}

@@ -1,5 +1,6 @@
 import { create, StoreApi } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { UserRole } from '@/types';
 import type { Product, CartItem, User } from '@/types';
 import { authService, cartService } from '@/services';
 import { injectStore, AuthState } from '@/services/api';
@@ -209,8 +210,15 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             token: null,
             refreshToken: null,
+            permissions: [],
             login: async (user: User, token?: string, refreshToken?: string) => {
-                set({ user, isAuthenticated: true, token: token || null, refreshToken: refreshToken || null });
+                set({
+                    user,
+                    isAuthenticated: true,
+                    token: token || null,
+                    refreshToken: refreshToken || null,
+                    permissions: user.permissions || []
+                });
 
                 // Sync local cart items to backend
                 // Use optimistic sync - don't block login
@@ -236,6 +244,13 @@ export const useAuthStore = create<AuthState>()(
                 }
             },
             setTokens: (token: string, refreshToken: string) => set({ token, refreshToken }),
+            setPermissions: (permissions: string[]) => set({ permissions }),
+            hasPermission: (permission: string) => {
+                const { permissions, user } = get();
+                // Admin role has all permissions usually, but we check the list
+                if (user?.role === UserRole.Admin) return true;
+                return permissions.includes(permission);
+            },
         }),
         {
             name: 'vnvt-auth',

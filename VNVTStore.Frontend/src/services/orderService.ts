@@ -7,12 +7,16 @@ import { createEntityService, API_ENDPOINTS } from './baseService';
 
 // ============ Types ============
 export interface OrderItemDto {
+    id?: string;
+    code: string;
     productCode: string;
     productName: string;
     productImage: string;
     priceAtOrder: number;
     discountAmount: number;
     quantity: number;
+    size?: string;
+    color?: string;
 }
 
 export interface OrderDto {
@@ -32,6 +36,9 @@ export interface OrderDto {
     shippingPhone?: string;
     shippingAddress?: string;
     city?: string;
+    customerName?: string;
+    customerPhone?: string;
+    customerEmail?: string;
 }
 
 export interface GuestCartItemDto {

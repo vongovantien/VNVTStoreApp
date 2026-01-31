@@ -7,12 +7,13 @@ export interface EntityService<T, CreateDto, UpdateDto> {
     create: (data: CreateDto) => Promise<any>;
     update: (id: any, data: UpdateDto) => Promise<any>;
     delete: (id: any) => Promise<any>;
-    getByCode?: (code: any) => Promise<any>; // Optional fetch detail method
+    getByCode?: (code: any, params?: any) => Promise<any>; // Optional fetch detail method
 }
 
 interface UseEntityManagerOptions<T, CreateDto, UpdateDto> {
     service: EntityService<T, CreateDto, UpdateDto>;
     queryKey: QueryKey;
+    includeChildrenOnEdit?: boolean; // New option
     translations?: {
         createSuccess?: string;
         createError?: string;
@@ -26,6 +27,7 @@ interface UseEntityManagerOptions<T, CreateDto, UpdateDto> {
 export const useEntityManager = <T extends { code?: string; id?: string | number }, CreateDto = Partial<T>, UpdateDto = Partial<T>>({
     service,
     queryKey,
+    includeChildrenOnEdit = false,
     translations,
 }: UseEntityManagerOptions<T, CreateDto, UpdateDto>) => {
     const { t } = useTranslation();
@@ -88,7 +90,7 @@ export const useEntityManager = <T extends { code?: string; id?: string | number
         if (service.getByCode && id) {
             setIsFetchingDetail(true);
             try {
-                const response = await service.getByCode(id);
+                const response = await service.getByCode(id, includeChildrenOnEdit ? { includeChildren: true } : undefined);
                 // Check if response wraps data in ApiResponse logic (success/data props)
                 if (response && response.success && response.data) {
                     setEditingItem(response.data);

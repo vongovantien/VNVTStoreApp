@@ -22,12 +22,19 @@ public interface IApplicationDbContext
     DbSet<TblProductPromotion> TblProductPromotions { get; }
     DbSet<TblPromotion> TblPromotions { get; }
     DbSet<TblReview> TblReviews { get; }
+    DbSet<TblNews> TblNews { get; }
     DbSet<TblBrand> TblBrands { get; }
     DbSet<TblUnit> TblUnits { get; }
     DbSet<TblProductUnit> TblProductUnits { get; }
     DbSet<TblProductDetail> TblProductDetails { get; }
+    DbSet<TblProductVariant> TblProductVariants { get; }
+    DbSet<TblRole> TblRoles { get; }
+    DbSet<TblPermission> TblPermissions { get; }
+    DbSet<TblRolePermission> TblRolePermissions { get; }
     DbSet<TblTag> TblTags { get; }
     DbSet<TblProductTag> TblProductTags { get; }
+    DbSet<TblQuoteItem> TblQuoteItems { get; }
+    DbSet<TblDebtLog> TblDebtLogs { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

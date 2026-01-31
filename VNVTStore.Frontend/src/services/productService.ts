@@ -15,6 +15,35 @@ export interface ProductImageDto {
     isPrimary?: boolean;
 }
 
+export interface ProductUnitDto {
+    code: string;
+    productCode: string;
+    unitCode?: string;
+    unitName: string;
+    conversionRate: number;
+    price: number;
+    isBaseUnit: boolean;
+    isActive?: boolean;
+}
+
+export interface ProductDetailDto {
+    code: string;
+    detailType: 'SPEC' | 'LOGISTICS' | 'RELATION' | 'IMAGE';
+    specName: string;
+    specValue: string;
+}
+
+export interface ProductVariantDto {
+    code: string;
+    productCode: string;
+    sku: string;
+    attributes: string; // JSON string
+    price: number;
+    stockQuantity: number;
+    isActive: boolean;
+}
+
+
 export interface ProductDto {
     code: string;
     name: string;
@@ -34,6 +63,9 @@ export interface ProductDto {
     size?: string;
     createdAt?: string;
     productImages: ProductImageDto[];
+    productUnits?: ProductUnitDto[];
+    details?: ProductDetailDto[];
+    variants?: ProductVariantDto[];
 }
 
 export interface CreateProductRequest {
@@ -67,6 +99,12 @@ export interface CreateProductRequest {
     vatRate?: number;
     countryOfOrigin?: string;
     productUnits?: any[];
+    variants?: Array<{
+        sku: string;
+        attributes: string;
+        price: number;
+        stockQuantity: number;
+    }>;
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {

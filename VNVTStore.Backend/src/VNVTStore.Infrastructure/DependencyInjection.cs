@@ -7,6 +7,8 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Infrastructure.Persistence;
 using VNVTStore.Infrastructure.Persistence.Repositories;
 using VNVTStore.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
+using VNVTStore.Infrastructure.Authorization;
 
 namespace VNVTStore.Infrastructure;
 
@@ -38,9 +40,21 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICouponService, CouponService>();
+        services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IPricingService, PricingService>();
         services.AddTransient<INotificationService, NotificationService>();
         
-        // Check if we should use Mock Email Service (e.g. for testing)
+        // Add Caching - Use Redis if configured, otherwise Memory cache
+        services.AddMemoryCache();
+        var redisConnection = configuration.GetValue<string>("CacheSettings:Redis:ConnectionString");
+        if (!string.IsNullOrEmpty(redisConnection))
+        {
+            services.AddSingleton<ICacheService, RedisCacheService>();
+        }
+        else
+        {
+            services.AddSingleton<ICacheService, MemoryCacheService>();
+        }
         // Ideally we pass IWebHostEnvironment but for now checking config or defaulting
         var useMockEmail = configuration.GetValue<bool>("EmailSettings:UseMock", false);
         if (useMockEmail)
@@ -54,6 +68,10 @@ public static class DependencyInjection
 
         services.AddScoped<IBaseUrlService, BaseUrlService>();
         services.AddHttpContextAccessor();
+
+        // RBAC Authorization
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+        services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
         var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
         if (allowedOrigins == null || allowedOrigins.Length == 0)

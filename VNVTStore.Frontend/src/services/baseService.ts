@@ -54,14 +54,14 @@ export function createEntityService<
             const searching = [];
 
             if (params.search && params.searchField) {
-                searching.push({ field: params.searchField, operator: SearchCondition.Contains, value: params.search });
+                searching.push({ searchField: params.searchField, searchCondition: SearchCondition.Contains, searchValue: params.search });
             }
 
             if (params.filters) {
                 searching.push(...params.filters.map(f => ({
-                    field: f.field,
-                    operator: f.operator ?? SearchCondition.Equal,
-                    value: f.value
+                    searchField: f.field,
+                    searchCondition: f.operator ?? SearchCondition.Equal,
+                    searchValue: f.value
                 })));
             }
 
@@ -70,7 +70,7 @@ export function createEntityService<
                 pageSize: params.pageSize ?? PageSize.DEFAULT,
                 searching: searching.length > 0 ? searching : undefined,
                 sortDTO: params.sortBy
-                    ? { sortBy: params.sortBy, sortDescending: params.sortDesc ?? false }
+                    ? { sortBy: params.sortBy, sort: params.sortDesc ? 'DESC' : 'ASC' }
                     : undefined,
                 fields: params.fields,  // Pass fields for selective column fetching
             };
@@ -95,8 +95,9 @@ export function createEntityService<
         /**
          * Get by code
          */
-        async getByCode(code: string): Promise<ApiResponse<TDto>> {
-            return http.get<TDto>(`${endpoint}/${code}`);
+        async getByCode(code: string, params?: Record<string, any>): Promise<ApiResponse<TDto>> {
+            const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+            return http.get<TDto>(`${endpoint}/${code}${queryString}`);
         },
 
         /**

@@ -45,6 +45,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public virtual DbSet<TblReview> TblReviews { get; set; }
 
+    public virtual DbSet<TblNews> TblNews { get; set; }
+
     public virtual DbSet<TblQuote> TblQuotes { get; set; }
 
     public virtual DbSet<TblFile> TblFiles { get; set; }
@@ -55,9 +57,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblUnit> TblUnits { get; set; }
     public virtual DbSet<TblProductUnit> TblProductUnits { get; set; }
     public virtual DbSet<TblProductDetail> TblProductDetails { get; set; }
+    public virtual DbSet<TblProductVariant> TblProductVariants { get; set; }
+    public virtual DbSet<TblRole> TblRoles { get; set; }
+    public virtual DbSet<TblPermission> TblPermissions { get; set; }
+    public virtual DbSet<TblRolePermission> TblRolePermissions { get; set; }
     public virtual DbSet<TblTag> TblTags { get; set; }
     public virtual DbSet<TblUserLogin> TblUserLogins { get; set; }
     public virtual DbSet<TblProductTag> TblProductTags { get; set; }
+    public virtual DbSet<TblQuoteItem> TblQuoteItems { get; set; }
+    public virtual DbSet<TblDebtLog> TblDebtLogs { get; set; }
+    public virtual DbSet<TblSupplier> TblSuppliers { get; set; }
 
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -88,9 +97,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblBanner");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('BNN'::text || lpad((nextval('banner_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('BNN'::text || lpad((nextval('banner_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.Title).HasMaxLength(200);
             entity.Property(e => e.Content).HasMaxLength(500);
             entity.Property(e => e.LinkUrl).HasMaxLength(200);
@@ -114,15 +130,29 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             
             entity.Property(e => e.Category).HasColumnName("Category").HasMaxLength(50);
 
-            entity.Property(e => e.Code).HasMaxLength(100)
-                .HasDefaultValueSql("('ADR'::text || lpad((nextval('address_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code).HasMaxLength(100)
+                    .HasDefaultValueSql("('ADR'::text || lpad((nextval('address_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.AddressLine).HasMaxLength(255);
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.City).HasMaxLength(50);
-            entity.Property(e => e.Country)
-                .HasMaxLength(50)
-                .HasDefaultValueSql("'Vietnam'::character varying");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Country)
+                    .HasMaxLength(50)
+                    .HasDefaultValueSql("'Vietnam'::character varying");
+            }
+            else
+            {
+                entity.Property(e => e.Country).HasMaxLength(50).HasDefaultValue("Vietnam");
+            }
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -151,9 +181,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.UserCode, "idx_cart_user");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('CRT'::text || lpad((nextval('cart_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('CRT'::text || lpad((nextval('cart_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -175,9 +212,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblCartItem");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('CRI'::text || lpad((nextval('cartitem_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('CRI'::text || lpad((nextval('cartitem_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.AddedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -208,9 +252,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblCategory");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('CAT'::text || lpad((nextval('category_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('CAT'::text || lpad((nextval('category_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.ImageURL)
                 .HasMaxLength(255)
                 .HasColumnName("ImageURL");
@@ -240,9 +291,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblCoupon");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('CPN'::text || lpad((nextval('coupon_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('CPN'::text || lpad((nextval('coupon_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.PromotionCode).HasMaxLength(100);
             entity.Property(e => e.UsageCount).HasDefaultValue(0);
 
@@ -268,9 +326,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.Status, "idx_order_status");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('ORD'::text || lpad((nextval('order_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('ORD'::text || lpad((nextval('order_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.AddressCode).HasMaxLength(100);
             entity.Property(e => e.CouponCode).HasMaxLength(100);
             entity.Property(e => e.DiscountAmount)
@@ -280,9 +345,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.OrderDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
-            entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("'pending'::character varying");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'pending'::character varying");
+            }
+            else
+            {
+                entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue(OrderStatus.Pending);
+            }
             entity.Property(e => e.TotalAmount).HasPrecision(15, 2);
             entity.Property(e => e.UserCode).HasMaxLength(100);
 
@@ -316,9 +388,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblOrderItem");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('ORI'::text || lpad((nextval('orderitem_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('ORI'::text || lpad((nextval('orderitem_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.DiscountAmount)
                 .HasPrecision(15, 2)
                 .HasDefaultValueSql("0");
@@ -352,18 +431,32 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.OrderCode, "TblPayment_OrderCode_key").IsUnique();
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('PAY'::text || lpad((nextval('payment_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('PAY'::text || lpad((nextval('payment_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.Amount).HasPrecision(15, 2);
             entity.Property(e => e.Method).HasMaxLength(50);
             entity.Property(e => e.OrderCode).HasMaxLength(100);
             entity.Property(e => e.PaymentDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
-            entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("'pending'::character varying");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'pending'::character varying");
+            }
+            else
+            {
+                entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue(PaymentStatus.Pending);
+            }
             entity.Property(e => e.TransactionId)
                 .HasMaxLength(100)
                 .HasColumnName("TransactionID");
@@ -391,9 +484,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.Name, "idx_product_name");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('PRD'::text || lpad((nextval('product_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('PRD'::text || lpad((nextval('product_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.CategoryCode).HasMaxLength(100);
             entity.Property(e => e.CostPrice).HasPrecision(15, 2);
             entity.Property(e => e.CreatedAt)
@@ -445,9 +545,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => new { e.ProductCode, e.PromotionCode }, "TblProductPromotion_ProductCode_PromotionCode_key").IsUnique();
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('PPROM'::text || lpad((nextval('productpromotion_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('PPROM'::text || lpad((nextval('productpromotion_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.ProductCode).HasMaxLength(100);
             entity.Property(e => e.PromotionCode).HasMaxLength(100);
             entity.Property(e => e.CreatedAt)
@@ -474,9 +581,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblPromotion");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('PROM'::text || lpad((nextval('promotion_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('PROM'::text || lpad((nextval('promotion_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.DiscountType).HasMaxLength(20);
             entity.Property(e => e.DiscountValue).HasPrecision(15, 2);
             entity.Property(e => e.EndDate).HasColumnType("timestamp with time zone");
@@ -500,9 +614,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblReview");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('REV'::text || lpad((nextval('review_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('REV'::text || lpad((nextval('review_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -518,6 +639,32 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("TblReview_UserCode_fkey");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+        });
+
+        modelBuilder.Entity<TblNews>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblNews_pkey");
+            entity.ToTable("TblNews");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('NWS'::text || lpad((nextval('news_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.Slug).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -556,27 +703,34 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblQuote");
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('QT'::text || lpad((nextval('quote_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('QT'::text || lpad((nextval('quote_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
-            entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("'pending'::character varying");
-            entity.Property(e => e.Quantity).HasDefaultValue(1);
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'pending'::character varying");
+            }
+            else
+            {
+                entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("pending");
+            }
             entity.Property(e => e.UserCode).HasMaxLength(100);
-            entity.Property(e => e.ProductCode).HasMaxLength(100);
-            entity.Property(e => e.QuotedPrice).HasPrecision(15, 2);
 
             entity.HasOne(d => d.UserCodeNavigation).WithMany(p => p.TblQuotes)
                 .HasForeignKey(d => d.UserCode)
                 .HasConstraintName("TblQuote_UserCode_fkey");
-
-            entity.HasOne(d => d.ProductCodeNavigation).WithMany(p => p.TblQuotes)
-                .HasForeignKey(d => d.ProductCode)
-                .HasConstraintName("TblQuote_ProductCode_fkey");
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UpdatedAt)
@@ -595,9 +749,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.Username, "TblUser_Username_key").IsUnique();
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('USR'::text || lpad((nextval('user_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('USR'::text || lpad((nextval('user_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -605,15 +766,28 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(15);
-            entity.Property(e => e.Role)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("'customer'::character varying");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Role)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'customer'::character varying");
+            }
+            else
+            {
+                entity.Property(e => e.Role).HasMaxLength(20).HasDefaultValue(UserRole.Customer);
+            }
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
             entity.Property(e => e.Username).HasMaxLength(50);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.ModifiedType).HasDefaultValue("Add");
+            entity.Property(e => e.AvatarUrl).HasMaxLength(1000);
+            entity.Property(e => e.RoleCode).HasMaxLength(50);
+
+            entity.HasOne(d => d.RoleCodeNavigation).WithMany(p => p.TblUsers)
+                .HasForeignKey(d => d.RoleCode)
+                .HasConstraintName("TblUser_RoleCode_fkey");
 
             entity.HasIndex(e => e.Phone, "idx_user_phone");
         });
@@ -626,9 +800,16 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.MasterCode, "idx_file_mastercode"); // Add Index
 
-            entity.Property(e => e.Code)
-                .HasMaxLength(100)
-                .HasDefaultValueSql("('FIL'::text || lpad((nextval('file_code_seq'::regclass))::text, 6, '0'::text))");
+            if (Database.IsNpgsql())
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('FIL'::text || lpad((nextval('file_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
             entity.Property(e => e.FileName).HasMaxLength(255);
             entity.Property(e => e.OriginalName).HasMaxLength(255);
             entity.Property(e => e.Extension).HasMaxLength(10);
@@ -645,24 +826,27 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
-        modelBuilder.HasSequence("address_code_seq");
-        modelBuilder.HasSequence("cart_code_seq");
-        modelBuilder.HasSequence("cartitem_code_seq");
-        modelBuilder.HasSequence("category_code_seq");
-        modelBuilder.HasSequence("coupon_code_seq");
-        modelBuilder.HasSequence("order_code_seq");
-        modelBuilder.HasSequence("orderitem_code_seq");
-        modelBuilder.HasSequence("payment_code_seq");
-        modelBuilder.HasSequence("product_code_seq");
+        if (Database.IsNpgsql())
+        {
+            modelBuilder.HasSequence("address_code_seq");
+            modelBuilder.HasSequence("cart_code_seq");
+            modelBuilder.HasSequence("cartitem_code_seq");
+            modelBuilder.HasSequence("category_code_seq");
+            modelBuilder.HasSequence("coupon_code_seq");
+            modelBuilder.HasSequence("order_code_seq");
+            modelBuilder.HasSequence("orderitem_code_seq");
+            modelBuilder.HasSequence("payment_code_seq");
+            modelBuilder.HasSequence("product_code_seq");
 
-        modelBuilder.HasSequence("productpromotion_code_seq");
-        modelBuilder.HasSequence("promotion_code_seq");
-        modelBuilder.HasSequence("review_code_seq");
-        modelBuilder.HasSequence("quote_code_seq");
-        modelBuilder.HasSequence("user_code_seq");
-        modelBuilder.HasSequence("user_code_seq");
-        modelBuilder.HasSequence("banner_code_seq");
-        modelBuilder.HasSequence("file_code_seq");
+            modelBuilder.HasSequence("productpromotion_code_seq");
+            modelBuilder.HasSequence("promotion_code_seq");
+            modelBuilder.HasSequence("review_code_seq");
+            modelBuilder.HasSequence("quote_code_seq");
+            modelBuilder.HasSequence("user_code_seq");
+            modelBuilder.HasSequence("banner_code_seq");
+            modelBuilder.HasSequence("file_code_seq");
+            modelBuilder.HasSequence("news_code_seq");
+        }
 
         // Brand Configuration
         modelBuilder.Entity<TblBrand>(entity =>
@@ -772,6 +956,104 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasConstraintName("TblProductTag_TagCode_fkey");
         });
 
+        // Quote Item Configuration
+        modelBuilder.Entity<TblQuoteItem>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblQuoteItem_pkey");
+            entity.ToTable("TblQuoteItem");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.QuoteCode).HasMaxLength(100);
+            entity.Property(e => e.ProductCode).HasMaxLength(100);
+            entity.Property(e => e.UnitCode).HasMaxLength(50);
+            entity.Property(e => e.RequestPrice).HasPrecision(15, 2);
+            entity.Property(e => e.ApprovedPrice).HasPrecision(15, 2);
+            
+            entity.HasOne(d => d.Quote).WithMany(p => p.TblQuoteItems)
+                .HasForeignKey(d => d.QuoteCode)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblQuoteItem_QuoteCode_fkey");
+
+            entity.HasOne(d => d.Product).WithMany()
+                .HasForeignKey(d => d.ProductCode)
+                .HasConstraintName("TblQuoteItem_ProductCode_fkey");
+                
+            entity.HasOne(d => d.Unit).WithMany()
+                .HasForeignKey(d => d.UnitCode)
+                .HasConstraintName("TblQuoteItem_UnitCode_fkey");
+        });
+
+        // Debt Log Configuration
+        modelBuilder.Entity<TblDebtLog>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblDebtLog_pkey");
+            entity.ToTable("TblDebtLog");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.UserCode).HasMaxLength(100);
+            entity.Property(e => e.OrderCode).HasMaxLength(100);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.BalanceAfter).HasPrecision(18, 2);
+            entity.Property(e => e.Reason).HasMaxLength(255);
+            
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserCode)
+                .HasConstraintName("TblDebtLog_UserCode_fkey");
+            
+            entity.HasOne(d => d.Order).WithMany()
+                .HasForeignKey(d => d.OrderCode)
+                .HasConstraintName("TblDebtLog_OrderCode_fkey");
+        });
+
+        // Product Variant Configuration
+        modelBuilder.Entity<TblProductVariant>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblProductVariant_pkey");
+            entity.ToTable("TblProductVariant");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.ProductCode).HasMaxLength(100);
+            entity.Property(e => e.SKU).HasMaxLength(100);
+            entity.Property(e => e.Price).HasPrecision(15, 2);
+            entity.Property(e => e.StockQuantity).HasDefaultValue(0);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.TblProductVariants)
+                .HasForeignKey(d => d.ProductCode)
+                .HasConstraintName("TblProductVariant_ProductCode_fkey");
+        });
+
+        modelBuilder.Entity<TblRole>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblRole_pkey");
+            entity.ToTable("TblRole");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(250);
+        });
+
+        modelBuilder.Entity<TblPermission>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblPermission_pkey");
+            entity.ToTable("TblPermission");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Module).HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(250);
+        });
+
+        modelBuilder.Entity<TblRolePermission>(entity =>
+        {
+            entity.HasKey(e => new { e.RoleCode, e.PermissionCode }).HasName("TblRolePermission_pkey");
+            entity.ToTable("TblRolePermission");
+            entity.HasOne(d => d.RoleCodeNavigation).WithMany(p => p.TblRolePermissions)
+                .HasForeignKey(d => d.RoleCode)
+                .HasConstraintName("TblRolePermission_RoleCode_fkey");
+            entity.HasOne(d => d.PermissionCodeNavigation).WithMany(p => p.TblRolePermissions)
+                .HasForeignKey(d => d.PermissionCode)
+                .HasConstraintName("TblRolePermission_PermissionCode_fkey");
+        });
+
 
 
 
@@ -791,6 +1073,19 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("TblUserLogin_UserId_fkey");
+        });
+
+        // Supplier Configuration
+        modelBuilder.Entity<TblSupplier>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblSupplier_pkey");
+            entity.ToTable("TblSupplier");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
         });
 
         OnModelCreatingPartial(modelBuilder);

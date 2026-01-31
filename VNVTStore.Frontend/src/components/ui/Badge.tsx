@@ -1,4 +1,5 @@
-import { memo, type ReactNode, useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
 // ============ Badge Types ============

@@ -376,16 +376,14 @@ export function BaseForm<T extends FieldValues>({
   const [activeTab, setActiveTab] = useState<number>(0);
 
   const form = useForm<T>({
-    resolver: zodResolver(schema) as any,
-    defaultValues,
+    resolver: zodResolver(schema as any) as any,
+    values: defaultValues as any,
+    resetOptions: {
+      keepDirtyValues: true, // Don't overwrite what the user has typed
+    }
   });
 
-  const { handleSubmit: handleFormSubmit, reset } = form;
-
-  // Reset form when defaultValues change (e.g. fetching fresh data)
-  React.useEffect(() => {
-    reset(defaultValues);
-  }, [defaultValues, reset]);
+  const { handleSubmit: handleFormSubmit } = form;
 
   const handleSubmit = (e?: React.BaseSyntheticEvent) => {
     if (e) {

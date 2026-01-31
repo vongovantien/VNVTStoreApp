@@ -34,11 +34,22 @@ public class RequestDTO<T>
 /// </summary>
 public class SortDTO
 {
+    [System.Text.Json.Serialization.JsonPropertyName("sortBy")]
+    [Newtonsoft.Json.JsonProperty("sortBy")]
     public string? SortBy { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("sort")]
+    [Newtonsoft.Json.JsonProperty("sort")]
     public string Sort { get; set; } = "ASC"; // "ASC" or "DESC"
-    public bool SortDescending 
-    { 
-        get => Sort?.Equals("DESC", StringComparison.OrdinalIgnoreCase) ?? false; 
+
+    /// <summary>
+    /// Backward compatible computed property. Prefer using Sort directly.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public bool SortDescending
+    {
+        get => Sort?.Equals("DESC", StringComparison.OrdinalIgnoreCase) ?? false;
         set => Sort = value ? "DESC" : "ASC";
     }
 }
@@ -48,18 +59,23 @@ public class SortDTO
 /// </summary>
 public class SearchDTO
 {
-    [System.Text.Json.Serialization.JsonPropertyName("field")]
-    [Newtonsoft.Json.JsonProperty("field")]
+    [System.Text.Json.Serialization.JsonPropertyName("searchField")]
+    [Newtonsoft.Json.JsonProperty("searchField")]
     public string SearchField { get; set; } = null!;
 
-    [System.Text.Json.Serialization.JsonPropertyName("operator")]
-    [Newtonsoft.Json.JsonProperty("operator")]
+    [System.Text.Json.Serialization.JsonPropertyName("searchCondition")]
+    [Newtonsoft.Json.JsonProperty("searchCondition")]
     public SearchCondition SearchCondition { get; set; }
 
-    [System.Text.Json.Serialization.JsonPropertyName("value")]
-    [Newtonsoft.Json.JsonProperty("value")]
+    [System.Text.Json.Serialization.JsonPropertyName("searchValue")]
+    [Newtonsoft.Json.JsonProperty("searchValue")]
     public object? SearchValue { get; set; }
 
+    [System.Text.Json.Serialization.JsonPropertyName("groupID")]
+    [Newtonsoft.Json.JsonProperty("groupID")]
     public short? GroupID { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("combineCondition")]
+    [Newtonsoft.Json.JsonProperty("combineCondition")]
     public string? CombineCondition { get; set; } // "AND" or "OR"
 }

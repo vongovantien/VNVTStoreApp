@@ -336,6 +336,39 @@
     "display": "Hiển thị"
   },
   "admin": {
+    "reviews": {
+      "approve": "Phê duyệt",
+      "reject": "Từ chối",
+      "reply": "Phản hồi",
+      "approved": "Đã phê duyệt",
+      "pending": "Chờ duyệt",
+      "rejected": "Đã từ chối",
+      "all": "Tất cả đánh giá"
+    },
+    "coupons": {
+      "add": "Thêm mã giảm giá",
+      "edit": "Sửa mã giảm giá",
+      "validate": "Kiểm tra mã",
+      "code": "Mã code",
+      "promotion": "Chương trình",
+      "usage": "Lượt dùng",
+      "isActive": "Đang hoạt động"
+    },
+    "news": {
+      "add": "Thêm bài viết",
+      "edit": "Sửa bài viết",
+      "title": "Tiêu đề",
+      "author": "Tác giả",
+      "summary": "Tóm tắt",
+      "content": "Nội dung",
+      "thumbnailUrl": "Ảnh đại diện (URL)",
+      "contentTab": "Nội dung",
+      "seoTab": "SEO & Đường dẫn",
+      "slug": "Đường dẫn (Slug)",
+      "metaTitle": "Tiêu đề SEO",
+      "metaDescription": "Mô tả SEO",
+      "metaKeywords": "Từ khóa SEO"
+    },
     "products": "Sản phẩm",
     "categories": "Danh mục",
     "suppliers": "Nhà cung cấp",
@@ -370,7 +403,10 @@
       "marketing": "Marketing",
       "system": "Hệ thống",
       "brands": "Thương hiệu",
-      "units": "Đơn vị tính"
+      "units": "Đơn vị tính",
+      "coupons": "Mã giảm giá",
+      "news": "Tin tức/Bài viết",
+      "reviews": "Đánh giá"
     },
     "userMenu": {
       "signedInAs": "Đăng nhập với tư cách",
@@ -390,7 +426,10 @@
       "promotions": "Quản lý chương trình khuyến mãi",
       "settings": "Cấu hình hệ thống",
       "brands": "Quản lý thương hiệu",
-      "units": "Quản lý đơn vị tính"
+      "units": "Quản lý đơn vị tính",
+      "coupons": "Quản lý chương trình mã giảm giá",
+      "news": "Quản lý tin tức và bài viết blog",
+      "reviews": "Quản lý đánh giá từ khách hàng"
     },
     "titles": {
       "productEdit": "Chỉnh sửa sản phẩm",
@@ -639,6 +678,9 @@
     "tab": {
       "description": "Mô tả",
       "specs": "Thông số",
+      "variants": "Phiên bản",
+      "units": "Đơn vị tính",
+      "images": "Hình ảnh",
       "reviews": "Đánh giá"
     }
   },
@@ -713,7 +755,15 @@
     "minOrderAmount": "Đơn hàng tối thiểu",
     "voucherApplied": "Áp dụng mã giảm giá thành công",
     "voucherInvalid": "Mã giảm giá không tồn tại",
-    "voucherError": "Lỗi kiểm tra mã giảm giá"
+    "voucherError": "Lỗi kiểm tra mã giảm giá",
+    "bankInfo": "Thông tin chuyển khoản:",
+    "bankName": "Vietcombank",
+    "accountNumber": "0071001234567",
+    "accountHolder": "VÕ NGÔ VĂN TIÊN",
+    "transferContent": "VNVT [Số điện thoại]"
+  },
+  "search": {
+    "resultsFor": "Kết quả tìm kiếm cho"
   },
   "auth": {
     "login": "Đăng nhập",

@@ -64,6 +64,7 @@ public partial class TblProduct : IEntity
     public virtual ICollection<TblProductDetail> TblProductDetails { get; private set; } = new List<TblProductDetail>();
     public virtual ICollection<TblProductUnit> TblProductUnits { get; private set; } = new List<TblProductUnit>();
     public virtual ICollection<TblProductTag> TblProductTags { get; private set; } = new List<TblProductTag>();
+    public virtual ICollection<TblProductVariant> TblProductVariants { get; private set; } = new List<TblProductVariant>();
 
     public static TblProduct Create(string name, decimal price, decimal? wholesalePrice, int stock, string? categoryCode, decimal? costPrice, 
         string? supplierCode, string? brandCode = null, string? baseUnit = null)

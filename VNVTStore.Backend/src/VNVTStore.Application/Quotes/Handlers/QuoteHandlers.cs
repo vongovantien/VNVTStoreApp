@@ -1,4 +1,5 @@
 using AutoMapper;
+using Serilog;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
@@ -21,16 +22,22 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
 {
     private readonly ICurrentUser _currentUser;
     private readonly IRepository<TblProduct> _productRepository;
+    private readonly IRepository<TblUser> _userRepository;
+    private readonly IEmailService _emailService;
 
     public QuoteHandlers(
         IRepository<TblQuote> quoteRepository,
         IRepository<TblProduct> productRepository,
+        IRepository<TblUser> userRepository,
+        IEmailService emailService,
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
         IMapper mapper) : base(quoteRepository, unitOfWork, mapper)
     {
         _currentUser = currentUser;
         _productRepository = productRepository;
+        _userRepository = userRepository;
+        _emailService = emailService;
     }
 
     public async Task<Result<QuoteDto>> Handle(CreateCommand<CreateQuoteDto, QuoteDto> request, CancellationToken cancellationToken)
@@ -46,23 +53,81 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
              }
         }
 
-        // Validate Product
-        var product = await _productRepository.GetByCodeAsync(request.Dto.ProductCode, cancellationToken);
-        if (product == null)
-             return Result.Failure<QuoteDto>(Error.NotFound(MessageConstants.Product, request.Dto.ProductCode));
+        // Create Quote Entity
+        var quote = new TblQuote
+        {
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            UserCode = userCode,
+            Status = "pending",
+            CreatedAt = DateTime.UtcNow,
+            CustomerName = request.Dto.CustomerName,
+            CustomerEmail = request.Dto.CustomerEmail,
+            CustomerPhone = request.Dto.CustomerPhone,
+            Note = request.Dto.Note
+        };
 
-        return await CreateAsync<CreateQuoteDto, QuoteDto>(
-            request.Dto,
-            cancellationToken,
-            q => {
-                q.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
-                q.UserCode = userCode; // Can be null
-                q.Status = "pending";
-                q.CreatedAt = DateTime.Now;
-                // AutoMapper should map CustomerName/Email/Phone/Company from DTO to Entity if names match.
-                // CreateQuoteDto has CustomerName, CustomerEmail, CustomerPhone, Company.
-                // TblQuote likely has them too.
-            });
+        // Add Items
+        if (request.Dto.Items != null && request.Dto.Items.Any())
+        {
+            foreach (var itemDto in request.Dto.Items)
+            {
+                // Validate Product
+                var product = await _productRepository.GetByCodeAsync(itemDto.ProductCode, cancellationToken);
+                if (product == null) continue; 
+
+                var quoteItem = new TblQuoteItem
+                {
+                    Code = Guid.NewGuid().ToString("N"),
+                    QuoteCode = quote.Code,
+                    ProductCode = itemDto.ProductCode,
+                    Quantity = itemDto.Quantity,
+                    UnitCode = itemDto.UnitCode,
+                    RequestPrice = itemDto.RequestPrice ?? 0,
+                    ApprovedPrice = 0 
+                };
+                quote.TblQuoteItems.Add(quoteItem);
+            }
+        }
+        else
+        {
+            return Result.Failure<QuoteDto>(Error.Validation("Items", "Quote must have at least one item"));
+        }
+
+        await _repository.AddAsync(quote, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        // Notify Admins
+        try
+        {
+            var admins = await _userRepository.AsQueryable()
+                .Where(u => u.Role == VNVTStore.Domain.Enums.UserRole.Admin && u.IsActive && !string.IsNullOrEmpty(u.Email))
+                .ToListAsync(cancellationToken);
+
+            if (admins.Any())
+            {
+                var subject = $"[New Quote Request] {quote.Code} - {quote.CustomerName}";
+                var body = $@"
+                    <h3>New Quote Submission</h3>
+                    <p><strong>Quote Code:</strong> {quote.Code}</p>
+                    <p><strong>Customer:</strong> {quote.CustomerName} ({quote.CustomerEmail})</p>
+                    <p><strong>Date:</strong> {quote.CreatedAt:yyyy-MM-dd HH:mm:ss}</p>
+                    <p><strong>Note:</strong> {quote.Note ?? "N/A"}</p>
+                    <hr/>
+                    <p>Please log in to the admin panel to review and approve this quote.</p>";
+
+                foreach (var admin in admins)
+                {
+                    await _emailService.SendEmailAsync(admin.Email, subject, body, true);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the request
+            Serilog.Log.Error(ex, "Failed to send admin notification for quote {QuoteCode}", quote.Code);
+        }
+
+        return Result.Success(_mapper.Map<QuoteDto>(quote));
     }
 
     public async Task<Result<QuoteDto>> Handle(UpdateCommand<UpdateQuoteDto, QuoteDto> request, CancellationToken cancellationToken)
@@ -110,16 +175,20 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
 
     public async Task<Result<IEnumerable<QuoteDto>>> Handle(GetAllQuery<QuoteDto> request, CancellationToken cancellationToken)
     {
-        // Get My Quotes
         var userCode = _currentUser.UserCode;
         if (string.IsNullOrEmpty(userCode))
              return Result.Failure<IEnumerable<QuoteDto>>(Error.Unauthorized(MessageConstants.Unauthorized));
 
-        var quotes = await _repository.AsQueryable()
-            .Where(q => q.UserCode == userCode)
-            .Include(q => q.ProductCodeNavigation)
-            .OrderByDescending(q => q.CreatedAt)
-            .ToListAsync(cancellationToken);
+        IQueryable<TblQuote> query = _repository.AsQueryable()
+            .Include(q => q.TblQuoteItems)
+                .ThenInclude(i => i.Product);
+
+        if (!_currentUser.IsAdmin)
+        {
+            query = query.Where(q => q.UserCode == userCode);
+        }
+
+        var quotes = await query.OrderByDescending(q => q.CreatedAt).ToListAsync(cancellationToken);
 
         return Result.Success(_mapper.Map<IEnumerable<QuoteDto>>(quotes));
     }
@@ -127,7 +196,10 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
     public async Task<Result<QuoteDto>> Handle(GetByCodeQuery<QuoteDto> request, CancellationToken cancellationToken)
     {
         var quote = await _repository.AsQueryable()
-            .Include(q => q.ProductCodeNavigation)
+            .Include(q => q.TblQuoteItems)
+                .ThenInclude(i => i.Product)
+            .Include(q => q.TblQuoteItems)
+                .ThenInclude(i => i.Unit)
             .FirstOrDefaultAsync(q => q.Code == request.Code, cancellationToken);
 
         if (quote == null)
@@ -151,27 +223,13 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
         }
 
         var quotes = await _repository.AsQueryable()
-            .Include(q => q.ProductCodeNavigation)
+            .Include(q => q.TblQuoteItems)
+                .ThenInclude(i => i.Product)
             .Where(q => q.UserCode == userCode)
             .OrderByDescending(q => q.CreatedAt)
-            .Select(q => new QuoteDto
-            {
-                Code = q.Code,
-                UserCode = q.UserCode,
-                ProductCode = q.ProductCode,
-                ProductName = q.ProductCodeNavigation.Name,
-                ProductImage = null,
-                Quantity = q.Quantity,
-                Note = q.Note,
-                Status = q.Status,
-                QuotedPrice = q.QuotedPrice,
-                AdminNote = q.AdminNote,
-                CreatedAt = q.CreatedAt ?? DateTime.UtcNow,
-                UpdatedAt = q.UpdatedAt
-            })
             .ToListAsync(cancellationToken);
 
-        return Result.Success(quotes);
+        return Result.Success(_mapper.Map<List<QuoteDto>>(quotes));
     }
 
     public async Task<Result<PagedResult<QuoteDto>>> Handle(GetPagedQuery<QuoteDto> request, CancellationToken cancellationToken)

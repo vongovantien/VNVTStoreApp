@@ -95,3 +95,16 @@ export function useUpdateOrderStatus() {
         }
     });
 }
+export function useOrder(code: string) {
+    return useQuery({
+        queryKey: ['order', code],
+        queryFn: async () => {
+            const res = await orderService.getByCode(code);
+            if (!res.success || !res.data) {
+                throw new Error(res.message || 'Failed to fetch order');
+            }
+            return res.data;
+        },
+        enabled: !!code
+    });
+}

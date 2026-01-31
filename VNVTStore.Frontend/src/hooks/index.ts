@@ -18,10 +18,12 @@ export { useUnits } from './useUnits';
 export { useBrands } from './useBrands';
 
 // Re-export order hooks
-export { useOrders, useAdminOrders, useUpdateOrderStatus } from './useOrders';
+export { useOrders, useAdminOrders, useUpdateOrderStatus, useOrder } from './useOrders';
 
 export * from './useEntityManager';
-
+export * from './usePagination';
+export * from './useRoles';
+export { useDataTable } from './useDataTable';
 
 /**
  * Hook for debounced value

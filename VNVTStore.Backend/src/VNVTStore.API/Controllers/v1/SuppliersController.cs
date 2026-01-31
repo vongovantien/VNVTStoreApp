@@ -11,26 +11,11 @@ namespace VNVTStore.API.Controllers.v1;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Roles = "admin,Admin")]
-public class SuppliersController : BaseApiController<SupplierDto, CreateSupplierDto, UpdateSupplierDto>
+public class SuppliersController : BaseApiController<TblSupplier, SupplierDto, CreateSupplierDto, UpdateSupplierDto>
 {
     public SuppliersController(IMediator mediator) : base(mediator)
     {
     }
-
-    protected override IRequest<Result<PagedResult<SupplierDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<SupplierDto>(pageIndex, pageSize, search, sort, filters, fields);
-
-    protected override IRequest<Result<SupplierDto>> CreateGetByCodeQuery(string code)
-        => new GetByCodeQuery<SupplierDto>(code);
-
-    protected override IRequest<Result<SupplierDto>> CreateCreateCommand(CreateSupplierDto dto)
-        => new CreateCommand<CreateSupplierDto, SupplierDto>(dto);
-
-    protected override IRequest<Result<SupplierDto>> CreateUpdateCommand(string code, UpdateSupplierDto dto)
-        => new UpdateCommand<UpdateSupplierDto, SupplierDto>(code, dto);
-
-    protected override IRequest<Result> CreateDeleteCommand(string code)
-        => new DeleteCommand<TblSupplier>(code);
 
     [HttpPost("delete-multiple")]
     public async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
@@ -44,5 +29,14 @@ public class SuppliersController : BaseApiController<SupplierDto, CreateSupplier
     {
         var result = await Mediator.Send(new GetStatsQuery<TblSupplier>());
         return HandleResult(result);
+    }
+
+    [HttpGet("template")]
+    [AllowAnonymous]
+    public IActionResult GetTemplate()
+    {
+        var csv = "Code,Name,Email,Phone,Address,TaxCode,ContactPerson,IsActive\nSUP001,Sample Supplier,supplier@example.com,0901234567,123 Street,123456789,John Doe,true";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        return File(bytes, "text/csv", "suppliers_template.csv");
     }
 }

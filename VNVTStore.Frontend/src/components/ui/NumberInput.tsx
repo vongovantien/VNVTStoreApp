@@ -11,7 +11,7 @@ export interface NumberInputProps extends Omit<InputProps, 'onChange' | 'value'>
 
 const formatNumber = (num: number | undefined): string => {
   if (num === undefined || num === null || isNaN(num)) return '';
-  return new Intl.NumberFormat('en-US').format(num);
+  return new Intl.NumberFormat('vi-VN').format(num);
 };
 
 export const NumberInput = memo(

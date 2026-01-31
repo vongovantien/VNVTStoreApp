@@ -14,7 +14,7 @@ using VNVTStore.Application.Products.Commands;
 
 namespace VNVTStore.API.Controllers.v1;
 
-public class ProductsController : BaseApiController<ProductDto, CreateProductDto, UpdateProductDto>
+public class ProductsController : BaseApiController<TblProduct, ProductDto, CreateProductDto, UpdateProductDto>
 {
     public ProductsController(IMediator mediator) : base(mediator)
     {
@@ -35,19 +35,14 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public override Task<IActionResult> Get(string code) => base.Get(code);
+    public override Task<IActionResult> Get(string code, [FromQuery] bool includeChildren = false) => base.Get(code, includeChildren);
+
+    protected override IRequest<Result<ProductDto>> CreateGetByCodeQuery(string code, bool includeChildren)
+        => new GetProductByCodeQuery(code, includeChildren);
 
     [HttpPost]
     [Authorize(Roles = "admin,Admin")]
     public override Task<IActionResult> Create([FromBody] RequestDTO<CreateProductDto> request) => base.Create(request);
-
-    [HttpPut("{code}")]
-    [Authorize(Roles = "admin,Admin")]
-    public override Task<IActionResult> Update(string code, [FromBody] RequestDTO<UpdateProductDto> request) => base.Update(code, request);
-
-    [HttpDelete("{code}")]
-    [Authorize(Roles = "admin,Admin")]
-    public override Task<IActionResult> Delete(string code) => base.Delete(code);
 
     [HttpPost("import")]
     [Authorize(Roles = "admin,Admin")]
@@ -75,19 +70,4 @@ public class ProductsController : BaseApiController<ProductDto, CreateProductDto
         var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
         return File(bytes, "text/csv", "products_template.csv");
     }
-
-    protected override IRequest<Result<PagedResult<ProductDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<ProductDto>(pageIndex, pageSize, search, sort, filters, fields);
-
-    protected override IRequest<Result<ProductDto>> CreateGetByCodeQuery(string code)
-        => new GetByCodeQuery<ProductDto>(code);
-
-    protected override IRequest<Result<ProductDto>> CreateCreateCommand(CreateProductDto dto)
-        => new CreateCommand<CreateProductDto, ProductDto>(dto);
-
-    protected override IRequest<Result<ProductDto>> CreateUpdateCommand(string code, UpdateProductDto dto)
-        => new UpdateCommand<UpdateProductDto, ProductDto>(code, dto);
-
-    protected override IRequest<Result> CreateDeleteCommand(string code)
-        => new DeleteCommand<TblProduct>(code);
 }

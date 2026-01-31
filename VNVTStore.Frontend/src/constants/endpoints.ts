@@ -102,6 +102,41 @@ export const API_ENDPOINTS = {
         TOP_PRODUCTS: '/dashboard/top-products',
         REVENUE_CHART: '/dashboard/revenue-chart',
     },
+
+    // Promotions
+    PROMOTIONS: {
+        BASE: '/promotions',
+        SEARCH: '/promotions/search',
+        BY_CODE: (code: string) => `/promotions/${code}`,
+    },
+
+    // Coupons
+    COUPONS: {
+        BASE: '/coupons',
+        SEARCH: '/coupons/search',
+        BY_CODE: (code: string) => `/coupons/${code}`,
+        VALIDATE: '/coupons/validate',
+    },
+
+    // News/Posts
+    NEWS: {
+        BASE: '/news',
+        SEARCH: '/news/search',
+        BY_CODE: (code: string) => `/news/${code}`,
+    },
+
+    // RBAC
+    ROLES: {
+        BASE: '/roles',
+        SEARCH: '/roles/search',
+        BY_CODE: (code: string) => `/roles/${code}`,
+        PERMISSIONS: '/roles/permissions',
+    },
+    PERMISSIONS: {
+        BASE: '/permissions',
+        SEARCH: '/permissions/search',
+        ALL: '/permissions/all',
+    },
 } as const;
 
 export default API_ENDPOINTS;

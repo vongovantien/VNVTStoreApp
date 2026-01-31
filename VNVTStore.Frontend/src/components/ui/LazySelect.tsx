@@ -39,6 +39,8 @@ interface LazySelectProps {
     initialLabel?: string;
     /** Page size for pagination */
     pageSize?: number;
+    /** ID for the button element */
+    id?: string;
 }
 
 export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
@@ -57,6 +59,7 @@ export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
             fetchFn,
             pageSize = 20,
             initialLabel,
+            id,
         },
         ref
     ) => {
@@ -135,6 +138,8 @@ export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
             [onChange]
         );
 
+        const inputId = id || `lazy-select-${queryKeyPrefix}-${Math.random().toString(36).substr(2, 9)}`;
+
         return (
             <div
                 ref={ref}
@@ -142,7 +147,7 @@ export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
             >
                 {/* Label */}
                 {label && (
-                    <label className="font-bold text-primary text-sm">
+                    <label htmlFor={inputId} className="font-bold text-primary text-sm">
                         {label}
                         {required && <span className="text-red-500 ml-1">*</span>}
                     </label>
@@ -153,6 +158,7 @@ export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
                     {/* Trigger Button */}
                     <button
                         type="button"
+                        id={inputId}
                         disabled={disabled}
                         onClick={() => !disabled && setIsOpen(!isOpen)}
                         className={cn(

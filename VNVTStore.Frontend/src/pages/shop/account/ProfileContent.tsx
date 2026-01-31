@@ -68,10 +68,10 @@ const ProfileContent = () => {
           phone: data.phone || '',
           email: data.email || ''
       });
-      if (res.success) {
+      if (res && res.success) {
         toast.success(t('messages.saveSuccess') || 'Lưu thành công!');
       } else {
-        toast.error(res.message || t('messages.saveError') || 'Không thể lưu');
+        toast.error((res && res.message) || t('messages.saveError') || 'Không thể lưu');
       }
     } catch (e) {
       console.error(e);
@@ -82,18 +82,22 @@ const ProfileContent = () => {
   };
   
   const onChangePassword = async (data: PasswordFormData) => {
+    console.log('[DEBUG] Form submitted with:', { ...data, currentPassword: '***', newPassword: '***' });
     setPasswordLoading(true);
     try {
+      console.log('[DEBUG] Calling userService.changePassword...');
       const res = await userService.changePassword({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
         confirmNewPassword: data.confirmPassword
       });
-      if (res.success) {
+      console.log('[DEBUG] API Response:', res);
+      
+      if (res && res.success) {
         toast.success(t('messages.updateSuccess') || 'Đổi mật khẩu thành công!');
         passwordForm.reset();
       } else {
-        toast.error(res.message || t('messages.updateError') || 'Đổi mật khẩu thất bại');
+        toast.error((res && res.message) || t('messages.updateError') || 'Đổi mật khẩu thất bại');
       }
     } catch (e) {
       console.error('Change password error:', e);

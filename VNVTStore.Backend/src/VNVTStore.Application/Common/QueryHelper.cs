@@ -12,186 +12,203 @@ public static class QueryHelper
         if (filters == null || !filters.Any())
             return query;
 
-        foreach (var filter in filters)
+        var parameter = Expression.Parameter(typeof(T), "x");
+
+        // 1. Handle non-grouped filters (Global AND) - GroupID == null
+        var globalFilters = filters.Where(f => f.GroupID == null).ToList();
+        foreach (var filter in globalFilters)
         {
-            if (string.IsNullOrWhiteSpace(filter.SearchField) || filter.SearchValue == null)
-                continue;
-
-            // Simple property access (case-insensitive)
-            var parameter = Expression.Parameter(typeof(T), "x");
-            var propertyName = GetPropertyName(typeof(T), filter.SearchField);
-            
-            if (propertyName == null) continue; // Property not found
-
-            var property = Expression.Property(parameter, propertyName);
-            var constant = Expression.Constant(ConvertValue(filter.SearchValue, property.Type));
-            
-            Expression? comparison = null;
-
-            switch (filter.SearchCondition)
+            var comparison = BuildComparison(filter, parameter);
+            if (comparison != null)
             {
-                case SearchCondition.Equal:
-                    comparison = Expression.Equal(property, constant);
-                    break;
-                case SearchCondition.NotEqual:
-                    comparison = Expression.NotEqual(property, constant);
-                    break;
-                case SearchCondition.Contains:
-                    if (property.Type == typeof(string))
+                query = query.Where(Expression.Lambda<Func<T, bool>>(comparison, parameter));
+            }
+        }
+
+        // 2. Handle grouped filters (e.g. (A OR B) AND (C OR D))
+        var groups = filters.Where(f => f.GroupID != null).GroupBy(f => f.GroupID);
+        foreach (var group in groups)
+        {
+            Expression? groupExpression = null;
+            var combineCondition = group.First().CombineCondition?.ToUpper() ?? "AND"; // Default to AND if not set, but groups usually imply OR or specific logic
+
+            foreach (var filter in group)
+            {
+                var comparison = BuildComparison(filter, parameter);
+                if (comparison == null) continue;
+
+                if (groupExpression == null)
+                {
+                    groupExpression = comparison;
+                }
+                else
+                {
+                    if (combineCondition == "OR")
                     {
-                        var method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-                        comparison = Expression.Call(property, method!, constant);
+                        groupExpression = Expression.OrElse(groupExpression, comparison);
                     }
                     else
                     {
-                         comparison = Expression.Equal(property, constant);
+                        groupExpression = Expression.AndAlso(groupExpression, comparison);
                     }
-                    break;
-                case SearchCondition.GreaterThan:
-                    comparison = Expression.GreaterThan(property, constant);
-                    break;
-                case SearchCondition.GreaterThanEqual:
-                    comparison = Expression.GreaterThanOrEqual(property, constant);
-                    break;
-                case SearchCondition.LessThan:
-                    comparison = Expression.LessThan(property, constant);
-                    break;
-                case SearchCondition.LessThanEqual:
-                    comparison = Expression.LessThanOrEqual(property, constant);
-                    break;
-                case SearchCondition.In:
-                case SearchCondition.NotIn:
-                    try
-                    {
-                        List<string>? stringValues = null;
-
-                        if (filter.SearchValue is JsonElement valueElement && valueElement.ValueKind == JsonValueKind.Array)
-                        {
-                            stringValues = valueElement.EnumerateArray()
-                                .Select(v => v.ToString())
-                                .ToList();
-                        }
-                        else if (filter.SearchValue is IEnumerable<string> listStr)
-                        {
-                            stringValues = listStr.ToList();
-                        }
-                        else if (filter.SearchValue is string strVal)
-                        {
-                             // Fallback for legacy stringified JSON
-                             try { stringValues = JsonSerializer.Deserialize<List<string>>(strVal); } catch {}
-                        }
-
-                        if (stringValues != null && stringValues.Any())
-                        {
-                            var methodInfo = typeof(List<string>).GetMethod("Contains", new[] { typeof(string) });
-                            var listExpr = Expression.Constant(stringValues);
-                            comparison = Expression.Call(listExpr, methodInfo!, property);
-                            
-                            if (filter.SearchCondition == SearchCondition.NotIn)
-                            {
-                                comparison = Expression.Not(comparison);
-                            }
-                        }
-                    }
-                    catch { } 
-                    break;
-                case SearchCondition.IsNull:
-                     comparison = Expression.Equal(property, Expression.Constant(null));
-                     break;
-                case SearchCondition.IsNotNull:
-                     comparison = Expression.NotEqual(property, Expression.Constant(null));
-                     break;
-                case SearchCondition.EqualExact:
-                     if (property.Type == typeof(string))
-                     {
-                         var method = typeof(string).GetMethod("Equals", new[] { typeof(string) });
-                         comparison = Expression.Call(property, method!, constant);
-                     }
-                     else
-                     {
-                         comparison = Expression.Equal(property, constant);
-                     }
-                     break;
-                case SearchCondition.DateTimeRange:
-                     try 
-                     {
-                         List<string>? dates = null;
-                         if (filter.SearchValue is JsonElement dateElement && dateElement.ValueKind == JsonValueKind.Array)
-                         {
-                             dates = dateElement.EnumerateArray().Select(v => v.ToString()).ToList();
-                         }
-                         else if (filter.SearchValue is IEnumerable<string> listStr)
-                         {
-                             dates = listStr.ToList();
-                         }
-                         else if (filter.SearchValue is string strVal)
-                         {
-                             try { dates = JsonSerializer.Deserialize<List<string>>(strVal); } catch {}
-                         }
-
-                         if (dates != null && dates.Count >= 2 && 
-                             DateTime.TryParse(dates[0], out var start) && 
-                             DateTime.TryParse(dates[1], out var end))
-                         {
-                             var startExpr = Expression.GreaterThanOrEqual(property, Expression.Constant(start));
-                             var endExpr = Expression.LessThanOrEqual(property, Expression.Constant(end));
-                             comparison = Expression.AndAlso(startExpr, endExpr);
-                         }
-                     }
-                     catch { }
-                     break;
-                case SearchCondition.DayPart:
-                case SearchCondition.MonthPart:
-                case SearchCondition.DatePart:
-                     // Handle date parts
-                     if (property.Type == typeof(DateTime) || property.Type == typeof(DateTime?))
-                     {
-                         Expression targetProp = property;
-                         if (property.Type == typeof(DateTime?))
-                         {
-                             targetProp = Expression.Property(property, "Value");
-                         }
-                         
-                         string valStr = filter.SearchValue?.ToString() ?? "";
-                         if (filter.SearchValue is JsonElement je && je.ValueKind != JsonValueKind.Null)
-                             valStr = je.ToString();
-
-                         if (filter.SearchCondition == SearchCondition.DayPart && int.TryParse(valStr, out var day))
-                         {
-                             var dayProp = Expression.Property(targetProp, "Day");
-                             comparison = Expression.Equal(dayProp, Expression.Constant(day));
-                         }
-                         else if (filter.SearchCondition == SearchCondition.MonthPart && int.TryParse(valStr, out var month))
-                         {
-                             var monthProp = Expression.Property(targetProp, "Month");
-                             comparison = Expression.Equal(monthProp, Expression.Constant(month));
-                         }
-                         else if (filter.SearchCondition == SearchCondition.DatePart && DateTime.TryParse(valStr, out var date))
-                         {
-                             var dateProp = Expression.Property(targetProp, "Date");
-                             comparison = Expression.Equal(dateProp, Expression.Constant(date.Date));
-                         }
-                         
-                         if (property.Type == typeof(DateTime?) && comparison != null)
-                         {
-                             var hasValue = Expression.Property(property, "HasValue");
-                             comparison = Expression.AndAlso(hasValue, comparison);
-                         }
-                     }
-                     break;
-                default:
-                    comparison = Expression.Equal(property, constant);
-                    break;
+                }
             }
 
-            if (comparison != null)
+            if (groupExpression != null)
             {
-                var lambda = Expression.Lambda<Func<T, bool>>(comparison, parameter);
-                query = query.Where(lambda);
+                query = query.Where(Expression.Lambda<Func<T, bool>>(groupExpression, parameter));
             }
         }
 
         return query;
+    }
+
+    private static Expression? BuildComparison(SearchDTO filter, ParameterExpression parameter)
+    {
+        if (string.IsNullOrWhiteSpace(filter.SearchField) || filter.SearchValue == null)
+            return null;
+
+        var propertyName = GetPropertyName(parameter.Type, filter.SearchField);
+        if (propertyName == null) return null;
+
+        var property = Expression.Property(parameter, propertyName);
+        var constant = Expression.Constant(ConvertValue(filter.SearchValue, property.Type));
+
+        switch (filter.SearchCondition)
+        {
+            case SearchCondition.Equal:
+                return Expression.Equal(property, constant);
+            case SearchCondition.NotEqual:
+                return Expression.NotEqual(property, constant);
+            case SearchCondition.Contains:
+                if (property.Type == typeof(string))
+                {
+                    var method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                    return Expression.Call(property, method!, constant);
+                }
+                return Expression.Equal(property, constant);
+            case SearchCondition.GreaterThan:
+                return Expression.GreaterThan(property, constant);
+            case SearchCondition.GreaterThanEqual:
+                return Expression.GreaterThanOrEqual(property, constant);
+            case SearchCondition.LessThan:
+                return Expression.LessThan(property, constant);
+            case SearchCondition.LessThanEqual:
+                return Expression.LessThanOrEqual(property, constant);
+            case SearchCondition.In:
+            case SearchCondition.NotIn:
+                try
+                {
+                    List<string>? stringValues = null;
+
+                    if (filter.SearchValue is JsonElement valueElement && valueElement.ValueKind == JsonValueKind.Array)
+                    {
+                        stringValues = valueElement.EnumerateArray()
+                            .Select(v => v.ToString())
+                            .ToList();
+                    }
+                    else if (filter.SearchValue is IEnumerable<string> listStr)
+                    {
+                        stringValues = listStr.ToList();
+                    }
+                    else if (filter.SearchValue is string strVal)
+                    {
+                        try { stringValues = JsonSerializer.Deserialize<List<string>>(strVal); } catch { }
+                    }
+
+                    if (stringValues != null && stringValues.Any())
+                    {
+                        var methodInfo = typeof(List<string>).GetMethod("Contains", new[] { typeof(string) });
+                        var listExpr = Expression.Constant(stringValues);
+                        var call = Expression.Call(listExpr, methodInfo!, property);
+
+                        return filter.SearchCondition == SearchCondition.NotIn ? Expression.Not(call) : call;
+                    }
+                }
+                catch { }
+                return null;
+            case SearchCondition.IsNull:
+                return Expression.Equal(property, Expression.Constant(null));
+            case SearchCondition.IsNotNull:
+                return Expression.NotEqual(property, Expression.Constant(null));
+            case SearchCondition.EqualExact:
+                if (property.Type == typeof(string))
+                {
+                    var method = typeof(string).GetMethod("Equals", new[] { typeof(string) });
+                    return Expression.Call(property, method!, constant);
+                }
+                return Expression.Equal(property, constant);
+            case SearchCondition.DateTimeRange:
+                try
+                {
+                    List<string>? dates = null;
+                    if (filter.SearchValue is JsonElement dateElement && dateElement.ValueKind == JsonValueKind.Array)
+                    {
+                        dates = dateElement.EnumerateArray().Select(v => v.ToString()).ToList();
+                    }
+                    else if (filter.SearchValue is IEnumerable<string> listStr)
+                    {
+                        dates = listStr.ToList();
+                    }
+                    else if (filter.SearchValue is string strVal)
+                    {
+                        try { dates = JsonSerializer.Deserialize<List<string>>(strVal); } catch { }
+                    }
+
+                    if (dates != null && dates.Count >= 2 &&
+                        DateTime.TryParse(dates[0], out var start) &&
+                        DateTime.TryParse(dates[1], out var end))
+                    {
+                        var startExpr = Expression.GreaterThanOrEqual(property, Expression.Constant(start));
+                        var endExpr = Expression.LessThanOrEqual(property, Expression.Constant(end));
+                        return Expression.AndAlso(startExpr, endExpr);
+                    }
+                }
+                catch { }
+                return null;
+            case SearchCondition.DayPart:
+            case SearchCondition.MonthPart:
+            case SearchCondition.DatePart:
+                if (property.Type == typeof(DateTime) || property.Type == typeof(DateTime?))
+                {
+                    Expression targetProp = property;
+                    if (property.Type == typeof(DateTime?))
+                    {
+                        targetProp = Expression.Property(property, "Value");
+                    }
+
+                    string valStr = filter.SearchValue?.ToString() ?? "";
+                    if (filter.SearchValue is JsonElement je && je.ValueKind != JsonValueKind.Null)
+                        valStr = je.ToString();
+
+                    Expression? comparison = null;
+                    if (filter.SearchCondition == SearchCondition.DayPart && int.TryParse(valStr, out var day))
+                    {
+                        var dayProp = Expression.Property(targetProp, "Day");
+                        comparison = Expression.Equal(dayProp, Expression.Constant(day));
+                    }
+                    else if (filter.SearchCondition == SearchCondition.MonthPart && int.TryParse(valStr, out var month))
+                    {
+                        var monthProp = Expression.Property(targetProp, "Month");
+                        comparison = Expression.Equal(monthProp, Expression.Constant(month));
+                    }
+                    else if (filter.SearchCondition == SearchCondition.DatePart && DateTime.TryParse(valStr, out var date))
+                    {
+                        var dateProp = Expression.Property(targetProp, "Date");
+                        comparison = Expression.Equal(dateProp, Expression.Constant(date.Date));
+                    }
+
+                    if (property.Type == typeof(DateTime?) && comparison != null)
+                    {
+                        var hasValue = Expression.Property(property, "HasValue");
+                        return Expression.AndAlso(hasValue, comparison);
+                    }
+                    return comparison;
+                }
+                return null;
+            default:
+                return Expression.Equal(property, constant);
+        }
     }
 
     private static string? GetPropertyName(Type type, string fieldName)

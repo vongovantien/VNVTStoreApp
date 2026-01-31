@@ -6,6 +6,7 @@ export interface Product {
     description: string;
     price: number;
     wholesalePrice?: number; // New
+    costPrice?: number; // New
     originalPrice?: number;
     discount?: number;
     image: string;
@@ -41,6 +42,7 @@ export interface Product {
     details?: ProductDetail[];
     productUnits?: ProductUnit[];
     tags?: ProductTag[];
+    variants?: ProductVariant[];
 }
 
 export enum ProductDetailType {
@@ -65,11 +67,23 @@ export interface ProductUnit {
     unitName: string;
     conversionRate: number;
     price: number;
+    isActive?: boolean;
+    isBaseUnit?: boolean;
 }
 
 export interface ProductTag {
     productCode: string;
     tagCode: string;
+}
+
+export interface ProductVariant {
+    code: string;
+    productCode: string;
+    sku: string;
+    attributes: string; // JSON string
+    price: number;
+    stockQuantity: number;
+    isActive: boolean;
 }
 
 // ============ Category Types ============
@@ -116,6 +130,9 @@ export interface User {
     phone?: string;
     avatar?: string;
     role: UserRole;
+    roleCode?: string;
+    roleName?: string;
+    permissions?: string[];
     addresses?: Address[];
     status: UserStatus;
     createdAt: string;
@@ -263,4 +280,25 @@ export interface ApiResponse<T> {
     data?: T;
     message?: string;
     errors?: Record<string, string[]>;
+}
+
+// ============ RBAC Types ============
+export interface Permission {
+    code: string;
+    name: string;
+    module: string;
+    description?: string;
+}
+
+export interface Role {
+    code: string;
+    name: string;
+    description?: string;
+    isActive: boolean;
+    permissions: Permission[];
+}
+
+export interface RolePermission {
+    roleCode: string;
+    permissionCode: string;
 }

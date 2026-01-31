@@ -12,6 +12,9 @@ export interface AuthState {
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   setTokens: (token: string, refreshToken: string) => void;
+  permissions: string[];
+  setPermissions: (permissions: string[]) => void;
+  hasPermission: (permission: string) => boolean;
 }
 
 let authStore: StoreApi<AuthState> | null = null;
@@ -76,14 +79,14 @@ export enum SearchCondition {
 }
 
 export interface SearchDTO {
-  field: string;
-  operator: SearchCondition;
-  value: string | number | boolean | string[] | number[] | null;
+  searchField: string;
+  searchCondition: SearchCondition;
+  searchValue: string | number | boolean | string[] | number[] | null;
 }
 
 export interface SortDTO {
   sortBy: string;
-  sortDescending: boolean;
+  sort: string; // 'ASC' | 'DESC'
 }
 
 export interface RequestDTO {
@@ -93,6 +96,47 @@ export interface RequestDTO {
   sortDTO?: SortDTO;
   fields?: string[];
 }
+
+// ============ Discriminated Union Types for Type-Safe State ============
+
+/**
+ * Discriminated Union for async state handling
+ * Provides type-safe pattern matching for Loading, Success, Error states
+ */
+export type AsyncState<T> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: string };
+
+// Type Guards for AsyncState
+export function isIdle<T>(state: AsyncState<T>): state is { status: 'idle' } {
+  return state.status === 'idle';
+}
+
+export function isLoading<T>(state: AsyncState<T>): state is { status: 'loading' } {
+  return state.status === 'loading';
+}
+
+export function isSuccess<T>(state: AsyncState<T>): state is { status: 'success'; data: T } {
+  return state.status === 'success';
+}
+
+export function isError<T>(state: AsyncState<T>): state is { status: 'error'; error: string } {
+  return state.status === 'error';
+}
+
+// Factory functions for creating AsyncState
+export const AsyncState = {
+  idle: <T>(): AsyncState<T> => ({ status: 'idle' }),
+  loading: <T>(): AsyncState<T> => ({ status: 'loading' }),
+  success: <T>(data: T): AsyncState<T> => ({ status: 'success', data }),
+  error: <T>(error: string): AsyncState<T> => ({ status: 'error', error }),
+  fromApiResponse: <T>(response: ApiResponse<T>): AsyncState<T> =>
+    response.success && response.data !== null
+      ? { status: 'success', data: response.data }
+      : { status: 'error', error: response.message || 'Unknown error' }
+};
 
 // ============ Axios Setup ============
 

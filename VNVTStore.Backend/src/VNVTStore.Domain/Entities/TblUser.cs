@@ -30,7 +30,10 @@ public partial class TblUser : IEntity
 
     public string? Phone { get; private set; }
 
-    public UserRole Role { get; private set; }
+    public string? RoleCode { get; private set; }
+    public virtual TblRole? RoleCodeNavigation { get; private set; }
+
+    public UserRole Role { get; private set; } // Keep for compatibility temporarily
 
     public DateTime? CreatedAt { get; set; }
 
@@ -58,6 +61,12 @@ public partial class TblUser : IEntity
     public DateTime? ResetTokenExpiry { get; private set; }
 
     public string? AvatarUrl { get; private set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal DebtLimit { get; private set; } = 0; // Maximum allowed debt
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal CurrentDebt { get; private set; } = 0; // Current outstanding debt
 
     public virtual ICollection<TblAddress> TblAddresses { get; private set; }
     public virtual ICollection<TblUserLogin> TblUserLogins { get; private set; }
@@ -101,7 +110,8 @@ public partial class TblUser : IEntity
              UpdatedAt = DateTime.UtcNow,
              IsEmailVerified = true, 
              PasswordHash = "",
-             AvatarUrl = avatarUrl
+             AvatarUrl = avatarUrl,
+             RoleCode = "CUSTOMER" // Default role code
          };
          
          user.AddLogin(loginProvider, providerKey, providerDisplayName);
@@ -138,7 +148,8 @@ public partial class TblUser : IEntity
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             IsEmailVerified = false,
-            EmailVerificationToken = Guid.NewGuid().ToString("N")
+            EmailVerificationToken = Guid.NewGuid().ToString("N"),
+            RoleCode = role == UserRole.Admin ? "ADMIN" : "CUSTOMER"
         };
         
         return user;
@@ -181,9 +192,16 @@ public partial class TblUser : IEntity
         LastLogin = DateTime.UtcNow;
     }
 
-    public void UpdateRole(UserRole role)
+    public void UpdateRole(string roleCode)
+    {
+        RoleCode = roleCode;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateRoleEnum(UserRole role)
     {
         Role = role;
+        RoleCode = role == UserRole.Admin ? "ADMIN" : "CUSTOMER";
         UpdatedAt = DateTime.UtcNow;
     }
 

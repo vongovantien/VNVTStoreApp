@@ -120,10 +120,13 @@ public abstract class BaseApiController : ControllerBase
 /// <summary>
 /// Generic Base API Controller for standard CRUD operations
 /// </summary>
+/// <typeparam name="TEntity">Domain Entity type</typeparam>
 /// <typeparam name="TResponse">DTO for response</typeparam>
 /// <typeparam name="TCreateDto">DTO for create operation</typeparam>
 /// <typeparam name="TUpdateDto">DTO for update operation</typeparam>
-public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : BaseApiController
+public abstract class BaseApiController<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseApiController
+    where TEntity : class, VNVTStore.Domain.Interfaces.IEntity
+    where TResponse : class, IBaseDto
 {
     protected BaseApiController(IMediator mediator) : base(mediator)
     {
@@ -146,9 +149,9 @@ public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : Bas
     /// Generic Get by Code
     /// </summary>
     [HttpGet("{code}")]
-    public virtual async Task<IActionResult> Get(string code)
+    public virtual async Task<IActionResult> Get(string code, [FromQuery] bool includeChildren = false)
     {
-        var result = await Mediator.Send(CreateGetByCodeQuery(code));
+        var result = await Mediator.Send(CreateGetByCodeQuery(code, includeChildren));
         return HandleResult(result);
     }
 
@@ -189,12 +192,21 @@ public abstract class BaseApiController<TResponse, TCreateDto, TUpdateDto> : Bas
         return HandleDelete(result);
     }
 
-    // Abstract factory methods to create specific MediatR requests
-    protected abstract IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null);
-    protected abstract IRequest<Result<TResponse>> CreateGetByCodeQuery(string code);
-    protected abstract IRequest<Result<TResponse>> CreateCreateCommand(TCreateDto dto);
-    protected abstract IRequest<Result<TResponse>> CreateUpdateCommand(string code, TUpdateDto dto);
-    protected abstract IRequest<Result> CreateDeleteCommand(string code);
+    // Default implementations of factory methods
+    protected virtual IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<TResponse>(pageIndex, pageSize, search, sort, filters, fields);
+
+    protected virtual IRequest<Result<TResponse>> CreateGetByCodeQuery(string code, bool includeChildren)
+        => new GetByCodeQuery<TResponse>(code, includeChildren);
+
+    protected virtual IRequest<Result<TResponse>> CreateCreateCommand(TCreateDto dto)
+        => new CreateCommand<TCreateDto, TResponse>(dto);
+
+    protected virtual IRequest<Result<TResponse>> CreateUpdateCommand(string code, TUpdateDto dto)
+        => new UpdateCommand<TUpdateDto, TResponse>(code, dto);
+
+    protected virtual IRequest<Result> CreateDeleteCommand(string code)
+        => new DeleteCommand<TEntity>(code);
     
     // Helper to get route values for CreatedAtAction
     protected virtual object GetRouteValues(TResponse? value)

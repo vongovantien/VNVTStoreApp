@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { applyClientFilters } from '@/utils/queryHelper';
+import { SearchCondition } from '@/services/api';
 
 interface UseDataTableProps<T> {
     data: T[];
@@ -31,24 +33,39 @@ export const useDataTable = <T extends { id: string | number } & Record<string, 
 
     // 1. Filter
     const filteredData = useMemo(() => {
-        if (!searchQuery) return data;
+        let result = data;
 
-        const lowerQuery = searchQuery.toLowerCase();
+        // Apply external filters (complex SearchDTOs) logic locally if data is all here
+        // Note: If server-side pagination is used, 'data' is usually just current page, so this runs on that subset.
+        // But for client-side tables, this is powerful.
+        // We can extend this hook to accept 'filters' prop if needed, 
+        // but for now let's keep searchField/searchQuery behavior and map it to a SearchDTO.
 
-        return data.filter((item) => {
-            if (filterFn) return filterFn(item, lowerQuery, searchField);
-
-            // Default generic search
+        if (searchQuery) {
+            const lowerQuery = searchQuery.toLowerCase();
+            // Reuse the simple logic OR use the new helper?
+            // Let's use the new helper for single field search to ensure consistency
             if (searchField !== 'all') {
-                const value = item[searchField];
-                return String(value).toLowerCase().includes(lowerQuery);
+                result = applyClientFilters(result, [{
+                    searchField: searchField,
+                    searchCondition: SearchCondition.Contains,
+                    searchValue: lowerQuery
+                }]);
+            } else {
+                // Fallback to "All Fields" search which is not in SearchDTO standard usually
+                result = result.filter(item =>
+                    Object.values(item).some(val =>
+                        String(val).toLowerCase().includes(lowerQuery)
+                    )
+                );
             }
+        }
 
-            // Search all fields
-            return Object.values(item).some((val) =>
-                String(val).toLowerCase().includes(lowerQuery)
-            );
-        });
+        if (filterFn) {
+            result = result.filter(item => filterFn(item, searchQuery.toLowerCase(), searchField));
+        }
+
+        return result;
     }, [data, searchQuery, searchField, filterFn]);
 
     // 2. Sort
@@ -86,13 +103,15 @@ export const useDataTable = <T extends { id: string | number } & Record<string, 
     };
 
     const handleSelectRow = (id: string | number) => {
-        const newSelected = new Set(selectedIds);
-        if (newSelected.has(id)) {
-            newSelected.delete(id);
-        } else {
-            newSelected.add(id);
-        }
-        setSelectedIds(newSelected);
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
     };
 
     const handleSort = (field: keyof T) => {

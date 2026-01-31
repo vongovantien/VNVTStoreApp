@@ -36,6 +36,8 @@ namespace VNVTStore.Infrastructure.Migrations
 
             modelBuilder.HasSequence("file_code_seq");
 
+            modelBuilder.HasSequence("news_code_seq");
+
             modelBuilder.HasSequence("order_code_seq");
 
             modelBuilder.HasSequence("orderitem_code_seq");
@@ -67,6 +69,11 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("Category");
+
                     b.Property<string>("City")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -82,6 +89,10 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("FullName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -96,6 +107,10 @@ namespace VNVTStore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text")
                         .HasDefaultValue("ADD");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("PostalCode")
                         .HasMaxLength(100)
@@ -343,7 +358,7 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("ImageURL")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("ImageURL");
@@ -427,6 +442,59 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.ToTable("TblCoupon", (string)null);
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblDebtLog", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BalanceAfter")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OrderCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("RecordedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Code")
+                        .HasName("TblDebtLog_pkey");
+
+                    b.HasIndex("OrderCode");
+
+                    b.HasIndex("UserCode");
+
+                    b.ToTable("TblDebtLog", (string)null);
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblFile", b =>
                 {
                     b.Property<string>("Code")
@@ -497,6 +565,73 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasIndex(new[] { "MasterCode" }, "idx_file_mastercode");
 
                     b.ToTable("TblFile", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblNews", b =>
+                {
+                    b.Property<string>("Code")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValueSql("('NWS'::text || lpad((nextval('news_code_seq'::regclass))::text, 6, '0'::text))");
+
+                    b.Property<string>("Author")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("MetaDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaKeywords")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Slug")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Summary")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Thumbnail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Code")
+                        .HasName("TblNews_pkey");
+
+                    b.ToTable("TblNews", (string)null);
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblOrder", b =>
@@ -731,6 +866,44 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.ToTable("TblPayment", (string)null);
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblPermission", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Code")
+                        .HasName("TblPermission_pkey");
+
+                    b.ToTable("TblPermission", (string)null);
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblProduct", b =>
                 {
                     b.Property<string>("Code")
@@ -843,7 +1016,8 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Property<string>("DetailType")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -976,6 +1150,119 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.ToTable("TblProductTag", (string)null);
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductUnit", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("ConversionRate")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsBaseUnit")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(15, 2)
+                        .HasColumnType("numeric(15,2)");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UnitCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Code")
+                        .HasName("TblProductUnit_pkey");
+
+                    b.HasIndex("ProductCode");
+
+                    b.HasIndex("UnitCode");
+
+                    b.ToTable("TblProductUnit", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductVariant", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Attributes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(15, 2)
+                        .HasColumnType("numeric(15,2)");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("SKU")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("StockQuantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Code")
+                        .HasName("TblProductVariant_pkey");
+
+                    b.HasIndex("ProductCode");
+
+                    b.ToTable("TblProductVariant", (string)null);
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblPromotion", b =>
                 {
                     b.Property<string>("Code")
@@ -1069,6 +1356,9 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("CustomerPhone")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1082,19 +1372,8 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text");
 
-                    b.Property<string>("ProductCode")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
-
-                    b.Property<decimal?>("QuotedPrice")
-                        .HasPrecision(15, 2)
-                        .HasColumnType("numeric(15,2)");
+                    b.Property<string>("ReferenceNumber")
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1102,6 +1381,12 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasDefaultValueSql("'pending'::character varying");
+
+                    b.Property<string>("TblProductCode")
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -1115,11 +1400,66 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasKey("Code")
                         .HasName("TblQuote_pkey");
 
-                    b.HasIndex("ProductCode");
+                    b.HasIndex("TblProductCode");
 
                     b.HasIndex("UserCode");
 
                     b.ToTable("TblQuote", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblQuoteItem", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("ApprovedPrice")
+                        .HasPrecision(15, 2)
+                        .HasColumnType("numeric(15,2)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuoteCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("RequestPrice")
+                        .HasPrecision(15, 2)
+                        .HasColumnType("numeric(15,2)");
+
+                    b.Property<string>("UnitCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Code")
+                        .HasName("TblQuoteItem_pkey");
+
+                    b.HasIndex("ProductCode");
+
+                    b.HasIndex("QuoteCode");
+
+                    b.HasIndex("UnitCode");
+
+                    b.ToTable("TblQuoteItem", (string)null);
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblReview", b =>
@@ -1129,6 +1469,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasDefaultValueSql("('REV'::text || lpad((nextval('review_code_seq'::regclass))::text, 6, '0'::text))");
+
+                    b.Property<string>("AdminReply")
+                        .HasColumnType("text");
 
                     b.Property<string>("Comment")
                         .HasColumnType("text");
@@ -1178,6 +1521,55 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasIndex("UserCode");
 
                     b.ToTable("TblReview", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblRole", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ModifiedType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Code")
+                        .HasName("TblRole_pkey");
+
+                    b.ToTable("TblRole", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblRolePermission", b =>
+                {
+                    b.Property<string>("RoleCode")
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PermissionCode")
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("RoleCode", "PermissionCode")
+                        .HasName("TblRolePermission_pkey");
+
+                    b.HasIndex("PermissionCode");
+
+                    b.ToTable("TblRolePermission", (string)null);
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblSupplier", b =>
@@ -1282,10 +1674,6 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<decimal>("ConversionRate")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1299,16 +1687,7 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("ADD");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(15, 2)
-                        .HasColumnType("numeric(15,2)");
-
-                    b.Property<string>("ProductCode")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("UnitName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -1321,8 +1700,6 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasKey("Code")
                         .HasName("TblUnit_pkey");
 
-                    b.HasIndex("ProductCode");
-
                     b.ToTable("TblUnit", (string)null);
                 });
 
@@ -1334,10 +1711,20 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValueSql("('USR'::text || lpad((nextval('user_code_seq'::regclass))::text, 6, '0'::text))");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<decimal>("CurrentDebt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("DebtLimit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -1399,6 +1786,10 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(20)")
                         .HasDefaultValueSql("'customer'::character varying");
 
+                    b.Property<string>("RoleCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1412,6 +1803,8 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasKey("Code")
                         .HasName("TblUser_pkey");
 
+                    b.HasIndex("RoleCode");
+
                     b.HasIndex(new[] { "Email" }, "TblUser_Email_key")
                         .IsUnique();
 
@@ -1421,6 +1814,33 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasIndex(new[] { "Phone" }, "idx_user_phone");
 
                     b.ToTable("TblUser", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblUserLogin", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("LoginProvider", "ProviderKey")
+                        .HasName("TblUserLogin_pkey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TblUserLogin", (string)null);
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblAddress", b =>
@@ -1488,6 +1908,25 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasConstraintName("TblCoupon_PromotionCode_fkey");
 
                     b.Navigation("PromotionCodeNavigation");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblDebtLog", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblOrder", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderCode")
+                        .HasConstraintName("TblDebtLog_OrderCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblDebtLog_UserCode_fkey");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblOrder", b =>
@@ -1627,23 +2066,79 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("VNVTStore.Domain.Entities.TblQuote", b =>
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductUnit", b =>
                 {
-                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", "ProductCodeNavigation")
-                        .WithMany("TblQuotes")
+                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", "Product")
+                        .WithMany("TblProductUnits")
                         .HasForeignKey("ProductCode")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("TblQuote_ProductCode_fkey");
+                        .HasConstraintName("TblProductUnit_ProductCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblUnit", "Unit")
+                        .WithMany("TblProductUnits")
+                        .HasForeignKey("UnitCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("TblProductUnit_UnitCode_fkey");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblProductVariant", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", "Product")
+                        .WithMany("TblProductVariants")
+                        .HasForeignKey("ProductCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblProductVariant_ProductCode_fkey");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblQuote", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", null)
+                        .WithMany("TblQuotes")
+                        .HasForeignKey("TblProductCode");
 
                     b.HasOne("VNVTStore.Domain.Entities.TblUser", "UserCodeNavigation")
                         .WithMany("TblQuotes")
                         .HasForeignKey("UserCode")
                         .HasConstraintName("TblQuote_UserCode_fkey");
 
-                    b.Navigation("ProductCodeNavigation");
-
                     b.Navigation("UserCodeNavigation");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblQuoteItem", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblQuoteItem_ProductCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblQuote", "Quote")
+                        .WithMany("TblQuoteItems")
+                        .HasForeignKey("QuoteCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblQuoteItem_QuoteCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblUnit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitCode")
+                        .HasConstraintName("TblQuoteItem_UnitCode_fkey");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Quote");
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblReview", b =>
@@ -1664,16 +2159,47 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("UserCodeNavigation");
                 });
 
-            modelBuilder.Entity("VNVTStore.Domain.Entities.TblUnit", b =>
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblRolePermission", b =>
                 {
-                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", "Product")
-                        .WithMany("TblUnits")
-                        .HasForeignKey("ProductCode")
+                    b.HasOne("VNVTStore.Domain.Entities.TblPermission", "PermissionCodeNavigation")
+                        .WithMany("TblRolePermissions")
+                        .HasForeignKey("PermissionCode")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("TblUnit_ProductCode_fkey");
+                        .HasConstraintName("TblRolePermission_PermissionCode_fkey");
 
-                    b.Navigation("Product");
+                    b.HasOne("VNVTStore.Domain.Entities.TblRole", "RoleCodeNavigation")
+                        .WithMany("TblRolePermissions")
+                        .HasForeignKey("RoleCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblRolePermission_RoleCode_fkey");
+
+                    b.Navigation("PermissionCodeNavigation");
+
+                    b.Navigation("RoleCodeNavigation");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblUser", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblRole", "RoleCodeNavigation")
+                        .WithMany("TblUsers")
+                        .HasForeignKey("RoleCode")
+                        .HasConstraintName("TblUser_RoleCode_fkey");
+
+                    b.Navigation("RoleCodeNavigation");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblUserLogin", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblUser", "User")
+                        .WithMany("TblUserLogins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblUserLogin_UserId_fkey");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblAddress", b =>
@@ -1715,6 +2241,11 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("TblReviews");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblPermission", b =>
+                {
+                    b.Navigation("TblRolePermissions");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblProduct", b =>
                 {
                     b.Navigation("TblCartItems");
@@ -1727,9 +2258,11 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Navigation("TblProductTags");
 
-                    b.Navigation("TblQuotes");
+                    b.Navigation("TblProductUnits");
 
-                    b.Navigation("TblUnits");
+                    b.Navigation("TblProductVariants");
+
+                    b.Navigation("TblQuotes");
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblPromotion", b =>
@@ -1739,9 +2272,26 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("TblProductPromotions");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblQuote", b =>
+                {
+                    b.Navigation("TblQuoteItems");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblRole", b =>
+                {
+                    b.Navigation("TblRolePermissions");
+
+                    b.Navigation("TblUsers");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblTag", b =>
                 {
                     b.Navigation("TblProductTags");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblUnit", b =>
+                {
+                    b.Navigation("TblProductUnits");
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblUser", b =>
@@ -1755,6 +2305,8 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("TblQuotes");
 
                     b.Navigation("TblReviews");
+
+                    b.Navigation("TblUserLogins");
                 });
 #pragma warning restore 612, 618
         }

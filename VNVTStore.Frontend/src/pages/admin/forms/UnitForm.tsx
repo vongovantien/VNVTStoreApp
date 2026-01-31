@@ -27,6 +27,8 @@ interface UnitFormProps {
   modalOpen?: boolean;
   modalTitle?: string;
   fixedProduct?: boolean;
+  baseUnitName?: string;
+  existingUnitNames?: string[];
 }
 
 // ============ Component ============
@@ -39,6 +41,8 @@ export const UnitForm = ({
   modalOpen = false,
   modalTitle,
   fixedProduct = false,
+  baseUnitName,
+  existingUnitNames = [],
 }: UnitFormProps) => {
   const { t } = useTranslation();
 
@@ -118,11 +122,24 @@ export const UnitForm = ({
                                 searchField: 'Name',
                                 filters: [{ field: 'IsActive', value: true, operator: SearchCondition.Equal }]
                             });
-                            return {
-                                items: (res.data?.items || []).map(u => ({
+                            
+                            // Filter out base unit and existing units
+                            // Allow the current unit name (if editing) to be in the list
+                            const currentUnitName = initialData?.unitName;
+                            
+                            const items = (res.data?.items || [])
+                                .filter(u => {
+                                    if (baseUnitName && u.name === baseUnitName) return false;
+                                    if (existingUnitNames.includes(u.name) && u.name !== currentUnitName) return false;
+                                    return true;
+                                })
+                                .map(u => ({
                                     value: u.name, // Use Name as value since ProductUnit stores Name
                                     label: u.name
-                                })),
+                                }));
+
+                            return {
+                                items,
                                 totalItems: res.data?.totalItems || 0
                             };
                         }}

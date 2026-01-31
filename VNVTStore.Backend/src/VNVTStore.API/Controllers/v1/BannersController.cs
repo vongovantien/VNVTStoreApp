@@ -7,42 +7,28 @@ using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.API.Controllers.v1;
 
-public class BannersController : BaseApiController
+public class BannersController : BaseApiController<TblBanner, BannerDto, CreateBannerDto, UpdateBannerDto>
 {
     public BannersController(IMediator mediator) : base(mediator)
     {
     }
 
+    // Keep this for GET /api/v1/banners (simple list via query params)
     [HttpGet]
     public async Task<IActionResult> GetBanners([FromQuery] GetPagedQuery<BannerDto> query)
     {
         return HandleResult<PagedResult<BannerDto>>(await Mediator.Send(query));
     }
 
-    [HttpGet("{code}")]
-    public async Task<IActionResult> GetBanner(string code)
-    {
-        return HandleResult<BannerDto>(await Mediator.Send(new GetByCodeQuery<BannerDto>(code)));
-    }
-
     [HttpPost]
     [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> CreateBanner([FromBody] CreateBannerDto dto)
-    {
-        return HandleResult<BannerDto>(await Mediator.Send(new CreateCommand<CreateBannerDto, BannerDto>(dto)));
-    }
+    public override Task<IActionResult> Create([FromBody] RequestDTO<CreateBannerDto> request) => base.Create(request);
 
     [HttpPut("{code}")]
     [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> UpdateBanner(string code, [FromBody] UpdateBannerDto dto)
-    {
-        return HandleResult<BannerDto>(await Mediator.Send(new UpdateCommand<UpdateBannerDto, BannerDto>(code, dto)));
-    }
+    public override Task<IActionResult> Update(string code, [FromBody] RequestDTO<UpdateBannerDto> request) => base.Update(code, request);
 
     [HttpDelete("{code}")]
     [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> DeleteBanner(string code)
-    {
-        return HandleDelete(await Mediator.Send(new DeleteCommand<TblBanner>(code)));
-    }
+    public override Task<IActionResult> Delete(string code) => base.Delete(code);
 }

@@ -116,8 +116,9 @@ export const ProductsPage = () => {
     updateMutation,
     deleteMutation
   } = useEntityManager<Product, CreateProductRequest, UpdateProductRequest>({
-    service: productService as any,
+    service: productService,
     queryKey: ['products'],
+    includeChildrenOnEdit: true,
   });
 
   // Selection State
@@ -353,156 +354,159 @@ export const ProductsPage = () => {
     }
   ];
 
-  return (
-    <div className="space-y-6">
-      <AdminPageHeader
-        title="common.modules.products"
-        subtitle="admin.subtitles.products"
-      />
+      const productInitialData = useMemo(() => editingProduct ? {
+        name: editingProduct.name,
+        description: editingProduct.description,
+        price: editingProduct.price,
+        categoryCode: editingProduct.categoryCode,
+        stockQuantity: editingProduct.stockQuantity ?? editingProduct.stock,
+        images: editingProduct.images || [],
+        color: editingProduct.color,
+        power: editingProduct.power,
+        voltage: editingProduct.voltage,
+        material: editingProduct.material,
+        size: editingProduct.size,
+        weight: editingProduct.weight,
+        supplierCode: editingProduct.supplierCode,
+        brandCode: editingProduct.brandCode,
+        isActive: editingProduct.isActive,
+        categoryName: editingProduct.category,
+        brandName: editingProduct.brand,
+        supplierName: editingProduct.supplierName,
+        baseUnit: editingProduct.baseUnit,
+        vatRate: editingProduct.vatRate,
+        minStockLevel: editingProduct.minStockLevel,
+        binLocation: editingProduct.binLocation,
+        countryOfOrigin: editingProduct.countryOfOrigin,
+        productUnits: editingProduct.productUnits,
+      } : undefined, [editingProduct]);
 
-      <StatsCards stats={stats} />
+      return (
+        <div className="space-y-6">
+          <AdminPageHeader
+            title="common.modules.products"
+            subtitle="admin.subtitles.products"
+          />
 
-      <DataTable
-        columns={columns}
-        data={products}
-        keyField="code"
-        enableSelection
-        isLoading={isLoading}
-        isFetching={isFetching}
-        onAdd={() => openCreate()}
-        onRefresh={() => refetch()}
-        onImport={handleImportProduct}
-        importTemplateUrl="/products/template"
-        importTitle={t('common.importData')}
-        error={isError ? (error as Error) : null}
+          <StatsCards stats={stats} />
 
-        // Sorting
-        externalSortField={sortField}
-        externalSortDir={sortDir}
-        onExternalSort={handleSort}
+          <DataTable
+            columns={columns}
+            data={products}
+            keyField="code"
+            enableSelection
+            isLoading={isLoading}
+            isFetching={isFetching}
+            onAdd={() => openCreate()}
+            onRefresh={() => refetch()}
+            onImport={handleImportProduct}
+            importTemplateUrl="/products/template"
+            importTitle={t('common.importData')}
+            error={isError ? (error as Error) : null}
 
-        // Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setCurrentPage(PaginationDefaults.PAGE_INDEX);
-        }}
-        onView={handleOpenView}
-        onEdit={(product) => { openEdit(product); }}
-        onDelete={(product) => confirmDelete(product)}
-        onBulkDelete={() => setShowBulkConfirm(true)}
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
+            // Sorting
+            externalSortField={sortField}
+            externalSortDir={sortDir}
+            onExternalSort={handleSort}
 
-        // Search & Filters
-        onAdvancedSearch={handleAdvancedSearch}
-        onReset={handleReset}
-        advancedFilterDefs={[
-          {
-            id: 'name',
-            label: t('common.fields.name'),
-            type: 'text',
-            placeholder: t('common.placeholders.searchProduct')
-          },
-          {
-            id: 'category',
-            label: t('common.fields.category'),
-            type: 'text',
-            placeholder: t('common.fields.category')
-          },
-          {
-            id: 'price',
-            label: t('common.fields.price'),
-            type: 'number',
-            placeholder: t('common.placeholders.priceFrom')
-          },
-          {
-            id: 'stock',
-            label: t('common.fields.stock'),
-            type: 'number',
-            placeholder: t('common.placeholders.stockFrom')
-          },
-          {
-            id: 'rating',
-            label: t('common.fields.rating'),
-            type: 'number',
-            placeholder: t('common.placeholders.ratingFrom')
-          },
-          {
-            id: 'status',
-            label: t('common.fields.status'),
-            type: 'select',
-            options: [
-              { value: 'active', label: t('common.status.active') },
-              { value: 'inactive', label: t('common.status.inactive') }
-            ]
-          }
-        ]}
-        exportFilename="products_export"
-        exportColumns={[
-          { key: 'code', label: t('common.fields.code'), width: 15 },
-          { key: 'name', label: t('common.fields.name'), width: 30 },
-          { key: 'category', label: t('common.fields.category'), width: 20 },
-          { key: 'price', label: t('common.fields.price'), width: 15 },
-          { key: 'stock', label: t('common.fields.stock'), width: 12 },
-          { key: 'color', label: t('common.fields.color'), width: 12 },
-          { key: 'material', label: t('common.fields.material'), width: 15 },
-          { key: 'power', label: t('common.fields.power'), width: 12 },
-          { key: 'voltage', label: t('common.fields.voltage'), width: 12 },
-          { key: 'size', label: t('common.fields.size'), width: 15 },
-          { key: 'isActive', label: t('common.fields.status'), width: 12 },
-        ]}
-        onExportAllData={async () => {
-          const response = await productService.search({ pageIndex: 1, pageSize: 10000 });
-          return (response.data?.items || []) as unknown as Product[];
-        }}
-        enableColumnVisibility={true}
-      />
+            // Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(PaginationDefaults.PAGE_INDEX);
+            }}
+            onView={handleOpenView}
+            onEdit={(product) => { openEdit(product); }}
+            onDelete={(product) => confirmDelete(product)}
+            onBulkDelete={() => setShowBulkConfirm(true)}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
 
-      {/* Form Modal */}
-      <Modal
-        isOpen={isFormOpen}
-        onClose={closeForm}
-        title={editingProduct ? t('common.actions.edit') : t('common.actions.create')}
-        size="6xl"
-        // Force unmount on close to reset form state
-      >
-        <ProductForm
-          initialData={editingProduct ? {
-            name: editingProduct.name,
-            description: editingProduct.description,
-            price: editingProduct.price,
-            categoryCode: editingProduct.categoryCode,
-            stockQuantity: editingProduct.stockQuantity ?? editingProduct.stock,
-            images: editingProduct.images || [],
-            color: editingProduct.color,
-            power: editingProduct.power,
-            voltage: editingProduct.voltage,
-            material: editingProduct.material,
-            size: editingProduct.size,
-            weight: editingProduct.weight,
-            supplierCode: editingProduct.supplierCode,
-            brandCode: editingProduct.brandCode,
-            isActive: editingProduct.isActive,
-            categoryName: editingProduct.category,
-            brandName: editingProduct.brand,
-            supplierName: editingProduct.supplierName,
-            baseUnit: editingProduct.baseUnit,
-            vatRate: editingProduct.vatRate,
-            minStockLevel: editingProduct.minStockLevel,
-            binLocation: editingProduct.binLocation,
-            countryOfOrigin: editingProduct.countryOfOrigin,
-            productUnits: editingProduct.productUnits,
-          } : undefined}
-          onSubmit={editingProduct ? handleUpdate : handleCreate}
-          onCancel={closeForm}
-          isLoading={createMutation.isPending || updateMutation.isPending}
-        />
-      </Modal>
+            // Search & Filters
+            onSearch={setSearchQuery}
+            onAdvancedSearch={handleAdvancedSearch}
+            onReset={handleReset}
+            advancedFilterDefs={[
+              {
+                id: 'name',
+                label: t('common.fields.name'),
+                type: 'text',
+                placeholder: t('common.placeholders.searchProduct')
+              },
+              {
+                id: 'category',
+                label: t('common.fields.category'),
+                type: 'text',
+                placeholder: t('common.fields.category')
+              },
+              {
+                id: 'price',
+                label: t('common.fields.price'),
+                type: 'number',
+                placeholder: t('common.placeholders.priceFrom')
+              },
+              {
+                id: 'stock',
+                label: t('common.fields.stock'),
+                type: 'number',
+                placeholder: t('common.placeholders.stockFrom')
+              },
+              {
+                id: 'rating',
+                label: t('common.fields.rating'),
+                type: 'number',
+                placeholder: t('common.placeholders.ratingFrom')
+              },
+              {
+                id: 'status',
+                label: t('common.fields.status'),
+                type: 'select',
+                options: [
+                  { value: 'active', label: t('common.status.active') },
+                  { value: 'inactive', label: t('common.status.inactive') }
+                ]
+              }
+            ]}
+            exportFilename="products_export"
+            exportColumns={[
+              { key: 'code', label: t('common.fields.code'), width: 15 },
+              { key: 'name', label: t('common.fields.name'), width: 30 },
+              { key: 'category', label: t('common.fields.category'), width: 20 },
+              { key: 'price', label: t('common.fields.price'), width: 15 },
+              { key: 'stock', label: t('common.fields.stock'), width: 12 },
+              { key: 'color', label: t('common.fields.color'), width: 12 },
+              { key: 'material', label: t('common.fields.material'), width: 15 },
+              { key: 'power', label: t('common.fields.power'), width: 12 },
+              { key: 'voltage', label: t('common.fields.voltage'), width: 12 },
+              { key: 'size', label: t('common.fields.size'), width: 15 },
+              { key: 'isActive', label: t('common.fields.status'), width: 12 },
+            ]}
+            onExportAllData={async () => {
+              const response = await productService.search({ pageIndex: 1, pageSize: 10000 });
+              return (response.data?.items || []) as unknown as Product[];
+            }}
+            enableColumnVisibility={true}
+          />
+
+          {/* Form Modal */}
+          <Modal
+            isOpen={isFormOpen}
+            onClose={closeForm}
+            title={editingProduct ? t('common.actions.edit') : t('common.actions.create')}
+            size="7xl"
+            // Force unmount on close to reset form state
+          >
+            <ProductForm
+              initialData={productInitialData}
+              onSubmit={editingProduct ? handleUpdate : handleCreate}
+              onCancel={closeForm}
+              isLoading={createMutation.isPending || updateMutation.isPending}
+            />
+          </Modal>
 
       {/* View Modal */}
       <Modal

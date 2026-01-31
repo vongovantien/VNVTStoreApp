@@ -13,7 +13,7 @@ namespace VNVTStore.API.Controllers.v1;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize]
-public class AddressesController : BaseApiController<AddressDto, CreateAddressDto, UpdateAddressDto>
+public class AddressesController : BaseApiController<TblAddress, AddressDto, CreateAddressDto, UpdateAddressDto>
 {
     private readonly ICurrentUser _currentUser;
 
@@ -63,19 +63,4 @@ public class AddressesController : BaseApiController<AddressDto, CreateAddressDt
         if (result.IsFailure) return HandleError(result.Error!);
         return Ok(ApiResponse<string>.Ok(MessageConstants.Get(MessageConstants.Updated)));
     }
-
-    protected override IRequest<Result<PagedResult<AddressDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<AddressDto>(pageIndex, pageSize, search, sort, filters, fields);
-
-    protected override IRequest<Result<AddressDto>> CreateGetByCodeQuery(string code)
-        => new GetByCodeQuery<AddressDto>(code);
-
-    protected override IRequest<Result<AddressDto>> CreateCreateCommand(CreateAddressDto dto)
-        => new CreateCommand<CreateAddressDto, AddressDto>(dto);
-
-    protected override IRequest<Result<AddressDto>> CreateUpdateCommand(string code, UpdateAddressDto dto)
-        => new UpdateCommand<UpdateAddressDto, AddressDto>(code, dto);
-
-    protected override IRequest<Result> CreateDeleteCommand(string code)
-        => new DeleteCommand<TblAddress>(code);
 }

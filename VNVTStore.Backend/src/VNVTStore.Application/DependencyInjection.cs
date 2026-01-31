@@ -1,13 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
 using MediatR;
+using FluentValidation;
 using VNVTStore.Application.Common;
+using VNVTStore.Application.Common.Behaviors;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.MappingProfiles;
 using VNVTStore.Application.Strategies;
 using VNVTStore.Domain.Interfaces;
-using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Strategies;
 using VNVTStore.Application.Orders.Commands;
@@ -24,11 +25,17 @@ public static class DependencyInjection
         // Add AutoMapper
         services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
+        // Add FluentValidation - auto register all validators in assembly
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
         // Add MediatR - tự động register tất cả handlers trong Assembly
         // Exclude GenericHandler from auto-registration because we register it manually below
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            
+            // Register ValidationBehavior pipeline
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             cfg.TypeEvaluator = type =>
             {

@@ -1,0 +1,708 @@
+﻿
+> vnvt-react-app@0.0.0 test
+> vitest --run src/components/common/__tests__/ProductUnitsManager.test.tsx --reporter=verbose --pool=forks
+
+
+[1m[46m RUN [49m[22m [36mv4.0.17 [39m[90mD:/VNVTStoreApp/VNVTStore.Frontend[39m
+
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/common/__tests__/ProductUnitsManager.test.tsx[2m > [22mProductUnitsManager Component[2m > [22mrenders base unit correctly[32m 152[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/common/__tests__/ProductUnitsManager.test.tsx[2m > [22mProductUnitsManager Component[2m > [22mrenders additional units[32m 38[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/common/__tests__/ProductUnitsManager.test.tsx[2m > [22mProductUnitsManager Component[2m > [22mcalls onChange when add button is clicked[32m 228[2mms[22m[39m
+ [31m├ù[39m [30m[42m unit [49m[39m src/components/common/__tests__/ProductUnitsManager.test.tsx[2m > [22mProductUnitsManager Component[2m > [22mcalls onChange when delete is clicked[32m 100[2mms[22m[39m
+[31m   ΓåÆ Found multiple elements with the text: /Hß╗Öp/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[31m
+  [33mclass[31m=[32m""[31m
+[36m>[31m
+  [0mHß╗Öp[0m
+[36m</span>[31m
+
+Ignored nodes: comments, script, style
+[36m<span>[31m
+  [0mAre you sure you want to delete Hß╗Öp?[0m
+[36m</span>[31m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"space-y-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex gap-2 mb-2"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 text-sm gap-1.5 rounded-lg"[31m
+          [33mtype[31m=[32m"button"[31m
+        [36m>[31m
+          [36m<svg[31m
+            [33maria-hidden[31m=[32m"true"[31m
+            [33mclass[31m=[32m"lucide lucide-plus mr-1"[31m
+            [33mfill[31m=[32m"none"[31m
+            [33mheight[31m=[32m"16"[31m
+            [33mstroke[31m=[32m"currentColor"[31m
+            [33mstroke-linecap[31m=[32m"round"[31m
+            [33mstroke-linejoin[31m=[32m"round"[31m
+            [33mstroke-width[31m=[32m"2"[31m
+            [33mviewBox[31m=[32m"0 0 24 24"[31m
+            [33mwidth[31m=[32m"16"[31m
+            [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+          [36m>[31m
+            [36m<path[31m
+              [33md[31m=[32m"M5 12h14"[31m
+            [36m/>[31m
+            [36m<path[31m
+              [33md[31m=[32m"M12 5v14"[31m
+            [36m/>[31m
+          [36m</svg>[31m
+          [0m [0m
+          [0madmin.actions.addUnit[0m
+        [36m</button>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"space-y-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-border-color"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"grid grid-cols-12 gap-3 px-2 mb-2 text-xs font-semibold text-secondary uppercase"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-4"[31m
+          [36m>[31m
+            [0mcommon.fields.unitName[0m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-3"[31m
+          [36m>[31m
+            [0mcommon.fields.conversionRate[0m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-4"[31m
+          [36m>[31m
+            [0mcommon.fields.price[0m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-1"[31m
+          [36m/>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"grid grid-cols-12 gap-3 items-center bg-blue-50/50 dark:bg-blue-900/20 p-2 rounded-lg border border-blue-100 dark:border-blue-800/30"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-4 flex items-center gap-2"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"text-sm font-medium text-slate-700 dark:text-slate-200"[31m
+            [36m>[31m
+              [0mC├íi[0m
+            [36m</span>[31m
+            [36m<div[31m
+              [33mdata-testid[31m=[32m"mock-badge"[31m
+            [36m>[31m
+              [0mproduct.defaultUnit[0m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-3 text-sm text-slate-500 italic"[31m
+          [36m>[31m
+            [0m1 = 1[0m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-4 text-sm font-medium text-rose-600"[31m
+          [36m>[31m
+            [0m100.000[0m
+            [0m ─æ[0m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-1"[31m
+          [36m/>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"grid grid-cols-12 gap-3 items-center"[31m
+          [33mdata-testid[31m=[32m"unit-row-0"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-4"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 w-full h-9 text-sm"[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"relative"[31m
+              [36m>[31m
+                [36m<button[31m
+                  [33mclass[31m=[32m"w-full px-4 py-2 text-sm text-left bg-primary border rounded-lg flex items-center justify-between gap-2 transition-all duration-200 outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed border-gray-200"[31m
+                  [33mid[31m=[32m"lazy-select-unit-select-0-wa5n41kq9"[31m
+                  [33mtype[31m=[32m"button"[31m
+                [36m>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m""[31m
+                  [36m>[31m
+                    [0mHß╗Öp[0m
+                  [36m</span>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-chevron-down text-tertiary transition-transform"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"16"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"16"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"m6 9 6 6 6-6"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</button>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-3 relative"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 w-full"[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"relative flex"[31m
+              [36m>[31m
+                [36m<input[31m
+                  [33mclass[31m=[32m"w-full bg-primary text-primary placeholder:text-tertiary transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary px-4 py-2 h-9 text-sm pr-12"[31m
+                  [33mid[31m=[32m"input-bhds6c3ib"[31m
+                  [33mplaceholder[31m=[32m"1"[31m
+                  [33mtype[31m=[32m"number"[31m
+                  [33mvalue[31m=[32m"10"[31m
+                [36m/>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none"[31m
+            [36m>[31m
+              [0mx [0m
+              [0mC├íi[0m
+            [36m</span>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-4"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 w-full"[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"relative flex"[31m
+              [36m>[31m
+                [36m<input[31m
+                  [33mclass[31m=[32m"w-full bg-primary text-primary placeholder:text-tertiary transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary px-4 py-2 h-9 text-sm"[31m
+                  [33mid[31m=[32m"input-v6dsaush6"[31m
+                  [33mplaceholder[31m=[32m"common.fields.price"[31m
+                  [33mtype[31m=[32m"number"[31m
+                  [33mvalue[31m=[32m"950000"[31m
+                [36m/>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"col-span-1 flex justify-end"[31m
+          [36m>[31m
+            [36m<button[31m
+              [33mclass[31m=[32m"text-slate-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50 transition-colors"[31m
+              [33mdata-testid[31m=[32m"delete-unit-button-0"[31m
+              [33mtype[31m=[32m"button"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mclass[31m=[32m"lucide lucide-x"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"18"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"2"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"18"[31m
+                [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M18 6 6 18"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"m6 6 12 12"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</button>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mdata-testid[31m=[32m"confirm-dialog"[31m
+      [36m>[31m
+        [36m<span>[31m
+          [0mAre you sure you want to delete Hß╗Öp?[0m
+        [36m</span>[31m
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified 
+   : (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComman 
+   dError
+ 
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m[1m[41m 
+Failed Tests 1 
+[49m[22m[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit 
+[49m[39m src/components/common/__tests__/
+ProductUnitsManager.test.tsx[2m > 
+[22mProductUnitsManager Component[2m > 
+[22mcalls onChange when delete is clicked
+        [36m<button>[31m
+          [0mConfirmDelete[0m
+        [36m</button>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m[1mTestingLibraryElementError[22m[3
+9m: Found multiple elements with the text: 
+/Hß╗Öp/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m""[39m
+[36m>[39m
+  [0mHß╗Öp[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span>[39m
+  [0mAre you sure you want to delete 
+Hß╗Öp?[0m
+[36m</span>[39m
+
+(If this is intentional, then use the 
+`*AllBy*` variant of the query (like 
+`queryAllByText`, `getAllByText`, or 
+`findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex gap-2 
+mb-2"[39m
+      [36m>[39m
+        [36m<button[39m
+          
+[33mclass[39m=[32m"inline-flex 
+items-center justify-center font-semibold 
+transition-all duration-200 
+focus:outline-none focus:ring-2 
+focus:ring-primary/50 focus:ring-offset-2 
+disabled:opacity-50 
+disabled:cursor-not-allowed 
+disabled:hover:transform-none border-2 
+border-indigo-500 text-indigo-600 
+hover:bg-indigo-600 hover:text-white px-3 
+py-1.5 text-sm gap-1.5 rounded-lg"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            
+[33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide 
+lucide-plus mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"16"[39m
+            
+[33mstroke[39m=[32m"currentColor"[39m
+            
+[33mstroke-linecap[39m=[32m"round"[39m
+            
+[33mstroke-linejoin[39m=[32m"round"[39m
+            
+[33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 
+24"[39m
+            [33mwidth[39m=[32m"16"[39m
+            [33mxmlns[39m=[32m"http://ww
+w.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 
+12h14"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 
+5v14"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m [0m
+          [0madmin.actions.addUnit[0m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-3 
+bg-slate-50 dark:bg-slate-900/50 p-4 
+rounded-xl border border-border-color"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid 
+grid-cols-12 gap-3 px-2 mb-2 text-xs 
+font-semibold text-secondary 
+uppercase"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-4"[39m
+          [36m>[39m
+            [0mcommon.fields.unitName[0m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-3"[39m
+          [36m>[39m
+            
+[0mcommon.fields.conversionRate[0m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-4"[39m
+          [36m>[39m
+            [0mcommon.fields.price[0m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-1"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid 
+grid-cols-12 gap-3 items-center 
+bg-blue-50/50 dark:bg-blue-900/20 p-2 
+rounded-lg border border-blue-100 
+dark:border-blue-800/30"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-4 flex 
+items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              
+[33mclass[39m=[32m"text-sm font-medium 
+text-slate-700 dark:text-slate-200"[39m
+            [36m>[39m
+              [0mC├íi[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mdata-testid[39m=[32m"m
+ock-badge"[39m
+            [36m>[39m
+              [0mproduct.defaultUnit[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-3 text-sm 
+text-slate-500 italic"[39m
+          [36m>[39m
+            [0m1 = 1[0m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-4 text-sm 
+font-medium text-rose-600"[39m
+          [36m>[39m
+            [0m100.000[0m
+            [0m ─æ[0m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-1"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid 
+grid-cols-12 gap-3 items-center"[39m
+          [33mdata-testid[39m=[32m"unit-
+row-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex 
+flex-col gap-1 w-full h-9 text-sm"[39m
+            [36m>[39m
+              [36m<div[39m
+                
+[33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<button[39m
+                  
+[33mclass[39m=[32m"w-full px-4 py-2 
+text-sm text-left bg-primary border 
+rounded-lg flex items-center 
+justify-between gap-2 transition-all 
+duration-200 outline-none 
+focus:border-primary focus:ring-1 
+focus:ring-primary disabled:opacity-50 
+disabled:cursor-not-allowed 
+border-gray-200"[39m
+                  [33mid[39m=[32m"lazy-s
+elect-unit-select-0-wa5n41kq9"[39m
+                  
+[33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    
+[33mclass[39m=[32m""[39m
+                  [36m>[39m
+                    [0mHß╗Öp[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    
+[33maria-hidden[39m=[32m"true"[39m
+                    
+[33mclass[39m=[32m"lucide 
+lucide-chevron-down text-tertiary 
+transition-transform"[39m
+                    
+[33mfill[39m=[32m"none"[39m
+                    
+[33mheight[39m=[32m"16"[39m
+                    
+[33mstroke[39m=[32m"currentColor"[39m
+                    
+[33mstroke-linecap[39m=[32m"round"[39m
+                    
+[33mstroke-linejoin[39m=[32m"round"[39m
+                    
+[33mstroke-width[39m=[32m"2"[39m
+                    
+[33mviewBox[39m=[32m"0 0 24 24"[39m
+                    
+[33mwidth[39m=[32m"16"[39m
+                    [33mxmlns[39m=[32m"h
+ttp://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 
+9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-3 
+relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex 
+flex-col gap-1 w-full"[39m
+            [36m>[39m
+              [36m<div[39m
+                
+[33mclass[39m=[32m"relative flex"[39m
+              [36m>[39m
+                [36m<input[39m
+                  
+[33mclass[39m=[32m"w-full bg-primary 
+text-primary placeholder:text-tertiary 
+transition-all duration-200 outline-none 
+disabled:opacity-50 
+disabled:cursor-not-allowed border 
+border-gray-200 rounded-lg 
+focus:border-primary focus:ring-1 
+focus:ring-primary px-4 py-2 h-9 text-sm 
+pr-12"[39m
+                  
+[33mid[39m=[32m"input-bhds6c3ib"[39m
+                  
+[33mplaceholder[39m=[32m"1"[39m
+                  
+[33mtype[39m=[32m"number"[39m
+                  
+[33mvalue[39m=[32m"10"[39m
+                [36m/>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<span[39m
+              
+[33mclass[39m=[32m"absolute right-3 
+top-1/2 -translate-y-1/2 text-xs 
+text-slate-400 pointer-events-none"[39m
+            [36m>[39m
+              [0mx [0m
+              [0mC├íi[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex 
+flex-col gap-1 w-full"[39m
+            [36m>[39m
+              [36m<div[39m
+                
+[33mclass[39m=[32m"relative flex"[39m
+              [36m>[39m
+                [36m<input[39m
+                  
+[33mclass[39m=[32m"w-full bg-primary 
+text-primary placeholder:text-tertiary 
+transition-all duration-200 outline-none 
+disabled:opacity-50 
+disabled:cursor-not-allowed border 
+border-gray-200 rounded-lg 
+focus:border-primary focus:ring-1 
+focus:ring-primary px-4 py-2 h-9 
+text-sm"[39m
+                  
+[33mid[39m=[32m"input-v6dsaush6"[39m
+                  [33mplaceholder[39m=[3
+2m"common.fields.price"[39m
+                  
+[33mtype[39m=[32m"number"[39m
+                  
+[33mvalue[39m=[32m"950000"[39m
+                [36m/>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            
+[33mclass[39m=[32m"col-span-1 flex 
+justify-end"[39m
+          [36m>[39m
+            [36m<button[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 07:22:49
+              
+[33mclass[39m=[32m"text-slate-400 
+hover:text-red-500 p-1 rounded-md 
+hover:bg-red-50 transition-colors"[39m
+              [33mdata-testid[39m=[32m"d
+elete-unit-button-0"[39m
+              
+[33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                
+[33maria-hidden[39m=[32m"true"[39m
+                
+[33mclass[39m=[32m"lucide lucide-x"[39m
+                
+[33mfill[39m=[32m"none"[39m
+                
+[33mheight[39m=[32m"18"[39m
+                
+[33mstroke[39m=[32m"currentColor"[39m
+                
+[33mstroke-linecap[39m=[32m"round"[39m
+                
+[33mstroke-linejoin[39m=[32m"round"[39m
+                
+[33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 
+0 24 24"[39m
+                
+[33mwidth[39m=[32m"18"[39m
+                [33mxmlns[39m=[32m"http:
+//www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M18 6 
+6 18"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m6 6 
+12 12"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mdata-testid[39m=[32m"confirm
+-dialog"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0mAre you sure you want to 
+delete Hß╗Öp?[0m
+        [36m</span>[39m
+        [36m<button>[39m
+          [0mConfirmDelete[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2mΓ¥»[22m Object.getElementError n
+ode_modules/@testing-library/dom/dist/confi
+g.js:[2m37:19[22m[39m
+[90m [2mΓ¥»[22m getElementError node_mod
+ules/@testing-library/dom/dist/query-helper
+s.js:[2m20:35[22m[39m
+[90m [2mΓ¥»[22m 
+getMultipleElementsFoundError node_modules/
+@testing-library/dom/dist/query-helpers.js:
+[2m23:10[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-li
+brary/dom/dist/query-helpers.js:[2m55:13[
+22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-li
+brary/dom/dist/query-helpers.js:[2m95:19[
+22m[39m
+[36m [2mΓ¥»[22m src/components/common/__
+tests__/ProductUnitsManager.test.tsx:[2m11
+1:23[22m[39m
+    [90m109| [39m        [90m// Check 
+for mocked dialog[39m
+    [90m110| [39m        expect(await scr
+een.findByTestId('confirm-dialog')).toBeInT
+heDΓÇª
+    [90m111| [39m        [34mexpect[39m
+(screen[33m.[39m[34mgetByText[39m([36m
+/Hß╗Öp/i[39m))[33m.[39m[34mtoBeInTheDoc
+ument[39m()[33m;[39m
+    [90m   | [39m                      
+[31m^[39m
+    [90m112| [39m        
+    [90m113| [39m        [35mconst[39m 
+confirmBtn [33m=[39m screen[33m.[39m[3
+4mgetByText[39m([32m'ConfirmDelete'[39m)
+[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»Γ
+Ä»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]
+ΓÄ»[22m[39m
+
+[2m   Duration [22m 4.72s[2m (transform 956ms, setup 451ms, import 2.30s, tests 522ms, environment 1.17s)[22m
+

@@ -175,7 +175,7 @@ public class UserHandlers : BaseHandler<TblUser>,
             // Update Role
             if (!string.IsNullOrEmpty(dto.Role) && Enum.TryParse<UserRole>(dto.Role, true, out var role))
             {
-                user.UpdateRole(role);
+                user.UpdateRoleEnum(role);
             }
 
             // Update Active Status

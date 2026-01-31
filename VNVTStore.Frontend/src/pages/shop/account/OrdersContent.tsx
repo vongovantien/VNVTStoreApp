@@ -1,19 +1,23 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Package, Calendar, ChevronRight, MapPin } from 'lucide-react';
+import { Package, Calendar, ChevronRight, MapPin, Star } from 'lucide-react';
 import SharedImage from '@/components/common/Image';
-import { Button, Badge } from '@/components/ui';
+import { Button, Badge, Modal } from '@/components/ui';
 import { formatDate, formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
-import { orderService, type OrderDto } from '@/services/orderService';
+import { orderService, type OrderDto, type OrderItemDto } from '@/services/orderService';
+import ReviewForm from '@/components/reviews/ReviewForm';
+import { useAuthStore } from '@/store';
 
 const OrdersContent = () => {
   const { t } = useTranslation();
   const [orders, setOrders] = useState<OrderDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<OrderItemDto | null>(null);
+  const { user } = useAuthStore();
 
-  useEffect(() => {
-    orderService.getMyOrders({ pageIndex: 1, pageSize: 20 }).then(res => {
+  const fetchOrders = () => {
+     orderService.getMyOrders({ pageIndex: 1, pageSize: 20 }).then(res => {
       if(res.success && res.data) {
           if (Array.isArray(res.data)) {
                setOrders(res.data as unknown as OrderDto[]);
@@ -23,7 +27,16 @@ const OrdersContent = () => {
       }
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
+
+  const handleReviewSuccess = () => {
+    setSelectedItem(null);
+    // Optionally refresh orders if needed (e.g. to hide review button if functionality added later) or show success toast
+  };
 
   if (loading) return <div>{t('common.loading')}</div>;
 
@@ -31,7 +44,7 @@ const OrdersContent = () => {
     <div className="space-y-4">
       <h2 className="text-xl font-bold">{t('account.orders')}</h2>
 
-      {orders.length === 0 && <p className="text-secondary">Chưa có đơn hàng nào.</p>}
+      {orders.length === 0 && <p className="text-secondary">{t('order.no_orders') || 'No orders yet.'}</p>}
 
       {orders.map((order) => (
         <div key={order.code} className="bg-primary rounded-xl p-4 border border-secondary/20">
@@ -49,22 +62,30 @@ const OrdersContent = () => {
 
           <div className="space-y-2 mb-4">
              {order.orderItems?.map((item, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="flex -space-x-2 overflow-hidden">
-                  {order.orderItems.slice(0, 3).map((item, i) => (
-                    <SharedImage
-                      key={i}
-                      src={item.productImage}
-                      alt={item.productName}
-                      className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
-                    />
-                  ))}
-                </div>
+              <div key={index} className="flex items-center gap-3 py-2 border-b border-secondary/10 last:border-0">
+                <SharedImage
+                  src={item.productImage}
+                  alt={item.productName}
+                  className="h-16 w-16 rounded-md object-cover flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{item.productName}</p>
-                  <p className="text-xs text-tertiary">x{item.quantity}</p>
+                  <div className="flex justify-between items-center mt-1">
+                      <p className="text-xs text-tertiary">x{item.quantity}</p>
+                      
+                      {order.status === 'Delivered' && (
+                        <Button 
+                            variant="outline" 
+                            size="xs" 
+                            leftIcon={<Star size={12}/>}
+                            onClick={() => setSelectedItem(item)}
+                        >
+                            {t('review.write') || 'Rate'}
+                        </Button>
+                      )}
+                  </div>
                 </div>
-                <p className="text-sm font-medium">{formatCurrency(item.priceAtOrder * item.quantity)}</p>
+                <p className="text-sm font-medium flex-shrink-0">{formatCurrency(item.priceAtOrder * item.quantity)}</p>
               </div>
             ))}
           </div>
@@ -75,6 +96,25 @@ const OrdersContent = () => {
           </div>
         </div>
       ))}
+
+      {/* Review Modal */}
+      <Modal
+        isOpen={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        title={t('review.write_review') || 'Write Review'}
+        size="lg"
+      >
+        {selectedItem && user && (
+            <ReviewForm
+                orderItemCode={selectedItem.code} 
+                productName={selectedItem.productName}
+                productImage={selectedItem.productImage}
+                userCode={user.code}
+                onSuccess={handleReviewSuccess}
+                onCancel={() => setSelectedItem(null)}
+            />
+        )}
+      </Modal>
     </div>
   );
 };

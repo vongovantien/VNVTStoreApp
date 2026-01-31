@@ -13,7 +13,7 @@ namespace VNVTStore.API.Controllers.v1;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-public class ReviewsController : BaseApiController<ReviewDto, CreateReviewDto, UpdateReviewDto>
+public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateReviewDto, UpdateReviewDto>
 {
     private readonly ICurrentUser _currentUser;
 
@@ -101,19 +101,4 @@ public class ReviewsController : BaseApiController<ReviewDto, CreateReviewDto, U
         var result = await Mediator.Send(new RejectReviewCommand(code));
         return HandleDelete(result);
     }
-
-    protected override IRequest<Result<PagedResult<ReviewDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<ReviewDto>(pageIndex, pageSize, search, sort, filters, fields);
-
-    protected override IRequest<Result<ReviewDto>> CreateGetByCodeQuery(string code)
-        => new GetByCodeQuery<ReviewDto>(code);
-
-    protected override IRequest<Result<ReviewDto>> CreateCreateCommand(CreateReviewDto dto)
-        => new CreateCommand<CreateReviewDto, ReviewDto>(dto);
-
-    protected override IRequest<Result<ReviewDto>> CreateUpdateCommand(string code, UpdateReviewDto dto)
-        => new UpdateCommand<UpdateReviewDto, ReviewDto>(code, dto);
-
-    protected override IRequest<Result> CreateDeleteCommand(string code)
-        => new DeleteCommand<TblReview>(code);
 }

@@ -12,8 +12,10 @@ import { PageLoader } from '@/components/common/PageLoader';
 const HomePage = lazy(() => import('@/pages/shop/HomePage'));
 const ProductsPage = lazy(() => import('@/pages/shop/ProductsPage'));
 const ProductDetailPage = lazy(() => import('@/pages/shop/ProductDetailPage'));
+const OrderDetailPage = lazy(() => import('@/pages/shop/account/OrderDetailPage'));
 const CartPage = lazy(() => import('@/pages/shop/CartPage'));
 const CheckoutPage = lazy(() => import('@/pages/shop/CheckoutPage'));
+
 const OrderSuccessPage = lazy(() => import('@/pages/shop/OrderSuccessPage'));
 const VerifyOrderPage = lazy(() => import('@/pages/shop/VerifyOrderPage'));
 const QuoteRequestPage = lazy(() => import('@/pages/shop/QuoteRequestPage'));
@@ -32,6 +34,7 @@ const ContactPage = lazy(() => import('@/pages/shop/ContactPage'));
 const AboutPage = lazy(() => import('@/pages/shop/AboutPage'));
 const SupportPage = lazy(() => import('@/pages/shop/SupportPage'));
 const TrackingPage = lazy(() => import('@/pages/shop/TrackingPage'));
+const SearchPage = lazy(() => import('@/pages/shop/SearchPage'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/DashboardPage'));
@@ -46,6 +49,10 @@ const AdminSuppliers = lazy(() => import('@/pages/admin/SuppliersPage'));
 const AdminBrands = lazy(() => import('@/pages/admin/BrandsPage'));
 const AdminUnits = lazy(() => import('@/pages/admin/UnitsPage'));
 const AdminBanners = lazy(() => import('@/pages/admin/BannersPage'));
+const AdminReviews = lazy(() => import('@/pages/admin/ReviewsPage'));
+const AdminCoupons = lazy(() => import('@/pages/admin/CouponsPage'));
+const AdminNews = lazy(() => import('@/pages/admin/NewsPage'));
+const AdminRoles = lazy(() => import('@/pages/admin/RolesPage'));
 
 // Error pages
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -76,6 +83,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <ProductsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'search',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <SearchPage />
               </Suspense>
             ),
           },
@@ -364,6 +379,38 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminBanners />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'reviews',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminReviews />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'coupons',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminCoupons />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'news',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminNews />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'roles',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminRoles />
               </Suspense>
             ),
           },

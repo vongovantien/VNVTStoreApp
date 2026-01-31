@@ -11,26 +11,11 @@ namespace VNVTStore.API.Controllers.v1;
 
 [Route("api/v1/[controller]")]
 [ApiController]
-public class CategoriesController : BaseApiController<CategoryDto, CreateCategoryDto, UpdateCategoryDto>
+public class CategoriesController : BaseApiController<TblCategory, CategoryDto, CreateCategoryDto, UpdateCategoryDto>
 {
     public CategoriesController(IMediator mediator) : base(mediator)
     {
     }
-
-    protected override IRequest<Result<PagedResult<CategoryDto>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<CategoryDto>(pageIndex, pageSize, search, sort, filters, fields);
-
-    protected override IRequest<Result<CategoryDto>> CreateGetByCodeQuery(string code)
-        => new GetByCodeQuery<CategoryDto>(code);
-
-    protected override IRequest<Result<CategoryDto>> CreateCreateCommand(CreateCategoryDto dto)
-        => new CreateCommand<CreateCategoryDto, CategoryDto>(dto);
-
-    protected override IRequest<Result<CategoryDto>> CreateUpdateCommand(string code, UpdateCategoryDto dto)
-        => new UpdateCommand<UpdateCategoryDto, CategoryDto>(code, dto);
-
-    protected override IRequest<Result> CreateDeleteCommand(string code)
-        => new DeleteCommand<TblCategory>(code);
 
     [HttpPost("delete-multiple")]
     [Authorize(Roles = "admin,Admin")]
@@ -39,10 +24,20 @@ public class CategoriesController : BaseApiController<CategoryDto, CreateCategor
         var result = await Mediator.Send(new DeleteMultipleCommand<TblCategory>(codes));
         return HandleDelete(result);
     }
+
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats()
     {
         var result = await Mediator.Send(new GetCategoryStatsQuery());
         return HandleResult(result);
+    }
+
+    [HttpGet("template")]
+    [AllowAnonymous]
+    public IActionResult GetTemplate()
+    {
+        var csv = "Code,Name,Description,ParentCategoryCode,IsActive\nCAT001,Sample Category,Description here,,true";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        return File(bytes, "text/csv", "categories_template.csv");
     }
 }

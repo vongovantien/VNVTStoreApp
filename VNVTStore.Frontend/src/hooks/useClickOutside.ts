@@ -28,5 +28,5 @@ export const useClickOutside = <T extends HTMLElement = HTMLElement>(
         };
     }, [ref, handler]);
 
-    return ref;
+    return ref as any;
 };

@@ -1,4 +1,5 @@
-import { memo, useEffect, useCallback, type ReactNode } from 'react';
+import React, { memo, useEffect, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -14,7 +15,6 @@ export interface ModalProps {
   isOpen: boolean;
   /** Close handler */
   onClose: () => void;
-  /** Modal title */
   title?: ReactNode;
   /** Modal size */
   size?: ModalSize;

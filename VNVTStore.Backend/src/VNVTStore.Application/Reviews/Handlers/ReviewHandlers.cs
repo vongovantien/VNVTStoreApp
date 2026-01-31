@@ -20,7 +20,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     IRequestHandler<GetByCodeQuery<ReviewDto>, Result<ReviewDto>>,
     IRequestHandler<ApproveReviewCommand, Result>,
     IRequestHandler<RejectReviewCommand, Result>,
-    IRequestHandler<GetPagedQuery<ReviewDto>, Result<PagedResult<ReviewDto>>>
+    IRequestHandler<GetAllReviewsQuery, Result<PagedResult<ReviewDto>>>
 {
     private readonly IRepository<TblOrderItem> _orderItemRepository;
     private readonly ICurrentUser _currentUser;
@@ -109,7 +109,9 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             predicate: r => r.OrderItemCodeNavigation != null && 
                             r.OrderItemCodeNavigation.ProductCode == request.ProductCode &&
                             r.IsApproved == true,
-            includes: q => q.Include(r => r.UserCodeNavigation).Include(r => r.OrderItemCodeNavigation),
+            includes: q => q.Include(r => r.UserCodeNavigation)
+                            .Include(r => r.OrderItemCodeNavigation)
+                            .ThenInclude(oi => oi!.ProductCodeNavigation),
             orderBy: q => q.OrderByDescending(r => r.CreatedAt));
     }
 
@@ -160,17 +162,18 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         return Result.Success();
     }
 
-    public async Task<Result<PagedResult<ReviewDto>>> Handle(GetPagedQuery<ReviewDto> request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<ReviewDto>>> Handle(GetAllReviewsQuery request, CancellationToken cancellationToken)
     {
         var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
 
-        return await GetPagedDapperAsync<ReviewDto>(
+        return await GetPagedAsync<ReviewDto>(
             request.PageIndex,
             request.PageSize,
-            request.Searching,
-            sortDTO,
-            null,
-            request.Fields,
-            cancellationToken);
+            cancellationToken,
+            predicate: request.IsApproved.HasValue ? (r => r.IsApproved == request.IsApproved) : null,
+            includes: q => q.Include(r => r.UserCodeNavigation)
+                            .Include(r => r.OrderItemCodeNavigation)
+                            .ThenInclude(oi => oi!.ProductCodeNavigation),
+            orderBy: q => q.OrderByDescending(r => r.CreatedAt));
     }
 }

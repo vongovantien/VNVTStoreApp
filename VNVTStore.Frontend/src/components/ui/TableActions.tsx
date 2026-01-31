@@ -1,3 +1,5 @@
+import React from 'react';
+import type { ReactNode } from 'react';
 import { Eye, Edit3, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -5,7 +7,7 @@ interface TableActionsProps {
   onView?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
-  customActions?: React.ReactNode;
+  customActions?: ReactNode;
 }
 
 export const TableActions = ({ onView, onEdit, onDelete, customActions }: TableActionsProps) => {

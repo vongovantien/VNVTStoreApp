@@ -19,12 +19,16 @@ public class UserDto : IBaseDto
     public string? FullName { get; set; }
     public string? Phone { get; set; }
     public string? Role { get; set; }
+    public string? RoleCode { get; set; }
+    [Reference("TblRole", "RoleCode", "Name")]
+    public string? RoleName { get; set; }
     public bool IsActive { get; set; } // Ensure IsActive is exposed
     public bool IsEmailVerified { get; set; } = false;
     public DateTime? CreatedAt { get; set; }
     public DateTime? LastLogin { get; set; }
     public string? Token { get; set; }
     public string? Avatar { get; set; }
+    public List<string> Permissions { get; set; } = new();
 }
 
 public class CreateUserDto
@@ -94,12 +98,15 @@ public class ProductDto : IBaseDto
 
     [ReferenceCollection(typeof(UnitDto), "TblProductUnit", "ProductCode", "Code")]
     public List<UnitDto> ProductUnits { get; set; } = new();
+
+    [ReferenceCollection(typeof(ProductVariantDto), "TblProductVariant", "ProductCode", "Code")]
+    public List<ProductVariantDto> Variants { get; set; } = new();
 }
 
 public class ProductDetailDto : IBaseDto
 {
     public string Code { get; set; } = null!;
-    public ProductDetailType DetailType { get; set; } = ProductDetailType.Spec;
+    public ProductDetailType DetailType { get; set; } = ProductDetailType.SPEC;
     public string SpecName { get; set; } = null!;
     public string SpecValue { get; set; } = null!;
 }
@@ -125,11 +132,12 @@ public class CreateProductDto
     public List<string>? Images { get; set; }
     public List<CreateProductDetailDto>? Details { get; set; }
     public List<CreateUnitDto>? ProductUnits { get; set; }
+    public List<CreateProductVariantDto>? Variants { get; set; }
 }
 
 public class CreateProductDetailDto
 {
-    public ProductDetailType DetailType { get; set; } = ProductDetailType.Spec;
+    public ProductDetailType DetailType { get; set; } = ProductDetailType.SPEC;
     public string SpecName { get; set; } = null!;
     public string SpecValue { get; set; } = null!;
 }
@@ -156,6 +164,7 @@ public class UpdateProductDto
     public List<string>? Images { get; set; }
     public List<CreateProductDetailDto>? Details { get; set; } // reuse Create dto for list replacement
     public List<CreateUnitDto>? ProductUnits { get; set; }
+    public List<CreateProductVariantDto>? Variants { get; set; }
 }
 
 public class ProductImageDto
@@ -173,6 +182,34 @@ public class ProductStatsDto
     public int Total { get; set; }
     public int LowStock { get; set; }
     public int OutOfStock { get; set; }
+}
+
+public class ProductVariantDto : IBaseDto
+{
+    public string Code { get; set; } = null!;
+    public string ProductCode { get; set; } = null!;
+    public string SKU { get; set; } = null!;
+    public string? Attributes { get; set; }
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class CreateProductVariantDto
+{
+    public string SKU { get; set; } = null!;
+    public string? Attributes { get; set; }
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
+}
+
+public class UpdateProductVariantDto
+{
+    public string? SKU { get; set; }
+    public string? Attributes { get; set; }
+    public decimal? Price { get; set; }
+    public int? StockQuantity { get; set; }
+    public bool? IsActive { get; set; }
 }
 
 // ==================== BRAND ====================
@@ -390,8 +427,12 @@ public class ReviewDto : IBaseDto
     public string? Comment { get; set; }
     public DateTime? CreatedAt { get; set; }
     public bool? IsApproved { get; set; }
+    public string? AdminReply { get; set; }
     [Reference("TblUser", "UserCode", "Username")]
     public string? UserName { get; set; }
+    [Reference("TblProduct", "OrderItemCodeNavigation.ProductCode", "Name")]
+    public string? ProductName { get; set; }
+    public string? ProductCode { get; set; }
 }
 
 public class CreateReviewDto
@@ -406,6 +447,8 @@ public class UpdateReviewDto
 {
     public int? Rating { get; set; }
     public string? Comment { get; set; }
+    public bool? IsApproved { get; set; }
+    public string? AdminReply { get; set; }
 }
 
 // ==================== COUPON ====================
@@ -533,13 +576,12 @@ public class QuoteDto : IBaseDto
     public string UserCode { get; set; } = null!;
     [Reference("TblUser", "UserCode", "Username")]
     public string? UserName { get; set; }
-    public string ProductCode { get; set; } = null!;
-    [Reference("TblProduct", "ProductCode", "Name")]
-    public string? ProductName { get; set; }
-    public string? ProductImage { get; set; }
-    public int Quantity { get; set; }
+    
+    public decimal TotalAmount { get; set; }
+    public string? ReferenceNumber { get; set; }
+    public DateTime? ExpiryDate { get; set; }
+    
     public string? Note { get; set; }
-    public decimal? QuotedPrice { get; set; }
     public string? AdminNote { get; set; }
     public string Status { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -548,26 +590,64 @@ public class QuoteDto : IBaseDto
     public string? CustomerName { get; set; }
     public string? CustomerEmail { get; set; }
     public string? CustomerPhone { get; set; }
+
+    [ReferenceCollection(typeof(QuoteItemDto), "TblQuoteItem", "QuoteCode", "Code")]
+    public List<QuoteItemDto> Items { get; set; } = new();
+}
+
+public class QuoteItemDto
+{
+    public string Code { get; set; } = null!;
+    public string QuoteCode { get; set; } = null!;
+    public string ProductCode { get; set; } = null!;
+    [Reference("TblProduct", "ProductCode", "Name")]
+    public string? ProductName { get; set; }
+    
+    public string? UnitCode { get; set; }
+    [Reference("TblUnit", "UnitCode", "Name")]
+    public string? UnitName { get; set; }
+    
+    public int Quantity { get; set; }
+    public decimal RequestPrice { get; set; }
+    public decimal ApprovedPrice { get; set; }
+    public decimal TotalLineAmount { get; set; }
 }
 
 public class CreateQuoteDto
 {
-    public string ProductCode { get; set; } = null!;
-    public int Quantity { get; set; }
     public string? Note { get; set; }
     public string? CustomerName { get; set; }
     public string? CustomerEmail { get; set; }
     public string? CustomerPhone { get; set; }
     public string? Company { get; set; }
+    public List<CreateQuoteItemDto> Items { get; set; } = new();
+}
+
+public class CreateQuoteItemDto
+{
+    public string ProductCode { get; set; } = null!;
+    public int Quantity { get; set; }
+    public string? UnitCode { get; set; }
+    public decimal? RequestPrice { get; set; }
 }
 
 public class UpdateQuoteDto
 {
-    public int? Quantity { get; set; }
     public string? Note { get; set; }
     public string? Status { get; set; }
-    public decimal? QuotedPrice { get; set; }
     public string? AdminNote { get; set; }
+    public decimal? TotalAmount { get; set; }
+    public DateTime? ExpiryDate { get; set; }
+    // For modifying items, typically we use separate endpoints or full replace
+    public List<UpdateQuoteItemDto>? Items { get; set; } 
+}
+
+public class UpdateQuoteItemDto 
+{
+    public string? Code { get; set; } // If null, new item
+    public string ProductCode { get; set; } = null!;
+    public int Quantity { get; set; }
+    public decimal? ApprovedPrice { get; set; }
 }
 
 // ==================== UNIT DTO ====================
@@ -623,4 +703,92 @@ public class EntityStatsDto
 {
     public int Total { get; set; }
     public int Active { get; set; }
+}
+
+// ==================== NEWS DTO ====================
+public class NewsDto : IBaseDto
+{
+    public string Code { get; set; } = null!;
+    public string Title { get; set; } = null!;
+    public string? Summary { get; set; }
+    public string? Content { get; set; }
+    public string? Thumbnail { get; set; }
+    public string? Author { get; set; }
+    public DateTime? PublishedAt { get; set; }
+    public bool IsActive { get; set; }
+    public string? MetaTitle { get; set; }
+    public string? MetaDescription { get; set; }
+    public string? MetaKeywords { get; set; }
+    public string? Slug { get; set; }
+    public DateTime? CreatedAt { get; set; }
+}
+
+public class CreateNewsDto
+{
+    public string Title { get; set; } = null!;
+    public string? Summary { get; set; }
+    public string? Content { get; set; }
+    public string? Thumbnail { get; set; }
+    public string? Author { get; set; }
+    public bool IsActive { get; set; } = true;
+    public string? MetaTitle { get; set; }
+    public string? MetaDescription { get; set; }
+    public string? MetaKeywords { get; set; }
+    public string? Slug { get; set; }
+}
+
+public class UpdateNewsDto
+{
+    public string? Title { get; set; }
+    public string? Summary { get; set; }
+    public string? Content { get; set; }
+    public string? Thumbnail { get; set; }
+    public string? Author { get; set; }
+    public bool? IsActive { get; set; }
+    public string? MetaTitle { get; set; }
+    public string? MetaDescription { get; set; }
+    public string? MetaKeywords { get; set; }
+    public string? Slug { get; set; }
+}
+
+
+// ==================== RBAC ====================
+public class RoleDto : IBaseDto
+{
+    public string Code { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public bool IsActive { get; set; }
+    
+    [ReferenceCollection(typeof(PermissionDto), "TblRolePermission", "RoleCode", "PermissionCode")]
+    public List<PermissionDto> Permissions { get; set; } = new();
+}
+
+public class CreateRoleDto
+{
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public List<string> PermissionCodes { get; set; } = new();
+}
+
+public class UpdateRoleDto
+{
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public bool? IsActive { get; set; }
+    public List<string>? PermissionCodes { get; set; }
+}
+
+public class PermissionDto : IBaseDto
+{
+    public string Code { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string Module { get; set; } = null!;
+    public string? Description { get; set; }
+}
+
+public class RolePermissionDto
+{
+    public string RoleCode { get; set; } = null!;
+    public string PermissionCode { get; set; } = null!;
 }

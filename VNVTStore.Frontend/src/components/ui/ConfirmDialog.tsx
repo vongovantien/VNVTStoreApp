@@ -1,4 +1,5 @@
-import { memo, type ReactNode } from 'react';
+import React, { memo } from 'react';
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Loader2, CheckCircle, Info } from 'lucide-react';

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Input, Select, Modal } from '@/components/ui';
 import CustomImage from '@/components/common/Image';
 import { useCartStore, useAuthStore, useToast } from '@/store'; // Consolidated import
@@ -163,12 +164,12 @@ export const CheckoutPage = () => {
         note: formData.note,
         paymentMethod: paymentMethod,
         couponCode: appliedVoucher?.code,
-        items: !isAuthenticated ? items.map(item => ({
+        items: items.map(item => ({
           productCode: item.product.code,
           quantity: item.quantity,
           size: item.size,
           color: item.color
-        })) : undefined
+        }))
       };
 
       // 1. Create Order
@@ -387,28 +388,45 @@ export const CheckoutPage = () => {
                 </h2>
 
                 <div className="space-y-4">
-                  {[
-                    { value: PaymentMethod.COD, label: 'Thanh toán khi nhận hàng (COD)', icon: '💵' },
-                    { value: 'ZALOPAY', label: 'ZaloPay', icon: '💳' }, // Use Constants if available
-                    { value: 'MOMO', label: 'Ví MoMo', icon: '📱' },
-                    { value: 'VNPAY', label: 'VNPAY QR', icon: '🏦' },
-                    { value: 'BANK', label: 'Chuyển khoản ngân hàng', icon: '🏛️' },
-                  ].map((method) => (
-                    <label
-                      key={method.value}
-                      className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${paymentMethod === method.value ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
-                        }`}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        value={method.value}
-                        checked={paymentMethod === method.value}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-5 h-5 text-primary"
-                      />
-                      <span className="text-2xl">{method.icon}</span>
-                      <span className="font-medium">{method.label}</span>
+                    {[
+                      { value: PaymentMethod.COD, label: 'Thanh toán khi nhận hàng (COD)', icon: '💵' },
+                      { value: 'ZALOPAY', label: 'ZaloPay', icon: '💳' },
+                      { value: 'MOMO', label: 'Ví MoMo', icon: '📱' },
+                      { value: 'VNPAY', label: 'VNPAY QR', icon: '🏦' },
+                      { value: PaymentMethod.BANK_TRANSFER, label: 'Chuyển khoản ngân hàng', icon: '🏛️' },
+                    ].map((method) => (
+                      <label
+                        key={method.value}
+                        className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${paymentMethod === method.value ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                          }`}
+                      >
+                        <input
+                          type="radio"
+                          name="payment"
+                          value={method.value}
+                          checked={paymentMethod === method.value}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          className="w-5 h-5 text-primary"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{method.icon}</span>
+                            <span className="font-medium">{method.label}</span>
+                          </div>
+                          {paymentMethod === PaymentMethod.BANK_TRANSFER && method.value === PaymentMethod.BANK_TRANSFER && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              className="mt-3 p-4 bg-tertiary rounded-lg text-xs space-y-1"
+                            >
+                              <p className="font-bold text-primary">{t('checkout.bankInfo')}</p>
+                              <p>{t('common.fields.bankName')}: <strong>{t('checkout.bankName')}</strong></p>
+                              <p>{t('common.fields.bankAccount')}: <strong>{t('checkout.accountNumber')}</strong></p>
+                              <p>{t('common.fields.accountHolder') || 'Chủ tài khoản'}: <strong>{t('checkout.accountHolder')}</strong></p>
+                              <p>{t('common.fields.note')}: <strong>{t('checkout.transferContent')}</strong></p>
+                          </motion.div>
+                        )}
+                      </div>
                     </label>
                   ))}
                 </div>

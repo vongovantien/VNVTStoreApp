@@ -31,6 +31,10 @@ import {
   Home,
   Tag,
   Ruler,
+  Star,
+  Ticket,
+  MessageSquare,
+  Shield,
 
   ChevronRight as BreadcrumbSeparator,
 } from 'lucide-react';
@@ -41,7 +45,19 @@ import { useUIStore, useAuthStore } from '@/store';
 import { UserRole } from '@/types';
 
 // Navigation items
-const navGroups = [
+interface NavItem {
+  path: string;
+  icon: any;
+  label: string;
+  end?: boolean;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
     title: 'admin.sidebar.core',
     items: [
@@ -65,13 +81,17 @@ const navGroups = [
     items: [
       { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes' },
       { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions' },
+      { path: '/admin/coupons', icon: Ticket, label: 'admin.sidebar.coupons' },
       { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners' },
+      { path: '/admin/news', icon: FileText, label: 'admin.sidebar.news' },
+      { path: '/admin/reviews', icon: Star, label: 'admin.sidebar.reviews' },
     ]
   },
   {
     title: 'admin.sidebar.system',
     items: [
       { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings' },
+      { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles' },
     ]
   }
 ];
@@ -287,7 +307,7 @@ export const AdminLayout = () => {
         </nav>
 
         {/* Logout */}
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="p-4 border-t border-gray-800 mt-auto">
           <button
             onClick={handleLogout}
             className={cn(

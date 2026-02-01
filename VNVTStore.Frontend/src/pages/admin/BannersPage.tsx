@@ -107,9 +107,9 @@ const BannersPage = () => {
     createMutation.mutate(data, {
       onSuccess: () => {
         setIsFormOpen(false);
-        toast.success(t('messages.createSuccess') || 'Banner created successfully');
+        toast.success(t('common.messages.createSuccess'));
       },
-      onError: () => toast.error(t('messages.createError') || 'Failed to create banner'),
+      onError: () => toast.error(t('common.messages.createError')),
     });
   };
 
@@ -119,9 +119,9 @@ const BannersPage = () => {
       onSuccess: () => {
         setIsFormOpen(false);
         setEditingBanner(null);
-        toast.success(t('messages.updateSuccess') || 'Banner updated successfully');
+        toast.success(t('common.messages.updateSuccess'));
       },
-      onError: () => toast.error(t('messages.updateError') || 'Failed to update banner'),
+      onError: () => toast.error(t('common.messages.updateError')),
     });
   };
 
@@ -132,7 +132,7 @@ const BannersPage = () => {
           setBannerToDelete(null);
           toast.success(t('common.deleteSuccess'));
         },
-        onError: () => toast.error(t('messages.deleteError') || 'Failed to delete banner'),
+        onError: () => toast.error(t('common.messages.deleteError')),
       });
     } else if (selectedToDelete.length > 0) {
       // Bulk delete simulation - wait for backend bulk delete or loop
@@ -144,7 +144,7 @@ const BannersPage = () => {
           setShowBulkConfirm(false);
           toast.success(t('common.deleteSuccess'));
         })
-        .catch(() => toast.error('Failed to delete some banners'));
+        .catch(() => toast.error(t('common.messages.deleteSomeError')));
     }
   };
 
@@ -224,7 +224,7 @@ const BannersPage = () => {
       <Modal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        title={editingBanner ? (t('admin.actions.edit') + ' Banner') : (t('admin.actions.create') + ' Banner')}
+        title={editingBanner ? (t('admin.actions.edit') + ' ' + t('admin.banners')) : (t('admin.actions.create') + ' ' + t('admin.banners'))}
         size="lg"
       >
         <BannerForm
@@ -246,7 +246,7 @@ const BannersPage = () => {
       <Modal
         isOpen={!!viewingBanner}
         onClose={() => setViewingBanner(null)}
-        title={t('admin.actions.view') + ' Banner'}
+        title={t('admin.actions.view') + ' ' + t('admin.banners')}
         size="md"
       >
         {viewingBanner && (
@@ -254,7 +254,7 @@ const BannersPage = () => {
             <div>
               <h3 className="text-lg font-bold text-slate-800 dark:text-white">{viewingBanner.title}</h3>
               <Badge color={viewingBanner.isActive ? 'success' : 'secondary'} className="mt-1">
-                {viewingBanner.isActive ? 'Active' : 'Inactive'}
+                {viewingBanner.isActive ? t('common.status.active') : t('common.status.inactive')}
               </Badge>
             </div>
 
@@ -266,16 +266,16 @@ const BannersPage = () => {
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-slate-500 block">Priority</span>
+                <span className="text-slate-500 block">{t('common.fields.priority')}</span>
                 <span className="font-medium">{viewingBanner.priority}</span>
               </div>
               <div>
-                <span className="text-slate-500 block">Created At</span>
+                <span className="text-slate-500 block">{t('common.fields.createdAt')}</span>
                 <span className="font-medium">{formatDate(viewingBanner.createdAt)}</span>
               </div>
               {viewingBanner.linkUrl && (
                 <div className="col-span-2">
-                  <span className="text-slate-500 block">Link</span>
+                  <span className="text-slate-500 block">{t('common.fields.linkUrl')}</span>
                   <a href={viewingBanner.linkUrl} target="_blank" className="text-blue-600 hover:underline break-all">
                     {viewingBanner.linkUrl}
                   </a>

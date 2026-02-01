@@ -36,7 +36,7 @@ const AccountSidebar = () => {
   ];
 
   return (
-    <aside className="w-full lg:w-64 flex-shrink-0">
+    <aside className="w-full lg:w-64 flex-shrink-0 lg:sticky lg:top-24 self-start">
       <div className="bg-primary rounded-xl p-4">
         {/* User Info */}
         <div className="flex items-center gap-3 pb-4 mb-4 border-b">
@@ -44,7 +44,7 @@ const AccountSidebar = () => {
             {user?.fullName?.charAt(0) || 'U'}
           </div>
           <div>
-            <p className="font-semibold">{user?.fullName || 'Khách hàng'}</p>
+            <p className="font-semibold">{user?.fullName || t('account.customer')}</p>
             <p className="text-sm text-tertiary">{user?.email || 'email@example.com'}</p>
           </div>
         </div>

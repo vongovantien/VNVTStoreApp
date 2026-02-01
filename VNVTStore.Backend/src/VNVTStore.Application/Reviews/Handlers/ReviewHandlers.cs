@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Application.Constants;
 using VNVTStore.Application.Reviews.Commands;
 using VNVTStore.Application.Reviews.Queries;
 using VNVTStore.Domain.Entities;
@@ -39,32 +40,43 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result<ReviewDto>> Handle(CreateCommand<CreateReviewDto, ReviewDto> request, CancellationToken cancellationToken)
     {
-        // Validate order item exists and belongs to user
-        var orderItem = await _orderItemRepository.AsQueryable()
-            .Include(oi => oi.OrderCodeNavigation)
-            .FirstOrDefaultAsync(oi => oi.Code == request.Dto.OrderItemCode, cancellationToken);
+        string? productCode = request.Dto.ProductCode;
+        
+        // If order item is provided, validate and link
+        if (!string.IsNullOrEmpty(request.Dto.OrderItemCode))
+        {
+            var orderItem = await _orderItemRepository.AsQueryable()
+                .Include(oi => oi.OrderCodeNavigation)
+                .FirstOrDefaultAsync(oi => oi.Code == request.Dto.OrderItemCode, cancellationToken);
 
-        if (orderItem == null)
-            return Result.Failure<ReviewDto>(Error.NotFound(MessageConstants.OrderItem, request.Dto.OrderItemCode));
+            if (orderItem == null)
+                return Result.Failure<ReviewDto>(Error.NotFound(VNVTStore.Application.Common.MessageConstants.OrderItem, request.Dto.OrderItemCode));
 
-        if (orderItem.OrderCodeNavigation.UserCode != request.Dto.UserCode)
-            return Result.Failure<ReviewDto>(Error.Forbidden("Cannot review item from another user's order"));
+            if (orderItem.OrderCodeNavigation != null && orderItem.OrderCodeNavigation.UserCode != request.Dto.UserCode)
+            {
+                return Result.Failure<ReviewDto>(Error.Forbidden(VNVTStore.Application.Common.MessageConstants.Forbidden));
+            }
+            
+            productCode = orderItem.ProductCode;
+        }
 
-        // Check if already reviewed
+        // Check if already reviewed (by Either ProductCode or OrderItemCode)
         var existingReview = await _repository.FindAsync(
-            r => r.OrderItemCode == request.Dto.OrderItemCode && r.UserCode == request.Dto.UserCode,
+            r => (request.Dto.OrderItemCode != null && r.OrderItemCode == request.Dto.OrderItemCode) || 
+                 (productCode != null && r.ProductCode == productCode && r.UserCode == request.Dto.UserCode),
             cancellationToken);
 
         if (existingReview != null)
-            return Result.Failure<ReviewDto>(Error.Conflict(MessageConstants.ReviewAlreadyExists));
+            return Result.Failure<ReviewDto>(Error.Conflict(VNVTStore.Application.Common.MessageConstants.ReviewAlreadyExists));
 
         return await CreateAsync<CreateReviewDto, ReviewDto>(
             request.Dto,
             cancellationToken,
             r => {
                 r.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
-                r.IsApproved = false; // Changed to false for moderation
+                r.IsApproved = false; 
                 r.CreatedAt = DateTime.Now;
+                r.ProductCode = productCode;
             });
     }
 
@@ -72,7 +84,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     {
         var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
-            return Result.Failure<ReviewDto>(Error.NotFound(MessageConstants.Review, request.Code));
+            return Result.Failure<ReviewDto>(Error.NotFound(VNVTStore.Application.Common.MessageConstants.Review, request.Code));
 
         var userCode = _currentUser.UserCode;
         if (review.UserCode != userCode)
@@ -81,7 +93,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         return await UpdateAsync<UpdateReviewDto, ReviewDto>(
             request.Code,
             request.Dto,
-            MessageConstants.Review,
+            VNVTStore.Application.Common.MessageConstants.Review,
             cancellationToken);
     }
 
@@ -89,7 +101,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     {
         var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
-            return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
+            return Result.Failure(Error.NotFound(VNVTStore.Application.Common.MessageConstants.Review, request.Code));
 
         var userCode = _currentUser.UserCode;
         var isAdmin = _currentUser.IsAdmin;
@@ -97,7 +109,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         if (review.UserCode != userCode && !isAdmin)
             return Result.Failure(Error.Forbidden("Cannot delete another user's review"));
 
-        return await DeleteAsync(request.Code, MessageConstants.Review, cancellationToken, softDelete: false);
+        return await DeleteAsync(request.Code, VNVTStore.Application.Common.MessageConstants.Review, cancellationToken, softDelete: false);
     }
 
     public async Task<Result<PagedResult<ReviewDto>>> Handle(GetProductReviewsQuery request, CancellationToken cancellationToken)
@@ -106,8 +118,8 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             request.PageIndex,
             request.PageSize,
             cancellationToken,
-            predicate: r => r.OrderItemCodeNavigation != null && 
-                            r.OrderItemCodeNavigation.ProductCode == request.ProductCode &&
+            predicate: r => ((r.OrderItemCodeNavigation != null && r.OrderItemCodeNavigation.ProductCode == request.ProductCode) || 
+                             r.ProductCode == request.ProductCode) &&
                             r.IsApproved == true,
             includes: q => q.Include(r => r.UserCodeNavigation)
                             .Include(r => r.OrderItemCodeNavigation)
@@ -131,7 +143,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     {
         return await GetByCodeAsync<ReviewDto>(
             request.Code,
-            MessageConstants.Review,
+            VNVTStore.Application.Common.MessageConstants.Review,
             cancellationToken,
             includes: q => q.Include(r => r.UserCodeNavigation));
     }
@@ -140,7 +152,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     {
         var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
-             return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
+             return Result.Failure(Error.NotFound(VNVTStore.Application.Common.MessageConstants.Review, request.Code));
 
         review.IsApproved = true;
         _repository.Update(review);
@@ -153,7 +165,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     {
         var review = await _repository.GetByCodeAsync(request.Code, cancellationToken);
         if (review == null)
-             return Result.Failure(Error.NotFound(MessageConstants.Review, request.Code));
+             return Result.Failure(Error.NotFound(VNVTStore.Application.Common.MessageConstants.Review, request.Code));
 
         review.IsApproved = false;
         _repository.Update(review);
@@ -164,16 +176,36 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result<PagedResult<ReviewDto>>> Handle(GetAllReviewsQuery request, CancellationToken cancellationToken)
     {
-        var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
+        var searchFields = request.Searching ?? new List<SearchDTO>();
 
-        return await GetPagedAsync<ReviewDto>(
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            // Search across Comment, User FullName, and Product Name
+            searchFields.Add(new SearchDTO { SearchField = "Comment", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+            searchFields.Add(new SearchDTO { SearchField = "UserCodeNavigation.FullName", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+            searchFields.Add(new SearchDTO { SearchField = "OrderItemCodeNavigation.ProductCodeNavigation.Name", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
+        }
+
+        if (request.IsApproved.HasValue)
+        {
+            searchFields.Add(new SearchDTO { SearchField = "IsApproved", SearchValue = request.IsApproved.Value, SearchCondition = SearchCondition.Equal });
+        }
+
+        var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
+        
+        // Since we need complex nested Joins (User and Product), we'll use EF-based search or Dapper with explicit Joins.
+        // For reviews, we likely want to see everything in Admin, but the user specifically asked for isActive == true for public APIs.
+        
+        return await GetPagedDapperAsync<ReviewDto>(
             request.PageIndex,
             request.PageSize,
-            cancellationToken,
-            predicate: request.IsApproved.HasValue ? (r => r.IsApproved == request.IsApproved) : null,
-            includes: q => q.Include(r => r.UserCodeNavigation)
-                            .Include(r => r.OrderItemCodeNavigation)
-                            .ThenInclude(oi => oi!.ProductCodeNavigation),
-            orderBy: q => q.OrderByDescending(r => r.CreatedAt));
+            searchFields,
+            sortDTO,
+            new List<ReferenceTable> {
+                new ReferenceTable { TableName = "TblUser", AliasName = "User", ForeignKeyCol = "UserCode", ColumnName = "FullName" },
+                new ReferenceTable { TableName = "TblProduct", AliasName = "Product", ForeignKeyCol = "ProductCode", ColumnName = "Name", IsJoinThrough = "OrderItemCodeNavigation" }
+            },
+            request.Fields,
+            cancellationToken);
     }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient, QueryKey } from '@tanstack/react-query';
 import { useToast } from '@/store';
 import { useTranslation } from 'react-i18next';
@@ -76,12 +76,12 @@ export const useEntityManager = <T extends { code?: string; id?: string | number
         },
     });
 
-    const openCreate = () => {
+    const openCreate = useCallback(() => {
         setEditingItem(null);
         setIsFormOpen(true);
-    };
+    }, []);
 
-    const openEdit = async (item: T) => {
+    const openEdit = useCallback(async (item: T) => {
         setEditingItem(item);
         setIsFormOpen(true);
 
@@ -105,32 +105,32 @@ export const useEntityManager = <T extends { code?: string; id?: string | number
                 setIsFetchingDetail(false);
             }
         }
-    };
+    }, [service, includeChildrenOnEdit]);
 
-    const closeForm = () => {
+    const closeForm = useCallback(() => {
         setIsFormOpen(false);
         setEditingItem(null);
-    };
+    }, []);
 
-    const confirmDelete = (item: T) => {
+    const confirmDelete = useCallback((item: T) => {
         setItemToDelete(item);
-    };
+    }, []);
 
-    const cancelDelete = () => {
+    const cancelDelete = useCallback(() => {
         setItemToDelete(null);
-    };
+    }, []);
 
-    const processCreate = (data: CreateDto) => {
+    const processCreate = useCallback((data: CreateDto) => {
         createMutation.mutate(data);
-    };
+    }, [createMutation]);
 
-    const processUpdate = (id: any, data: UpdateDto) => {
+    const processUpdate = useCallback((id: any, data: UpdateDto) => {
         updateMutation.mutate({ id, data });
-    };
+    }, [updateMutation]);
 
-    const processDelete = (id: any) => {
+    const processDelete = useCallback((id: any) => {
         deleteMutation.mutate(id);
-    };
+    }, [deleteMutation]);
 
     return {
         // State

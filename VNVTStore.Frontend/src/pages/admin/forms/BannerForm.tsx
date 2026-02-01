@@ -11,7 +11,7 @@ export interface BannerFormData {
   content: string;
   linkUrl: string;
   linkText: string;
-  imageUrl: string;
+  imageURL: string;
   priority: number;
   isActive: boolean;
   [key: string]: any; // Required for FieldValues compatibility if we can't use 'any' then what?
@@ -38,7 +38,7 @@ export const BannerForm = ({
   // Field definitions
   const fields: FieldDefinition[] = [
     {
-      name: 'imageUrl',
+      name: 'imageURL',
       type: 'image',
       label: t('common.fields.image'),
       colSpan: 12,
@@ -92,8 +92,8 @@ export const BannerForm = ({
     title: initialData?.title || '',
     content: initialData?.content || '',
     linkUrl: initialData?.linkUrl || '',
-    linkText: initialData?.linkText || 'Learn More',
-    imageUrl: initialData?.imageUrl || '',
+    linkText: initialData?.linkText || t('common.placeholders.learnMore'),
+    imageURL: initialData?.imageURL || '',
     priority: initialData?.priority || 0,
     isActive: initialData?.isActive ?? true,
   };

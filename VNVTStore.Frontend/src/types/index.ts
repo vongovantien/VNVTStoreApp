@@ -11,6 +11,7 @@ export interface Product {
     discount?: number;
     image: string;
     images?: string[];
+    productImages?: ProductImage[];
     category: string;
     categoryCode?: string;
     brand?: string;
@@ -30,7 +31,8 @@ export interface Product {
     voltage?: string;
     material?: string;
     size?: string;
-    rating: number;
+    rating?: number;
+    averageRating?: number;
     reviewCount: number;
     isFeatured?: boolean;
     isNew?: boolean;
@@ -76,6 +78,12 @@ export interface ProductTag {
     tagCode: string;
 }
 
+export interface ProductImage {
+    code: string;
+    imageURL: string;
+    isPrimary?: boolean;
+}
+
 export interface ProductVariant {
     code: string;
     productCode: string;
@@ -83,6 +91,13 @@ export interface ProductVariant {
     attributes: string; // JSON string
     price: number;
     stockQuantity: number;
+    isActive: boolean;
+}
+
+// ============ Tag Types ============
+export interface Tag {
+    id: number;
+    name: string;
     isActive: boolean;
 }
 
@@ -96,7 +111,7 @@ export interface Category {
     parentCode?: string; // Changed from parentId
     productCount: number;
     isActive?: boolean;
-    imageUrl?: string;
+    imageURL?: string;
 }
 
 // ============ Cart Types ============

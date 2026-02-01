@@ -17,7 +17,7 @@ const AddressesContent = () => {
     const emptyForm: AddressFormData = {
         fullName: '',
         phone: '',
-        category: 'Nhà riêng',
+        category: t('addresses.form.options.home'),
         street: '',
         ward: '',
         district: '',
@@ -60,7 +60,7 @@ const AddressesContent = () => {
         setTempFormData({
             fullName: addr.fullName || '',
             phone: addr.phone || '',
-            category: addr.category || 'Nhà riêng',
+            category: addr.category || t('addresses.form.options.home'),
             street: street,
             ward: ward,
             district: district,
@@ -95,17 +95,17 @@ const AddressesContent = () => {
         try {
             if (editingCode) {
                 await addressService.update(editingCode, addressPayload);
-                toast.success('Cập nhật địa chỉ thành công');
+                toast.success(t('addresses.messages.updateSuccess'));
             } else {
                 await addressService.create(addressPayload);
-                toast.success('Thêm địa chỉ mới thành công');
+                toast.success(t('addresses.messages.createSuccess'));
             }
             fetchAddresses();
             setShowModal(false);
             setShowConfirmModal(false);
         } catch (e) {
             console.error(e);
-            toast.error('Có lỗi xảy ra khi lưu địa chỉ');
+            toast.error(t('addresses.messages.saveError'));
         } finally {
             setLoading(false);
         }
@@ -121,12 +121,12 @@ const AddressesContent = () => {
         setLoading(true);
         try {
             await addressService.delete(addressToDelete);
-            toast.success('Đã xóa địa chỉ');
+            toast.success(t('addresses.messages.deleteSuccess'));
             fetchAddresses();
             setAddressToDelete(null);
         } catch (e) {
             console.error(e);
-            toast.error('Không thể xóa địa chỉ');
+            toast.error(t('addresses.messages.deleteError'));
         } finally {
             setLoading(false);
         }
@@ -142,11 +142,11 @@ const AddressesContent = () => {
                 city: addr.city,
                 isDefault: true 
             });
-            toast.success('Đã đặt làm địa chỉ mặc định');
+            toast.success(t('addresses.messages.setDefaultSuccess'));
             fetchAddresses();
         } catch (e) {
             console.error(e);
-            toast.error('Không thể đặt địa chỉ mặc định');
+            toast.error(t('addresses.messages.saveError'));
         }
     };
 
@@ -155,7 +155,7 @@ const AddressesContent = () => {
             title: t('addresses.form.groups.contact'),
             fields: [
                 { name: 'fullName', type: 'text', label: t('addresses.form.labels.fullName'), required: true, colSpan: 12, placeholder: t('addresses.form.placeholders.fullName'), size: 'lg' },
-                { name: 'phone', type: 'phone', label: t('addresses.form.labels.phone'), required: true, colSpan: 12, placeholder: t('shared.placeholders.phone'), size: 'lg' },
+                { name: 'phone', type: 'phone', label: t('addresses.form.labels.phone'), required: true, colSpan: 12, placeholder: t('common.placeholders.phone'), size: 'lg' },
                 { 
                     name: 'category', 
                     type: 'select', 
@@ -239,17 +239,17 @@ const AddressesContent = () => {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex flex-wrap items-center gap-2 mb-1">
                                         <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-tight truncate">
-                                            {addr.fullName || 'Người nhận'}
+                                            {addr.fullName || t('common.fields.customer')}
                                         </h3>
                                         <span className="hidden md:inline text-gray-300 dark:text-slate-700">|</span>
                                         <span className="text-gray-600 dark:text-slate-400 font-medium">{addr.phone || 'N/A'}</span>
                                         {addr.isDefault && (
                                             <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
-                                                <Star className="w-2.5 h-2.5 fill-current" /> Mặc định
+                                                <Star className="w-2.5 h-2.5 fill-current" /> {t('addresses.defaultBadge')}
                                             </span>
                                         )}
                                         <span className="bg-gray-100 dark:bg-slate-800 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                            {addr.category || 'Nhà riêng'}
+                                            {addr.category}
                                         </span>
                                     </div>
                                     <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
@@ -261,20 +261,20 @@ const AddressesContent = () => {
                                             onClick={() => openEditModal(addr)}
                                             className="text-sm text-primary font-bold hover:opacity-80 flex items-center gap-1.5 transition-all"
                                         >
-                                            <Edit2 className="w-4 h-4" /> Sửa
+                                            <Edit2 className="w-4 h-4" /> {t('common.actions.edit')}
                                         </button>
                                         <button
                                             onClick={() => handleDelete(addr.code)}
                                             className="text-sm text-red-500 font-bold hover:opacity-80 flex items-center gap-1.5 transition-all"
                                         >
-                                            <Trash2 className="w-4 h-4" /> Xóa
+                                            <Trash2 className="w-4 h-4" /> {t('common.actions.delete')}
                                         </button>
                                         {!addr.isDefault && (
                                             <button
                                                 onClick={() => setAsDefault(addr)}
                                                 className="text-sm text-gray-400 font-bold hover:text-primary flex items-center gap-1.5 transition-all ml-auto"
                                             >
-                                                <Star className="w-4 h-4" /> Thiết lập mặc định
+                                                <Star className="w-4 h-4" /> {t('addresses.setDefault')}
                                             </button>
                                         )}
                                     </div>
@@ -289,7 +289,7 @@ const AddressesContent = () => {
             <BaseForm<AddressFormData>
                 isModal
                 modalOpen={showModal}
-                modalTitle={editingCode ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ giao hàng'}
+                modalTitle={editingCode ? t('addresses.form.titleEdit') : t('addresses.form.titleAdd')}
                 modalSize="6xl"
                 onModalClose={() => setShowModal(false)}
                 schema={addressSchema}
@@ -298,8 +298,8 @@ const AddressesContent = () => {
                 groupLayoutClassName="grid grid-cols-1 lg:grid-cols-3 gap-8"
                 onSubmit={handleFormSubmit}
                 onCancel={() => setShowModal(false)}
-                submitLabel={editingCode ? 'Lưu cập nhật' : 'Thêm địa chỉ ngay'}
-                cancelLabel="Quay lại"
+                submitLabel={editingCode ? t('addresses.form.submitEdit') : t('addresses.form.submitAdd')}
+                cancelLabel={t('common.actions.back')}
                 isLoading={loading}
             />
 
@@ -308,10 +308,10 @@ const AddressesContent = () => {
                 isOpen={showConfirmModal}
                 onClose={() => setShowConfirmModal(false)}
                 onConfirm={onConfirmSubmit}
-                title="Xác nhận lưu địa chỉ"
-                message="Bạn có chắc chắn thông tin địa chỉ trên là chính xác và muốn lưu lại không?"
+                title={t('addresses.confirm.saveTitle')}
+                message={t('addresses.confirm.saveMessage')}
                 variant="success"
-                confirmText="Đồng ý lưu"
+                confirmText={t('addresses.confirm.saveButton')}
                 isLoading={loading}
                 icon={<CheckCircle className="size-6 text-green-600" />}
             />
@@ -321,10 +321,10 @@ const AddressesContent = () => {
                 isOpen={!!addressToDelete}
                 onClose={() => setAddressToDelete(null)}
                 onConfirm={confirmDelete}
-                title="Xác nhận xóa địa chỉ"
-                message="Bạn có chắc chắn muốn xóa địa chỉ này? Hành động này không thể hoàn tác."
+                title={t('addresses.confirm.deleteTitle')}
+                message={t('addresses.confirm.deleteMessage')}
                 variant="danger"
-                confirmText="Xác nhận xóa"
+                confirmText={t('addresses.confirm.deleteButton')}
                 isLoading={loading}
             />
         </div>

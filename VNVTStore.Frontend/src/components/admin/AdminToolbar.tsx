@@ -144,9 +144,9 @@ export const AdminToolbar = ({
 
       {/* Group 3: File Ops */}
       <div className="flex items-center gap-1">
-        <BlueItem icon={<Download size={20} className="stroke-[2.5]" />} onClick={onImport} title={t('admin.import')} />
+        <BlueItem icon={<Upload size={20} className="stroke-[2.5]" />} onClick={onImport} title={t('admin.import')} />
         <BlueItem 
-          icon={isExporting ? <Loader2 size={20} className="stroke-[2.5] animate-spin" /> : <Upload size={20} className="stroke-[2.5]" />} 
+          icon={isExporting ? <Loader2 size={20} className="stroke-[2.5] animate-spin" /> : <Download size={20} className="stroke-[2.5]" />} 
           onClick={!isExporting ? onExport : undefined} 
           disabled={isExporting}
           title={isExporting ? t('admin.exporting') : t('admin.export')} 

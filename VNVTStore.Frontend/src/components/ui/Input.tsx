@@ -35,9 +35,9 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 
 // ============ Style Maps ============
 const variantStyles: Record<InputVariant, string> = {
-  default: 'border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary',
-  filled: 'border border-transparent bg-tertiary rounded-lg focus:bg-secondary focus:border-primary focus:ring-1 focus:ring-primary',
-  flushed: 'border-b border-gray-200 rounded-none focus:border-primary focus:ring-0',
+  default: 'border border-border rounded-lg focus:border-accent focus:ring-1 focus:ring-accent bg-bg-primary text-text-primary',
+  filled: 'border border-transparent bg-bg-tertiary rounded-lg focus:bg-bg-secondary focus:border-accent focus:ring-1 focus:ring-accent text-text-primary',
+  flushed: 'border-b border-border rounded-none focus:border-accent focus:ring-0 bg-transparent text-text-primary',
 };
 
 const sizeStyles: Record<InputSize, { input: string; label: string }> = {
@@ -75,7 +75,7 @@ export const Input = memo(
         () =>
           cn(
             // Base styles
-            'w-full bg-primary text-primary placeholder:text-tertiary',
+            'w-full bg-bg-primary text-text-primary placeholder:text-text-tertiary',
             'transition-all duration-200 outline-none',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             // Variant
@@ -113,7 +113,7 @@ export const Input = memo(
           <div className="relative flex">
             {/* Left Addon */}
             {leftAddon && (
-              <div className="flex items-center px-3 bg-tertiary border-2 border-r-0 border-gray-200 rounded-l-lg text-secondary">
+              <div className="flex items-center px-3 bg-bg-tertiary border-2 border-r-0 border-border rounded-l-lg text-text-secondary">
                 {leftAddon}
               </div>
             )}
@@ -146,7 +146,7 @@ export const Input = memo(
 
             {/* Right Addon */}
             {rightAddon && (
-              <div className="flex items-center px-3 bg-tertiary border-2 border-l-0 border-gray-200 rounded-r-lg text-secondary">
+              <div className="flex items-center px-3 bg-bg-tertiary border-2 border-l-0 border-border rounded-r-lg text-text-secondary">
                 {rightAddon}
               </div>
             )}

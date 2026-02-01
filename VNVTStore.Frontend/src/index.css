@@ -13,6 +13,7 @@
   --breakpoint-2xl: 1536px;
   /* Colors */
   --color-primary: var(--accent-primary);
+  --color-secondary: #64748b;
   --color-error: var(--error);
 }
 
@@ -42,6 +43,10 @@
   /* indigo-700 */
   --accent-foreground: #ffffff;
   
+  /* Secondary Color (Gray/Slate) */
+  --color-secondary: #64748b; /* slate-500 */
+  --color-secondary-foreground: #ffffff;
+
   --error: #ef4444;
   /* red-500 */
 }
@@ -52,16 +57,19 @@
   --bg-secondary: #1e293b; /* Deep slate for cards/sidebar */
   --bg-tertiary: #334155; /* Lighter slate for inputs/hovers */
 
-  --text-primary: #f1f5f9; /* almost white */
-  --text-secondary: #94a3b8; /* muted blue-grey */
-  --text-tertiary: #64748b; /* darker muted */
+  --text-primary: #f8fafc; /* slate-50 (brighter white) */
+  --text-secondary: #cbd5e1; /* slate-300 (lighter grey) */
+  --text-tertiary: #94a3b8; /* slate-400 */
 
-  --border-color: #1e293b; /* subtle border matching secondary bg */
+  --border-color: #334155; /* slate-700 (more visible border) */
   --shadow-color: rgba(0, 0, 0, 0.5);
 
-  --accent-primary: #6366f1; /* Indigo-500 */
-  --accent-hover: #818cf8; /* Indigo-400 */
+  --accent-primary: #818cf8; /* Indigo-400 (brighter for dark mode) */
+  --accent-hover: #a5b4fc; /* Indigo-300 */
   --accent-foreground: #ffffff;
+  
+  --color-primary: var(--accent-primary);
+  --color-secondary: #94a3b8; /* lighter slate for dark mode secondary */
   
   --error: #f87171; /* red-400 for better visibility on dark */
 }

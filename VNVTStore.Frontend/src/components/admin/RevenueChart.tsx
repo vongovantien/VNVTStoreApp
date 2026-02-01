@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AreaChart,
   Area,
@@ -13,7 +14,7 @@ interface RevenueChartProps {
   data?: { label: string; revenue: number; orderCount: number }[];
 }
 
-export const RevenueChart = ({ data = [] }: RevenueChartProps) => {
+const RevenueChartInner = ({ data = [] }: RevenueChartProps) => {
   if (!data || data.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
@@ -71,3 +72,5 @@ export const RevenueChart = ({ data = [] }: RevenueChartProps) => {
     </div>
   );
 };
+
+export const RevenueChart = React.memo(RevenueChartInner);

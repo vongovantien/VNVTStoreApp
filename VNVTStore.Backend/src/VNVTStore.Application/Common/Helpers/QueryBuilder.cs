@@ -336,9 +336,36 @@ public static class QueryBuilder
         return value;
     }
 
+    private static bool IsBooleanField(string field)
+    {
+        if (string.IsNullOrEmpty(field)) return false;
+        
+        // Remove quotes if present
+        var fieldName = field.Replace("\"", "").Trim();
+        // Remove table alias if present (e.g., "r.IsActive" -> "IsActive")
+        if (fieldName.Contains("."))
+        {
+            fieldName = fieldName.Split('.').Last();
+        }
+
+        var booleanFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "IsActive", "IsApproved", "IsNew", "IsFeatured", "IsDefault", 
+            "IsEmailVerified", "IsPublic", "IsLocked", "IsValid", "IsDeleted"
+        };
+        
+        return booleanFields.Contains(fieldName);
+    }
+
     private static string BuildContainsParam(string field, object? value, DynamicParameters parameters, ref int paramIndex)
     {
         if (value == null) return string.Empty;
+        
+        if (IsBooleanField(field))
+        {
+            return BuildEqualParam(field, value, parameters, ref paramIndex);
+        }
+
         var paramName = $"p{paramIndex++}";
         parameters.Add(paramName, $"%{value}%");
         return $"{field}::text ILIKE @{paramName} ";
@@ -355,9 +382,25 @@ public static class QueryBuilder
             return $"{field} = @{paramName} ";
         }
         
-        if (value is string)
+        if (value is string || value is System.Text.Json.JsonElement)
         {
-            parameters.Add(paramName, value.ToString());
+            var stringValue = value.ToString()?.Trim();
+            
+            if (IsBooleanField(field))
+            {
+                bool boolValue = false;
+                if (string.Equals(stringValue, "true", StringComparison.OrdinalIgnoreCase) || stringValue == "1")
+                    boolValue = true;
+                else if (string.Equals(stringValue, "false", StringComparison.OrdinalIgnoreCase) || stringValue == "0")
+                    boolValue = false;
+                else
+                    return " (1=2) "; // Invalid boolean search value, should not match anything
+
+                parameters.Add(paramName, boolValue);
+                return $"{field} = @{paramName} ";
+            }
+
+            parameters.Add(paramName, stringValue);
             return $"{field} ILIKE @{paramName} ";
         }
         
@@ -701,6 +744,9 @@ public static class QueryBuilder
                f.EndsWith("fee") || 
                f.EndsWith("rate") ||
                f.EndsWith("rating") ||
+               f.EndsWith("total") ||
+               f.EndsWith("discount") ||
+               f.EndsWith("subtotal") ||
                f == "weight" ||
                f == "stock" ||
                f == "usagecount";

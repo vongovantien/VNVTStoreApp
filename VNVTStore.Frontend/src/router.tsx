@@ -53,6 +53,9 @@ const AdminReviews = lazy(() => import('@/pages/admin/ReviewsPage'));
 const AdminCoupons = lazy(() => import('@/pages/admin/CouponsPage'));
 const AdminNews = lazy(() => import('@/pages/admin/NewsPage'));
 const AdminRoles = lazy(() => import('@/pages/admin/RolesPage'));
+const AdminTags = lazy(() => import('@/pages/admin/TagsPage'));
+const AdminAudit = lazy(() => import('@/pages/admin/AuditPage'));
+const AdminPayments = lazy(() => import('@/pages/admin/PaymentsPage'));
 
 // Error pages
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -411,6 +414,38 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminRoles />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'roles',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminRoles />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'tags',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminTags />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'audit',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminAudit />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'payments',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminPayments />
               </Suspense>
             ),
           },

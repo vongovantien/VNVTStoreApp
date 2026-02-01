@@ -1,0 +1,57 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - link "🏠 VNVT Store" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: 🏠
+        - generic [ref=e9]: VNVT Store
+      - heading "Đăng nhập" [level=1] [ref=e10]
+      - paragraph [ref=e11]: Chào mừng bạn trở lại
+    - generic [ref=e12]:
+      - button "Google Google" [ref=e13] [cursor=pointer]:
+        - img "Google" [ref=e14]
+        - generic [ref=e15]: Google
+      - button "Facebook Facebook" [ref=e16] [cursor=pointer]:
+        - img "Facebook" [ref=e17]
+        - generic [ref=e18]: Facebook
+    - generic [ref=e19]:
+      - separator [ref=e20]
+      - generic [ref=e21]: hoặc
+      - separator [ref=e22]
+    - generic [ref=e23]:
+      - generic [ref=e24]: Tên đăng nhập hoặc mật khẩu không chính xác
+      - generic [ref=e25]:
+        - generic [ref=e26]: Email
+        - generic [ref=e27]:
+          - img [ref=e29]
+          - textbox "Email" [ref=e32]:
+            - /placeholder: email@example.com
+            - text: admin@vnvtstore.com
+      - generic [ref=e33]:
+        - generic [ref=e34]: Mật khẩu
+        - generic [ref=e35]:
+          - img [ref=e37]
+          - textbox "Mật khẩu" [ref=e40]:
+            - /placeholder: ••••••••
+            - text: Password123!
+          - button [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+      - generic [ref=e46]:
+        - generic [ref=e47] [cursor=pointer]:
+          - checkbox "Ghi nhớ đăng nhập" [ref=e48]
+          - generic [ref=e49]: Ghi nhớ đăng nhập
+        - link "Quên mật khẩu?" [ref=e50] [cursor=pointer]:
+          - /url: /forgot-password
+      - button "Đăng nhập" [ref=e51] [cursor=pointer]:
+        - text: Đăng nhập
+        - img [ref=e52]
+    - paragraph [ref=e54]:
+      - text: Chưa có tài khoản?
+      - link "Đăng ký ngay" [ref=e55] [cursor=pointer]:
+        - /url: /register
+  - link "← Về trang chủ" [ref=e57] [cursor=pointer]:
+    - /url: /
+```

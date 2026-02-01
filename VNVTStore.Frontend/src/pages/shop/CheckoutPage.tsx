@@ -73,32 +73,36 @@ export const CheckoutPage = () => {
         const promo = res.data;
         // Validate
         const now = new Date();
-        if (!promo.isActive || new Date(promo.startDate) > now || new Date(promo.endDate) < now) {
+        const startDate = new Date(promo.startDate);
+        const endDate = new Date(promo.endDate);
+
+        if (!promo.isActive || startDate > now || endDate < now) {
           toast.error(t('checkout.voucherExpired') || 'Mã giảm giá không hợp lệ hoặc đã hết hạn');
           return;
         }
-        if (promo.minOrderAmount && subtotal < promo.minOrderAmount) {
+
+        if (promo.minOrderAmount !== undefined && subtotal < promo.minOrderAmount) {
           toast.error(`${t('checkout.minOrderAmount') || 'Đơn hàng tối thiểu'}: ${formatCurrency(promo.minOrderAmount)}`);
           return;
         }
 
         // Calculate Discount
-        let discount = 0;
+        let discountCount = 0;
         if (promo.discountType === 'PERCENTAGE') {
-          discount = subtotal * (promo.discountValue / 100);
-          if (promo.maxDiscountAmount) discount = Math.min(discount, promo.maxDiscountAmount);
+          discountCount = subtotal * (promo.discountValue / 100);
+          if (promo.maxDiscountAmount) discountCount = Math.min(discountCount, promo.maxDiscountAmount);
         } else {
-          discount = promo.discountValue;
+          discountCount = promo.discountValue;
         }
 
         setAppliedVoucher({
           code: promo.code,
-          discount: discount,
+          discount: discountCount,
           type: promo.discountType
         });
         toast.success(t('checkout.voucherApplied') || 'Áp dụng mã giảm giá thành công');
       } else {
-        toast.error(t('checkout.voucherInvalid') || 'Mã giảm giá không tồn tại');
+        toast.error(res.message || t('checkout.voucherInvalid') || 'Mã giảm giá không tồn tại');
       }
     } catch (e) {
       toast.error(t('checkout.voucherError') || 'Lỗi kiểm tra mã giảm giá');

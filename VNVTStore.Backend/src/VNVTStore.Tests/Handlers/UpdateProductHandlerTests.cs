@@ -148,4 +148,32 @@ public class UpdateProductHandlerTests : IDisposable
 
         _mockUnitOfWork.Verify(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task Handle_UpdateProductWithImages_ShouldCallSyncProductImages()
+    {
+        // Arrange
+        var product = TblProduct.Create("Product With Images", 1000, 0, 10, "CAT01", 0, null, null, "Cái");
+        product.Code = "PROD_IMG";
+        await _context.TblProducts.AddAsync(product);
+        await _context.SaveChangesAsync();
+
+        var images = new List<string> { "data:image/png;base64,abc", "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg" };
+        var updateDto = new UpdateProductDto
+        {
+            Images = images
+        };
+
+        _mockFileService.Setup(f => f.SyncProductImagesAsync(product.Code, images, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        var request = new UpdateCommand<UpdateProductDto, ProductDto>(product.Code, updateDto);
+
+        // Act
+        var result = await _handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _mockFileService.Verify(f => f.SyncProductImagesAsync(product.Code, images, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

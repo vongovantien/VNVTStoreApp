@@ -1,4 +1,4 @@
-import { ApiResponse } from './api';
+import { ApiResponse, SearchCondition } from './api';
 import apiClient from './api';
 import createEntityService, { SearchParams } from './baseService';
 
@@ -62,38 +62,36 @@ export const promotionService = {
         });
     },
 
-    getByCode: async (code: string) => {
+    getByCode: async (code: string): Promise<ApiResponse<Promotion>> => {
         // Try direct endpoint first, fallback to search if needed
         // Assuming backend follows standard pattern /promotions/code/{code}
         try {
-            return await apiClient.get<ApiResponse<Promotion>>(`/promotions/code/${code}`);
+            return await apiClient.get<Promotion>(`/promotions/code/${code}`);
         } catch (e) {
             // Fallback: Search by code
             const res = await baseService.search({
                 pageIndex: 1,
                 pageSize: 1,
-                filters: [{ field: 'code', value: code, operator: 'eq' }]
+                filters: [{ field: 'code', value: code, operator: SearchCondition.Equal }]
             });
             if (res.success && res.data && res.data.items && res.data.items.length > 0) {
-                return { success: true, data: res.data.items[0] };
+                return { success: true, data: res.data.items[0], message: '', statusCode: 200 };
             }
-            return { success: false, message: 'Promotion not found' };
+            return { success: false, message: 'Promotion not found', data: null, statusCode: 404 };
         }
     },
 
     getFlashSales: async () => {
-        const response = await apiClient.get<ApiResponse<Promotion[]>>('/promotions/flash-sale');
-        return response.data;
+        return apiClient.get<Promotion[]>('/promotions/flash-sale');
     },
 
     import: async (file: File) => {
         const formData = new FormData();
         formData.append('file', file);
-        const response = await apiClient.post<ApiResponse<number>>('/promotions/import', formData, {
+        return apiClient.post<number>('/promotions/import', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
-        return response.data;
     }
 };

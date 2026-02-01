@@ -24,12 +24,14 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
     private readonly IRepository<TblProduct> _productRepository;
     private readonly IRepository<TblUser> _userRepository;
     private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
 
     public QuoteHandlers(
         IRepository<TblQuote> quoteRepository,
         IRepository<TblProduct> productRepository,
         IRepository<TblUser> userRepository,
         IEmailService emailService,
+        INotificationService notificationService,
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
         IMapper mapper) : base(quoteRepository, unitOfWork, mapper)
@@ -38,6 +40,7 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
         _productRepository = productRepository;
         _userRepository = userRepository;
         _emailService = emailService;
+        _notificationService = notificationService;
     }
 
     public async Task<Result<QuoteDto>> Handle(CreateCommand<CreateQuoteDto, QuoteDto> request, CancellationToken cancellationToken)
@@ -102,6 +105,10 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
             var admins = await _userRepository.AsQueryable()
                 .Where(u => u.Role == VNVTStore.Domain.Enums.UserRole.Admin && u.IsActive && !string.IsNullOrEmpty(u.Email))
                 .ToListAsync(cancellationToken);
+
+            // SignalR Notification
+            var notificationMsg = $"New Quote Request: {quote.Code} from {quote.CustomerName}";
+            await _notificationService.SendAsync("ReceiveQuoteNotification", notificationMsg);
 
             if (admins.Any())
             {

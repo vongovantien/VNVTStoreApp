@@ -431,7 +431,7 @@ export const AdminLayout = () => {
               <button 
                 onClick={() => navigate('/admin/orders?status=pending')}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
-                title="Đơn hàng chờ xử lý"
+                title={t('admin.tooltips.pendingOrders')}
               >
                 <ShoppingCart size={14} />
                 <span>5</span>
@@ -439,7 +439,7 @@ export const AdminLayout = () => {
               <button 
                 onClick={() => navigate('/admin/products?stock=0')}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                title="Sản phẩm hết hàng"
+                title={t('admin.tooltips.outOfStock')}
               >
                 <AlertTriangle size={14} />
                 <span>2</span>
@@ -672,9 +672,9 @@ export const AdminLayout = () => {
               
               {/* Footer hint */}
               <div className="px-4 py-3 bg-secondary border-t border-border text-xs text-tertiary flex items-center justify-between">
-                <span>Nhấn <kbd className="px-1.5 py-0.5 bg-primary rounded border text-[10px] mx-1">Enter</kbd> để tìm kiếm</span>
+                <span>{t('admin.search.pressEnter')}</span>
                 <span className="flex items-center gap-1">
-                  <Command size={10} /> + K để mở
+                  <Command size={10} /> + K {t('admin.search.ctrlKHint')}
                 </span>
               </div>
             </motion.div>

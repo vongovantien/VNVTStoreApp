@@ -13,4 +13,9 @@ public class NotificationHub : Hub
     {
         await Clients.All.SendAsync("ReceiveSystemNotification", message);
     }
+
+    public async Task SendQuoteNotification(string message)
+    {
+        await Clients.All.SendAsync("ReceiveQuoteNotification", message);
+    }
 }

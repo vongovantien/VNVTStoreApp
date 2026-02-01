@@ -83,7 +83,7 @@ export const createSchemas = (t: TFunction) => {
         ward: z.string().optional(),
         district: zField.required(t),
         city: zField.required(t),
-        isDefault: z.boolean().default(false),
+        isDefault: z.boolean(),
     });
 
     const contactSchema = userBaseSchema.extend({

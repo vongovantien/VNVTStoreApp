@@ -26,9 +26,13 @@ public partial class TblReview : IEntity
     
     public string? AdminReply { get; set; }
 
+    public string? ProductCode { get; set; }
+
     public string? ModifiedType { get; set; }
 
     public virtual TblOrderItem? OrderItemCodeNavigation { get; set; }
+
+    public virtual TblProduct? ProductCodeNavigation { get; set; }
 
     public virtual TblUser UserCodeNavigation { get; set; } = null!;
 }

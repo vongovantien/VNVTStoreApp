@@ -66,6 +66,7 @@ public class ProductDto : IBaseDto
     public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public decimal Price { get; set; }
     public decimal? WholesalePrice { get; set; }
     public decimal? CostPrice { get; set; }
     public string? CategoryCode { get; set; }
@@ -101,6 +102,9 @@ public class ProductDto : IBaseDto
 
     [ReferenceCollection(typeof(ProductVariantDto), "TblProductVariant", "ProductCode", "Code")]
     public List<ProductVariantDto> Variants { get; set; } = new();
+
+    public decimal AverageRating { get; set; }
+    public int ReviewCount { get; set; }
 }
 
 public class ProductDetailDto : IBaseDto
@@ -430,15 +434,18 @@ public class ReviewDto : IBaseDto
     public string? AdminReply { get; set; }
     [Reference("TblUser", "UserCode", "Username")]
     public string? UserName { get; set; }
-    [Reference("TblProduct", "OrderItemCodeNavigation.ProductCode", "Name")]
+    
+    [Reference("TblProduct", "ProductCode", "Name")]
     public string? ProductName { get; set; }
+    
     public string? ProductCode { get; set; }
 }
 
 public class CreateReviewDto
 {
     public string UserCode { get; set; } = null!;
-    public string OrderItemCode { get; set; } = null!;
+    public string? OrderItemCode { get; set; }
+    public string? ProductCode { get; set; }
     public int? Rating { get; set; }
     public string? Comment { get; set; }
 }

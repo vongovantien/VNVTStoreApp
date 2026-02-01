@@ -26,6 +26,20 @@ export const ProductsPage = () => {
   const { t, i18n } = useTranslation();
   const toast = useToast();
 
+  // Helper to safely get image URL regardless of casing
+  const getSafeImageUrl = (img: any) => {
+      if (!img) return '';
+      if (typeof img === 'string') return getImageUrl(img);
+      return getImageUrl(img.imageURL || img.imageUrl || img.ImageURL || '');
+  };
+
+  // Helper to extract detail/spec value
+  const getDetailValue = (details: any[] | undefined, keys: string[]) => {
+      if (!details) return undefined;
+      const detail = details.find(d => keys.some(k => d.specName?.toLowerCase() === k.toLowerCase()));
+      return detail?.specValue;
+  };
+
   // State
   const [currentPage, setCurrentPage] = useState<number>(PaginationDefaults.PAGE_INDEX);
   const [pageSize, setPageSize] = useState<number>(PaginationDefaults.PAGE_SIZE);
@@ -62,7 +76,7 @@ export const ProductsPage = () => {
     search: searchQuery || undefined,
     sortField,
     sortDir,
-    fields: PRODUCT_LIST_FIELDS,  // Selective columns for list view
+    fields: PRODUCT_LIST_FIELDS.length > 0 ? PRODUCT_LIST_FIELDS : undefined,  // Selective columns for list view
     ...advancedFilters
   });
 
@@ -255,9 +269,9 @@ export const ProductsPage = () => {
       accessor: (product) => (
         <div className="flex flex-col items-center">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
-               {product.images?.[0] ? (
+               {(product.images?.[0] || product.productImages?.[0]) ? (
                  <img 
-                   src={getImageUrl(product.images[0])} 
+                   src={getSafeImageUrl(product.images?.[0] || product.productImages?.[0])} 
                    alt={product.name} 
                    className="w-full h-full object-cover"
                    onError={(e) => console.error("Img Error:", e.currentTarget.src)}
@@ -361,12 +375,14 @@ export const ProductsPage = () => {
         categoryCode: editingProduct.categoryCode,
         stockQuantity: editingProduct.stockQuantity ?? editingProduct.stock,
         images: editingProduct.images || [],
-        color: editingProduct.color,
-        power: editingProduct.power,
-        voltage: editingProduct.voltage,
-        material: editingProduct.material,
-        size: editingProduct.size,
-        weight: editingProduct.weight,
+        productImages: editingProduct.productImages,
+        details: editingProduct.details,
+        color: editingProduct.color || getDetailValue(editingProduct.details, ['color', 'màu', 'màu sắc']),
+        power: editingProduct.power || getDetailValue(editingProduct.details, ['power', 'công suất']),
+        voltage: editingProduct.voltage || getDetailValue(editingProduct.details, ['voltage', 'điện áp']),
+        material: editingProduct.material || getDetailValue(editingProduct.details, ['material', 'chất liệu']),
+        size: editingProduct.size || getDetailValue(editingProduct.details, ['size', 'kích thước']),
+        weight: editingProduct.weight || (getDetailValue(editingProduct.details, ['weight', 'khối lượng']) ? Number(getDetailValue(editingProduct.details, ['weight', 'khối lượng'])) : undefined),
         supplierCode: editingProduct.supplierCode,
         brandCode: editingProduct.brandCode,
         isActive: editingProduct.isActive,
@@ -377,7 +393,7 @@ export const ProductsPage = () => {
         vatRate: editingProduct.vatRate,
         minStockLevel: editingProduct.minStockLevel,
         binLocation: editingProduct.binLocation,
-        countryOfOrigin: editingProduct.countryOfOrigin,
+        countryOfOrigin: editingProduct.countryOfOrigin || getDetailValue(editingProduct.details, ['origin', 'xuất xứ', 'nước sản xuất']),
         productUnits: editingProduct.productUnits,
       } : undefined, [editingProduct]);
 
@@ -519,21 +535,36 @@ export const ProductsPage = () => {
           <div className="space-y-6">
             <div className="flex items-start gap-6">
               <img
-                src={viewingProduct.images?.[0] || 'https://placehold.co/200'}
+                src={getSafeImageUrl(viewingProduct.images?.[0] || viewingProduct.productImages?.[0]) || 'https://placehold.co/200'}
                 alt={viewingProduct.name}
                 className="w-32 h-32 rounded-lg object-cover border bg-white"
               />
               <div className="flex-1">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">{viewingProduct.name}</h2>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge color="info">{viewingProduct.brand || 'No Brand'}</Badge>
+                  <Badge color="info">{viewingProduct.brand || t('common.fields.noBrand')}</Badge>
                   <Badge color="secondary">{viewingProduct.category || '-'}</Badge>
                   <Badge color={viewingProduct.isActive !== false ? 'success' : 'error'}>
                     {viewingProduct.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
                   </Badge>
                 </div>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-rose-600">{formatCurrency(viewingProduct.price)}</span>
+                <div className="mt-4 flex flex-col gap-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm text-slate-500 w-20">{t('common.fields.price')}:</span>
+                    <span className="text-2xl font-bold text-rose-600">{formatCurrency(viewingProduct.price)}</span>
+                  </div>
+                  {(viewingProduct.wholesalePrice || 0) > 0 && (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm text-slate-500 w-20">{t('common.fields.wholesalePrice')}:</span>
+                      <span className="text-lg font-semibold text-blue-600">{formatCurrency(viewingProduct.wholesalePrice || 0)}</span>
+                    </div>
+                  )}
+                  {(viewingProduct.costPrice || 0) > 0 && (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm text-slate-500 w-20">{t('common.fields.costPrice')}:</span>
+                      <span className="text-md font-medium text-slate-600">{formatCurrency(viewingProduct.costPrice || 0)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -570,6 +601,13 @@ export const ProductsPage = () => {
               <div className="space-y-4">
                 <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2">{t('common.fields.specs')}</h3>
                 <div className="space-y-2 text-sm">
+                  {viewingProduct.details?.map((detail, idx) => (
+                    <div key={idx} className="flex justify-between py-1 border-b border-dashed">
+                      <span className="text-slate-500">{detail.specName}</span>
+                      <span className="font-medium">{detail.specValue}</span>
+                    </div>
+                  ))}
+                  
                   {viewingProduct.voltage && (
                     <div className="flex justify-between py-1 border-b border-dashed">
                       <span className="text-slate-500">{t('common.fields.voltage')}</span>

@@ -25,8 +25,8 @@ import {
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast } from '@/store';
-import { signalRService } from '@/services/signalrService';
-import { useClickOutside } from '@/hooks';
+import { signalRService, type SignalRNotification } from '@/services/signalrService';
+import { useClickOutside, useSignalR } from '@/hooks';
 import { useCategories } from '@/hooks/useProducts';
 
 export const Header = memo(() => {
@@ -73,26 +73,28 @@ export const Header = memo(() => {
 
   const { info } = useToast();
 
+  const { on, isConnected, status: signalRStatus } = useSignalR();
+
   useEffect(() => {
-    // Start SignalR
-    const initSignalR = async () => {
-        try {
-            await signalRService.startConnection();
-            signalRService.on('ReceiveOrderNotification', (data) => {
-                const msg = typeof data === 'string' ? data : data.Message || '';
-                addNotification(msg);
-                info(`${t('common.newOrder')}: ${msg}`);
-            });
-        } catch (error) {
-            console.error('SignalR failed', error);
-        }
-    };
-    initSignalR();
+    if (!isConnected) return;
+
+    const unsubscribeOrder = on('ReceiveOrderNotification', (data: string | SignalRNotification) => {
+        const msg = typeof data === 'string' ? data : (data as SignalRNotification).Message || '';
+        addNotification(msg);
+        info(`${t('common.newOrder')}: ${msg}`);
+    });
+    
+    const unsubscribeQuote = on('ReceiveQuoteNotification', (data: string | SignalRNotification) => {
+         const msg = typeof data === 'string' ? data : (data as any).Message || '';
+         addNotification(msg);
+         info(`${t('common.newQuote') || 'New Quote'}: ${msg}`);
+    });
 
     return () => {
-        signalRService.off('ReceiveOrderNotification', () => {});
+        unsubscribeOrder();
+        unsubscribeQuote();
     };
-  }, [addNotification, info, t]);
+  }, [isConnected, on, addNotification, info, t]);
 
   // Manual click outside handler for language menu
   useEffect(() => {

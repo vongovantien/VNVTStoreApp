@@ -76,6 +76,9 @@ public class LocalImageUploadService : IImageUploadService
             
             // Manual Code Generation to avoid DB sequence issues
             fileEntity.Code = $"FIL{DateTime.Now.Ticks}"; 
+            
+            // Update DTO Code to match Entity Code so caller can find it
+            fileDto.Code = fileEntity.Code;
 
             _context.TblFiles.Add(fileEntity);
             await _context.SaveChangesAsync(CancellationToken.None);
@@ -193,5 +196,54 @@ public class LocalImageUploadService : IImageUploadService
             }
         }
         return Result.Success();
+    }
+
+    public async Task<Result<FileDto>> UploadUrlAsync(string url, string fileName, string folder = "products")
+    {
+        try
+        {
+            // Download file from URL
+            using (var httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                     return Result.Failure<FileDto>(Error.Validation($"Failed to download from URL: {response.StatusCode}"));
+                }
+
+                var imageStream = await response.Content.ReadAsStreamAsync();
+                
+                // Reuse UploadImageAsync logic
+                // Ensure stream is at beginning
+                imageStream.Position = 0;
+                
+                // If filename is missing extension, try to get from URL
+                if (string.IsNullOrEmpty(Path.GetExtension(fileName)))
+                {
+                     try
+                     {
+                         var uri = new Uri(url);
+                         var path = uri.AbsolutePath;
+                         var ext = Path.GetExtension(path);
+                         if (!string.IsNullOrEmpty(ext))
+                         {
+                             fileName += ext;
+                         }
+                         else
+                         {
+                             // Default to jpg
+                             fileName += ".jpg";
+                         }
+                     }
+                     catch {}
+                 }
+
+                return await UploadImageAsync(imageStream, fileName, folder);
+            }
+        }
+        catch (Exception ex)
+        {
+             return Result.Failure<FileDto>(Error.Validation($"URL Upload failed: {ex.Message}"));
+        }
     }
 }

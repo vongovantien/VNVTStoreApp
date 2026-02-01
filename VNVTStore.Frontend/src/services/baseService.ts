@@ -143,6 +143,27 @@ export function createEntityService<
             }
             return response;
         },
+
+        /**
+         * Import from file
+         */
+        async import(file: File): Promise<ApiResponse<number>> {
+            const formData = new FormData();
+            formData.append('file', file);
+            return apiClient.post<number>(`${endpoint}/import`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        },
+
+        /**
+         * Get all data for export
+         */
+        async exportData(params: SearchParams = {}): Promise<TDto[]> {
+            const response = await this.search({ ...params, pageSize: 10000 });
+            return (response.data?.items || []) as TDto[];
+        }
     };
 }
 

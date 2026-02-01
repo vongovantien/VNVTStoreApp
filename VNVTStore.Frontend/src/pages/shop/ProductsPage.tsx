@@ -285,6 +285,7 @@ export const ProductsPage = () => {
     minPrice: priceRange[0], // Server-side Price Filter
     maxPrice: priceRange[1], // Server-side Price Filter
     rating: selectedRating || undefined, // Pass to API
+    priceType: priceType, // Pass Price Type to API
   });
 
   // Get unique brands from fetched products

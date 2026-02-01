@@ -69,13 +69,13 @@ const ProfileContent = () => {
           email: data.email || ''
       });
       if (res && res.success) {
-        toast.success(t('messages.saveSuccess') || 'Lưu thành công!');
+        toast.success(t('common.messages.saveSuccess'));
       } else {
-        toast.error((res && res.message) || t('messages.saveError') || 'Không thể lưu');
+        toast.error((res && res.message) || t('common.messages.saveError'));
       }
     } catch (e) {
       console.error(e);
-      toast.error(t('messages.saveError') || 'Không thể lưu. Vui lòng thử lại.');
+      toast.error(t('common.messages.saveFailed'));
     } finally {
       setLoading(false);
     }
@@ -94,14 +94,14 @@ const ProfileContent = () => {
       console.log('[DEBUG] API Response:', res);
       
       if (res && res.success) {
-        toast.success(t('messages.updateSuccess') || 'Đổi mật khẩu thành công!');
+        toast.success(t('common.messages.updateSuccess'));
         passwordForm.reset();
       } else {
-        toast.error((res && res.message) || t('messages.updateError') || 'Đổi mật khẩu thất bại');
+        toast.error((res && res.message) || t('common.messages.updateError'));
       }
     } catch (e) {
       console.error('Change password error:', e);
-      toast.error(t('messages.error') || 'Có lỗi xảy ra khi đổi mật khẩu');
+      toast.error(t('common.errorOccurred'));
     } finally {
       setPasswordLoading(false);
     }
@@ -111,17 +111,17 @@ const ProfileContent = () => {
     <div className="space-y-6">
       {/* Profile Information */}
       <div className="bg-primary rounded-xl p-6 border shadow-sm">
-        <h2 className="text-xl font-bold mb-6">{t('account.profile')}</h2>
+        <h2 className="text-xl font-bold mb-6">{t('common.account.profile')}</h2>
         
         <form onSubmit={profileForm.handleSubmit(handleSave)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Input
-            label="Họ và tên"
+            label={t('common.fields.name')}
             placeholder={t('common.placeholders.fullName')}
             {...profileForm.register('fullName')}
             error={profileForm.formState.errors.fullName?.message}
           />
           <Input
-            label="Email"
+            label={t('common.fields.email')}
             type="email"
             {...profileForm.register('email')}
             readOnly
@@ -129,7 +129,7 @@ const ProfileContent = () => {
             placeholder={t('common.placeholders.email')}
           />
           <Input
-            label="Số điện thoại"
+            label={t('common.fields.phone')}
             type="tel"
             placeholder={t('common.placeholders.phone')}
             {...profileForm.register('phone')}
@@ -146,8 +146,8 @@ const ProfileContent = () => {
       {/* Security Section (Change Password & 2FA) */}
       <div className="bg-primary rounded-xl overflow-hidden border shadow-sm">
         <div className="p-6 border-b flex items-center gap-3">
-          <Shield className="text-primary" size={24} />
-          <h2 className="text-xl font-bold">Bảo mật</h2>
+          <Shield className="text-indigo-600" size={24} />
+          <h2 className="text-xl font-bold">{t('common.account.security')}</h2>
         </div>
         
         <form onSubmit={passwordForm.handleSubmit(onChangePassword)} className="p-6 space-y-8">
@@ -155,11 +155,11 @@ const ProfileContent = () => {
           <div>
              <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
                 <Lock size={18} className="text-tertiary" />
-                Đổi mật khẩu
+                {t('common.account.changePassword')}
              </h3>
              <div className="space-y-4 max-w-2xl">
                 <Input
-                  label="Mật khẩu hiện tại"
+                  label={t('common.fields.currentPassword')}
                   type={showCurrentPassword ? 'text' : 'password'}
                   placeholder={t('common.placeholders.currentPassword')}
                   {...passwordForm.register('currentPassword')}
@@ -177,7 +177,7 @@ const ProfileContent = () => {
                   isRequired
                 />
                 <Input
-                  label="Mật khẩu mới"
+                  label={t('common.fields.newPassword')}
                   type={showNewPassword ? 'text' : 'password'}
                   placeholder={t('common.placeholders.newPassword')}
                   {...passwordForm.register('newPassword')}
@@ -195,7 +195,7 @@ const ProfileContent = () => {
                   isRequired
                 />
                 <Input
-                  label="Xác nhận mật khẩu mới"
+                  label={t('common.fields.confirmPassword')}
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder={t('common.placeholders.confirmPassword')}
                   {...passwordForm.register('confirmPassword')}
@@ -214,30 +214,30 @@ const ProfileContent = () => {
                 />
              </div>
           </div>
-
+ 
           <hr className="border-slate-100 dark:border-slate-800" />
-
+ 
           {/* 2FA Placeholder */}
           <div>
              <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
-                   Xác thực 2 bước (2FA)
+                   {t('common.account.twoFactor')}
                 </h3>
-                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded">Chưa kích hoạt</span>
+                <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded">{t('common.account.notActivated')}</span>
              </div>
-             <p className="text-sm text-secondary mb-4">Tăng cường bảo mật cho tài khoản của bạn bằng cách yêu cầu mã xác thực khi đăng nhập.</p>
-             <button className="text-primary text-sm font-medium hover:underline flex items-center gap-2">
-                <Smartphone size={16} /> Thiết lập 2FA ngay
+             <p className="text-sm text-secondary mb-4">{t('common.account.twoFactorDesc')}</p>
+             <button type="button" className="text-primary text-sm font-medium hover:underline flex items-center gap-2">
+                <Smartphone size={16} /> {t('common.account.setupTwoFactor')}
              </button>
           </div>
-
+ 
           <div className="pt-4">
              <Button 
                 type="submit"
                 isLoading={passwordLoading}
                 leftIcon={<Save size={18} />}
              >
-                {t('common.save') || 'Lưu'}
+                {t('common.save')}
              </Button>
           </div>
         </form>
@@ -247,12 +247,12 @@ const ProfileContent = () => {
       <div className="bg-primary rounded-xl p-6 border shadow-sm max-w-2xl">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
             <Bell className="text-indigo-600" size={24} />
-            Cài đặt thông báo
+            {t('common.account.notificationSettings')}
         </h2>
         
         <Switch
-            label="Nhận thông báo qua email"
-            description="Nhận các tin tức mới nhất, khuyến mãi và cập nhật đơn hàng qua địa chỉ email của bạn."
+            label={t('common.account.emailNotifications')}
+            description={t('common.account.emailNotificationsDesc')}
             checked={receiveEmailNotifications}
             onChange={setReceiveEmailNotifications}
             className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl"

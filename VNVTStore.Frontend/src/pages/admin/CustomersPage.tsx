@@ -326,7 +326,7 @@ export const CustomersPage = () => {
         renderRowActions={(customer) => (
             <button
               className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-              title="Reset Password"
+              title={t('admin.actions.resetPassword')}
               onClick={() => handleResetPasswordPrompt(customer)}
             >
               <Key size={18} />
@@ -442,7 +442,7 @@ export const CustomersPage = () => {
 
             <div className="flex gap-3">
               <Button fullWidth>
-                Email
+                {t('common.fields.email')}
               </Button>
             </div>
              <div className="flex justify-end pt-4">

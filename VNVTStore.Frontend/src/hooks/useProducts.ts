@@ -136,6 +136,7 @@ export function useProducts(params: {
     minPrice?: number;
     maxPrice?: number;
     rating?: number;
+    priceType?: 'all' | 'fixed' | 'contact';
     enabled?: boolean;
     ids?: string[];
     fields?: string[];  // Selective columns to fetch (reduces data transfer)
@@ -143,11 +144,11 @@ export function useProducts(params: {
     const { enabled = true, fields, ...searchParams } = params;
 
     // Build filters dynamically
-    const filters: { field: string; value: string | string[]; operator?: SearchCondition }[] = [];
+    const filters: { field: string; value: string | string[] | number | number[] | boolean; operator?: SearchCondition }[] = [];
 
     // 1. Generic/Dynamic params (excluding specific ones)
     Object.entries(searchParams).forEach(([key, value]) => {
-        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir', 'brands', 'minPrice', 'maxPrice', 'rating', 'category', 'ids'].includes(key)) return;
+        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir', 'brands', 'minPrice', 'maxPrice', 'rating', 'category', 'ids', 'priceType'].includes(key)) return;
         if (value !== undefined && value !== null && value !== '') {
             filters.push({ field: key, value: String(value), operator: SearchCondition.Equal });
         }
@@ -191,15 +192,24 @@ export function useProducts(params: {
 
     // 3. Price Range
     if (searchParams.minPrice !== undefined) {
-        filters.push({ field: 'price', value: String(searchParams.minPrice), operator: SearchCondition.GreaterThanEqual });
+        filters.push({ field: 'price', value: searchParams.minPrice, operator: SearchCondition.GreaterThanEqual });
     }
     if (searchParams.maxPrice !== undefined) {
-        filters.push({ field: 'price', value: String(searchParams.maxPrice), operator: SearchCondition.LessThanEqual });
+        filters.push({ field: 'price', value: searchParams.maxPrice, operator: SearchCondition.LessThanEqual });
+    }
+
+    // 4a. Price Type (Fixed vs Contact)
+    if (searchParams.priceType) {
+        if (searchParams.priceType === 'contact') {
+            filters.push({ field: 'price', value: 0, operator: SearchCondition.Equal });
+        } else if (searchParams.priceType === 'fixed') {
+            filters.push({ field: 'price', value: 0, operator: SearchCondition.GreaterThan });
+        }
     }
 
     // 4. Rating
     if (searchParams.rating !== undefined && searchParams.rating !== null) {
-        filters.push({ field: 'rating', value: String(searchParams.rating), operator: SearchCondition.GreaterThanEqual });
+        filters.push({ field: 'rating', value: searchParams.rating, operator: SearchCondition.GreaterThanEqual });
     }
 
 
@@ -242,8 +252,18 @@ export function useProducts(params: {
                     slug: item.code, // Use code as slug for now
                     description: item.description || '',
                     price: item.price,
-                    image: getImageUrl(item.productImages?.find((img: any) => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
-                    images: item.productImages?.map((img: any) => getImageUrl(img.imageUrl)) || [],
+                    // Handle image collection casing
+                    image: getImageUrl(
+                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageURL ||
+                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageUrl ||
+                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.ImageURL ||
+                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageURL ||
+                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageUrl ||
+                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.ImageURL
+                    ),
+                    images: (item.productImages || item.ProductImages || item.product_images)?.map((img: any) => getImageUrl(img.imageURL || img.imageUrl || img.ImageURL)) || [],
+                    // Pass raw DTO for form management
+                    productImages: item.productImages || item.ProductImages || item.product_images || [],
                     category: item.categoryName || '',
                     categoryCode: item.categoryCode || '',
                     stock: item.stockQuantity || 0,
@@ -305,8 +325,18 @@ export function useProduct(code: string) {
                     price: item.price,
                     wholesalePrice: item.wholesalePrice,
                     costPrice: item.costPrice,
-                    image: getImageUrl(item.productImages?.find((img: any) => img.isPrimary)?.imageUrl || item.productImages?.[0]?.imageUrl),
-                    images: item.productImages?.map((img: any) => getImageUrl(img.imageUrl)) || [],
+                    // Handle image collection casing
+                    image: getImageUrl(
+                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageURL ||
+                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageUrl ||
+                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.ImageURL ||
+                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageURL ||
+                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageUrl ||
+                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.ImageURL
+                    ),
+                    images: (item.productImages || item.ProductImages || item.product_images)?.map((img: any) => getImageUrl(img.imageURL || img.imageUrl || img.ImageURL)) || [],
+                    // Pass raw DTO for form management
+                    productImages: item.productImages || item.ProductImages || item.product_images || [],
                     category: item.categoryName || '',
                     categoryCode: item.categoryCode || '',
                     stock: item.stockQuantity || 0,

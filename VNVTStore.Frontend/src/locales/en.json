@@ -1,6 +1,7 @@
 {
   "common": {
     "home": "Home",
+    "none": "None",
     "products": "Products",
     "categories": "Categories",
     "cart": "Cart",
@@ -47,6 +48,7 @@
       "addToFavorites": "Add to favorites",
       "none": "None"
     },
+    "add": "Add",
     "placeholders": {
       "search": "Search...",
       "searchProduct": "Product Name...",
@@ -249,7 +251,11 @@
       "approved": "Approved",
       "pending": "Pending",
       "rejected": "Rejected",
-      "all": "All Reviews"
+      "all": "All Reviews",
+      "replied": "Replied",
+      "replyTitle": "Review Reply",
+      "yourReply": "Your Reply",
+      "replyPlaceholder": "Enter your response to the customer..."
     },
     "coupons": {
       "add": "Add Coupon",
@@ -467,7 +473,8 @@
       "quote": "Quote",
       "updatePrice": "Update Price",
       "closeDeal": "Close Deal",
-      "sendQuote": "Send Quote"
+      "sendQuote": "Send Quote",
+      "unapprove": "Unapprove"
     },
     "validation": {
       "required": "This field is required",
@@ -572,7 +579,10 @@
       "description": "Description",
       "specs": "Specifications",
       "reviews": "Reviews"
-    }
+    },
+    "variants": "Variants",
+    "variantAttributes": "Variant Attributes",
+    "noAttributes": "No Attributes"
   },
   "filter": {
     "title": "Filters",
@@ -854,6 +864,7 @@
     "description": "Description",
     "status": "Status",
     "actions": "Actions",
+    "dragOrClick": "Drag or click to upload images",
     "edit": "Edit",
     "delete": "Delete",
     "create": "Create",
@@ -939,5 +950,24 @@
     "hotlineHours": "8:00 AM - 9:00 PM (Mon - Sun)",
     "emailResponse": "Response within 24 hours",
     "sendMessage": "Send Message"
+  },
+  "review": {
+    "writeReview": "Write a Review",
+    "yourRating": "Your Rating",
+    "comment": "Comment",
+    "commentRequired": "Please share your review",
+    "commentMinLength": "Minimum 10 characters",
+    "commentPlaceholder": "Share your experience with this product...",
+    "loginRequired": "Please login to write a review",
+    "userNotFound": "User information not found",
+    "submitSuccess": "Your review has been submitted successfully!",
+    "submitError": "Could not submit review",
+    "excellent": "Excellent!",
+    "good": "Good",
+    "average": "Average",
+    "poor": "Poor",
+    "terrible": "Terrible",
+    "minCharsLeft": "{{count}} characters left",
+    "minLengthReached": "Minimum length reached"
   }
 }

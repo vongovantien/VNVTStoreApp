@@ -14,6 +14,7 @@ import { categoryService, supplierService, unitService, brandService } from '@/s
 import { SearchCondition } from '@/services/baseService';
 import { ProductUnitsManager, ProductUnitDto } from '@/components/common/ProductUnitsManager';
 import { ProductVariantManager, ProductVariantData } from '@/components/common/ProductVariantManager';
+import { ProductImage } from '@/types';
 
 const productSchema = z.object({
   name: z.string().min(3, { message: 'validation.productNameMin' }),
@@ -59,13 +60,14 @@ interface ProductDetail {
 
 interface ProductFormProps {
   initialData?: Partial<ProductFormData> & { 
-      productImages?: Array<{ imageUrl: string }>; 
+      productImages?: ProductImage[]; 
       originalPrice?: number;
       categoryName?: string;
       supplierName?: string;
       brandName?: string;
       productUnits?: ProductUnitDto[];
       variants?: ProductVariantData[];
+      imageURL?: string;
   };
   onSubmit: (data: ProductFormData) => void;
   onCancel: () => void;
@@ -91,6 +93,18 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
 
   const handleSubmit = async (data: ProductFormData) => {
     try {
+        // Strip API base URL from existing images to send relative paths (fixes update issue)
+        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+        const root = apiBase.replace(/\/api\/v1\/?$/, '');
+        
+        const processedImages = data.images?.map(img => {
+            if (img.startsWith('data:')) return img; // Keep new base64 uploads
+            if (root && img.startsWith(root)) {
+                 return img.substring(root.length); // Remove http://domain to get /uploads/...
+            }
+            return img;
+        });
+
         const baseRow: ProductUnitDto = {
             unitName: data.baseUnit || 'Cái',
             conversionRate: 1,
@@ -101,6 +115,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         const conversionUnits = localUnits.filter(u => !u.isBaseUnit && (u.unitName !== data.baseUnit || u.conversionRate !== 1));
         const payload = { 
             ...data, 
+            images: processedImages,
             productUnits: [baseRow, ...conversionUnits].map(u => ({
                 unitName: u.unitName,
                 conversionRate: u.conversionRate,
@@ -133,7 +148,17 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     categoryCode: initialData?.categoryCode || '',
     stockQuantity: initialData?.stockQuantity || 0,
     costPrice: initialData?.costPrice ?? initialData?.originalPrice ?? 0,
-    images: initialData?.images?.map(img => getImageUrl(img)) || initialData?.productImages?.map(img => getImageUrl(img.imageUrl)) || [],
+    images: (() => {
+        const directImages = initialData?.images?.map(img => getImageUrl(img));
+        if (directImages && directImages.length > 0) return directImages;
+        
+        const prodImages = initialData?.productImages?.map(img => getImageUrl(img.imageURL || (img as any).imageUrl));
+        if (prodImages && prodImages.length > 0) return prodImages;
+        
+        if (initialData?.imageURL) return [getImageUrl(initialData.imageURL)];
+        
+        return [];
+    })(),
     code: initialData?.code || '',
     vatRate: initialData?.vatRate || 0,
     minStockLevel: initialData?.minStockLevel || 0,
@@ -245,10 +270,129 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     {
         title: t('admin.groups.pricing'),
         fields: [
-            { name: 'price', type: 'number', label: t('common.fields.price'), required: true, colSpan: 3, placeholder: t('common.placeholders.enterPrice') },
-            { name: 'wholesalePrice', type: 'number', label: t('common.fields.wholesalePrice'), colSpan: 3, placeholder: t('common.placeholders.enterPrice') },
-            { name: 'costPrice', type: 'number', label: t('common.fields.costPrice'), colSpan: 3, placeholder: t('common.placeholders.enterPrice') },
-            { name: 'vatRate', type: 'number', label: 'VAT (%)', colSpan: 3, placeholder: '0' }
+            {
+                name: 'pricingSection', type: 'custom', label: '', colSpan: 12,
+                render: (form: UseFormReturn<ProductFormData>) => {
+                    const price = form.watch('price') || 0;
+                    const wholesalePrice = form.watch('wholesalePrice') || 0;
+                    const costPrice = form.watch('costPrice') || 0;
+                    const vatRate = form.watch('vatRate') || 0;
+                    
+                    // Calculate profit
+                    const profit = price - costPrice;
+                    const profitMargin = price > 0 ? ((profit / price) * 100).toFixed(1) : '0';
+                    
+                    // Format number with thousand separators
+                    const formatNumber = (num: number) => num.toLocaleString('vi-VN');
+                    const parseNumber = (str: string) => {
+                        const cleaned = str.replace(/[^\d]/g, '');
+                        return cleaned ? parseInt(cleaned, 10) : 0;
+                    };
+                    
+                    // Validation warnings
+                    const warnings: string[] = [];
+                    if (wholesalePrice > 0 && wholesalePrice >= price) {
+                        warnings.push('⚠️ Giá bán sỉ phải nhỏ hơn Giá lẻ');
+                    }
+                    if (costPrice > 0 && costPrice >= price) {
+                        warnings.push('⚠️ Giá vốn phải nhỏ hơn Giá bán');
+                    }
+                    
+                    // Auto-calculate price from cost + VAT when cost or VAT changes
+                    const handleCostChange = (newCost: number) => {
+                        form.setValue('costPrice', newCost, { shouldValidate: true });
+                        if (newCost > 0) {
+                            const calculatedPrice = Math.round(newCost * (1 + vatRate / 100));
+                            form.setValue('price', calculatedPrice, { shouldValidate: true });
+                        }
+                    };
+                    
+                    const handleVatChange = (newVat: number) => {
+                        form.setValue('vatRate', newVat, { shouldValidate: true });
+                        if (costPrice > 0) {
+                            const calculatedPrice = Math.round(costPrice * (1 + newVat / 100));
+                            form.setValue('price', calculatedPrice, { shouldValidate: true });
+                        }
+                    };
+                    
+                    return (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-12 gap-4">
+                                {/* Giá vốn (INPUT - primary) */}
+                                <div className="col-span-3">
+                                    <label className="block text-sm font-medium text-primary mb-1.5">
+                                        {t('common.fields.costPrice')} <span className="text-red-500">*</span>
+                                    </label>
+                                    <Input
+                                        value={formatNumber(costPrice)}
+                                        onChange={(e) => handleCostChange(parseNumber(e.target.value))}
+                                        placeholder={t('common.placeholders.enterPrice')}
+                                        className="text-right"
+                                    />
+                                </div>
+                                
+                                {/* Giá bán sỉ (INPUT) */}
+                                <div className="col-span-3">
+                                    <label className="block text-sm font-medium text-primary mb-1.5">
+                                        {t('common.fields.wholesalePrice')}
+                                    </label>
+                                    <Input
+                                        value={formatNumber(wholesalePrice)}
+                                        onChange={(e) => form.setValue('wholesalePrice', parseNumber(e.target.value), { shouldValidate: true })}
+                                        placeholder={t('common.placeholders.enterPrice')}
+                                        className={`text-right ${wholesalePrice >= price && wholesalePrice > 0 ? 'border-yellow-500' : ''}`}
+                                    />
+                                </div>
+                                
+                                {/* VAT (INPUT) */}
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium text-primary mb-1.5">
+                                        {t('common.fields.vatPercent', 'VAT (%)')}
+                                    </label>
+                                    <Input
+                                        type="number"
+                                        value={vatRate}
+                                        onChange={(e) => handleVatChange(parseFloat(e.target.value) || 0)}
+                                        placeholder="0"
+                                        className="text-right"
+                                    />
+                                </div>
+                                
+                                {/* Giá bán lẻ (CALCULATED - can be overridden) */}
+                                <div className="col-span-4">
+                                    <label className="block text-sm font-medium text-primary mb-1.5">
+                                        {t('common.fields.price')} <span className="text-xs text-secondary">(tự tính)</span>
+                                    </label>
+                                    <Input
+                                        value={formatNumber(price)}
+                                        onChange={(e) => form.setValue('price', parseNumber(e.target.value), { shouldValidate: true })}
+                                        placeholder={t('common.placeholders.enterPrice')}
+                                        className="text-right font-semibold bg-green-50 dark:bg-green-900/20 border-green-300"
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Profit display */}
+                            <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-border-color">
+                                <div className="flex-1">
+                                    <span className="text-sm text-secondary">Lợi nhuận gộp:</span>
+                                    <span className={`ml-2 font-semibold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {formatNumber(profit)} đ
+                                    </span>
+                                    <span className="ml-2 text-sm text-tertiary">({profitMargin}%)</span>
+                                </div>
+                            </div>
+                            
+                            {/* Validation warnings */}
+                            {warnings.length > 0 && (
+                                <div className="text-sm text-yellow-600 dark:text-yellow-400 space-y-1">
+                                    {warnings.map((w, i) => <div key={i}>{w}</div>)}
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
+            }
         ]
     },
     {
@@ -265,7 +409,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                     )} />
                 )
             },
-            { name: 'binLocation', type: 'text', label: t('common.fields.location'), colSpan: 4, placeholder: 'Kệ A...' }
+            { name: 'binLocation', type: 'text', label: t('common.fields.location'), colSpan: 4, placeholder: t('common.placeholders.enterLocation', 'Kệ A...') }
         ]
     },
     {
@@ -288,14 +432,19 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                                 <Button type="button" size="sm" variant="outline" onClick={() => addDetail('LOGISTICS')}>+ Logistics</Button>
                             </div>
                             <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-border-color">
-                                {details.length === 0 ? <p className="text-center text-sm text-tertiary py-4">{t('common.noData')}</p> : details.map((detail, idx: number) => (
+                                {details.length === 0 ? <p className="text-center text-sm text-tertiary py-4">{t('common.noData')}</p> : details.map((detail, idx: number) => {
+                                    const dType = detail.detailType || 'SPEC';
+                                    const badgeColor = dType === 'SPEC' ? 'primary' : dType === 'LOGISTICS' ? 'success' : 'warning';
+                                    const badgeLabel = dType === 'SPEC' ? t('common.types.spec', 'SPEC') : dType === 'LOGISTICS' ? t('common.types.logistics', 'LOGIS') : t('common.types.tag', 'TAG');
+                                    return (
                                     <div key={idx} className="flex items-center gap-3">
-                                        <Badge color={detail.detailType === 'SPEC' ? 'primary' : detail.detailType === 'LOGISTICS' ? 'success' : 'warning'} className="w-20 justify-center">{detail.detailType === 'SPEC' ? 'SPEC' : detail.detailType === 'LOGISTICS' ? 'LOGIS' : 'TAG'}</Badge>
+                                        <Badge color={badgeColor} className="w-20 justify-center">{badgeLabel}</Badge>
                                         <Input className="flex-1 h-9 text-sm" placeholder={t('common.fields.name')} value={detail.specName} onChange={(e) => updateDetail(idx, 'specName', e.target.value)} list={`spec-suggestions-${idx}`} /><datalist id={`spec-suggestions-${idx}`}>{specSuggestions.map(s => <option key={s} value={s} />)}</datalist>
                                         <Input className="flex-1 h-9 text-sm" placeholder={t('common.fields.value')} value={detail.specValue} onChange={(e) => updateDetail(idx, 'specValue', e.target.value)} />
                                         <button type="button" onClick={() => form.setValue('details', details.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500"><X size={18} /></button>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     );
@@ -367,7 +516,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                     )} />
                 )
             },
-            { name: 'countryOfOrigin', type: 'text', label: t('common.fields.origin'), colSpan: 12, placeholder: 'VD: Vietnam' }
+            { name: 'countryOfOrigin', type: 'text', label: t('common.fields.origin'), colSpan: 12, placeholder: t('common.placeholders.enterOrigin', 'VD: Vietnam') }
         ]
     }
   ];

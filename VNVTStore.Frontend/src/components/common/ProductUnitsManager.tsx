@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Checkbox, Button, Badge, ConfirmDialog, Input } from '@/components/ui';
 import { Edit, Trash2, Plus, X } from 'lucide-react';
 import LazySelect from '@/components/ui/LazySelect';
+import { formatCurrency } from '@/utils/format';
 
 export interface ProductUnitDto {
     code?: string;
@@ -85,14 +86,14 @@ export const ProductUnitsManager = ({
                         1 = 1
                     </div>
                     <div className="col-span-4 text-sm font-medium text-rose-600">
-                        {new Intl.NumberFormat('vi-VN').format(baseUnitPrice || 0)} đ
+                        {formatCurrency(baseUnitPrice || 0)}
                     </div>
                     <div className="col-span-1"></div>
                 </div>
 
                 {/* Editable Units */}
                 {units.map((unit, idx) => (
-                    <div key={unit.code || idx} className="grid grid-cols-12 gap-3 items-center" data-testid={`unit-row-${idx}`}>
+                    <div key={unit.code || idx} className="grid grid-cols-12 gap-3 items-center bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow" data-testid={`unit-row-${idx}`}>
                         <div className="col-span-4">
                             <LazySelect
                                 value={unit.unitName}
@@ -101,35 +102,38 @@ export const ProductUnitsManager = ({
                                 placeholder={t('common.fields.unitName')}
                                 initialLabel={unit.unitName}
                                 queryKeyPrefix={`unit-select-${idx}`}
-                                className="h-9 text-sm"
+                                className="h-10 text-sm font-medium"
                             />
                         </div>
                         <div className="col-span-3 relative">
                             <Input 
                                 type="number"
-                                className="h-9 text-sm pr-12" 
+                                className="h-10 text-sm pr-16 text-center font-medium" 
                                 placeholder="1" 
                                 value={unit.conversionRate} 
                                 onChange={(e) => handleUpdateUnit(idx, 'conversionRate', Number(e.target.value))} 
                             />
-                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">
-                                x {baseUnitName}
+                             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
+                                × {baseUnitName || 'PCS'}
                             </span>
                         </div>
-                        <div className="col-span-4">
+                        <div className="col-span-4 relative">
                             <Input 
-                                type="number"
-                                className="h-9 text-sm" 
+                                className="h-10 text-sm text-right pr-12 font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800" 
                                 placeholder={t('common.fields.price')} 
-                                value={unit.price} 
-                                onChange={(e) => handleUpdateUnit(idx, 'price', Number(e.target.value))} 
+                                value={unit.price.toLocaleString('vi-VN')} 
+                                onChange={(e) => {
+                                    const cleaned = e.target.value.replace(/[^\d]/g, '');
+                                    handleUpdateUnit(idx, 'price', cleaned ? parseInt(cleaned, 10) : 0);
+                                }} 
                             />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-indigo-500 pointer-events-none">₫</span>
                         </div>
                         <div className="col-span-1 flex justify-end">
                             <button 
                                 type="button" 
                                 onClick={() => setUnitToDeleteIdx(idx)} 
-                                className="text-slate-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50 transition-colors"
+                                className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                 data-testid={`delete-unit-button-${idx}`}
                             >
                                 <X size={18} />

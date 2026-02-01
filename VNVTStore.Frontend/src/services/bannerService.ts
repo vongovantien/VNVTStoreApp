@@ -6,6 +6,7 @@ export interface BannerDto {
     content?: string;
     linkUrl?: string;
     linkText?: string;
+    imageURL?: string;
     isActive: boolean;
     priority: number;
     createdAt: string;
@@ -17,6 +18,7 @@ export interface CreateBannerRequest {
     content?: string;
     linkUrl?: string;
     linkText?: string;
+    imageURL?: string;
     isActive?: boolean;
     priority?: number;
 }

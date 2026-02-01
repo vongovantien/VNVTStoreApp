@@ -9,7 +9,7 @@ const categorySchema = z.object({
   name: z.string().min(1, 'required'), // will be localized in component or handling
   description: z.string().optional(),
   parentCode: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageURL: z.string().optional(),
   isActive: z.boolean(),
 });
 
@@ -54,7 +54,7 @@ export const CategoryForm = ({
   // Field definitions
   const fields: FieldDefinition[] = [
     {
-      name: 'imageUrl',
+      name: 'imageURL',
       type: 'image',
       label: t('common.fields.image'),
       colSpan: 12,
@@ -96,7 +96,7 @@ export const CategoryForm = ({
     name: initialData?.name || '',
     description: initialData?.description || '',
     parentCode: initialData?.parentCode || '',
-    imageUrl: initialData?.imageUrl || '',
+    imageURL: initialData?.imageURL || '',
     isActive: initialData?.isActive ?? true,
   };
 

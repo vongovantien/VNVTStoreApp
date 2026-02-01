@@ -30,6 +30,7 @@ import { useProduct, useProducts } from '@/hooks';
 import { formatCurrency } from '@/utils/format';
 import { reviewService, type ReviewDto } from '@/services';
 import ReviewsList from '@/components/reviews/ReviewsList';
+import { ProductReviewButton } from '@/components/reviews/ProductReviewButton';
 
 // ============ Image Gallery Component ============
 interface ImageGalleryProps {
@@ -298,7 +299,7 @@ export const ProductDetailPage = () => {
   const isWishlisted = product ? isInWishlist(product.code) : false;
   const isCompared = product ? isInCompare(product.code) : false;
   const hasFixedPrice = product ? (product.price > 0) : false;
-  const images = product ? (product.images?.length ? product.images : [product.image]) : [];
+  const images = (product ? (product.images?.length ? product.images : (product.image ? [product.image] : [])) : []).filter(img => img && img.length > 0);
 
   const stockStatus = useMemo(() => {
     if (!product) return null;
@@ -341,11 +342,12 @@ export const ProductDetailPage = () => {
   // Stars renderer
   const renderStars = useMemo(() => {
     if (!product) return null;
+    const ratingValue = product.averageRating ?? product.rating ?? 0;
     return Array.from({ length: 5 }).map((_, i) => (
       <Star
         key={i}
         size={18}
-        className={i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
+        className={i < Math.floor(ratingValue) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
       />
     ));
   }, [product]);
@@ -441,7 +443,7 @@ export const ProductDetailPage = () => {
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-1">{renderStars}</div>
               <span className="text-secondary">
-                {product.rating} ({product.reviewCount} {t('product.reviews')})
+                {product.averageRating?.toFixed(1) ?? '0.0'} ({product.reviewCount} {t('product.reviews')})
               </span>
               <span className="text-tertiary">|</span>
               <span className={`font-medium ${stockStatus?.text || ''}`}>
@@ -726,7 +728,28 @@ export const ProductDetailPage = () => {
           )}
 
           {activeTab === 'reviews' && (
-             <ReviewsList productCode={product.code} />
+            <div className="space-y-6">
+              <div className="flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-4 rounded-xl">
+                <div>
+                  <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-200">
+                    {t('review.shareExperience', 'Chia sẻ trải nghiệm của bạn')}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {t('review.helpOthers', 'Đánh giá của bạn sẽ giúp người khác tham khảo')}
+                  </p>
+                </div>
+                <ProductReviewButton
+                  productCode={product.code}
+                  productName={product.name}
+                  productImage={product.images?.[0]}
+                  onReviewSubmitted={() => {
+                    // Trigger refresh by forcing re-render
+                    window.location.reload();
+                  }}
+                />
+              </div>
+              <ReviewsList productCode={product.code} />
+            </div>
           )}
         </div>
 

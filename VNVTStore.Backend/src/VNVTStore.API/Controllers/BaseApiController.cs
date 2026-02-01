@@ -132,14 +132,26 @@ public abstract class BaseApiController<TEntity, TResponse, TCreateDto, TUpdateD
     {
     }
 
-    /// <summary>
-    /// Generic Search/Paged query
-    /// </summary>
     [HttpPost("search")]
     public virtual async Task<IActionResult> Search([FromBody] RequestDTO request)
     {
         var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
         var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
+
+        // If not admin, force IsActive = true for safety on public-facing generic search
+        if (!IsAdmin())
+        {
+            request.Searching ??= new List<SearchDTO>();
+            if (!request.Searching.Any(s => s.SearchField.Equals("IsActive", StringComparison.OrdinalIgnoreCase)))
+            {
+                request.Searching.Add(new SearchDTO 
+                { 
+                    SearchField = "IsActive", 
+                    SearchValue = true, 
+                    SearchCondition = SearchCondition.Equal 
+                });
+            }
+        }
 
         var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, null, request.SortDTO, request.Searching, request.Fields));
         return HandleResult(result);

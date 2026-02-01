@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 const ProfileContent = lazy(() => import('./account/ProfileContent'));
 const QuotesContent = lazy(() => import('./account/QuotesContent'));
 const OrdersContent = lazy(() => import('./account/OrdersContent'));
+const OrderDetailPage = lazy(() => import('./account/OrderDetailPage'));
 
 const AddressesContent = lazy(() => import('./account/AddressesContent'));
 const NotificationsContent = lazy(() => import('./account/OtherContent').then(module => ({ default: module.NotificationsContent })));
@@ -32,6 +33,7 @@ export const AccountPage = () => {
                 <Route index element={<ProfileContent />} />
                 <Route path="quotes" element={<QuotesContent />} />
                 <Route path="orders" element={<OrdersContent />} />
+                <Route path="orders/:id" element={<OrderDetailPage />} />
 
                 <Route path="wishlist" element={<Navigate to="/wishlist" replace />} />
                 <Route path="addresses" element={<AddressesContent />} />

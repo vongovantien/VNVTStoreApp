@@ -115,18 +115,21 @@ export const ProductCard = memo(
     // Render stars
     const stars = useMemo(
       () =>
-        Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            size={12}
-            className={cn(
-              i < Math.floor(product.rating)
-                ? 'fill-yellow-400 text-yellow-400'
-                : 'fill-gray-200 text-gray-200'
-            )}
-          />
-        )),
-      [product.rating]
+        Array.from({ length: 5 }).map((_, i) => {
+          const ratingValue = product.averageRating ?? product.rating ?? 0;
+          return (
+            <Star
+              key={i}
+              size={12}
+              className={cn(
+                i < Math.floor(ratingValue)
+                  ? 'fill-yellow-400 text-yellow-400'
+                  : 'fill-gray-200 text-gray-200'
+              )}
+            />
+          );
+        }),
+      [product.averageRating, product.rating]
     );
 
     // List variant

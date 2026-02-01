@@ -320,4 +320,59 @@ public class CloudinaryImageUploadService : IImageUploadService
              return Result.Failure<IEnumerable<FileDto>>(VNVTStore.Application.Common.Error.Validation($"Database save failed: {ex.Message}"));
         }
     }
+
+
+    public async Task<Result<FileDto>> UploadUrlAsync(string url, string fileName, string folder = "products")
+    {
+        try
+        {
+             var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(url), 
+                Folder = folder,
+                PublicId = Path.GetFileNameWithoutExtension(fileName) 
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.Error != null)
+            {
+                return Result.Failure<FileDto>(VNVTStore.Application.Common.Error.Validation($"Cloudinary URL fetch failed: {uploadResult.Error.Message}"));
+            }
+
+            var fileDto = new FileDto
+            {
+                Code = Guid.NewGuid().ToString(),
+                FileName = fileName, // We reuse the passed filename or use Cloudinary's if needed
+                OriginalName = fileName,
+                Extension = "." + uploadResult.Format,
+                MimeType = "image/" + uploadResult.Format,
+                Size = uploadResult.Bytes,
+                Path = uploadResult.SecureUrl.AbsoluteUri,
+                Url = uploadResult.SecureUrl.AbsoluteUri
+            };
+
+            var fileEntity = TblFile.Create(
+                fileDto.FileName,
+                fileDto.OriginalName,
+                fileDto.Extension,
+                fileDto.MimeType,
+                fileDto.Size,
+                fileDto.Url
+            );
+            fileEntity.Code = $"FIL{DateTime.Now.Ticks}";
+
+            // Update DTO Code to match Entity Code so caller can find it
+            fileDto.Code = fileEntity.Code;
+
+            _context.TblFiles.Add(fileEntity);
+            await _context.SaveChangesAsync(CancellationToken.None);
+
+            return Result.Success(fileDto);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<FileDto>(VNVTStore.Application.Common.Error.Validation($"URL Upload failed: {ex.Message}"));
+        }
+    }
 }

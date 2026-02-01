@@ -85,6 +85,7 @@ const ReviewsList = ({ productCode }: ReviewsListProps) => {
           {totalCount > pageSize && (
              <Pagination
                 currentPage={pageIndex}
+                totalPages={Math.ceil(totalCount / pageSize)}
                 totalItems={totalCount}
                 pageSize={pageSize}
                 onPageChange={setPageIndex}

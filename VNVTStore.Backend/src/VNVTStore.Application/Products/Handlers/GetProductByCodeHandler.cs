@@ -74,6 +74,22 @@ public class GetProductByCodeHandler : BaseHandler<TblProduct>,
                  AltText = f.OriginalName,
                  IsPrimary = files.IndexOf(f) == 0
             }).ToList();
+
+            // 2. Aggregate Ratings
+            var ratingData = await _context.TblReviews
+                .Where(r => (r.ProductCode == request.Code || (r.OrderItemCodeNavigation != null && r.OrderItemCodeNavigation.ProductCode == request.Code)) && r.IsApproved == true)
+                .GroupBy(r => 1)
+                .Select(g => new { 
+                    AverageRating = g.Average(r => (decimal?)r.Rating) ?? 0, 
+                    ReviewCount = g.Count() 
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (ratingData != null)
+            {
+                result.Value.AverageRating = ratingData.AverageRating;
+                result.Value.ReviewCount = ratingData.ReviewCount;
+            }
         }
 
         return result;

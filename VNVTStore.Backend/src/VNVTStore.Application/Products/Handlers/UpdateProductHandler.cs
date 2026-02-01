@@ -56,6 +56,14 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
 
             var supplierCode = string.IsNullOrWhiteSpace(request.Dto.SupplierCode) ? null : request.Dto.SupplierCode;
             
+            // DEBUG: Log incoming price values
+            Console.WriteLine($"[UpdateProductHandler] Incoming DTO values:");
+            Console.WriteLine($"  Price: {request.Dto.Price}");
+            Console.WriteLine($"  WholesalePrice: {request.Dto.WholesalePrice}");
+            Console.WriteLine($"  CostPrice: {request.Dto.CostPrice}");
+            Console.WriteLine($"  VatRate: {request.Dto.VatRate}");
+            Console.WriteLine($"  Current Product Price: {product.Price}");
+            
             product.UpdateInfo(
                 request.Dto.Name ?? product.Name, 
                 request.Dto.Price ?? product.Price, 
@@ -164,8 +172,10 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
                 }
             }
 
-            if (request.Dto.Images != null)
+            Console.WriteLine($"[UpdateProductHandler] request.Dto.Images is null: {request.Dto.Images == null}, Count: {request.Dto.Images?.Count ?? 0}");
+            if (request.Dto.Images != null && request.Dto.Images.Count > 0)
             {
+                Console.WriteLine($"[UpdateProductHandler] Images to sync: {string.Join(", ", request.Dto.Images)}");
                 var syncResult = await _fileService.SyncProductImagesAsync(
                     product.Code, 
                     request.Dto.Images, 

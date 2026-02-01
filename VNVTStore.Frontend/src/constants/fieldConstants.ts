@@ -23,35 +23,10 @@ export const AUDIT_FIELDS = [
 // ============ List View Fields (extend COMMON_FIELDS) ============
 
 // Product fields for list view
-export const PRODUCT_LIST_FIELDS = [
-    ...COMMON_FIELDS,
-    'Name',
-    'Price',
-    'CategoryCode',
-    'CategoryName',
-    'StockQuantity',
-];
+export const PRODUCT_LIST_FIELDS: string[] = [];
 
 // Product fields for detail/edit view
-export const PRODUCT_DETAIL_FIELDS = [
-    ...COMMON_FIELDS,
-    ...AUDIT_FIELDS,
-    'Name',
-    'Price',
-    'CategoryCode',
-    'CategoryName',
-    'Description',
-    'StockQuantity',
-    'CostPrice',
-    'Weight',
-    'Color',
-    'Power',
-    'Voltage',
-    'Material',
-    'Size',
-    'SupplierCode',
-    'SupplierName',
-];
+export const PRODUCT_DETAIL_FIELDS: string[] = [];
 
 // Category fields
 export const CATEGORY_LIST_FIELDS = [

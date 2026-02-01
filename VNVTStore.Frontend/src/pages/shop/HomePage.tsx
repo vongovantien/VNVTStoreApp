@@ -221,7 +221,7 @@ export const HomePage = () => {
                 >
                   <div className="w-24 h-24 rounded-full overflow-hidden bg-secondary/20 group-hover:scale-110 transition-transform">
                     <SharedImage
-                      src={cat.imageUrl}
+                      src={cat.imageURL}
                       alt={cat.name}
                       className="w-full h-full object-cover"
                     />

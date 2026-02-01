@@ -10,9 +10,12 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Common;
 using VNVTStore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using MockQueryable.Moq;
-using VNVTStore.Application.Quotes.Queries;
-using MediatR;
+using Microsoft.EntityFrameworkCore.Query;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System;
 
 namespace VNVTStore.Application.Tests.Handlers;
 
@@ -22,6 +25,7 @@ public class QuoteHandlersTests
     private readonly Mock<IRepository<TblProduct>> _productRepoMock;
     private readonly Mock<IRepository<TblUser>> _userRepoMock;
     private readonly Mock<IEmailService> _emailServiceMock;
+    private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly Mock<ICurrentUser> _currentUserMock;
     private readonly Mock<IUnitOfWork> _uowMock;
     private readonly Mock<IMapper> _mapperMock;
@@ -33,6 +37,7 @@ public class QuoteHandlersTests
         _productRepoMock = new Mock<IRepository<TblProduct>>();
         _userRepoMock = new Mock<IRepository<TblUser>>();
         _emailServiceMock = new Mock<IEmailService>();
+        _notificationServiceMock = new Mock<INotificationService>();
         _currentUserMock = new Mock<ICurrentUser>();
         _uowMock = new Mock<IUnitOfWork>();
         _mapperMock = new Mock<IMapper>();
@@ -42,6 +47,7 @@ public class QuoteHandlersTests
             _productRepoMock.Object,
             _userRepoMock.Object,
             _emailServiceMock.Object,
+            _notificationServiceMock.Object,
             _currentUserMock.Object,
             _uowMock.Object,
             _mapperMock.Object);
@@ -65,9 +71,9 @@ public class QuoteHandlersTests
         var admins = new List<TblUser>
         {
             TblUser.Create("admin", "admin@example.com", "hash", "Admin User", UserRole.Admin)
-        }.AsQueryable();
+        };
 
-        _userRepoMock.Setup(x => x.AsQueryable()).Returns(admins);
+        _userRepoMock.Setup(x => x.AsQueryable()).Returns(CreateMockDbSet(admins).Object);
 
         // Act
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -99,9 +105,9 @@ public class QuoteHandlersTests
         _productRepoMock.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TblProduct.Create("Test Product", 10m, null, 100, null, null, null));
 
-        var noAdmins = new List<TblUser>().AsQueryable();
+        var noAdmins = new List<TblUser>();
 
-        _userRepoMock.Setup(x => x.AsQueryable()).Returns(noAdmins);
+        _userRepoMock.Setup(x => x.AsQueryable()).Returns(CreateMockDbSet(noAdmins).Object);
 
         // Act
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -113,5 +119,54 @@ public class QuoteHandlersTests
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<bool>()), Times.Never);
+    }
+
+    private static Mock<DbSet<T>> CreateMockDbSet<T>(List<T> sourceList) where T : class
+    {
+        var queryable = sourceList.AsQueryable();
+        var dbSetMock = new Mock<DbSet<T>>();
+
+        dbSetMock.As<IQueryable<T>>().Setup(m => m.Provider).Returns(new TestAsyncQueryProvider<T>(queryable.Provider));
+        dbSetMock.As<IQueryable<T>>().Setup(m => m.Expression).Returns(queryable.Expression);
+        dbSetMock.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
+        dbSetMock.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(() => queryable.GetEnumerator());
+        
+        dbSetMock.As<IAsyncEnumerable<T>>().Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
+            .Returns(new TestAsyncEnumerator<T>(queryable.GetEnumerator()));
+
+        return dbSetMock;
+    }
+
+    private class TestAsyncQueryProvider<TEntity> : IAsyncQueryProvider
+    {
+        private readonly IQueryProvider _inner;
+        public TestAsyncQueryProvider(IQueryProvider inner) => _inner = inner;
+        public IQueryable CreateQuery(Expression expression) => new TestAsyncEnumerable<TEntity>(expression);
+        public IQueryable<TElement> CreateQuery<TElement>(Expression expression) => new TestAsyncEnumerable<TElement>(expression);
+        public object? Execute(Expression expression) => _inner.Execute(expression);
+        public TResult Execute<TResult>(Expression expression) => _inner.Execute<TResult>(expression);
+        public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
+        {
+            var resultType = typeof(TResult).GetGenericArguments()[0];
+            var executeMethod = typeof(IQueryProvider).GetMethod(nameof(IQueryProvider.Execute), 1, new[] { typeof(Expression) });
+            var result = executeMethod!.MakeGenericMethod(resultType).Invoke(_inner, new object[] { expression });
+            return (TResult)typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(resultType).Invoke(null, new[] { result })!;
+        }
+    }
+    
+    private class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
+    {
+        public TestAsyncEnumerable(Expression expression) : base(expression) { }
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => new TestAsyncEnumerator<T>(this.AsEnumerable().GetEnumerator());
+        IQueryProvider IQueryable.Provider => new TestAsyncQueryProvider<T>(this);
+    }
+    
+    private class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
+    {
+        private readonly IEnumerator<T> _inner;
+        public TestAsyncEnumerator(IEnumerator<T> inner) => _inner = inner;
+        public T Current => _inner.Current;
+        public ValueTask DisposeAsync() { _inner.Dispose(); return ValueTask.CompletedTask; }
+        public ValueTask<bool> MoveNextAsync() => ValueTask.FromResult(_inner.MoveNext());
     }
 }

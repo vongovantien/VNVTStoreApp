@@ -10,6 +10,7 @@ import { ImportModal } from '@/components/common/ImportModal';
 // ... (existing imports)
 import { TableToolbar } from '@/components/admin';
 import { AdvancedFilter, type FilterDef } from '@/components/common/AdvancedFilter';
+import { TableSkeleton } from '@/components/common/TableSkeleton';
 import { useExport } from '@/hooks/useExport';
 import { exportToExcel, type ExportColumn } from '@/utils/export';
 import { cn } from '@/utils/cn';
@@ -160,15 +161,8 @@ function DataTableInner<T extends Record<string, any>>({
   const [showSearch, setShowSearch] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
-  // Debounce search callback
-  useEffect(() => {
-    if (onSearch) {
-      const timer = setTimeout(() => {
-        onSearch(searchQuery);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [searchQuery, onSearch]);
+  // Removed debounced search logic as simple search is deprecated
+
 
   // Selection State (controlled or uncontrolled)
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
@@ -456,32 +450,15 @@ function DataTableInner<T extends Record<string, any>>({
                   onBulkDelete(items);
                 }
               } : undefined}
-              onSearchClick={() => advancedFilterDefs ? setShowFilters(!showFilters) : setShowSearch(!showSearch)}
+              onSearchClick={() => setShowFilters(!showFilters)}
               onReset={handleReset}
               onExport={handleExport}
               onImport={onImport ? () => setIsImportOpen(true) : undefined}
-              isSearchActive={advancedFilterDefs ? showFilters : showSearch}
+              isSearchActive={showFilters}
               isExporting={isExporting}
               selectedCount={selectedIds.size}
               searchRef={searchButtonRef}
               className="w-full"
-              searchInput={(!advancedFilterDefs && showSearch) && (
-                <div className="flex items-center mr-2 animate-in fade-in slide-in-from-right-4 duration-200">
-                  <div className="relative">
-                     <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                       <Search size={16} />
-                     </div>
-                     <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={searchPlaceholder || t('common.placeholders.search')}
-                        className="w-64 pl-9 pr-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                        autoFocus
-                     />
-                  </div>
-                </div>
-              )}
             >
               {enableColumnVisibility && (
                 <ColumnVisibility
@@ -582,17 +559,25 @@ function DataTableInner<T extends Record<string, any>>({
         )}
         {/* Table Container with Loading Overlay */}
         <div className="relative">
-          {/* Centered Loading Overlay */}
-          {(isLoading || isFetching) && (
-            <div className="absolute inset-0 bg-primary/60 z-10 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm text-secondary">{t('common.loading', 'Đang tải...')}</span>
-              </div>
-            </div>
-          )}
-          <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-60")}>
-          <table className="w-full">
+          {/* Table Skeleton / Loading Overlay */}
+          {(isLoading || isFetching) && displayData.length === 0 ? (
+            <TableSkeleton 
+              columns={visibleColumnDefs.length} 
+              rows={pageSize} 
+              hasSelection={enableSelection}
+              hasActions={!!(onView || onEdit || onDelete || renderRowActions)}
+            />
+          ) : (
+            <>
+              {(isLoading || isFetching) && (
+                <div className="absolute inset-0 bg-primary/40 z-10 flex items-center justify-center backdrop-blur-[1px]">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                </div>
+              )}
+              <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-60")}>
+              <table className="w-full">
             <thead className="bg-secondary border-b border-border">
               {/* Main Header Row */}
               <tr>
@@ -687,6 +672,8 @@ function DataTableInner<T extends Record<string, any>>({
             </tbody>
           </table>
         </div>
+        </>
+        )}
       </div>
       
        {/* Pagination */}

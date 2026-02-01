@@ -50,8 +50,8 @@ const QuotesContent = () => {
 
       {quotes.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-secondary mb-4">Bạn chưa có yêu cầu báo giá nào.</p>
-          <Link to="/products" className="text-primary hover:underline">Xem sản phẩm để yêu cầu báo giá</Link>
+          <p className="text-secondary mb-4">{t('account.noQuotes')}</p>
+          <Link to="/products" className="text-primary hover:underline">{t('account.viewProductsToQuote')}</Link>
         </div>
       )}
 
@@ -77,14 +77,14 @@ const QuotesContent = () => {
             />
             <div className="flex-1 min-w-0">
               <p className="text-base font-medium truncate text-color-primary">{quote.productName}</p>
-              <p className="text-sm text-tertiary">Số lượng: {quote.quantity}</p>
+              <p className="text-sm text-tertiary">{t('common.fields.quantity')}: {quote.quantity}</p>
               {quote.note && <p className="text-sm text-secondary italic">" {quote.note} "</p>}
             </div>
           </div>
 
           {quote.quotedPrice && (
             <div className="flex justify-between items-center pt-4 border-t border-secondary/10">
-              <span className="text-sm text-secondary">Giá được báo</span>
+              <span className="text-sm text-secondary">{t('common.fields.quotedPrice')}</span>
               <span className="font-bold text-lg text-primary">{formatCurrency(quote.quotedPrice)}</span>
             </div>
           )}

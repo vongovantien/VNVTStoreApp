@@ -26,15 +26,15 @@ export const ContactPage = () => {
     });
 
     const onSubmit = (data: ContactFormData) => {
-        toast.success('Cảm ơn bạn! Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.');
+        toast.success(t('contactPage.success'));
         reset();
     };
 
     const contactInfo = [
-        { icon: MapPin, title: 'Địa chỉ', content: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh' },
-        { icon: Phone, title: 'Hotline', content: '1900 123 456' },
-        { icon: Mail, title: 'Email', content: 'contact@vnvtstore.com' },
-        { icon: Clock, title: 'Giờ làm việc', content: '8:00 - 21:00 (Thứ 2 - CN)' },
+        { icon: MapPin, title: t('contactPage.info.address'), content: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh' },
+        { icon: Phone, title: t('contactPage.info.hotline'), content: '1900 123 456' },
+        { icon: Mail, title: t('contactPage.info.email'), content: 'contact@vnvtstore.com' },
+        { icon: Clock, title: t('contactPage.info.workingHours'), content: '8:00 - 21:00 (Thứ 2 - CN)' },
     ];
 
     return (
@@ -46,9 +46,9 @@ export const ContactPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-12"
                 >
-                    <h1 className="text-4xl font-bold mb-4">📞 Liên hệ với chúng tôi</h1>
+                    <h1 className="text-4xl font-bold mb-4">{t('contactPage.title')}</h1>
                     <p className="text-secondary text-lg max-w-2xl mx-auto">
-                        Chúng tôi luôn sẵn sàng hỗ trợ bạn. Hãy liên hệ ngay!
+                        {t('contactPage.subtitle')}
                     </p>
                 </motion.div>
 
@@ -59,53 +59,54 @@ export const ContactPage = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="bg-primary rounded-2xl p-8 shadow-lg"
                     >
-                        <h2 className="text-2xl font-bold mb-6">Gửi tin nhắn</h2>
+                        <h2 className="text-2xl font-bold mb-6">{t('contactPage.formTitle')}</h2>
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <Input
-                                    label="Họ tên *"
-                                    placeholder="Nguyễn Văn A"
+                                    label={t('contactPage.fields.fullName')}
+                                    placeholder={t('contactPage.placeholders.fullName')}
                                     {...register('fullName')}
                                     error={errors.fullName?.message}
-                                    required
+                                    isRequired
                                 />
                                 <Input
-                                    label="Email *"
+                                    label={t('contactPage.fields.email')}
                                     type="email"
-                                    placeholder="email@example.com"
+                                    placeholder={t('contactPage.placeholders.email')}
                                     {...register('email')}
                                     error={errors.email?.message}
-                                    required
+                                    isRequired
                                 />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <Input
-                                    label="Số điện thoại"
-                                    placeholder="0901 234 567"
+                                    label={t('contactPage.fields.phone')}
+                                    placeholder={t('contactPage.placeholders.phone')}
                                     {...register('phone')}
                                     error={errors.phone?.message}
                                 />
                                 <Input
-                                    label="Chủ đề *"
-                                    placeholder="Hỗ trợ sản phẩm"
+                                    label={t('contactPage.fields.subject')}
+                                    placeholder={t('contactPage.placeholders.subject')}
                                     {...register('subject')}
                                     error={errors.subject?.message}
-                                    required
+                                    isRequired
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Nội dung *</label>
+                                <label className="block text-sm font-medium mb-2">
+                                    {t('contactPage.fields.message')} <span className="text-red-500">*</span>
+                                </label>
                                 <textarea
                                     rows={5}
-                                    placeholder="Nhập nội dung tin nhắn..."
+                                    placeholder={t('contactPage.placeholders.message')}
                                     {...register('message')}
-                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-primary resize-none ${errors.message ? 'border-red-500' : ''}`}
-                                    required
+                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none ${errors.message ? 'border-red-500 bg-red-50/50' : 'border-slate-200'}`}
                                 />
-                                {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
+                                {errors.message && <p className="text-red-500 text-xs mt-1 font-medium">{errors.message.message}</p>}
                             </div>
                             <Button type="submit" fullWidth rightIcon={<Send size={18} />}>
-                                Gửi tin nhắn
+                                {t('contactPage.send')}
                             </Button>
                         </form>
                     </motion.div>
@@ -145,7 +146,7 @@ export const ContactPage = () => {
 
                         {/* Social Links */}
                         <div className="bg-primary rounded-xl p-6 shadow-md">
-                            <h3 className="font-semibold mb-4">Kết nối với chúng tôi</h3>
+                            <h3 className="font-semibold mb-4">{t('contactPage.socialTitle')}</h3>
                             <div className="flex gap-4">
                                 {['Facebook', 'Zalo', 'Instagram', 'Youtube'].map((social) => (
                                     <button

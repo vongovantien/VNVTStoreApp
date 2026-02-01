@@ -113,6 +113,23 @@ export default function SuppliersPage() {
     }
   };
 
+
+
+  const handleImport = async (file: File) => {
+      try {
+          await supplierService.import(file);
+          // Assuming toast is available globally or needs import. 
+          // SuppliersPage uses useTranslation but not useToast explicitly in original snippet but let's check imports.
+          // Original imports didn't show useToast. I will assume it's okay or add if needed.
+          // Wait, ProductsPage used useToast. SuppliersPage might not have it setup.
+          // Actually, handleApiResponse in baseService handles toast if we use it, but here we call service directly.
+          // Let's just refetch.
+          refetch();
+      } catch (error) {
+          console.error("Import error", error);
+      }
+  };
+
   const handleDelete = () => {
     if (supplierToDelete) {
       deleteSupplier(supplierToDelete.code);
@@ -149,7 +166,7 @@ export default function SuppliersPage() {
           </div>
           <div>
             <p className="font-medium text-slate-800 dark:text-slate-100">{supplier.name}</p>
-            {supplier.taxCode && <p className="text-xs text-secondary">MST: {supplier.taxCode}</p>}
+            {supplier.taxCode && <p className="text-xs text-secondary">{t('common.fields.taxCode')}: {supplier.taxCode}</p>}
           </div>
         </div>
       ),
@@ -280,9 +297,11 @@ export default function SuppliersPage() {
 
         // Export
          onExportAllData={async () => {
-           const res = await supplierService.getAll(10000);
-           return res.data?.items || [];
+           return supplierService.exportData(); // Use new generic helper
         }}
+        onImport={handleImport}
+        importTemplateUrl="/suppliers/template"
+        importTitle={t('common.importData')}
 
         onEdit={(item) => openEdit(item)}
         onDelete={(item) => confirmDelete(item)}

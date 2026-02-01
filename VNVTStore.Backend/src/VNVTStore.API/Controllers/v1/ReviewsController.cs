@@ -69,14 +69,15 @@ public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateR
         return await base.Delete(code);
     }
 
-    /// <summary>
-    /// Get all reviews (Admin moderation)
-    /// </summary>
     [HttpGet]
     [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> GetAllReviews([FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber, [FromQuery] int pageSize = AppConstants.Paging.DefaultPageSize, [FromQuery] bool? isApproved = null)
+    public async Task<IActionResult> GetAllReviews(
+        [FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber, 
+        [FromQuery] int pageSize = AppConstants.Paging.DefaultPageSize, 
+        [FromQuery] string? search = null,
+        [FromQuery] bool? isApproved = null)
     {
-        var result = await Mediator.Send(new GetAllReviewsQuery(pageIndex, pageSize, isApproved));
+        var result = await Mediator.Send(new GetAllReviewsQuery(pageIndex, pageSize, search, isApproved));
         return HandleResult(result);
     }
 

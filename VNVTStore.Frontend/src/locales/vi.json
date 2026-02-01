@@ -77,10 +77,19 @@
     "checkErrors": "Vui lòng kiểm tra lại thông tin"
   },
   "promotions": {
-    "title": "Quản lý khuyến mãi",
-    "subtitle": "Quản lý các chương trình giảm giá và sự kiện",
+    "title": "Khuyến mãi đặc biệt",
+    "subtitle": "Khám phá các ưu đãi hấp dẫn dành riêng cho bạn tại VNVT Store",
     "noPromotions": "Chưa có khuyến mãi nào",
-    "createGuide": "Bắt đầu tạo chương trình khuyến mãi đầu tiên"
+    "noPromotionsDesc": "Hãy quay lại sau để nhận các ưu đãi hấp dẫn nhé!",
+    "createGuide": "Bắt đầu tạo chương trình khuyến mãi đầu tiên",
+    "validUntil": "Hết hạn",
+    "code": "Mã giảm giá",
+    "copyCode": "Sao chép mã",
+    "copied": "Đã sao chép mã!",
+    "noDescription": "Không có mô tả cho khuyến mãi này",
+    "newsletterTitle": "Đăng ký nhận ưu đãi",
+    "newsletterDesc": "Nhận thông tin khuyến mãi mới nhất và voucher 50k!",
+    "subscribe": "Đăng ký"
   },
   "common": {
     "home": "Trang chủ",
@@ -91,20 +100,32 @@
     "wishlist": "Yêu thích",
     "compare": "So sánh",
     "account": {
-      "title": "Tài khoản",
-      "profile": "Thông tin cá nhân",
+      "title": "Tài khoản của tôi",
+      "profile": "Hồ sơ của tôi",
       "orders": "Đơn hàng của tôi",
-      "addresses": "Sổ địa chỉ"
+      "addresses": "Sổ địa chỉ",
+      "security": "Bảo mật & Mật khẩu",
+      "changePassword": "Đổi mật khẩu",
+      "twoFactor": "Xác thực 2 bước (2FA)",
+      "twoFactorDesc": "Tăng cường bảo mật bằng cách yêu cầu mã xác thực mỗi khi đăng nhập.",
+      "notActivated": "Chưa kích hoạt",
+      "setupTwoFactor": "Thiết lập xác thực 2 bước",
+      "notificationSettings": "Cài đặt thông báo",
+      "emailNotifications": "Thông báo qua Email",
+      "emailNotificationsDesc": "Nhận thông tin về đơn hàng và ưu đãi qua email"
     },
     "login": "Đăng nhập",
     "register": "Đăng ký",
     "logout": "Đăng xuất",
     "save": "Lưu",
+    "dragOrClick": "Kéo thả hoặc nhấn để tải ảnh",
     "search": "Tìm kiếm",
     "viewAll": "Xem tất cả",
     "all": "Chọn giá trị",
     "refresh": "Làm mới",
     "create": "Tạo mới",
+    "add": "Thêm",
+    "addValue": "Thêm giá trị",
     "update": "Cập nhật",
     "delete": "Xóa",
     "edit": "Sửa",
@@ -272,12 +293,18 @@
       "role": "Vai trò",
       "joinDate": "Ngày tham gia",
       "password": "Mật khẩu",
+      "currentPassword": "Mật khẩu hiện tại",
       "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu",
       "username": "Tên đăng nhập",
       "unit": "Đơn vị tính",
       "unitName": "Tên đơn vị",
       "conversionRate": "Tỷ lệ quy đổi",
-      "product": "Sản phẩm"
+      "product": "Sản phẩm",
+      "attributeName": "Tên thuộc tính",
+      "attributeValue": "Giá trị thuộc tính",
+      "sku": "Mã SKU",
+      "stockQuantity": "Số lượng tồn"
     },
     "status": {
       "active": "Hoạt động",
@@ -643,6 +670,7 @@
   },
   "product": {
     "new": "Mới",
+    "variants": "Phiên bản",
     "sale": "Giảm giá",
     "outOfStock": "Hết hàng",
     "lowStock": "Sắp hết hàng",
@@ -682,7 +710,15 @@
       "units": "Đơn vị tính",
       "images": "Hình ảnh",
       "reviews": "Đánh giá"
-    }
+    },
+    "variantAttributes": "Thuộc tính phiên bản",
+    "noAttributes": "Chưa có thuộc tính nào. Thêm thuộc tính như Màu sắc, Kích cỡ...",
+    "addVariant": "Thêm phiên bản",
+    "attributeName": "Tên thuộc tính",
+    "attributeValue": "Giá trị",
+    "variant": "Phiên bản",
+    "sku": "Mã SKU",
+    "generateVariants": "Tạo phiên bản"
   },
   "filter": {
     "title": "Bộ lọc",
@@ -826,13 +862,56 @@
     "successMessage": "Chúng tôi sẽ liên hệ báo giá trong vòng 24 giờ"
   },
   "account": {
+    "title": "Tài khoản",
     "profile": "Thông tin cá nhân",
     "orders": "Đơn hàng của tôi",
     "quotes": "Yêu cầu báo giá",
     "wishlist": "Sản phẩm yêu thích",
-    "addresses": "Địa chỉ giao hàng",
+    "addresses": "Sổ địa chỉ",
     "notifications": "Thông báo",
-    "settings": "Cài đặt"
+    "security": "Bảo mật & Mật khẩu",
+    "changePassword": "Đổi mật khẩu",
+    "twoFactor": "Xác thực 2 bước (2FA)",
+    "notActivated": "Chưa kích hoạt",
+    "twoFactorDesc": "Tăng cường bảo mật cho tài khoản của bạn bằng cách yêu cầu mã xác thực khi đăng nhập.",
+    "setupTwoFactor": "Thiết lập 2FA ngay",
+    "notificationSettings": "Cài đặt thông báo",
+    "emailNotifications": "Nhận thông báo qua email",
+    "emailNotificationsDesc": "Nhận các tin tức mới nhất, khuyến mãi và cập nhật đơn hàng qua địa chỉ email của bạn.",
+    "myNotifications": "Thông báo của tôi",
+    "noNotifications": "Chưa có thông báo nào",
+    "checkBackLater": "Chúng tôi sẽ gửi thông báo đến bạn khi có cập nhật mới.",
+    "settings": "Cài đặt tài khoản",
+    "noQuotes": "Bạn chưa có yêu cầu báo giá nào.",
+    "viewProductsToQuote": "Xem sản phẩm để yêu cầu báo giá",
+    "customer": "Khách hàng"
+  },
+  "contactPage": {
+    "title": "Liên hệ với chúng tôi",
+    "subtitle": "Chúng tôi luôn sẵn sàng hỗ trợ bạn. Hãy liên hệ ngay!",
+    "formTitle": "Gửi tin nhắn",
+    "fields": {
+      "fullName": "Họ và tên",
+      "email": "Địa chỉ Email",
+      "phone": "Số điện thoại",
+      "subject": "Chủ đề",
+      "message": "Nội dung tin nhắn"
+    },
+    "placeholders": {
+      "fullName": "Nhập họ và tên...",
+      "email": "Nhập địa chỉ email...",
+      "phone": "Nhập số điện thoại...",
+      "subject": "Nhập chủ đề cần hỗ trợ...",
+      "message": "Nhập nội dung tin nhắn của bạn..."
+    },
+    "send": "Gửi tin nhắn",
+    "sending": "Đang gửi...",
+    "success": "Cảm ơn bạn! Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.",
+    "error": "Có lỗi xảy ra. Vui lòng thử lại sau.",
+    "contactInfo": "Thông tin liên hệ",
+    "address": "Phù Mỹ, Bình Định, Việt Nam",
+    "hours": "Giờ làm việc",
+    "hoursDetail": "Thứ 2 - Thứ 7: 08:00 - 18:00"
   },
   "login": {
     "title": "Đăng nhập",
@@ -991,7 +1070,26 @@
     "faq4a": "Chúng tôi chấp nhận COD, chuyển khoản, VNPAY, MoMo, ZaloPay.",
     "contactTitle": "Liên hệ hỗ trợ",
     "hotlineHours": "8:00 - 21:00 (Thứ 2 - CN)",
-    "emailResponse": "Phản hồi trong vòng 24 giờ",
+    "emailResponse": "Phân hồi trong vòng 24 giờ",
     "sendMessage": "Gửi tin nhắn"
+  },
+  "review": {
+    "writeReview": "Viết đánh giá",
+    "yourRating": "Đánh giá của bạn",
+    "comment": "Nhận xét",
+    "commentRequired": "Vui lòng chia sẻ nhận xét của bạn",
+    "commentMinLength": "Tối thiểu 10 ký tự",
+    "commentPlaceholder": "Chia sẻ trải nghiệm của bạn về sản phẩm này...",
+    "loginRequired": "Vui lòng đăng nhập để viết đánh giá",
+    "userNotFound": "Không tìm thấy thông tin người dùng",
+    "submitSuccess": "Đánh giá của bạn đã được gửi thành công!",
+    "submitError": "Không thể gửi đánh giá",
+    "excellent": "Tuyệt vời!",
+    "good": "Tốt",
+    "average": "Trung bình",
+    "poor": "Kém",
+    "terrible": "Rất tệ",
+    "minCharsLeft": "Cần thêm {{count}} ký tự nữa",
+    "minLengthReached": "Đã đủ độ dài tối thiểu"
   }
 }

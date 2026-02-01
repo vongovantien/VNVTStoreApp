@@ -64,9 +64,9 @@ export const PromotionsPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-12"
                 >
-                    <h1 className="text-4xl font-bold mb-4">🎉 {t('promotions.title') || 'Khuyến mãi đặc biệt'}</h1>
+                    <h1 className="text-4xl font-bold mb-4">🎉 {t('promotions.title')}</h1>
                     <p className="text-secondary text-lg max-w-2xl mx-auto">
-                        {t('promotions.subtitle') || 'Khám phá các ưu đãi hấp dẫn dành riêng cho bạn tại VNVT Store'}
+                        {t('promotions.subtitle')}
                     </p>
                 </motion.div>
 
@@ -97,26 +97,26 @@ export const PromotionsPage = () => {
                                         </span>
                                     </div>
                                     <h3 className="text-xl font-bold mb-2 break-all">{promo.name}</h3>
-                                    <p className="text-white/80 text-sm line-clamp-2">{promo.description || t('common.noDescription')}</p>
+                                    <p className="text-white/80 text-sm line-clamp-2">{promo.description || t('promotions.noDescription')}</p>
                                 </div>
                                 <div className="p-6">
                                     <div className="flex items-center gap-2 mb-4 text-sm text-secondary">
                                         <Clock size={16} className="text-tertiary" />
-                                        <span>{t('promotions.validUntil') || 'Hết hạn'}: {formatDate(promo.endDate)}</span>
+                                        <span>{t('promotions.validUntil')}: {formatDate(promo.endDate)}</span>
                                     </div>
                                     
                                     {/* Usage Info if available */}
                                     {promo.usageLimit && (
                                          <div className="text-xs text-orange-500 mb-2 font-medium">
-                                            ⚠️ Giới hạn: {promo.usageLimit} lượt dùng
+                                            ⚠️ {t('common.fields.usageLimit')}: {promo.usageLimit}
                                          </div>
                                     )}
 
                                     <div className="bg-secondary rounded-lg p-3 mb-4 text-center border border-dashed border-slate-300 dark:border-slate-600 relative group cursor-pointer" onClick={() => handleCopy(promo.code)}>
-                                        <span className="text-xs text-tertiary uppercase tracking-wider">{t('promotions.code') || 'Mã giảm giá'}</span>
+                                        <span className="text-xs text-tertiary uppercase tracking-wider">{t('promotions.code')}</span>
                                         <p className="text-lg font-bold font-mono text-primary mt-1 select-all">{promo.code}</p>
                                         <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                                            <span className="text-xs font-bold text-slate-600">Click to Copy</span>
+                                            <span className="text-xs font-bold text-slate-600 font-mono">Click to Copy</span>
                                         </div>
                                     </div>
                                     <Button 
@@ -125,7 +125,7 @@ export const PromotionsPage = () => {
                                         onClick={() => handleCopy(promo.code)}
                                         leftIcon={copiedCode === promo.code ? <Check size={16} /> : <Copy size={16} />}
                                     >
-                                        {copiedCode === promo.code ? (t('common.copied') || 'Đã sao chép') : (t('common.copyCode') || 'Sao chép mã')}
+                                        {copiedCode === promo.code ? t('promotions.copied') : t('promotions.copyCode')}
                                     </Button>
                                 </div>
                             </motion.div>
@@ -134,8 +134,8 @@ export const PromotionsPage = () => {
                 ) : (
                     <div className="text-center py-12">
                         <Gift size={64} className="mx-auto text-slate-300 mb-4" />
-                        <h3 className="text-xl font-bold text-secondary mb-2">Chưa có khuyến mãi nào</h3>
-                        <p className="text-tertiary">Hãy quay lại sau để nhận các ưu đãi hấp dẫn nhé!</p>
+                        <h3 className="text-xl font-bold text-secondary mb-2">{t('promotions.noPromotions')}</h3>
+                        <p className="text-tertiary">{t('promotions.noPromotionsDesc')}</p>
                     </div>
                 )}
 
@@ -147,15 +147,15 @@ export const PromotionsPage = () => {
                     className="mt-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-center text-white"
                 >
                     <Gift size={48} className="mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold mb-2">Đăng ký nhận ưu đãi</h2>
-                    <p className="mb-6 text-white/80">Nhận ngay voucher 50k cho đơn hàng tiếp theo!</p>
+                    <h2 className="text-2xl font-bold mb-2">{t('promotions.newsletterTitle')}</h2>
+                    <p className="mb-6 text-white/80">{t('promotions.newsletterDesc')}</p>
                     <div className="flex gap-4 max-w-md mx-auto">
                         <input
                             type="email"
-                            placeholder="Email của bạn"
+                            placeholder={t('common.placeholders.email')}
                             className="flex-1 px-4 py-2 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50"
                         />
-                        <Button className="bg-white text-indigo-600 hover:bg-white/90">Đăng ký</Button>
+                        <Button className="bg-white text-indigo-600 hover:bg-white/90">{t('promotions.subscribe')}</Button>
                     </div>
                 </motion.div>
             </div>

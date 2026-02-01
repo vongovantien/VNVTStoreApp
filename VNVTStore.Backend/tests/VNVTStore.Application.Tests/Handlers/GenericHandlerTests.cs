@@ -3,6 +3,7 @@ using Moq;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Application.Constants;
 using VNVTStore.Domain.Entities;
 using AutoMapper;
 using Xunit;
@@ -32,8 +33,8 @@ public class GenericHandlerTests
         var query = new GetPagedQuery<ProductDto>();
         
         // Assert
-        query.PageIndex.Should().Be(0);
-        query.PageSize.Should().Be(10);
+        query.PageIndex.Should().Be(AppConstants.Paging.DefaultPageNumber);
+        query.PageSize.Should().Be(AppConstants.Paging.DefaultPageSize);
         query.Search.Should().BeNull();
     }
 

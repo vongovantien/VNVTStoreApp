@@ -29,10 +29,11 @@ export interface ReviewSearchParams {
 }
 
 export interface CreateReviewRequest {
-    orderItemCode: string;
+    userCode: string;
+    orderItemCode?: string;
+    productCode?: string;
     rating: number;
     comment: string;
-    userCode: string;
 }
 
 export interface UpdateReviewRequest {

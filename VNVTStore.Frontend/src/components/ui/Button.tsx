@@ -32,13 +32,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 // ============ Style Maps ============
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30 active:bg-indigo-800',
-  secondary: 'bg-rose-500 text-white hover:bg-rose-600 active:bg-rose-700',
-  outline: 'border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-600 hover:text-white',
-  ghost: 'text-slate-600 hover:bg-slate-100 hover:text-indigo-600',
-  danger: 'bg-red-500 text-white hover:bg-red-600 active:bg-red-700',
-  success: 'bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700',
-  link: 'text-indigo-600 hover:underline p-0 h-auto',
+  primary: 'bg-accent text-accent-foreground hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/30 active:opacity-90',
+  secondary: 'bg-secondary text-white hover:bg-slate-600 active:bg-slate-700', // mapped to new secondary var
+  outline: 'border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground',
+  ghost: 'text-text-secondary hover:bg-bg-tertiary hover:text-accent',
+  danger: 'bg-error text-white hover:opacity-90 active:opacity-100',
+  success: 'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800', // Keep specific success color or map to semantic? Keeping for now.
+  link: 'text-accent hover:underline p-0 h-auto',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

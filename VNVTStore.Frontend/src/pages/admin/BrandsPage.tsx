@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Tag, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { brandService, type BrandDto, type CreateBrandRequest, type UpdateBrandRequest } from '@/services';
+import { brandService, productService, type BrandDto, type CreateBrandRequest, type UpdateBrandRequest } from '@/services';
 import { DataTable, type DataTableColumn } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, useBrands } from '@/hooks';
@@ -55,7 +55,7 @@ export default function BrandsPage() {
       openCreate,
       openEdit,
       closeForm,
-      confirmDelete,
+      confirmDelete: baseConfirmDelete,
       cancelDelete,
       createMutation,
       updateMutation,
@@ -64,6 +64,20 @@ export default function BrandsPage() {
       service: brandService,
       queryKey: ['brands']
   });
+
+  const confirmDelete = async (item: BrandDto) => {
+    try {
+        const result = await productService.search({ filters: [{ field: 'BrandCode', value: item.code }], pageSize: 1 });
+        if (result.success && result.data && result.data.totalItems > 0) {
+             alert(t('admin.brands.cannotDelete', { count: result.data.totalItems, defaultValue: `Cannot delete: Brand contains ${result.data.totalItems} products.` }));
+             return;
+        }
+        baseConfirmDelete(item);
+    } catch (error) {
+        console.error("Check dependency failed", error);
+        baseConfirmDelete(item);
+    }
+  };
 
   const { mutate: createBrand, isPending: isCreating } = createMutation;
   const { mutate: updateBrand, isPending: isUpdating } = updateMutation;

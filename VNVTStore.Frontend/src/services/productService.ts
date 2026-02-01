@@ -9,7 +9,7 @@ import apiClient, { ApiResponse } from './api';
 // ============ Types ============
 export interface ProductImageDto {
     code: string;
-    imageUrl?: string;
+    imageURL?: string;
     altText?: string;
     sortOrder?: number;
     isPrimary?: boolean;
@@ -116,7 +116,7 @@ export interface CategoryDto {
     code: string;
     name: string;
     description?: string;
-    imageUrl?: string;
+    imageURL?: string;
     parentCode?: string | null;
     isActive?: boolean;
 }
@@ -124,7 +124,7 @@ export interface CategoryDto {
 export interface CreateCategoryRequest {
     name: string;
     description?: string;
-    imageUrl?: string;
+    imageURL?: string;
     parentCode?: string | null;
     isActive?: boolean;
 }
@@ -151,18 +151,7 @@ export const productService = {
         endpoint: API_ENDPOINTS.PRODUCTS.BASE,
         resourceName: 'Product'
     }),
-    import: async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        // Note: Using explicit endpoint or base endpoint + /import
-        // Base endpoint is /products. Import is /products/import
-        const response = await apiClient.post<ApiResponse<number>>(`${API_ENDPOINTS.PRODUCTS.BASE}/import`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        return response.data;
-    },
+
     getStats: async (): Promise<ProductStats> => {
         const response = await apiClient.get<ProductStats>(`${API_ENDPOINTS.PRODUCTS.BASE}/stats`);
         // Fallback if backend doesn't implement stats

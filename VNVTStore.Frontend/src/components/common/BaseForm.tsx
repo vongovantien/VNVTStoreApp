@@ -5,6 +5,7 @@ import { useForm, Controller, UseFormReturn, Path, DefaultValues, FieldValues, R
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ZodSchema } from 'zod';
 import { Button, Input, Select, NumberInput, Switch, Modal } from '@/components/ui';
+import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { Upload, X, ImageOff } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 
@@ -65,6 +66,7 @@ export interface BaseFormProps<T extends FieldValues> {
   onSubmit: (data: T) => void | Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
+  isInitialLoading?: boolean;
   submitLabel?: string;
   cancelLabel?: string;
   isModal?: boolean;
@@ -355,6 +357,7 @@ export function BaseForm<T extends FieldValues>({
   onSubmit,
   onCancel,
   isLoading = false,
+  isInitialLoading = false,
   submitLabel,
   cancelLabel,
   isModal = false,
@@ -549,7 +552,11 @@ export function BaseForm<T extends FieldValues>({
     >
       {renderBefore?.(form)}
       
-      {renderFields()}
+      {isInitialLoading ? (
+        <FormSkeleton fields={allFields.length || 6} />
+      ) : (
+        renderFields()
+      )}
       
       {renderAfter?.(form)}
 

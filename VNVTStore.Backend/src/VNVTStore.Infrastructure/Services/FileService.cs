@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.Infrastructure.Services;
 
@@ -69,21 +70,100 @@ public class FileService : IFileService
 
         // Link to Master record
         var uniqueUrls = finalUrls.Distinct().ToList();
-        var relativeUrls = uniqueUrls.Select(u =>
+        var relativeUrls = uniqueUrls.SelectMany(u =>
         {
+            var list = new List<string> { u };
             if (Uri.TryCreate(u, UriKind.Absolute, out var uri))
-                return uri.AbsolutePath;
-            return u;
+                list.Add(uri.AbsolutePath);
+            return list;
         }).ToList();
 
         var filesToLink = await _context.TblFiles
             .Where(f => relativeUrls.Contains(f.Path))
             .ToListAsync(cancellationToken);
+            
+        var uniqueUrlsFoundInDb = filesToLink.Select(f => f.Path).ToHashSet();
 
         foreach (var file in filesToLink)
         {
             file.MasterCode = masterCode;
             file.MasterType = masterType;
+        }
+
+        // Identify "External" URLs that might have been saved to DB but not uploaded yet (legacy data or partial state)
+        var externalUrlsInDb = filesToLink
+            .Where(f => f.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) 
+                        && !f.Path.Contains("res.cloudinary.com") 
+                        && !f.Path.Contains("/uploads/"))
+            .Select(f => f.Path)
+            .ToList();
+
+        // Create TblFile for URLs that do not exist in DB yet
+        var missingUrls = uniqueUrls.Except(uniqueUrlsFoundInDb).ToList();
+        
+        // Also process "External" URLs found in DB to migrate them
+        var urlsToProcess = missingUrls.Union(externalUrlsInDb).Distinct().ToList();
+
+        if (urlsToProcess.Any())
+        {
+            Console.WriteLine($"[FileService] Processing {urlsToProcess.Count} URLs to upload: {string.Join(", ", urlsToProcess)}");
+            
+            foreach (var url in urlsToProcess)
+            {
+                Console.WriteLine($"[FileService] Attempting to upload URL: {url}");
+                
+                // Upload External URL to Cloudinary
+                var fileName = System.IO.Path.GetFileName(url);
+                if (string.IsNullOrEmpty(fileName) || fileName.Length < 3)
+                    fileName = $"imported_{Guid.NewGuid()}";
+                
+                Console.WriteLine($"[FileService] Using filename: {fileName}, folder: {folderName}");
+                    
+                var uploadResult = await _imageUploadService.UploadUrlAsync(url, fileName, folderName);
+                
+                Console.WriteLine($"[FileService] UploadUrlAsync result - Success: {uploadResult.IsSuccess}, Error: {uploadResult.Error?.Message ?? "None"}");
+                
+                if (uploadResult.IsSuccess)
+                {
+                    var newFileCode = uploadResult.Value.Code;
+                    Console.WriteLine($"[FileService] Upload successful! Code: {newFileCode}, URL: {uploadResult.Value.Url}");
+                    
+                    // Case 1: Newly created file (from missingUrls)
+                    var fileEntity = await _context.TblFiles.FirstOrDefaultAsync(f => f.Code == newFileCode, cancellationToken);
+                    Console.WriteLine($"[FileService] Found entity by code {newFileCode}: {fileEntity != null}");
+                    
+                    if (fileEntity != null)
+                    {
+                        fileEntity.MasterCode = masterCode;
+                        fileEntity.MasterType = masterType;
+                        Console.WriteLine($"[FileService] Linked file {newFileCode} to {masterType}:{masterCode}");
+                    }
+
+                    // Case 2: Existing file in DB that was replaced (from externalUrlsInDb)
+                    // If we uploaded an existing external URL, UploadUrlAsync created a NEW TblFile.
+                    // We should probably DELETE the old one to avoid duplicates?
+                    // The old one matches `url`.
+                    if (externalUrlsInDb.Contains(url))
+                    {
+                        var oldEntities = await _context.TblFiles
+                            .Where(f => f.Path == url && f.MasterCode == masterCode)
+                            .ToListAsync(cancellationToken);
+                        Console.WriteLine($"[FileService] Removing {oldEntities.Count} old external URL entries");
+                        _context.TblFiles.RemoveRange(oldEntities);
+                    }
+                    
+                    uniqueUrls.Remove(url);
+                    uniqueUrls.Add(uploadResult.Value.Url);
+                }
+                else
+                {
+                    Console.WriteLine($"[FileService] Upload FAILED for {url}. Keeping original URL in list.");
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine($"[FileService] No URLs to process. uniqueUrls: {string.Join(", ", uniqueUrls)}, uniqueUrlsFoundInDb: {string.Join(", ", uniqueUrlsFoundInDb)}");
         }
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -101,23 +181,32 @@ public class FileService : IFileService
             .Where(f => f.MasterCode == productCode && f.MasterType == "Product")
             .ToListAsync(cancellationToken);
 
-        var currentUrls = currentImageStrings.Select(u =>
+        var currentUrls = currentImageStrings.SelectMany(u =>
         {
+             var list = new List<string> { u };
              if (Uri.TryCreate(u, UriKind.Absolute, out var uri))
-                return uri.AbsolutePath;
-            return u;
-        }).ToList();
+                list.Add(uri.AbsolutePath);
+             return list;
+        }).ToHashSet(); 
 
-        // 2. Identify files to unlink (removed from request)
+        // 2. Identify files to unlink AND DELETE
         var toUnlink = existingFiles.Where(f => !currentUrls.Contains(f.Path)).ToList();
         
-        foreach(var file in toUnlink)
+        if (toUnlink.Any())
         {
-            file.MasterCode = null;
-            file.MasterType = null;
+             // Call DeleteImagesAsync to remove from Cloudinary
+             var urlsToDelete = toUnlink.Select(f => f.Path).ToList();
+             await _imageUploadService.DeleteImagesAsync(urlsToDelete);
+
+             // Remove from Database (Soft Delete or Hard Delete? Logic implies DeleteLinkedFilesAsync loops active=false. 
+             // But usually for Sync we might want to just Unlink OR Delete. 
+             // If we delete from Cloudinary, we MUST delete/deactivate from DB to avoid broken links if they were reused (less likely for specific Product Image).
+             // Assuming TblFile is 1-1 with Product linkage usually.)
+             
+             _context.TblFiles.RemoveRange(toUnlink); // Hard remove from DB to keep it clean, as we deleted from Cloud
         }
 
-        // 3. Process new images (SaveAndLink will handle base64 and link existing ones)
+        // 3. Process new images
         await SaveAndLinkImagesAsync(productCode, "Product", currentImageStrings, "products", cancellationToken);
 
         return Result.Success();

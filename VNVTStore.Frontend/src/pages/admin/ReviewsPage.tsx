@@ -138,7 +138,7 @@ export const ReviewsPage = () => {
           <p className="text-sm line-clamp-2">{row.comment}</p>
           {row.adminReply && (
             <p className="text-xs text-primary mt-1 flex items-center gap-1 italic">
-              <MessageSquare size={10} /> {t('admin.review.replied')}
+              <MessageSquare size={10} /> {t('admin.reviews.replied')}
             </p>
           )}
         </div>
@@ -149,7 +149,7 @@ export const ReviewsPage = () => {
       header: t('common.fields.status'),
       accessor: (row: ReviewDto) => (
         <Badge color={row.isApproved ? 'success' : 'warning'} size="sm">
-          {row.isApproved ? t('admin.status.approved') : t('admin.status.pending')}
+          {row.isApproved ? t('admin.reviews.approved') : t('admin.reviews.pending')}
         </Badge>
       ),
       className: 'text-center'
@@ -186,9 +186,9 @@ export const ReviewsPage = () => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
            >
-              <option value="all">{t('common.filters.allStatus')}</option>
-              <option value="approved">{t('admin.status.approved')}</option>
-              <option value="pending">{t('admin.status.pending')}</option>
+              <option value="all">{t('admin.reviews.all')}</option>
+              <option value="approved">{t('admin.reviews.approved')}</option>
+              <option value="pending">{t('admin.reviews.pending')}</option>
            </select>
            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-reviews'] })}>
               {t('common.refresh')}
@@ -253,7 +253,7 @@ export const ReviewsPage = () => {
       <Modal
         isOpen={!!selectedReview}
         onClose={() => setSelectedReview(null)}
-        title={t('admin.review.replyTitle')}
+        title={t('admin.reviews.replyTitle')}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setSelectedReview(null)}>{t('common.cancel')}</Button>
@@ -271,10 +271,10 @@ export const ReviewsPage = () => {
               <p className="text-sm text-secondary italic">"{selectedReview.comment}"</p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">{t('admin.review.yourReply')}</label>
+              <label className="block text-sm font-medium mb-1">{t('admin.reviews.yourReply')}</label>
               <textarea
                 className="w-full p-3 bg-primary border rounded-lg h-32 focus:ring-2 focus:ring-primary/20 outline-none"
-                placeholder={t('admin.review.replyPlaceholder')}
+                placeholder={t('admin.reviews.replyPlaceholder')}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
               />

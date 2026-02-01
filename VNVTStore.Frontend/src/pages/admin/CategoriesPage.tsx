@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Folder, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useCategories, useCategoriesList, useEntityManager } from '@/hooks';
-import { categoryService, type CategoryDto, type CreateCategoryRequest, type UpdateCategoryRequest } from '@/services';
+import { categoryService, productService, type CategoryDto, type CreateCategoryRequest, type UpdateCategoryRequest } from '@/services';
 import { DataTable, type DataTableColumn } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { CategoryForm, type CategoryFormData } from './forms';
@@ -13,9 +13,11 @@ import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
 import { getImageUrl } from '@/utils/format';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/store';
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
+  const toast = useToast();
   
   // Pagination State
   const [pagination, setPagination] = useState({
@@ -34,7 +36,7 @@ export default function CategoriesPage() {
   } = useCategoriesList({
     pageIndex: pagination.pageIndex,
     pageSize: pagination.pageSize,
-    fields: CATEGORY_LIST_FIELDS,  // Selective columns for list view
+    fields: CATEGORY_LIST_FIELDS, 
   });
 
   const categories = data?.categories || [];
@@ -50,15 +52,32 @@ export default function CategoriesPage() {
     openCreate,
     openEdit,
     closeForm,
-    confirmDelete,
+    confirmDelete: baseConfirmDelete,
     cancelDelete,
     createMutation,
     updateMutation,
     deleteMutation
   } = useEntityManager<CategoryDto, CreateCategoryRequest, UpdateCategoryRequest>({
     service: categoryService,
-    queryKey: ['categories'] // Update query key to include pagination
+    queryKey: ['categories'] 
   });
+
+  const confirmDelete = async (item: CategoryDto) => {
+    try {
+        const result = await productService.search({ filters: [{ field: 'CategoryCode', value: item.code }], pageSize: 1 });
+        if (result.success && result.data && result.data.totalItems > 0) {
+             toast.error(t('admin.categories.cannotDelete', { 
+                 count: result.data.totalItems, 
+                 defaultValue: `Cannot delete: Category contains ${result.data.totalItems} products.` 
+             }));
+             return;
+        }
+        baseConfirmDelete(item);
+    } catch (error) {
+        console.error("Check dependency failed", error);
+        baseConfirmDelete(item);
+    }
+  };
 
   const { mutate: createCategory, isPending: isCreating } = createMutation;
   const { mutate: updateCategory, isPending: isUpdating } = updateMutation;
@@ -86,7 +105,7 @@ export default function CategoriesPage() {
           name: formData.name,
           description: formData.description,
           parentCode: formData.parentCode || null,
-          imageUrl: formData.imageUrl,
+          imageURL: formData.imageURL,
           isActive: formData.isActive
         }
       });
@@ -95,10 +114,20 @@ export default function CategoriesPage() {
         name: formData.name,
         description: formData.description,
         parentCode: formData.parentCode || null,
-        imageUrl: formData.imageUrl,
+        imageURL: formData.imageURL,
         isActive: formData.isActive
       });
     }
+  };
+
+
+  const handleImport = async (file: File) => {
+      try {
+          await categoryService.import(file);
+          refetch();
+      } catch (error) {
+          console.error("Import error", error);
+      }
   };
 
   const handleDelete = () => {
@@ -114,7 +143,7 @@ export default function CategoriesPage() {
   // Column definitions for DataTable
   const columns: DataTableColumn<CategoryDto>[] = [
     {
-      id: 'imageUrl',
+      id: 'imageURL',
       header: t('common.fields.image'),
       width: '120px',
       className: 'text-center',
@@ -123,9 +152,9 @@ export default function CategoriesPage() {
         return (
         <div className="flex flex-col items-center">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
-               {category.imageUrl ? (
+               {category.imageURL ? (
                  <img 
-                   src={getImageUrl(category.imageUrl)} 
+                   src={getImageUrl(category.imageURL)} 
                    alt={category.name} 
                    className="w-full h-full object-cover"
                    onError={(e) => console.error("Img Error:", e.currentTarget.src)}
@@ -195,7 +224,7 @@ export default function CategoriesPage() {
           name: editingCategory.name,
           description: editingCategory.description || undefined,
           parentCode: editingCategory.parentCode || undefined,
-          imageUrl: editingCategory.imageUrl || undefined,
+          imageURL: editingCategory.imageURL || undefined,
           isActive: editingCategory.isActive
       };
   };
@@ -218,7 +247,7 @@ export default function CategoriesPage() {
       {
           label: t('admin.stats.mainCategories'),
           value: statsData?.main || 0,
-          icon: <Folder size={24} />, // Maybe distinct icon?
+          icon: <Folder size={24} />, 
           color: 'emerald',
           loading: isStatsLoading
       },
@@ -266,6 +295,10 @@ export default function CategoriesPage() {
              // Basic search simulation
              refetch(); // In real app, pass filters to hook
         }}
+        onImport={handleImport}
+        importTemplateUrl="/categories/template"
+        importTitle={t('common.importData')}
+        onExportAllData={() => categoryService.exportData()}
         keyField="code"
         enableSelection
         onAdd={() => openCreate()}
@@ -324,10 +357,10 @@ export default function CategoriesPage() {
           size="md"
         >
           <div className="space-y-4">
-            {viewingCategory.imageUrl && (
+            {viewingCategory.imageURL && (
               <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                 <img 
-                  src={getImageUrl(viewingCategory.imageUrl)} 
+                  src={getImageUrl(viewingCategory.imageURL)} 
                   alt={viewingCategory.name} 
                   className="w-full h-full object-cover"
                 />

@@ -13,14 +13,30 @@ type SignalRCallback = (data: string | SignalRNotification) => void;
 class SignalRService {
     private connection: signalR.HubConnection | null = null;
     private callbacks: Record<string, SignalRCallback[]> = {};
+    private connectionStatus: 'Connected' | 'Disconnected' | 'Connecting' | 'Reconnecting' = 'Disconnected';
+    private onStatusChange: ((status: string) => void) | null = null;
+
+    public getStatus() {
+        return this.connectionStatus;
+    }
+
+    public setStatusCallback(callback: (status: string) => void) {
+        this.onStatusChange = callback;
+    }
 
     public async startConnection() {
         if (this.connection?.state === signalR.HubConnectionState.Connected) return;
 
+        this.updateStatus('Connecting');
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl(HUB_URL)
             .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Information)
             .build();
+
+        this.connection.onreconnecting(() => this.updateStatus('Reconnecting'));
+        this.connection.onreconnected(() => this.updateStatus('Connected'));
+        this.connection.onclose(() => this.updateStatus('Disconnected'));
 
         this.connection.on('ReceiveOrderNotification', (message: string) => {
             this.notifyListeners('ReceiveOrderNotification', message);
@@ -30,12 +46,25 @@ class SignalRService {
             this.notifyListeners('ReceiveSystemNotification', data);
         });
 
+        this.connection.on('ReceiveQuoteNotification', (message: string) => {
+            this.notifyListeners('ReceiveQuoteNotification', message);
+        });
+
         try {
             await this.connection.start();
+            this.updateStatus('Connected');
             console.log('SignalR Connected');
         } catch (err) {
+            this.updateStatus('Disconnected');
             console.error('SignalR Connection Error: ', err);
+            // Retry after 5s if fails initially
+            setTimeout(() => this.startConnection(), 5000);
         }
+    }
+
+    private updateStatus(status: 'Connected' | 'Disconnected' | 'Connecting' | 'Reconnecting') {
+        this.connectionStatus = status;
+        if (this.onStatusChange) this.onStatusChange(status);
     }
 
     public on(event: string, callback: SignalRCallback) {

@@ -24,6 +24,7 @@ export * from './useEntityManager';
 export * from './usePagination';
 export * from './useRoles';
 export { useDataTable } from './useDataTable';
+export { useSignalR } from './useSignalR';
 
 /**
  * Hook for debounced value

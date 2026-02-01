@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Package, Calendar, ChevronRight, MapPin, Star } from 'lucide-react';
 import SharedImage from '@/components/common/Image';
 import { Button, Badge, Modal } from '@/components/ui';
@@ -44,13 +44,15 @@ const OrdersContent = () => {
     <div className="space-y-4">
       <h2 className="text-xl font-bold">{t('account.orders')}</h2>
 
-      {orders.length === 0 && <p className="text-secondary">{t('order.no_orders') || 'No orders yet.'}</p>}
+      {orders.length === 0 && <p className="text-secondary">{t('review.no_orders')}</p>}
 
       {orders.map((order) => (
         <div key={order.code} className="bg-primary rounded-xl p-4 border border-secondary/20">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
             <div>
-              <p className="font-semibold">{order.code}</p>
+              <Link to={`/account/orders/${order.code}`} className="font-bold text-primary hover:underline">
+                #{order.code}
+              </Link>
               <p className="text-sm text-tertiary">{formatDate(order.orderDate)}</p>
             </div>
             <span
@@ -80,7 +82,7 @@ const OrdersContent = () => {
                             leftIcon={<Star size={12}/>}
                             onClick={() => setSelectedItem(item)}
                         >
-                            {t('review.write') || 'Rate'}
+                            {t('review.write')}
                         </Button>
                       )}
                   </div>
@@ -101,7 +103,7 @@ const OrdersContent = () => {
       <Modal
         isOpen={!!selectedItem}
         onClose={() => setSelectedItem(null)}
-        title={t('review.write_review') || 'Write Review'}
+        title={t('review.write_review')}
         size="lg"
       >
         {selectedItem && user && (

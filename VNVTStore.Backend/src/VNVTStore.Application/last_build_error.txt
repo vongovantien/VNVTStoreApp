@@ -1,7 +1,0 @@
-﻿d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\DependencyInjection.cs(67,13): error CS0246: The type or namespace name 'IMapper' could not be found (are you missing a using directive or an assembly reference?) [d:\VNVTStoreApp\VNVTStore.Backend\src\VNVTStore.Application\VNVTStore.Application.csproj]
-
-Build FAILED.
-    5 Warning(s)
-    1 Error(s)
-
-Time Elapsed 00:00:02.57

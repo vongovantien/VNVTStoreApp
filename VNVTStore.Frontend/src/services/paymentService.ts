@@ -1,49 +1,65 @@
-/**
- * Payment Service
- * Uses only baseService CRUD methods
- */
+import { ApiResponse, PagedResult } from './api';
+import apiClient from './api';
 
-import { createEntityService, API_ENDPOINTS } from './baseService';
-import { apiClient } from './api';
-
-// ============ Types ============
-export interface PaymentDto {
-    code: string;
+export interface PaymentTransaction {
+    id: string;
     orderCode: string;
-    method: string;
-    status: string;
-    amount: number;
-    paymentDate: string;
-    transactionId?: string;
-}
-
-export interface CreatePaymentRequest {
-    orderCode: string;
+    userCode: string;
+    userName?: string;
     paymentMethod: string;
     amount: number;
-}
-
-export interface UpdatePaymentRequest {
-    status?: string;
+    status: 'pending' | 'success' | 'failed' | 'refunded';
     transactionId?: string;
+    createdAt: string;
 }
 
-// ============ Service ============
-// ============ Service ============
-const baseService = createEntityService<PaymentDto, CreatePaymentRequest, UpdatePaymentRequest>({
-    endpoint: API_ENDPOINTS.PAYMENTS.BASE,
-});
+class PaymentService {
+    endpoint = '/payments';
 
-export const paymentService = {
-    ...baseService,
-    // Override create to send flat payload (no PostObject wrapper) as required by PaymentsController
-    create: async (data: CreatePaymentRequest) => {
-        const response = await apiClient.post<PaymentDto>(API_ENDPOINTS.PAYMENTS.BASE, data);
-        if (!response.success) {
-            throw new Error(response.message || 'Payment processing failed');
-        }
-        return response;
+    // Admin: Get all payments (Mocked for now as backend missing)
+    async getAll(params?: any): Promise<ApiResponse<PagedResult<PaymentTransaction>>> {
+        // Mock delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const transactions: PaymentTransaction[] = Array(15).fill(null).map((_, i) => ({
+            id: `pay-${i + 1000}`,
+            orderCode: `ORD-${2023000 + i}`,
+            userCode: `USR-${i}`,
+            userName: `User ${i + 1}`,
+            paymentMethod: i % 3 === 0 ? 'VNPAY' : i % 3 === 1 ? 'MOMO' : 'COD',
+            amount: (i + 1) * 500000,
+            status: ['pending', 'success', 'failed', 'refunded'][i % 4] as any,
+            transactionId: `TRX-${Date.now()}-${i}`,
+            createdAt: new Date().toISOString()
+        }));
+
+        return {
+            success: true,
+            message: 'Success',
+            data: {
+                items: transactions,
+                totalItems: 50,
+                pageIndex: 1,
+                pageSize: 15,
+                totalPages: 4,
+                hasPreviousPage: false,
+                hasNextPage: true
+            },
+            statusCode: 200
+        };
     }
-};
 
-export default paymentService;
+    async updateStatus(paymentCode: string, status: string, transactionId?: string): Promise<ApiResponse<void>> {
+        return apiClient.post(`${this.endpoint}/status`, { paymentCode, status, transactionId });
+    }
+
+    async create(data: { orderCode: string, amount: number, paymentMethod: string }): Promise<ApiResponse<{ checkoutUrl: string }>> {
+        return apiClient.post(`${this.endpoint}`, data);
+    }
+
+    async getMyPayments(): Promise<ApiResponse<PaymentTransaction[]>> {
+        return apiClient.get(`${this.endpoint}/history`);
+    }
+}
+
+export const paymentService = new PaymentService();

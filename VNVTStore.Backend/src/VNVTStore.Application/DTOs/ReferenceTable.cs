@@ -10,4 +10,5 @@ public class ReferenceTable
     public string TargetColumn { get; set; } = "Code"; // Join target column
     public string? FilterColumn { get; set; }
     public string? FilterValue { get; set; }
+    public string? IsJoinThrough { get; set; } // Intermediate table navigation property/alias
 }

@@ -12,6 +12,7 @@ using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Strategies;
 using VNVTStore.Application.Orders.Commands;
+using VNVTStore.Application.Products.Handlers;
 
 namespace VNVTStore.Application;
 
@@ -65,6 +66,11 @@ public static class DependencyInjection
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblAddress, AddressDto, CreateAddressDto, UpdateAddressDto>();
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblReview, ReviewDto, CreateReviewDto, UpdateReviewDto>();
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblQuote, QuoteDto, CreateQuoteDto, UpdateQuoteDto>();
+        
+        // Specialized Handlers (Override generic registrations)
+        services.AddScoped<IRequestHandler<GetPagedQuery<ProductDto>, Result<PagedResult<ProductDto>>>, GetProductsHandler>();
+        services.AddScoped<IRequestHandler<CreateCommand<CreateProductDto, ProductDto>, Result<ProductDto>>, CreateProductHandler>();
+        services.AddScoped<IRequestHandler<UpdateCommand<UpdateProductDto, ProductDto>, Result<ProductDto>>, UpdateProductHandler>();
 
         return services;
     }

@@ -3,6 +3,7 @@
  * Uses only baseService CRUD methods
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createEntityService, API_ENDPOINTS } from './baseService';
 import apiClient from './api';
 

@@ -7,6 +7,7 @@ import { useAuthStore, useToast } from '@/store';
 import { UserRole, UserStatus } from '@/types';
 import { authService } from '@/services/authService';
 import { AuthLayout } from '@/layouts/AuthLayout';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';

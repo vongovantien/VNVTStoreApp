@@ -28,7 +28,7 @@ import SharedImage from '@/components/common/Image';
 import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';
 import { useProduct, useProducts } from '@/hooks';
 import { formatCurrency } from '@/utils/format';
-import { reviewService, type ReviewDto } from '@/services';
+// import { reviewService, type ReviewDto } from '@/services';
 import ReviewsList from '@/components/reviews/ReviewsList';
 import { ProductReviewButton } from '@/components/reviews/ProductReviewButton';
 
@@ -250,8 +250,8 @@ export const ProductDetailPage = () => {
   
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false); // New state
-  const [selectedSize, setSelectedSize] = useState<string>('M'); // Default
-  const [selectedColor, setSelectedColor] = useState<string>('Black'); // Default
+  const [selectedSize] = useState<string>('M'); // Default
+  const [selectedColor] = useState<string>('Black'); // Default
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'units' | 'variants' | 'images' | 'reviews'>('description');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -325,7 +325,7 @@ export const ProductDetailPage = () => {
             setIsAddingToCart(false);
         }
     }
-  }, [product, hasFixedPrice, quantity, addToCart, selectedSize, selectedColor, success, toastError]);
+  }, [product, hasFixedPrice, quantity, addToCart, selectedSize, selectedColor, success, toastError, t]);
 
   const handleWishlistToggle = useCallback(() => {
     if (product) {

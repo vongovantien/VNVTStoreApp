@@ -1,0 +1,68 @@
+/* Invoice Print Styles */
+@media print {
+  /* Hide non-printable elements */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Reset visibility for the print container */
+  #invoice-print-area {
+    visibility: visible !important;
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 40px; /* More padding for A4 feel */
+    background: white;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+    color: #111827;
+  }
+
+  #invoice-print-area * {
+    visibility: visible !important;
+  }
+
+  /* Hide scrollbars, sidebars, headers, footers explicitly if needed */
+  nav,
+  aside,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Table Improvements for Print */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    background-color: #f3f4f6 !important;
+    color: #374151;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e5e7eb;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 8px 4px;
+    text-align: left;
+  }
+
+  td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 8px 4px;
+    vertical-align: top;
+  }
+
+  /* Ensure images print */
+  img {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

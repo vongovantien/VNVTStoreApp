@@ -1,4 +1,5 @@
-import { useState } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FileText, Plus, Search, Trash2, Edit, Eye, Image as ImageIcon, Globe } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';

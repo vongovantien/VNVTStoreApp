@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { Upload, X, Edit, Trash2 } from 'lucide-react';

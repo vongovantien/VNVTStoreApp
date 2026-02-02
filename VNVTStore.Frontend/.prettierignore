@@ -1,0 +1,7 @@
+node_modules
+dist
+build
+playwright-report
+storybook-static
+*.min.js
+package-lock.json

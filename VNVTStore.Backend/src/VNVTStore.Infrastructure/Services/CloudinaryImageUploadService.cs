@@ -81,7 +81,7 @@ public class CloudinaryImageUploadService : IImageUploadService
             // Manual Code Gen
             fileEntity.Code = $"FIL{DateTime.Now.Ticks}";
 
-            _context.TblFiles.Add(fileEntity);
+            _context.Add(fileEntity);
             await _context.SaveChangesAsync(CancellationToken.None);
 
             return Result.Success(fileDto);
@@ -218,7 +218,7 @@ public class CloudinaryImageUploadService : IImageUploadService
             );
             fileEntity.Code = $"FIL{DateTime.Now.Ticks}";
 
-            _context.TblFiles.Add(fileEntity);
+            _context.Add(fileEntity);
             await _context.SaveChangesAsync(CancellationToken.None);
 
             return Result.Success(fileDto);
@@ -307,7 +307,7 @@ public class CloudinaryImageUploadService : IImageUploadService
 
             if (entities.Any())
             {
-                await _context.TblFiles.AddRangeAsync(entities);
+                await _context.AddRangeAsync(entities);
                 await _context.SaveChangesAsync(CancellationToken.None);
             }
 
@@ -365,7 +365,7 @@ public class CloudinaryImageUploadService : IImageUploadService
             // Update DTO Code to match Entity Code so caller can find it
             fileDto.Code = fileEntity.Code;
 
-            _context.TblFiles.Add(fileEntity);
+            _context.Add(fileEntity);
             await _context.SaveChangesAsync(CancellationToken.None);
 
             return Result.Success(fileDto);

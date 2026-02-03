@@ -1,7 +1,7 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useForm, Controller, UseFormReturn, Path, DefaultValues, FieldValues, Resolver } from 'react-hook-form';
+import { useForm, Controller, UseFormReturn, Path, DefaultValues, FieldValues, PathValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ZodSchema } from 'zod';
 import { Button, Input, Select, NumberInput, Switch, Modal } from '@/components/ui';
@@ -46,7 +46,7 @@ export interface FieldDefinition {
   className?: string;
   hidden?: boolean;
   /** For 'custom' type */
-  render?: (form: UseFormReturn<any>) => React.ReactNode; 
+  render?: (form: UseFormReturn<FieldValues>) => React.ReactNode; 
   /** For 'image' or other supporting types */
   multiple?: boolean;
 }
@@ -117,7 +117,7 @@ function FieldRenderer<T extends FieldValues>({
         const reader = new FileReader();
         reader.onload = () => {
           const base64 = reader.result as string;
-          setValue(field.name as Path<T>, base64 as any);
+          setValue(field.name as Path<T>, base64 as unknown as PathValue<T, Path<T>>);
           setIsUploading(false);
         };
         reader.onerror = () => {
@@ -275,7 +275,7 @@ function FieldRenderer<T extends FieldValues>({
         </div>
       );
 
-    case 'image':
+    case 'image': {
       const currentValue = watch(field.name as Path<T>) as string;
       const previewUrl = getPreviewUrl(currentValue);
       return (
@@ -309,7 +309,7 @@ function FieldRenderer<T extends FieldValues>({
                   </div>
                 <button
                   type="button"
-                  onClick={() => setValue(field.name as Path<T>, '' as any)}
+                onClick={() => setValue(field.name as Path<T>, '' as unknown as PathValue<T, Path<T>>)}
                   className="absolute top-1 right-1 p-1 bg-error text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X size={12} />
@@ -343,6 +343,7 @@ function FieldRenderer<T extends FieldValues>({
           </div>
         </div>
       );
+    }
     default:
       return null;
   }
@@ -374,13 +375,13 @@ export function BaseForm<T extends FieldValues>({
   sidebarColSpan = 4
 }: BaseFormProps<T>) {
   const { t } = useTranslation();
-  const formId = useMemo(() => `form-${Math.random().toString(36).substr(2, 9)}`, []);
+  const formId = useId();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<number>(0);
 
   const form = useForm<T>({
-    resolver: zodResolver(schema as any) as any,
-    values: defaultValues as any,
+    resolver: zodResolver(schema as unknown as ZodSchema<FieldValues>),
+    values: defaultValues,
     resetOptions: {
       keepDirtyValues: true, // Don't overwrite what the user has typed
     }
@@ -393,7 +394,7 @@ export function BaseForm<T extends FieldValues>({
       e.preventDefault();
       e.stopPropagation();
     }
-    return handleFormSubmit(onSubmit as any)(e);
+    return handleFormSubmit(onSubmit as unknown as (data: T) => void | Promise<void>)(e);
   };
 
   const handleManualSubmit = (e?: React.MouseEvent | React.KeyboardEvent) => {
@@ -401,7 +402,7 @@ export function BaseForm<T extends FieldValues>({
         e.preventDefault();
         e.stopPropagation();
     }
-    handleFormSubmit(onSubmit as any)();
+    handleFormSubmit(onSubmit as unknown as (data: T) => void | Promise<void>)();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

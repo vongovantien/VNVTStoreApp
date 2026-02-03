@@ -1,20 +1,19 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronUp, ChevronDown, Loader2, AlertCircle, Filter, X, Search } from 'lucide-react';
-import { Pagination, Button } from '@/components/ui';
+import { ChevronUp, ChevronDown, AlertCircle, Filter } from 'lucide-react';
+import { Pagination } from '@/components/ui';
 import { AdminToolbar } from '@/components/admin/AdminToolbar';
 import { ColumnVisibility } from '@/components/admin/ColumnVisibility';
 import { TableActions } from '@/components/ui';
 import { ImportModal } from '@/components/common/ImportModal';
 
 // ... (existing imports)
-import { TableToolbar } from '@/components/admin';
-import { AdvancedFilter, type FilterDef } from '@/components/common/AdvancedFilter';
+import { type FilterDef } from '@/components/common/AdvancedFilter';
 import { TableSkeleton } from '@/components/common/TableSkeleton';
 import { useExport } from '@/hooks/useExport';
-import { exportToExcel, type ExportColumn } from '@/utils/export';
+import { type ExportColumn } from '@/utils/export';
 import { cn } from '@/utils/cn';
-import { PageSize, PaginationDefaults } from '@/constants';
+import { PageSize } from '@/constants';
 
 // ============ Types ============
 export interface DataTableColumn<T> {
@@ -30,6 +29,7 @@ export interface DataTableColumn<T> {
   noWrap?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface DataTableProps<T extends Record<string, any>> {
   // Data
   columns: DataTableColumn<T>[];
@@ -100,7 +100,15 @@ export interface DataTableProps<T extends Record<string, any>> {
   onSearch?: (query: string) => void;
 }
 
+const SortIcon = ({ columnId, sortField, sortDir }: { columnId: string; sortField: string | null; sortDir: 'asc' | 'desc' }) => {
+  if (sortField !== columnId) return null;
+  return sortDir === 'asc'
+    ? <ChevronUp size={14} className="inline ml-1" />
+    : <ChevronDown size={14} className="inline ml-1" />;
+};
+
 // ============ DataTable Component ============
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function DataTableInner<T extends Record<string, any>>({
   columns,
   data,
@@ -109,9 +117,6 @@ function DataTableInner<T extends Record<string, any>>({
   isFetching = false,
   error = null,
   showToolbar = true,
-  title,
-  searchPlaceholder,
-  searchOptions = [],
   exportFilename = 'export',
   exportColumns,
   onExportAllData,
@@ -147,7 +152,6 @@ function DataTableInner<T extends Record<string, any>>({
   enableSelection = true,
   renderRowActions,
   initialFilters,
-  onSearch, // New prop
 }: DataTableProps<T>) {
   const { t } = useTranslation();
 
@@ -158,7 +162,6 @@ function DataTableInner<T extends Record<string, any>>({
   // ============ Internal State ============
   const [searchQuery, setSearchQuery] = useState('');
   const [searchField, setSearchField] = useState('all');
-  const [showSearch, setShowSearch] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
   // Removed debounced search logic as simple search is deprecated
@@ -383,7 +386,7 @@ function DataTableInner<T extends Record<string, any>>({
     // Also trigger refresh if available, as requested
     // Also trigger refresh if available, as requested
     // if (onRefresh) onRefresh(); // Removed to avoid double API call as onAdvancedSearch/onReset likely triggers fetch
-  }, [isExternalSort, isExternalPagination, onAdvancedSearch, onReset, setSelectedIds, onRefresh]);
+  }, [isExternalSort, isExternalPagination, onAdvancedSearch, onReset, setSelectedIds]);
 
   // Get selected item for edit/delete
   const getSelectedItem = useCallback((): T | null => {
@@ -400,12 +403,6 @@ function DataTableInner<T extends Record<string, any>>({
     return row[column.accessor] as React.ReactNode;
   };
 
-  const SortIcon = ({ columnId }: { columnId: string }) => {
-    if (sortField !== columnId) return null;
-    return sortDir === 'asc'
-      ? <ChevronUp size={14} className="inline ml-1" />
-      : <ChevronDown size={14} className="inline ml-1" />;
-  };
 
   const showError = error && !isLoading;
   const allSelected = displayData.length > 0 && displayData.every(item => selectedIds.has(String(item[keyField])));
@@ -596,6 +593,7 @@ function DataTableInner<T extends Record<string, any>>({
                 {visibleColumnDefs.map(column => (
                   <th
                     key={column.id}
+                    onClick={() => column.sortable && handleSort(column.id)}
                     className={cn(
                       "px-4 py-3 text-left text-sm font-semibold text-secondary",
                       column.sortable && "cursor-pointer hover:bg-tertiary select-none transition-colors",
@@ -609,7 +607,7 @@ function DataTableInner<T extends Record<string, any>>({
                   >
                     <div className={cn("flex items-center gap-1", column.noWrap && "whitespace-nowrap")}>
                       {column.header}
-                      {column.sortable && <SortIcon columnId={column.id} />}
+                      {column.sortable && <SortIcon columnId={column.id} sortField={sortField} sortDir={sortDir} />}
                     </div>
                   </th>
                 ))}

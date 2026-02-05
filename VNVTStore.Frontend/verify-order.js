@@ -1,4 +1,5 @@
 
+/* eslint-disable */
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import axios from "axios";
 

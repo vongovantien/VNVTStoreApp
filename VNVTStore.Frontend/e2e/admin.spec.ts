@@ -13,16 +13,11 @@ test.describe('Admin Functionality', () => {
         await page.evaluate(() => localStorage.clear());
         await page.evaluate(() => sessionStorage.clear());
         // Wait for inputs to be ready
-        const emailInput = page.getByPlaceholder('email@example.com');
-        await expect(emailInput).toBeVisible();
-        await emailInput.fill('admin@vnvtstore.com');
-
-        await page.getByPlaceholder('••••••••').fill('Password123!');
+        await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+        await page.fill('[data-testid="password-input"]', 'Admin@123');
 
         // 3. Submit
-        const submitBtn = page.getByRole('button', { name: /Đăng nhập|Login/i });
-        await expect(submitBtn).toBeVisible();
-        await submitBtn.click();
+        await page.click('[data-testid="login-button"]');
 
         // 4. Wait for redirection to Admin Dashboard
         // Admin usually redirects to /admin

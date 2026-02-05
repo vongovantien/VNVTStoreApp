@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui';
 import { authService } from '@/services/authService';
 
 export const VerifyEmailPage = () => {
@@ -16,6 +15,7 @@ export const VerifyEmailPage = () => {
         const token = searchParams.get('token');
 
         if (!email || !token) {
+            // eslint-disable-next-line
             setStatus('error');
             setMessage(t('auth.verifyEmail.invalidLink'));
             return;

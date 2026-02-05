@@ -46,7 +46,8 @@ export interface FieldDefinition {
   className?: string;
   hidden?: boolean;
   /** For 'custom' type */
-  render?: (form: UseFormReturn<FieldValues>) => React.ReactNode; 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  render?: (form: UseFormReturn<any>) => React.ReactNode; 
   /** For 'image' or other supporting types */
   multiple?: boolean;
 }
@@ -103,10 +104,11 @@ function FieldRenderer<T extends FieldValues>({
   const [isUploading, setIsUploading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  const fieldValue = watch(field.name as Path<T>);
   // Reset error when value changes
   React.useEffect(() => {
     setImageError(false);
-  }, [watch(field.name as Path<T>)]);
+  }, [fieldValue]);
 
   // ... (useDropzone logic) 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -380,8 +382,10 @@ export function BaseForm<T extends FieldValues>({
   const [activeTab, setActiveTab] = useState<number>(0);
 
   const form = useForm<T>({
-    resolver: zodResolver(schema as unknown as ZodSchema<FieldValues>),
-    values: defaultValues,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema as any),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    values: defaultValues as any,
     resetOptions: {
       keepDirtyValues: true, // Don't overwrite what the user has typed
     }
@@ -394,7 +398,8 @@ export function BaseForm<T extends FieldValues>({
       e.preventDefault();
       e.stopPropagation();
     }
-    return handleFormSubmit(onSubmit as unknown as (data: T) => void | Promise<void>)(e);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return handleFormSubmit(onSubmit as any)(e);
   };
 
   const handleManualSubmit = (e?: React.MouseEvent | React.KeyboardEvent) => {
@@ -402,7 +407,8 @@ export function BaseForm<T extends FieldValues>({
         e.preventDefault();
         e.stopPropagation();
     }
-    handleFormSubmit(onSubmit as unknown as (data: T) => void | Promise<void>)();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleFormSubmit(onSubmit as any)();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

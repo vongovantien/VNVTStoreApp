@@ -4,7 +4,7 @@
 */
 
 import { createEntityService, API_ENDPOINTS } from './baseService';
-import apiClient, { ApiResponse } from './api';
+import apiClient from './api';
 
 // ============ Types ============
 export interface ProductImageDto {
@@ -49,6 +49,7 @@ export interface ProductDto {
     name: string;
     description?: string;
     price: number;
+    wholesalePrice?: number;
     costPrice?: number;
     categoryCode?: string;
     categoryName?: string;
@@ -61,6 +62,12 @@ export interface ProductDto {
     voltage?: string;
     material?: string;
     size?: string;
+    brand?: string;
+    isFeatured?: boolean;
+    isNew?: boolean;
+    countryOfOrigin?: string;
+    baseUnit?: string;
+    binLocation?: string;
     createdAt?: string;
     productImages: ProductImageDto[];
     productUnits?: ProductUnitDto[];
@@ -98,7 +105,7 @@ export interface CreateProductRequest {
     binLocation?: string;
     vatRate?: number;
     countryOfOrigin?: string;
-    productUnits?: any[];
+    productUnits?: ProductUnitDto[];
     variants?: Array<{
         sku: string;
         attributes: string;

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, RefreshCw, Mail, Truck, UserCheck, Phone } from 'lucide-react';
+import { Building2, RefreshCw, Mail, Truck, Phone } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supplierService, type SupplierDto, type CreateSupplierRequest, type UpdateSupplierRequest } from '@/services';
@@ -40,7 +40,6 @@ export default function SuppliersPage() {
   const { 
     data: result, 
     isLoading, 
-    isFetching,
     refetch 
   } = useSuppliersPaged(searchParams);
 

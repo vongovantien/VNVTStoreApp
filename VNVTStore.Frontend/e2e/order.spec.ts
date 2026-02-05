@@ -4,6 +4,7 @@ test.describe('Shop Order Flow', () => {
 
     test.beforeEach(async ({ page }) => {
         // Shared start point: clear state fully
+        await page.goto('/');
         await page.context().clearCookies();
         await page.evaluate(() => localStorage.clear());
         await page.evaluate(() => sessionStorage.clear());
@@ -63,10 +64,9 @@ test.describe('Shop Order Flow', () => {
     test('should complete an AUTHENTICATED purchase flow', async ({ page }) => {
         // 1. First Login
         await page.goto('/login');
-        await page.getByPlaceholder('email@example.com').fill('admin@vnvtstore.com');
-        await page.getByPlaceholder('••••••••').fill('Password123!');
-        await page.getByText('Ghi nhớ đăng nhập').click();
-        await page.getByRole('button', { name: /^Đăng nhập$/i }).click();
+        await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+        await page.fill('[data-testid="password-input"]', 'Admin@123');
+        await page.click('[data-testid="login-button"]');
 
         // Wait for login redirection
         await expect(page).toHaveURL(/\/admin|^\/$/); // Might redirect to admin or home depending on role/last page

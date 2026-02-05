@@ -59,7 +59,7 @@ export interface CreateAddressRequest {
     isDefault: boolean;
 }
 
-export interface UpdateAddressRequest extends Partial<CreateAddressRequest> { }
+export type UpdateAddressRequest = Partial<CreateAddressRequest>;
 
 // ============ Services ============
 import { apiClient } from './api';

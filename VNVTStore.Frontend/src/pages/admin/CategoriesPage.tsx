@@ -1,14 +1,14 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Folder, RefreshCw } from 'lucide-react';
+import { Folder, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
-import { useCategories, useCategoriesList, useEntityManager } from '@/hooks';
+import { useCategoriesList, useEntityManager } from '@/hooks';
 import { categoryService, productService, type CategoryDto, type CreateCategoryRequest, type UpdateCategoryRequest } from '@/services';
 import { DataTable, type DataTableColumn } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { CategoryForm, type CategoryFormData } from './forms';
-import { PaginationDefaults, API_ENDPOINTS } from '@/constants';
+import { PaginationDefaults } from '@/constants';
 import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
 import { getImageUrl } from '@/utils/format';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
@@ -291,7 +291,7 @@ export default function CategoriesPage() {
             ]
           }
         ]}
-        onAdvancedSearch={(filters) => {
+        onAdvancedSearch={() => {
              // Basic search simulation
              refetch(); // In real app, pass filters to hook
         }}

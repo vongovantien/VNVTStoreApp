@@ -65,7 +65,10 @@ public static class QueryHelper
 
     private static Expression? BuildComparison(SearchDTO filter, ParameterExpression parameter)
     {
-        if (string.IsNullOrWhiteSpace(filter.SearchField) || filter.SearchValue == null)
+        if (string.IsNullOrWhiteSpace(filter.SearchField) || 
+            (filter.SearchValue == null && 
+             filter.SearchCondition != SearchCondition.IsNull && 
+             filter.SearchCondition != SearchCondition.IsNotNull))
             return null;
 
         var propertyName = GetPropertyName(parameter.Type, filter.SearchField);

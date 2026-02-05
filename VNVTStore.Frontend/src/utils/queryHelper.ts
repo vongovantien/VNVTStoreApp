@@ -1,12 +1,11 @@
 import { SearchCondition, type SearchDTO } from '@/services/api';
-import { format, isSameDay, isSameMonth, parseISO } from 'date-fns';
 
 /**
  * Client-side implementation of Backend QueryHelper.ApplyFilters
  * Allows filtering local data arrays using the same SearchCondition logic.
  */
 
-export const applyClientFilters = <T extends Record<string, any>>(data: T[], filters?: SearchDTO[]): T[] => {
+export const applyClientFilters = <T extends Record<string, unknown>>(data: T[], filters?: SearchDTO[]): T[] => {
     if (!filters || filters.length === 0) return data;
 
     return data.filter(item => {
@@ -30,16 +29,16 @@ export const applyClientFilters = <T extends Record<string, any>>(data: T[], fil
                     return compareEqual(itemValue, searchValue);
 
                 case SearchCondition.GreaterThan:
-                    return itemValue > searchValue!;
+                    return (itemValue as number) > (searchValue as number);
 
                 case SearchCondition.GreaterThanEqual:
-                    return itemValue >= searchValue!;
+                    return (itemValue as number) >= (searchValue as number);
 
                 case SearchCondition.LessThan:
-                    return itemValue < searchValue!;
+                    return (itemValue as number) < (searchValue as number);
 
                 case SearchCondition.LessThanEqual:
-                    return itemValue <= searchValue!;
+                    return (itemValue as number) <= (searchValue as number);
 
                 case SearchCondition.In: // 13
                     if (Array.isArray(searchValue)) {
@@ -64,7 +63,7 @@ export const applyClientFilters = <T extends Record<string, any>>(data: T[], fil
 
                 case SearchCondition.DateTimeRange: // 7
                     if (Array.isArray(searchValue) && searchValue.length >= 2) {
-                        const dateVal = new Date(itemValue);
+                        const dateVal = new Date(itemValue as string);
                         const start = new Date(searchValue[0] as string);
                         const end = new Date(searchValue[1] as string);
                         return dateVal >= start && dateVal <= end;
@@ -83,16 +82,20 @@ export const applyClientFilters = <T extends Record<string, any>>(data: T[], fil
 };
 
 // Helper to access nested properties 'user.role.name'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getNestedValue = (obj: any, path: string): any => {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return path.split('.').reduce((acc: any, part) => acc && acc[part], obj);
 };
 
 // Helper for loose equality (handling string/number types and date strings)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const compareEqual = (a: any, b: any): boolean => {
     // strict equality first
     if (a === b) return true;
     // loose equality for numbers/strings mismatch
-    if (a == b) return true; // eslint-disable-line eqeqeq
+
+    if (a == b) return true;
 
     // Case insensitive string comparison
     if (typeof a === 'string' && typeof b === 'string') {

@@ -1,4 +1,4 @@
-import { memo, forwardRef, useMemo, type TextareaHTMLAttributes } from 'react';
+import { memo, forwardRef, useMemo, useId, type TextareaHTMLAttributes } from 'react';
 import { cn } from '@/utils/cn';
 
 // ============ Textarea Variants & Sizes ============
@@ -58,7 +58,8 @@ export const Textarea = memo(
       },
       ref
     ) => {
-      const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+      const generatedId = useId();
+      const textareaId = id || generatedId;
 
       const textareaClasses = useMemo(
         () =>

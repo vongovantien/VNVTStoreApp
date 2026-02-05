@@ -7,11 +7,11 @@ test.describe('Admin Product CRUD with Image Upload', () => {
     test.beforeEach(async ({ page }) => {
         try {
             console.error('DEBUG: Starting Login...');
-            await page.goto('/auth/login');
-            await page.fill('input[name="username"]', 'admin');
-            await page.fill('input[name="password"]', 'admin123');
-            await page.click('button[type="submit"]');
-            await page.waitForURL('**/admin/dashboard', { timeout: 20000 });
+            await page.goto('/login');
+            await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+            await page.fill('[data-testid="password-input"]', 'Admin@123');
+            await page.click('[data-testid="login-button"]');
+            await page.waitForURL('**/admin/**', { timeout: 20000 });
             console.error('DEBUG: Login Successful');
         } catch (e) {
             console.error('DEBUG: Login Failed', e);

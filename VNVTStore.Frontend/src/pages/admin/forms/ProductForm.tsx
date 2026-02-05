@@ -1,15 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
-import { Upload, X, Edit, Trash2 } from 'lucide-react';
-import { Button, Input, Badge, ConfirmDialog, Checkbox } from '@/components/ui';
 import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import { Upload, X } from 'lucide-react';
+import { Button, Input, Badge } from '@/components/ui';
 import { getImageUrl } from '@/utils/format';
-import { useToast } from '@/store';
 import { BaseForm, FieldGroup } from '@/components/common';
 import { useDropzone } from 'react-dropzone';
-import { UseFormReturn, Controller } from 'react-hook-form';
+import { Controller, UseFormReturn } from 'react-hook-form';
 import LazySelect from '@/components/ui/LazySelect';
 import { categoryService, supplierService, unitService, brandService } from '@/services';
 import { SearchCondition } from '@/services/baseService';
@@ -46,9 +44,9 @@ const productSchema = z.object({
     specValue: z.string().min(1, { message: 'validation.required' })
   })).optional(),
   code: z.string().optional(),
-  unitsSection: z.any().optional(),
-  productUnits: z.array(z.any()).optional(),
-  variants: z.array(z.any()).optional(),
+  unitsSection: z.unknown().optional(),
+  productUnits: z.array(z.unknown()).optional(),
+  variants: z.array(z.unknown()).optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;
@@ -76,18 +74,80 @@ interface ProductFormProps {
 }
 
 
+
+const ImageUploadField = ({ 
+    form, 
+    t, 
+    setIsUploading, 
+    isUploading, 
+    setPreviewImage 
+}: { 
+    form: UseFormReturn<ProductFormData>; 
+    t: (key: string) => string; 
+    setIsUploading: (val: boolean) => void; 
+    isUploading: boolean; 
+    setPreviewImage: (val: string | null) => void; 
+}) => {
+    const images = form.watch('images') || [];
+
+    const onDrop = async (acceptedFiles: File[]) => {
+        if (acceptedFiles.length > 0) {
+            setIsUploading(true);
+            try {
+                const promises = acceptedFiles.map((file) => new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                }));
+                const results = await Promise.all(promises);
+                const uniqueResults = results.filter(newImg => !images.includes(newImg));
+                form.setValue('images', [...images, ...uniqueResults], { shouldValidate: true });
+            } catch { 
+                // Error handled
+            } finally { 
+                setIsUploading(false); 
+            }
+        }
+    };
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: { 'image/*': [] } });
+
+    return (
+        <div className="space-y-4">
+            <div {...getRootProps()} className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all bg-slate-50 dark:bg-slate-900/50 ${isDragActive ? 'border-accent-primary bg-accent-primary/5' : 'border-border-color hover:border-accent-primary/50'}`}>
+                <input {...getInputProps()} />
+                <div className="w-12 h-12 bg-accent-primary/5 text-accent-primary rounded-full flex items-center justify-center mb-3"><Upload size={20} /></div>
+                <p className="text-sm font-medium text-primary">{isUploading ? t('common.loading') : t('common.dragOrClick')}</p>
+            </div>
+            {images.length > 0 && (
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
+                    {images.map((img: string, idx: number) => (
+                        <div key={idx} className="relative aspect-square rounded-lg border border-border-color overflow-hidden group bg-white cursor-pointer" onClick={() => setPreviewImage(img)}>
+                            <img src={img} className="w-full h-full object-cover" />
+                            <button type="button" onClick={(e) => { e.stopPropagation(); form.setValue('images', images.filter((_, i) => i !== idx)); }} className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><X size={16} /></button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: ProductFormProps) => {
   const { t } = useTranslation();
-  const { error: toastError } = useToast();
+  
 
   const [localUnits, setLocalUnits] = useState<ProductUnitDto[]>(initialData?.productUnits || []);
   const [localVariants, setLocalVariants] = useState<ProductVariantData[]>(initialData?.variants || []);
 
   useEffect(() => {
     if (initialData?.productUnits) {
+        // eslint-disable-next-line
         setLocalUnits(initialData.productUnits);
     }
     if (initialData?.variants) {
+         
         setLocalVariants(initialData.variants);
     }
   }, [initialData]);
@@ -131,7 +191,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                 stockQuantity: v.stockQuantity
             }))
         };
-        await onSubmit(payload as any);
+        await onSubmit(payload as ProductFormData);
     } catch (err) {
         console.error("Failed to save product", err);
     }
@@ -153,7 +213,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         const directImages = initialData?.images?.map(img => getImageUrl(img));
         if (directImages && directImages.length > 0) return directImages;
         
-        const prodImages = initialData?.productImages?.map(img => getImageUrl(img.imageURL || (img as any).imageUrl));
+        const prodImages = initialData?.productImages?.map(img => getImageUrl(img.imageURL || (img as { imageURL?: string; imageUrl?: string }).imageUrl));
         if (prodImages && prodImages.length > 0) return prodImages;
         
         if (initialData?.imageURL) return [getImageUrl(initialData.imageURL)];
@@ -226,43 +286,16 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         fields: [
             { 
                 name: 'images', type: 'custom', label: t('common.fields.image'), colSpan: 12,
-                render: (form: UseFormReturn<ProductFormData>) => {
-                    const images = form.watch('images') || [];
-                    const onDrop = async (acceptedFiles: File[]) => {
-                        if (acceptedFiles.length > 0) {
-                            setIsUploading(true);
-                            try {
-                                const promises = acceptedFiles.map((file) => new Promise<string>((resolve, reject) => {
-                                    const reader = new FileReader();
-                                    reader.onload = () => resolve(reader.result as string);
-                                    reader.onerror = reject;
-                                    reader.readAsDataURL(file);
-                                }));
-                                const results = await Promise.all(promises);
-                                const uniqueResults = results.filter(newImg => !images.includes(newImg));
-                                form.setValue('images', [...images, ...uniqueResults], { shouldValidate: true });
-                            } catch (err) { toastError(t('common.messages.errorOccurred')); } finally { setIsUploading(false); }
-                        }
-                    };
-                    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: { 'image/*': [] } });
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
                     return (
-                        <div className="space-y-4">
-                            <div {...getRootProps()} className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all bg-slate-50 dark:bg-slate-900/50 ${isDragActive ? 'border-accent-primary bg-accent-primary/5' : 'border-border-color hover:border-accent-primary/50'}`}>
-                                <input {...getInputProps()} />
-                                <div className="w-12 h-12 bg-accent-primary/5 text-accent-primary rounded-full flex items-center justify-center mb-3"><Upload size={20} /></div>
-                                <p className="text-sm font-medium text-primary">{isUploading ? t('common.loading') : t('common.dragOrClick')}</p>
-                            </div>
-                            {images.length > 0 && (
-                                <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
-                                    {images.map((img: string, idx: number) => (
-                                        <div key={idx} className="relative aspect-square rounded-lg border border-border-color overflow-hidden group bg-white cursor-pointer" onClick={() => setPreviewImage(img)}>
-                                            <img src={img} className="w-full h-full object-cover" />
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); form.setValue('images', images.filter((_, i) => i !== idx)); }} className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><X size={16} /></button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <ImageUploadField 
+                            form={form} 
+                            t={t} 
+                            isUploading={isUploading} 
+                            setIsUploading={setIsUploading} 
+                            setPreviewImage={setPreviewImage} 
+                        />
                     );
                 }
             }
@@ -273,7 +306,8 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         fields: [
             {
                 name: 'pricingSection', type: 'custom', label: '', colSpan: 12,
-                render: (form: UseFormReturn<ProductFormData>) => {
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
                     const price = form.watch('price') || 0;
                     const wholesalePrice = form.watch('wholesalePrice') || 0;
                     const costPrice = form.watch('costPrice') || 0;
@@ -320,11 +354,11 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                         <div className="space-y-4">
                             <div className="grid grid-cols-12 gap-4">
                                 {/* Giá vốn (INPUT - primary) */}
+                                {/* Giá vốn (INPUT - primary) */}
                                 <div className="col-span-3">
-                                    <label className="block text-sm font-medium text-primary mb-1.5">
-                                        {t('common.fields.costPrice')} <span className="text-red-500">*</span>
-                                    </label>
                                     <Input
+                                        label={t('common.fields.costPrice')}
+                                        isRequired
                                         value={formatNumber(costPrice)}
                                         onChange={(e) => handleCostChange(parseNumber(e.target.value))}
                                         placeholder={t('common.placeholders.enterPrice')}
@@ -333,11 +367,10 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                                 </div>
                                 
                                 {/* Giá bán sỉ (INPUT) */}
+                                {/* Giá bán sỉ (INPUT) */}
                                 <div className="col-span-3">
-                                    <label className="block text-sm font-medium text-primary mb-1.5">
-                                        {t('common.fields.wholesalePrice')}
-                                    </label>
                                     <Input
+                                        label={t('common.fields.wholesalePrice')}
                                         value={formatNumber(wholesalePrice)}
                                         onChange={(e) => form.setValue('wholesalePrice', parseNumber(e.target.value), { shouldValidate: true })}
                                         placeholder={t('common.placeholders.enterPrice')}
@@ -346,11 +379,10 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                                 </div>
                                 
                                 {/* VAT (INPUT) */}
+                                {/* VAT (INPUT) */}
                                 <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-primary mb-1.5">
-                                        {t('common.fields.vatPercent', 'VAT (%)')}
-                                    </label>
                                     <Input
+                                        label={t('common.fields.vatPercent', 'VAT (%)')}
                                         type="number"
                                         value={vatRate}
                                         onChange={(e) => handleVatChange(parseFloat(e.target.value) || 0)}
@@ -361,10 +393,10 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                                 
                                 {/* Giá bán lẻ (CALCULATED - can be overridden) */}
                                 <div className="col-span-4">
-                                    <label className="block text-sm font-medium text-primary mb-1.5">
-                                        {t('common.fields.price')} <span className="text-xs text-secondary">(tự tính)</span>
-                                    </label>
                                     <Input
+                                        id="product-price-input"
+                                        data-testid="product-price-input"
+                                        label={`${t('common.fields.price')} bán`}
                                         value={formatNumber(price)}
                                         onChange={(e) => form.setValue('price', parseNumber(e.target.value), { shouldValidate: true })}
                                         placeholder={t('common.placeholders.enterPrice')}
@@ -404,11 +436,14 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
             { name: 'minStockLevel', type: 'number', label: t('common.fields.minStock'), colSpan: 4, placeholder: '0' },
             { 
                 name: 'baseUnit', type: 'custom', label: t('common.fields.unit'), colSpan: 4,
-                render: (form: UseFormReturn<ProductFormData>) => (
-                    <Controller control={form.control} name="baseUnit" render={({ field, fieldState }) => (
-                        <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.unit')} error={fieldState.error?.message} queryKeyPrefix="units" fetchFn={fetchUnits} placeholder={t('common.placeholders.select')} initialLabel={field.value} />
-                    )} />
-                )
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
+                    return (
+                        <Controller control={form.control} name="baseUnit" render={({ field, fieldState }) => (
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.unit')} error={fieldState.error?.message} queryKeyPrefix="units" fetchFn={fetchUnits} placeholder={t('common.placeholders.select')} initialLabel={field.value} />
+                        )} />
+                    );
+                }
             },
             { name: 'binLocation', type: 'text', label: t('common.fields.location'), colSpan: 4, placeholder: t('common.placeholders.enterLocation', 'Kệ A...') }
         ]
@@ -418,7 +453,8 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         fields: [
             {
                 name: 'details', type: 'custom', label: t('common.fields.specs'), colSpan: 12,
-                render: (form: UseFormReturn<ProductFormData>) => {
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
                     const details = form.watch('details') || [];
                     const addDetail = (type: 'SPEC' | 'LOGISTICS' | 'RELATION' | 'IMAGE') => form.setValue('details', [...details, { detailType: type, specName: '', specValue: '' }]);
                     const updateDetail = (idx: number, f: keyof ProductDetail, val: string) => {
@@ -458,15 +494,18 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         fields: [
             {
                 name: 'unitsSection', type: 'custom', label: '', colSpan: 12,
-                render: (form: UseFormReturn<ProductFormData>) => (
-                    <ProductUnitsManager 
-                        baseUnitName={form.watch('baseUnit')} 
-                        baseUnitPrice={form.watch('price')} 
-                        units={localUnits}
-                        onChange={(newUnits) => setLocalUnits(newUnits)}
-                        fetchUnitOptions={fetchUnits}
-                    />
-                )
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
+                    return (
+                        <ProductUnitsManager 
+                            baseUnitName={form.watch('baseUnit')} 
+                            baseUnitPrice={form.watch('price')} 
+                            units={localUnits}
+                            onChange={(newUnits) => setLocalUnits(newUnits)}
+                            fetchUnitOptions={fetchUnits}
+                        />
+                    );
+                }
             }
         ]
     },
@@ -475,14 +514,17 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         fields: [
             {
                 name: 'variants', type: 'custom', label: '', colSpan: 12,
-                render: (form: UseFormReturn<ProductFormData>) => (
-                    <ProductVariantManager 
-                        basePrice={form.watch('price')}
-                        productCode={form.watch('code')}
-                        initialVariants={localVariants}
-                        onChange={(newVariants) => setLocalVariants(newVariants)}
-                    />
-                )
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
+                    return (
+                        <ProductVariantManager 
+                            basePrice={form.watch('price')}
+                            productCode={form.watch('code')}
+                            initialVariants={localVariants}
+                            onChange={(newVariants) => setLocalVariants(newVariants)}
+                        />
+                    );
+                }
             }
         ]
     }
@@ -495,27 +537,36 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
             { name: 'isActive', type: 'switch', label: t('common.fields.status'), description: t('admin.statusHint'), colSpan: 12 },
             { 
                 name: 'categoryCode', type: 'custom', label: t('common.fields.category'), required: true, colSpan: 12,
-                render: (form: UseFormReturn<ProductFormData>) => (
-                    <Controller control={form.control} name="categoryCode" render={({ field, fieldState }) => (
-                        <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.category')} error={fieldState.error?.message} required queryKeyPrefix="categories" fetchFn={fetchCategories} placeholder={t('common.placeholders.select')} initialLabel={initialData?.categoryName} />
-                    )} />
-                )
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
+                    return (
+                        <Controller control={form.control} name="categoryCode" render={({ field, fieldState }) => (
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.category')} error={fieldState.error?.message} required queryKeyPrefix="categories" fetchFn={fetchCategories} placeholder={t('common.placeholders.select')} initialLabel={initialData?.categoryName} />
+                        )} />
+                    );
+                }
             },
             { 
                 name: 'brandCode', type: 'custom', label: t('common.fields.brand'), colSpan: 12, 
-                render: (form: UseFormReturn<ProductFormData>) => (
-                    <Controller control={form.control} name="brandCode" render={({ field, fieldState }) => (
-                        <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.brand')} error={fieldState.error?.message} queryKeyPrefix="brands" fetchFn={fetchBrands} placeholder={t('common.placeholders.select')} initialLabel={initialData?.brandName} />
-                    )} />
-                )
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
+                    return (
+                        <Controller control={form.control} name="brandCode" render={({ field, fieldState }) => (
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.brand')} error={fieldState.error?.message} queryKeyPrefix="brands" fetchFn={fetchBrands} placeholder={t('common.placeholders.select')} initialLabel={initialData?.brandName} />
+                        )} />
+                    );
+                }
             },
             { 
                 name: 'supplierCode', type: 'custom', label: t('common.fields.supplier'), colSpan: 12, 
-                render: (form: UseFormReturn<ProductFormData>) => (
-                    <Controller control={form.control} name="supplierCode" render={({ field, fieldState }) => (
-                        <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.supplier')} error={fieldState.error?.message} queryKeyPrefix="suppliers" fetchFn={fetchSuppliers} placeholder={t('common.placeholders.select')} initialLabel={initialData?.supplierName} />
-                    )} />
-                )
+                render: (f: unknown) => {
+                    const form = f as UseFormReturn<ProductFormData>;
+                    return (
+                        <Controller control={form.control} name="supplierCode" render={({ field, fieldState }) => (
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.supplier')} error={fieldState.error?.message} queryKeyPrefix="suppliers" fetchFn={fetchSuppliers} placeholder={t('common.placeholders.select')} initialLabel={initialData?.supplierName} />
+                        )} />
+                    );
+                }
             },
             { name: 'countryOfOrigin', type: 'text', label: t('common.fields.origin'), colSpan: 12, placeholder: t('common.placeholders.enterOrigin', 'VD: Vietnam') }
         ]

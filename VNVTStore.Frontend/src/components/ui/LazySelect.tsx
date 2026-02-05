@@ -95,11 +95,12 @@ export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
             enabled: isOpen,
         });
 
+        const pages = data?.pages;
         // Flatten all pages into single array
         const options = useMemo(() => {
-            if (!data?.pages) return [];
-            return data.pages.flatMap((page) => page.items);
-        }, [data?.pages]);
+            if (!pages) return [];
+            return pages.flatMap((page) => page.items);
+        }, [pages]);
 
         // Find selected option label
         const selectedLabel = useMemo(() => {
@@ -138,7 +139,7 @@ export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
             [onChange]
         );
 
-        const inputId = id || `lazy-select-${queryKeyPrefix}-${Math.random().toString(36).substr(2, 9)}`;
+        const [inputId] = useState(() => id || `lazy-select-${queryKeyPrefix}-${Math.random().toString(36).substr(2, 9)}`);
 
         return (
             <div

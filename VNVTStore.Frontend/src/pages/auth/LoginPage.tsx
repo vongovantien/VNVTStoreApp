@@ -10,7 +10,6 @@ import { AuthLayout } from '@/layouts/AuthLayout';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { createSchemas } from '@/utils/schemas';
 import { signInWithPopup, type AuthProvider } from 'firebase/auth';
 import { auth, googleProvider, facebookProvider } from '@/config/firebase';
@@ -218,6 +217,7 @@ export const LoginPage = () => {
           type="email"
           placeholder="email@example.com"
           {...register('email')}
+          data-testid="email-input"
           leftIcon={<Mail size={18} />}
           required
           error={errors.email?.message}
@@ -228,6 +228,7 @@ export const LoginPage = () => {
           type={showPassword ? 'text' : 'password'}
           placeholder="••••••••"
           {...register('password')}
+          data-testid="password-input"
           leftIcon={<Lock size={18} />}
           rightIcon={
             <button
@@ -261,11 +262,8 @@ export const LoginPage = () => {
           type="submit"
           fullWidth
           size="lg"
-          isLoading={isLoading} // Fixed: loading -> isLoading to match ButtonProps if needed, or if Button accepts loading.
-          // Wait, previous code used loading={isLoading}. Let's check ButtonProps.
-          // Assuming Button accepts isLoading or loading. Previous code said loading={isLoading}.
-          // But I see isLoading={isLoading} in RegisterPage. Let's use isLoading if possible for consistency.
-          // The Button component likely has isLoading alias or prop. I will use isLoading.
+          data-testid="login-button"
+          isLoading={isLoading} 
           rightIcon={<ArrowRight size={20} />}
         >
           {t('login.submit')}

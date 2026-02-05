@@ -1,0 +1,58 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - link "🏠 VNVT Store" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: 🏠
+        - generic [ref=e9]: VNVT Store
+      - heading "Đăng nhập" [level=1] [ref=e10]
+      - paragraph [ref=e11]: Chào mừng bạn trở lại
+    - generic [ref=e12]:
+      - button "Google Google" [ref=e13] [cursor=pointer]:
+        - img "Google" [ref=e14]
+        - generic [ref=e15]: Google
+      - button "Facebook Facebook" [ref=e16] [cursor=pointer]:
+        - img "Facebook" [ref=e17]
+        - generic [ref=e18]: Facebook
+    - generic [ref=e19]:
+      - separator [ref=e20]
+      - generic [ref=e21]: hoặc
+      - separator [ref=e22]
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: Email
+        - generic [ref=e26]:
+          - img [ref=e28]
+          - textbox "Email" [active] [ref=e31]:
+            - /placeholder: email@example.com
+            - text: "' OR '1'='1"
+        - generic [ref=e32]: Email không hợp lệ
+      - generic [ref=e33]:
+        - generic [ref=e34]: Mật khẩu
+        - generic [ref=e35]:
+          - img [ref=e37]
+          - textbox "Mật khẩu" [ref=e40]:
+            - /placeholder: ••••••••
+            - text: wrongpass
+          - button [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+        - generic [ref=e46]: Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt
+      - generic [ref=e47]:
+        - generic [ref=e48] [cursor=pointer]:
+          - checkbox "Ghi nhớ đăng nhập" [ref=e49]
+          - generic [ref=e50]: Ghi nhớ đăng nhập
+        - link "Quên mật khẩu?" [ref=e51] [cursor=pointer]:
+          - /url: /forgot-password
+      - button "Đăng nhập" [ref=e52] [cursor=pointer]:
+        - text: Đăng nhập
+        - img [ref=e53]
+    - paragraph [ref=e55]:
+      - text: Chưa có tài khoản?
+      - link "Đăng ký ngay" [ref=e56] [cursor=pointer]:
+        - /url: /register
+  - link "← Về trang chủ" [ref=e58] [cursor=pointer]:
+    - /url: /
+```

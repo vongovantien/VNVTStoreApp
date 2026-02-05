@@ -1,7 +1,7 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Eye, Tag, Clock } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
+import { Tag, Clock } from 'lucide-react';
+import { Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { PromotionForm } from './forms/PromotionForm';
 import {
@@ -20,8 +20,7 @@ import {
 import { promotionService, Promotion, CreatePromotionRequest, UpdatePromotionRequest, PromotionFilter } from '@/services/promotionService';
 import { useQuery } from '@tanstack/react-query';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
-import { ImportModal } from '@/components/common/ImportModal';
-import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
+import { PaginationDefaults, SortDirection } from '@/constants';
 import { useToast } from '@/store';
 import { AdminPageHeader } from '@/components/admin';
 
@@ -29,7 +28,7 @@ import { AdminPageHeader } from '@/components/admin';
 const usePromotions = (params: PromotionFilter) => {
   return useQuery({
     queryKey: ['promotions', params],
-    queryFn: () => promotionService.getAll(params),
+    queryFn: () => promotionService.getAll(params), // Reverted to original queryFn as mutationFn is incorrect for useQuery
     placeholderData: (previousData) => previousData,
   });
 };
@@ -49,7 +48,7 @@ export const PromotionsPage = () => {
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
 
   // Import
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  // State for Fetching
   const handleImportPromotion = async (file: File) => {
     try {
         await promotionService.import(file);
@@ -66,8 +65,6 @@ export const PromotionsPage = () => {
     data: promotionsData,
     isLoading,
     isFetching,
-    isError,
-    error,
     refetch,
   } = usePromotions({
     pageIndex: currentPage,
@@ -108,7 +105,6 @@ export const PromotionsPage = () => {
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
   // View State
-  const [viewingPromotion, setViewingPromotion] = useState<Promotion | null>(null);
 
   // Column Definitions
   const columns: DataTableColumn<Promotion>[] = [
@@ -183,36 +179,39 @@ export const PromotionsPage = () => {
   ];
 
   // Handler Wrappers
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (formData: unknown) => {
+    const data = formData as Record<string, unknown>;
     // Sanitizing nulls to undefined to match CreatePromotionRequest
     const cleanData: CreatePromotionRequest = {
-      ...data,
+      ...(data as Record<string, unknown>),
       minOrderAmount: data.minOrderAmount ?? undefined,
       maxDiscountAmount: data.maxDiscountAmount ?? undefined,
       usageLimit: data.usageLimit ?? undefined,
       productCodes: data.productCodes ?? undefined,
-      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
-      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
-    };
+      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : (data.startDate as string),
+      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : (data.endDate as string),
+    } as CreatePromotionRequest;
     await createMutation.mutateAsync(cleanData);
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (formData: unknown) => {
+    const data = formData as Record<string, unknown>;
     if (!editingPromotion) return;
     const cleanData: UpdatePromotionRequest = {
-      ...data,
+      ...(data as Record<string, unknown>),
       minOrderAmount: data.minOrderAmount ?? undefined,
       maxDiscountAmount: data.maxDiscountAmount ?? undefined,
       usageLimit: data.usageLimit ?? undefined,
       productCodes: data.productCodes ?? undefined,
-      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
-      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
-    };
+      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : (data.startDate as string),
+      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : (data.endDate as string),
+    } as UpdatePromotionRequest;
     await updateMutation.mutateAsync({
       id: editingPromotion.code,
       data: cleanData
     });
   };
+
 
   const handleDelete = async () => {
     if (promotionToDelete) {
@@ -223,7 +222,9 @@ export const PromotionsPage = () => {
         setSelectedIds(new Set());
         setShowBulkConfirm(false);
         toast.success(t('common.deleteSuccess'));
-      } catch (err) { }
+      } catch { 
+        // Ignore error
+      }
     }
   };
 
@@ -254,8 +255,11 @@ export const PromotionsPage = () => {
             data={promotions}
             keyField="code"
             isLoading={isLoading || isFetching}
+            onExportAllData={async (): Promise<Promotion[]> => {
+              const response = await promotionService.search({ pageIndex: 1, pageSize: 10000 });
+              return (response.data?.items || []) as Promotion[]; // Changed PromotionDto[] to Promotion[]
+            }}
             isFetching={isFetching}
-            error={isError ? (error as Error) : null}
             onAdd={() => openCreate()}
             onRefresh={() => refetch()}
             onImport={handleImportPromotion}
@@ -274,11 +278,11 @@ export const PromotionsPage = () => {
 
             externalSortField={sortField}
             externalSortDir={sortDir}
-            onExternalSort={(f, d) => { setSortField(f); setSortDir(d as any); }}
+            onExternalSort={(f, d) => { setSortField(f); setSortDir(d as SortDirection); }}
             
             onEdit={openEdit}
             onDelete={confirmDelete}
-            onView={setViewingPromotion}
+            onView={() => {}}
 
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}

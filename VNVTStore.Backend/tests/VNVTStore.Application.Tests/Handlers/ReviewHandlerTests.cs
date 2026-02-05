@@ -65,6 +65,16 @@ public class ReviewHandlerTests
                 Comment = r.Comment
             });
 
+        _mapperMock.Setup(x => x.Map<TblReview>(It.IsAny<CreateReviewDto>()))
+            .Returns((CreateReviewDto d) => new TblReview
+            {
+                Rating = d.Rating,
+                Comment = d.Comment,
+                UserCode = d.UserCode,
+                ProductCode = d.ProductCode,
+                OrderItemCode = d.OrderItemCode
+            });
+
         _handler = new ReviewHandlers(
             _reviewRepoMock.Object,
             _orderItemRepoMock.Object,

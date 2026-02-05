@@ -32,7 +32,7 @@ export interface CreatePromotionRequest {
     productCodes?: string[];
 }
 
-export interface UpdatePromotionRequest extends CreatePromotionRequest { }
+export type UpdatePromotionRequest = CreatePromotionRequest;
 
 export interface PromotionFilter extends SearchParams {
     activeOnly?: boolean;
@@ -63,22 +63,21 @@ export const promotionService = {
     },
 
     getByCode: async (code: string): Promise<ApiResponse<Promotion>> => {
-        // Try direct endpoint first, fallback to search if needed
-        // Assuming backend follows standard pattern /promotions/code/{code}
-        try {
-            return await apiClient.get<Promotion>(`/promotions/code/${code}`);
-        } catch (e) {
-            // Fallback: Search by code
-            const res = await baseService.search({
-                pageIndex: 1,
-                pageSize: 1,
-                filters: [{ field: 'code', value: code, operator: SearchCondition.Equal }]
-            });
-            if (res.success && res.data && res.data.items && res.data.items.length > 0) {
-                return { success: true, data: res.data.items[0], message: '', statusCode: 200 };
-            }
-            return { success: false, message: 'Promotion not found', data: null, statusCode: 404 };
+        const res = await apiClient.get<Promotion>(`/promotions/code/${code}`);
+        if (res.success && res.data) {
+            return res;
         }
+
+        // Fallback: Search by code
+        const searchRes = await baseService.search({
+            pageIndex: 1,
+            pageSize: 1,
+            filters: [{ field: 'code', value: code, operator: SearchCondition.Equal }]
+        });
+        if (searchRes.success && searchRes.data && searchRes.data.items && searchRes.data.items.length > 0) {
+            return { success: true, data: searchRes.data.items[0], message: '', statusCode: 200 };
+        }
+        return { success: false, message: 'Promotion not found', data: null, statusCode: 404 };
     },
 
     getFlashSales: async () => {

@@ -85,7 +85,7 @@ const OrderDetailPage = () => {
             case 'Shipping': return Truck;
             default: return Clock;
         }
-    }, [order?.status]);
+    }, [order]);
 
     if (isLoading) {
         return (
@@ -121,6 +121,7 @@ const OrderDetailPage = () => {
                     <div>
                         <h1 className="text-2xl font-bold flex items-center gap-3">
                             {t('order.title')} #{order.code}
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             <Badge color={getStatusColor(order.status.toLowerCase()) as any} className="text-base px-3 py-1">
                                 {t(getStatusText(order.status.toLowerCase()))}
                             </Badge>

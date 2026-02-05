@@ -248,4 +248,15 @@ public partial class TblUser : IEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void UpdateDebt(decimal amount)
+    {
+        CurrentDebt += amount;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateDebtLimit(decimal limit)
+    {
+        DebtLimit = limit;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

@@ -43,12 +43,13 @@ export const ProductVariantManager = ({
           attrMap[name].add(value as string);
         });
       });
+      // eslint-disable-next-line
       setAttributes(Object.entries(attrMap).map(([name, values]) => ({
         name,
         values: Array.from(values)
       })));
     }
-  }, [initialVariants]);
+  }, [initialVariants, attributes.length]);
 
   const addAttribute = () => setAttributes([...attributes, { name: '', values: [] }]);
   
@@ -111,7 +112,7 @@ export const ProductVariantManager = ({
     onChange(newVariants);
   };
 
-  const updateVariant = (idx: number, field: keyof ProductVariantData, value: any) => {
+  const updateVariant = (idx: number, field: keyof ProductVariantData, value: string | number | Record<string, string>) => {
     const newVariants = [...variants];
     newVariants[idx] = { ...newVariants[idx], [field]: value };
     setVariants(newVariants);

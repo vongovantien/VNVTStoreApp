@@ -1,5 +1,4 @@
-import { memo, forwardRef, useState, useEffect, type InputHTMLAttributes, type ChangeEvent } from 'react';
-import { cn } from '@/utils/cn';
+import { memo, forwardRef, useState, useEffect, type ChangeEvent } from 'react';
 import { Input, type InputProps } from './Input';
 
 export interface NumberInputProps extends Omit<InputProps, 'onChange' | 'value'> {
@@ -16,7 +15,7 @@ const formatNumber = (num: number | undefined): string => {
 
 export const NumberInput = memo(
   forwardRef<HTMLInputElement, NumberInputProps>(
-    ({ value, onChange, min = 0, max, ...props }, ref) => {
+    ({ value, onChange, max, ...props }, ref) => {
       // Local state for the display value (formatted string)
       const [displayValue, setDisplayValue] = useState<string>('');
 
@@ -27,10 +26,8 @@ export const NumberInput = memo(
 
       const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         // Allow digits and commas
-        const start = e.target.selectionStart;
-        const oldLength = e.target.value.length;
         
-        let inputValue = e.target.value.replace(/[^0-9]/g, '');
+        const inputValue = e.target.value.replace(/[^0-9]/g, '');
 
         if (inputValue === '') {
           setDisplayValue('');

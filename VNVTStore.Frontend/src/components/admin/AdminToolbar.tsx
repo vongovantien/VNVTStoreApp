@@ -2,14 +2,9 @@ import {
   Plus,
   MoreHorizontal,
   Edit,
-  Minus,
-  Check,
   Search,
-  RotateCcw, // Reset
   Download,
   Upload,
-  Printer,
-  HelpCircle,
   Trash2,
   Loader2,
   RefreshCw
@@ -35,7 +30,6 @@ interface AdminToolbarProps {
 
   onSearchClick?: () => void;
   onRefresh?: () => void;
-  onReset?: () => void;
 
 
   onImport?: () => void;
@@ -81,7 +75,6 @@ export const AdminToolbar = ({
   // onCheck removed
   onSearchClick,
   onRefresh,
-  onReset,
   onImport,
   onExport,
   // onPrint removed
@@ -96,23 +89,6 @@ export const AdminToolbar = ({
 }: AdminToolbarProps & { searchInput?: React.ReactNode }) => {
   const { t } = useTranslation();
 
-  const Item = ({ icon, onClick, title, disabled, className: itemClassName }: AdminToolbarAction) => (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className={cn(
-        "p-2 text-primary hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed",
-        itemClassName
-      )}
-    >
-      <div className="w-5 h-5 flex items-center justify-center text-secondary">
-        {/* Allow custom icon color via css if needed, but default is generic text color */}
-        <span className="text-secondary hover:text-primary transition-colors">{icon}</span>
-      </div>
-    </button>
-  );
 
   return (
     <div className={cn("flex flex-wrap items-center bg-transparent gap-1 relative z-20", className)}>

@@ -1,6 +1,5 @@
 import { memo, useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -25,7 +24,7 @@ import {
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast } from '@/store';
-import { signalRService, type SignalRNotification } from '@/services/signalrService';
+import { type SignalRNotification } from '@/services/signalrService';
 import { useClickOutside, useSignalR } from '@/hooks';
 import { useCategories } from '@/hooks/useProducts';
 
@@ -49,10 +48,11 @@ export const Header = memo(() => {
     setShowLogoutConfirm(true);
   };
 
+  const navigate = useNavigate();
   const confirmLogout = () => {
     logout();
     setShowLogoutConfirm(false);
-    window.location.href = '/';
+    navigate('/');
   };
 
 
@@ -73,7 +73,7 @@ export const Header = memo(() => {
 
   const { info } = useToast();
 
-  const { on, isConnected, status: signalRStatus } = useSignalR();
+  const { on, isConnected } = useSignalR();
 
   useEffect(() => {
     if (!isConnected) return;
@@ -84,8 +84,8 @@ export const Header = memo(() => {
         info(`${t('common.newOrder')}: ${msg}`);
     });
     
-    const unsubscribeQuote = on('ReceiveQuoteNotification', (data: string | SignalRNotification) => {
-         const msg = typeof data === 'string' ? data : (data as any).Message || '';
+    const unsubscribeQuote = on('ReceiveQuoteNotification', (data: string | unknown) => {
+         const msg = typeof data === 'string' ? data : (data as { Message?: string }).Message || '';
          addNotification(msg);
          info(`${t('common.newQuote') || 'New Quote'}: ${msg}`);
     });
@@ -194,6 +194,7 @@ export const Header = memo(() => {
               <Button
                 variant="ghost"
                 size="sm"
+                data-testid="lang-toggle"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowLangMenu(!showLangMenu);

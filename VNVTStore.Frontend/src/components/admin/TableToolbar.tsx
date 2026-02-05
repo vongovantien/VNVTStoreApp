@@ -1,4 +1,4 @@
-import { Search, Download, Trash2 } from 'lucide-react';
+import { Search, Trash2, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui';
 
@@ -16,7 +16,7 @@ interface TableToolbarProps {
 
   // Actions
   onExport: () => void;
-  onImport?: (file: File) => void; // Made optional - backend doesn't support import yet
+  onImport?: (file: File) => void;
 }
 
 export const TableToolbar = ({
@@ -26,8 +26,10 @@ export const TableToolbar = ({
   onSearchFieldChange,
   searchOptions,
   selectedCount,
+
   onBulkDelete,
   onExport,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onImport,
 }: TableToolbarProps) => {
   const { t } = useTranslation();
@@ -57,7 +59,16 @@ export const TableToolbar = ({
               onChange={(e) => onSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border rounded-lg bg-transparent focus:outline-none focus:border-accent"
             />
-          </div>
+  
+          <Button
+            variant="outline"
+            className="border-secondary hover:bg-secondary/50"
+            leftIcon={<Download size={18} />}
+            onClick={onExport}
+          >
+            {t('common.export')}
+          </Button>
+        </div>
 
 
         </div>

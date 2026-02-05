@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { promotionService } from '../promotionService';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { promotionService, type CreatePromotionRequest, type UpdatePromotionRequest } from '../promotionService';
 import { apiClient, SearchCondition } from '../api';
 
 // Mock API Client
@@ -57,11 +57,9 @@ describe('promotionService', () => {
 
             expect(mockGet).toHaveBeenCalledWith(`/promotions/code/${code}`);
             expect(mockPost).toHaveBeenCalledWith('/promotions/search', {
-                PostObject: {
-                    pageIndex: 1,
-                    pageSize: 1,
-                    searching: [{ field: 'code', value: code, operator: SearchCondition.Equal }]
-                }
+                pageIndex: 1,
+                pageSize: 1,
+                searching: [{ searchField: 'code', searchValue: code, searchCondition: SearchCondition.Equal }]
             });
             expect(result.success).toBe(true);
             expect(result.data).toEqual(mockSearchResponse.data.items[0]);
@@ -71,14 +69,16 @@ describe('promotionService', () => {
     describe('CRUD operations', () => {
         it('should create promotion with correct wrapper', async () => {
             const payload = { code: 'NEW', name: 'New Promo' };
-            await promotionService.create(payload as any);
+            mockPost.mockResolvedValueOnce({ success: true, data: payload });
+            await promotionService.create(payload as unknown as CreatePromotionRequest);
             expect(mockPost).toHaveBeenCalledWith('/promotions', { PostObject: payload });
         });
 
         it('should update promotion with correct wrapper', async () => {
             const id = '123';
             const payload = { name: 'Updated' };
-            await promotionService.update(id, payload as any);
+            (apiClient.put as Mock).mockResolvedValueOnce({ success: true, data: payload });
+            await promotionService.update(id, payload as unknown as UpdatePromotionRequest);
             expect(apiClient.put).toHaveBeenCalledWith(`/promotions/${id}`, { PostObject: payload });
         });
     });

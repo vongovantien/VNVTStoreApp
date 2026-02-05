@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useMemo, useEffect } from 'react';
-import { Checkbox, Button, Badge, ConfirmDialog, Input } from '@/components/ui';
-import { Edit, Trash2, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { Button, Badge, ConfirmDialog, Input } from '@/components/ui';
+import { Plus, X } from 'lucide-react';
 import LazySelect from '@/components/ui/LazySelect';
 import { formatCurrency } from '@/utils/format';
 
@@ -45,7 +45,7 @@ export const ProductUnitsManager = ({
         onChange([...units, newUnit]);
     };
 
-    const handleUpdateUnit = (index: number, field: keyof ProductUnitDto, value: any) => {
+    const handleUpdateUnit = (index: number, field: keyof ProductUnitDto, value: string | number | boolean) => {
         const newUnits = [...units];
         newUnits[index] = { ...newUnits[index], [field]: value };
         onChange(newUnits);

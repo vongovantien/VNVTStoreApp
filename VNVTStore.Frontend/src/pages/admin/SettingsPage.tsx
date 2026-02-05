@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Save, Store, CreditCard, Truck, Bell, Shield, Globe, Eye, EyeOff, Lock } from 'lucide-react';
-import { Button, Input, Select, Switch } from '@/components/ui';
+import { Save, Store, CreditCard, Truck, Bell, Shield, Eye, EyeOff, Lock } from 'lucide-react';
+import { Button, Input, Switch } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { useToast, useSettings } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +22,7 @@ export const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('general');
   const { settings, updateSettings } = useSettings();
 
-  const handleSave = (section: keyof typeof settings, data: any) => {
+  const handleSave = (section: keyof typeof settings, data: Record<string, unknown>) => {
     updateSettings(section, data);
     toast.success(t('messages.saveSuccess'));
   };
@@ -99,7 +99,7 @@ export const SettingsPage = () => {
   };
 
   const PaymentSettings = () => {
-    const { register, handleSubmit, setValue, watch } = useForm({
+    const { handleSubmit, setValue, watch } = useForm({
         resolver: zodResolver(paymentSettingsSchema),
         defaultValues: settings.payment
     });
@@ -126,7 +126,7 @@ export const SettingsPage = () => {
                     label={method.name}
                     description={method.desc}
                     checked={formState[method.id as keyof typeof formState] as boolean}
-                    onChange={(val) => setValue(method.id as any, val)}
+                    onChange={(val) => setValue(method.id as keyof z.infer<typeof paymentSettingsSchema>, val)}
                     className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl"
                 />
             </div>
@@ -180,7 +180,7 @@ export const SettingsPage = () => {
   };
 
   const NotificationSettings = () => {
-    const { register, handleSubmit, setValue, watch } = useForm({
+    const { handleSubmit, setValue, watch } = useForm({
         resolver: zodResolver(notificationsSettingsSchema),
         defaultValues: settings.notifications
     });
@@ -205,7 +205,7 @@ export const SettingsPage = () => {
                     <Switch
                         label={setting.label}
                         checked={formState[setting.id as keyof typeof formState] as boolean}
-                        onChange={(val) => setValue(setting.id as any, val)}
+                        onChange={(val) => setValue(setting.id as keyof z.infer<typeof notificationsSettingsSchema>, val)}
                         className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl"
                     />
                 </div>
@@ -242,9 +242,11 @@ export const SettingsPage = () => {
     );
   };
 
+  type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+
   // Security Mock - no persistence needed for password/modal logic yet
   const SecuritySettings = () => {
-    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    const { register, handleSubmit: handlePasswordSubmit, formState: { errors: passwordErrors }, reset: resetPassword } = useForm<ChangePasswordFormData>({
         resolver: zodResolver(changePasswordSchema),
         defaultValues: {
             currentPassword: '',
@@ -253,14 +255,14 @@ export const SettingsPage = () => {
         }
     });
 
-    const onSubmit = (data: z.infer<typeof changePasswordSchema>) => {
+    const onUpdatePassword = () => {
         // Logic to call API or update store
         toast.success(t('messages.saveSuccess'));
-        reset();
+        resetPassword();
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handlePasswordSubmit(onUpdatePassword)} className="space-y-4">
             <h2 className="text-lg font-bold flex items-center gap-2">
             <Shield size={20} />
             {t('admin.settingsPage.security.title')}
@@ -276,19 +278,19 @@ export const SettingsPage = () => {
                     label={t('admin.settingsPage.security.currentPassword')} 
                     placeholder={t('common.placeholders.currentPassword')}
                     {...register('currentPassword')} 
-                    error={errors.currentPassword?.message}
+                    error={passwordErrors.currentPassword?.message}
                 />
                 <PasswordInput 
                     label={t('admin.settingsPage.security.newPassword')} 
                     placeholder={t('common.placeholders.newPassword')}
                     {...register('newPassword')} 
-                    error={errors.newPassword?.message}
+                    error={passwordErrors.newPassword?.message}
                 />
                 <PasswordInput 
                     label={t('admin.settingsPage.security.confirmNewPassword')} 
                     placeholder={t('common.placeholders.confirmPassword')}
                     {...register('confirmPassword')} 
-                    error={errors.confirmPassword?.message}
+                    error={passwordErrors.confirmPassword?.message}
                 />
             </div>
             </div>

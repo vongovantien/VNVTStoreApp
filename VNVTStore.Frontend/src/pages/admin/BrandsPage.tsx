@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Tag, RefreshCw } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { brandService, productService, type BrandDto, type CreateBrandRequest, type UpdateBrandRequest } from '@/services';
@@ -10,7 +10,6 @@ import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, useBrands } from '@/hooks';
 import { BrandForm, type BrandFormData } from './forms';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
-import { useQuery } from '@tanstack/react-query';
 import { getImageUrl } from '@/utils/format';
 import { SearchCondition } from '@/services/baseService';
 import { useMemo } from 'react';

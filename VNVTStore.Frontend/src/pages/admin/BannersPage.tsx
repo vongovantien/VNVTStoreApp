@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, Edit2, Trash2, ExternalLink } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
+import { ExternalLink } from 'lucide-react';
+import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from '@/hooks/useBanners';
 import { BannerForm, BannerFormData } from './forms/BannerForm';
@@ -276,7 +276,7 @@ const BannersPage = () => {
               {viewingBanner.linkUrl && (
                 <div className="col-span-2">
                   <span className="text-slate-500 block">{t('common.fields.linkUrl')}</span>
-                  <a href={viewingBanner.linkUrl} target="_blank" className="text-blue-600 hover:underline break-all">
+                  <a href={viewingBanner.linkUrl} target="_blank" className="text-blue-600 hover:underline break-all" rel="noreferrer">
                     {viewingBanner.linkUrl}
                   </a>
                 </div>

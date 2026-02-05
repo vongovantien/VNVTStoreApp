@@ -206,7 +206,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             .ToListAsync(cancellationToken);
 
         var dtos = _mapper.Map<List<TResponse>>(items);
-        return Result.Success(new PagedResult<TResponse>(dtos, totalItems));
+        return Result.Success(new PagedResult<TResponse>(dtos, totalItems, pageIndex, pageSize));
     }
 
     protected async Task<Result<TResponse>> GetByCodeAsync<TResponse>(
@@ -417,7 +417,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         await PopulateCollectionsAsync(dtos, cancellationToken).ConfigureAwait(false);
         Console.WriteLine($"[Dapper Debug] PopulateCollections took: {sw.ElapsedMilliseconds}ms");
 
-        return Result.Success(new PagedResult<TResponse>(dtos, totalCount));
+        return Result.Success(new PagedResult<TResponse>(dtos, totalCount, pageIndex, pageSize));
     }
 
     private List<ReferenceTable> GetReferenceTables<TResponse>()

@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShoppingCart, FileText, Truck, Eye, Trash2, Package, ClipboardList, ChevronUp, ChevronDown, Loader2, Download, Check, X, Printer } from 'lucide-react';
+import { Truck, Package, ClipboardList, Check, X, Printer } from 'lucide-react';
 import defaultImage from '@/assets/default-image.png';
-import { Button, Badge, Modal, Pagination, ConfirmDialog, TableActions } from '@/components/ui';
+import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
 import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/utils/format';
-import { orderService, type OrderDto, type OrderItemDto } from '@/services/orderService';
-import { AdminToolbar, ColumnVisibility, TableToolbar, AdminPageHeader } from '@/components/admin';
+import { orderService, type OrderDto } from '@/services/orderService';
+import { AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';
-import { exportToExcel } from '@/utils/export';
 import { DataTableColumn } from '@/components/common/DataTable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
+import { PaginationDefaults } from '@/constants';
 import { StatsCards } from '@/components/admin/StatsCards';
 import { useQuery } from '@tanstack/react-query';
 
@@ -26,11 +25,7 @@ export const OrdersPage = () => {
   const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
 
-  // Sorting
-  type SortField = 'orderDate' | 'totalAmount' | 'status';
-  type SortDirection = 'asc' | 'desc';
-  const [sortField, setSortField] = useState<SortField>('orderDate');
-  const [sortDir, setSortDir] = useState<SortDirection>('desc');
+
 
   const queryClient = useQueryClient();
   const [orderToDelete, setOrderToDelete] = useState<OrderDto | null>(null);
@@ -112,7 +107,7 @@ export const OrdersPage = () => {
       id: 'status',
       header: t('common.fields.status'),
       accessor: (row) => (
-        <Badge color={getStatusColor(row.status) as any} size="sm">
+        <Badge color={getStatusColor(row.status) as "success" | "warning" | "error" | "info" | "primary" | "secondary"} size="sm">
           {t(getStatusText(row.status))}
         </Badge>
       ),
@@ -132,7 +127,7 @@ export const OrdersPage = () => {
   const [visibleColumns, setVisibleColumns] = useState<string[]>(columns.map(c => c.id));
 
   // Fetch Data
-  const { data: ordersData, isLoading, isFetching, refetch } = useAdminOrders({
+  const { data: ordersData, isLoading, isFetching } = useAdminOrders({
     pageIndex: currentPage,
     pageSize: pageSize,
     filters: {
@@ -165,39 +160,9 @@ export const OrdersPage = () => {
   };
 
   // Selection & Toolbar State
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [showSearch, setShowSearch] = useState(true);
 
-  // Sorting Handler
-  const sortedOrders = [...orders].sort((a, b) => {
-    let comparison = 0;
-    if (sortField === 'orderDate') {
-      comparison = new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
-    } else if (sortField === 'totalAmount') {
-      comparison = a.finalAmount - b.finalAmount;
-    } else if (sortField === 'status') {
-      comparison = a.status.localeCompare(b.status);
-    }
-    return sortDir === 'desc' ? -comparison : comparison;
-  });
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null;
-    return sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
-  };
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDir('desc');
-    }
-  };
-
-  const handleExport = async () => {
-    await exportToExcel(sortedOrders, 'orders_export');
-  };
 
   return (
     <div className="space-y-6">
@@ -402,8 +367,8 @@ export const OrdersPage = () => {
         emptyMessage={t('common.noResults')}
 
         // Selection
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
+        selectedIds={new Set()}
+        onSelectionChange={() => {}}
       />
 
       <ConfirmDialog
@@ -440,7 +405,7 @@ export const OrdersPage = () => {
           <div className="space-y-6">
             {/* Status */}
             <div className="flex items-center gap-4">
-              <Badge color={getStatusColor(selectedOrder.status) as any}>
+              <Badge color={getStatusColor(selectedOrder.status) as "success" | "warning" | "error" | "info" | "primary" | "secondary"}>
                 {getStatusText(selectedOrder.status)}
               </Badge>
               <Badge color={selectedOrder.paymentStatus === 'paid' ? 'success' : 'warning'}>

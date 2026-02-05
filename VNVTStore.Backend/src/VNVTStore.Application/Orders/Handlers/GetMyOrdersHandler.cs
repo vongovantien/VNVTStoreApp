@@ -43,6 +43,6 @@ public class GetMyOrdersHandler : BaseHandler<TblOrder>,
             .ToListAsync(cancellationToken);
 
         var dtos = _mapper.Map<List<OrderDto>>(items);
-        return Result.Success(new PagedResult<OrderDto>(dtos, totalItems));
+        return Result.Success(new PagedResult<OrderDto>(dtos, totalItems, request.pageIndex, request.pageSize));
     }
 }

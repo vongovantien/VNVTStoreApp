@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
-import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui';
 import SharedImage from '@/components/common/Image';
 import { useCartStore, useUIStore } from '@/store';

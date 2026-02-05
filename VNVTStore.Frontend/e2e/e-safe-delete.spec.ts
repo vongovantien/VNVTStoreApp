@@ -2,38 +2,21 @@
 import { test, expect } from '@playwright/test';
 
 // Configuration
-const BASE_URL = 'http://localhost:5173';
+
 
 test.describe('Admin Safe Delete Complex Flows', () => {
 
     test.beforeEach(async ({ page }) => {
         // Login
-        await page.goto('/auth/login');
-        await page.fill('input[name="username"]', 'admin');
-        await page.fill('input[name="password"]', 'admin123');
-        await page.click('button[type="submit"]');
-        await page.waitForURL('**/admin/dashboard');
+        await page.goto('/login');
+        await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+        await page.fill('[data-testid="password-input"]', 'Admin@123');
+        await page.click('[data-testid="login-button"]');
+        await page.waitForURL('**/admin/**');
     });
 
     // Helpers
-    const createCategory = async (page: any, name: string) => {
-        await page.goto('/admin/categories');
-        const addBtn = page.locator('button').filter({ hasText: /New|Add|Thêm|Tạo/i }).first();
-        if (await addBtn.isVisible()) {
-            await addBtn.click();
-        } else {
-            await page.getByRole('button').filter({ hasText: 'Add' }).first().click();
-        }
 
-        await page.fill('input[name="name"]', name);
-        // Submit is usually inside the modal form
-        // Wait for modal
-        await page.waitForSelector('form');
-        await page.locator('form button[type="submit"]').click();
-
-        // Wait for table to reload/contain name
-        await page.waitForSelector(`text=${name}`);
-    };
 
     test('Complex Flow: Verify Safe Delete on Category', async ({ page }) => {
         // 1. Identification
@@ -60,7 +43,7 @@ test.describe('Admin Safe Delete Complex Flows', () => {
                 // Wait for toast if it appears
                 await expect(toast).toBeVisible({ timeout: 5000 });
                 console.log("Verified Safe Delete Toast");
-            } catch (e) {
+            } catch {
                 // If not blocked, it probably showed Confirm Delete modal
                 const confirmModal = page.getByText(/Are you sure|Bạn có chắc chắn/i);
                 if (await confirmModal.isVisible()) {

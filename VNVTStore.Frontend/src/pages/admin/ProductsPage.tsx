@@ -1,21 +1,21 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Package, AlertTriangle, Trash2, Edit, Eye, XCircle, Star, Search, PlusCircle, MoreHorizontal, Edit3, Copy, Archive, FolderInput, Share2, Heart, Plus, X, Upload } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
-import { Dropdown, DropdownItem } from '@/components/ui/Dropdown';
+import { Package, AlertTriangle, Star, XCircle } from 'lucide-react';
+import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+
 import { formatCurrency, getImageUrl } from '@/utils/format';
 import { ProductForm, ProductFormData } from './forms/ProductForm';
 import {
   useProducts,
   useEntityManager,
 } from '@/hooks';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { productService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
 import { useToast } from '@/store';
-import type { Product } from '@/types';
+import type { Product, ProductUnit } from '@/types';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
-import { PageSize, PaginationDefaults, SortDirection } from '@/constants';
+import { PaginationDefaults, SortDirection } from '@/constants';
 import { PRODUCT_LIST_FIELDS } from '@/constants/fieldConstants';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 
@@ -27,14 +27,15 @@ export const ProductsPage = () => {
   const toast = useToast();
 
   // Helper to safely get image URL regardless of casing
-  const getSafeImageUrl = (img: any) => {
+  const getSafeImageUrl = (img: string | { imageURL?: string; imageUrl?: string; ImageURL?: string } | null | undefined) => {
       if (!img) return '';
       if (typeof img === 'string') return getImageUrl(img);
-      return getImageUrl(img.imageURL || img.imageUrl || img.ImageURL || '');
+      const imageObj = img as { imageURL?: string; imageUrl?: string; ImageURL?: string };
+      return getImageUrl(imageObj.imageURL || imageObj.imageUrl || imageObj.ImageURL || '');
   };
 
   // Helper to extract detail/spec value
-  const getDetailValue = (details: any[] | undefined, keys: string[]) => {
+  const getDetailValue = (details: { specName: string; specValue: string }[] | undefined, keys: string[]) => {
       if (!details) return undefined;
       const detail = details.find(d => keys.some(k => d.specName?.toLowerCase() === k.toLowerCase()));
       return detail?.specValue;
@@ -50,16 +51,21 @@ export const ProductsPage = () => {
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
 
-  // Import
+  // Import Mutation
+  const importMutation = useMutation({
+    mutationFn: (file: File) => productService.import(file),
+    onSuccess: () => {
+      toast.success(t('common.messages.importSuccess') || 'Import successful');
+      refetch();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t('common.messages.importError') || 'Import failed');
+    },
+  });
+
+  // Handle Import (now uses the mutation)
   const handleImportProduct = async (file: File) => {
-    try {
-        await productService.import(file);
-        toast.success(t('common.messages.importSuccess') || 'Import successful');
-        refetch();
-    } catch (error) {
-        toast.error(t('common.messages.importError') || 'Import failed');
-        throw error; // Let modal handle error state if needed
-    }
+    await importMutation.mutateAsync(file);
   };
 
   // Fetch API
@@ -120,7 +126,6 @@ export const ProductsPage = () => {
     isFormOpen,
     editingItem: editingProduct,
     itemToDelete: productToDelete,
-    isDeleting,
     openCreate,
     openEdit,
     closeForm,
@@ -193,9 +198,12 @@ export const ProductsPage = () => {
         binLocation: data.binLocation,
         vatRate: data.vatRate,
         countryOfOrigin: data.countryOfOrigin,
-        productUnits: data.productUnits || [],
+        productUnits: (data.productUnits as ProductUnit[])?.map(u => ({
+            ...u,
+            isBaseUnit: u.isBaseUnit || false
+        })) || [],
       });
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -229,10 +237,13 @@ export const ProductsPage = () => {
           binLocation: data.binLocation,
           vatRate: data.vatRate,
           countryOfOrigin: data.countryOfOrigin,
-          productUnits: data.productUnits || [],
+          productUnits: (data.productUnits as ProductUnit[])?.map(u => ({
+            ...u,
+            isBaseUnit: u.isBaseUnit || false
+          })) || [],
         },
       });
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -246,7 +257,7 @@ export const ProductsPage = () => {
         setSelectedIds(new Set()); // Clear selection
         setShowBulkConfirm(false);
         toast.success(t('common.deleteSuccess'));
-      } catch (err) {
+      } catch {
         // Errors handled by mutation individually
       }
     }
@@ -648,10 +659,10 @@ export const ProductsPage = () => {
         onClose={handleCancelDelete}
         onConfirm={handleDelete}
         title={t('common.actions.delete')}
-        message={t('common.confirmDelete', { count: selectedToDelete.length > 0 ? selectedToDelete.length : 1 })}
-        confirmText={t('common.actions.delete')}
+        message={productToDelete ? t('messages.confirmDelete', { name: productToDelete.name }) : t('common.confirmDelete', { count: selectedToDelete.length })}
+        confirmText={t('common.delete')}
         variant="danger"
-        isLoading={isDeleting}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

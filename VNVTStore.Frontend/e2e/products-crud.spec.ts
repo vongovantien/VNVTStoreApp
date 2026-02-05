@@ -6,12 +6,7 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Products CRUD Flow', () => {
-    const testProduct = {
-        name: `Test Product ${Date.now()}`,
-        price: '150000',
-        category: 'Test Category',
-        description: 'This is a test product created by E2E tests'
-    };
+
 
     test.beforeEach(async ({ page }) => {
         // Navigate to admin and login
@@ -19,10 +14,10 @@ test.describe('Products CRUD Flow', () => {
 
         // Check if need to login
         if (page.url().includes('/login')) {
-            await page.fill('[data-testid="username"]', 'admin');
-            await page.fill('[data-testid="password"]', 'admin123');
+            await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+            await page.fill('[data-testid="password-input"]', 'Admin@123');
             await page.click('[data-testid="login-button"]');
-            await page.waitForURL('/admin/**');
+            await page.waitForURL('**/admin/**');
         }
     });
 
@@ -111,10 +106,10 @@ test.describe('Product Form Validation', () => {
         await page.goto('/admin');
 
         if (page.url().includes('/login')) {
-            await page.fill('[data-testid="username"]', 'admin');
-            await page.fill('[data-testid="password"]', 'admin123');
+            await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+            await page.fill('[data-testid="password-input"]', 'Admin@123');
             await page.click('[data-testid="login-button"]');
-            await page.waitForURL('/admin/**');
+            await page.waitForURL('**/admin/**');
         }
 
         await page.goto('/admin/products');

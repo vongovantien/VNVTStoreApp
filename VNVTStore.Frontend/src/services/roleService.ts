@@ -9,7 +9,7 @@ export interface CreateRoleRequest {
     permissionCodes: string[];
 }
 
-export interface UpdateRoleRequest extends Partial<CreateRoleRequest> { }
+export type UpdateRoleRequest = Partial<CreateRoleRequest>;
 
 export const roleService = {
     ...createEntityService<Role, CreateRoleRequest, UpdateRoleRequest>({

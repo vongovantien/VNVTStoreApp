@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Promotions & Checkout Flow', () => {
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/');
         await page.context().clearCookies();
         await page.evaluate(() => localStorage.clear());
     });

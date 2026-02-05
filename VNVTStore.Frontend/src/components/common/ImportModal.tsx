@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
-import { Upload, FileSpreadsheet, X, Download } from 'lucide-react';
+import { Upload, FileSpreadsheet, Download } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal'; // Adjust import based on your structure
 import { Button } from '@/components/ui/Button'; // Adjust import
 import { cn } from '@/utils/cn';

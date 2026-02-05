@@ -54,6 +54,7 @@ const ImageLightbox = ({
 
   // Sync internal index when initialIndex changes or lightbox opens
   useEffect(() => {
+    // eslint-disable-next-line
     if (isOpen) setIndex(initialIndex);
   }, [initialIndex, isOpen]);
 
@@ -244,18 +245,12 @@ ImageGallery.displayName = 'ImageGallery';
 export const ProductDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  // Mock attributes
-  const sizes = ['S', 'M', 'L', 'XL'];
-  const colors = ['Black', 'White', 'Blue', 'Red'];
   
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false); // New state
-  const [selectedSize] = useState<string>('M'); // Default
-  const [selectedColor] = useState<string>('Black'); // Default
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'units' | 'variants' | 'images' | 'reviews'>('description');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [reviews, setReviews] = useState<ReviewDto[]>([]);
 
   // Store actions
   const addToCart = useCartStore((state) => state.addItem);
@@ -266,16 +261,6 @@ export const ProductDetailPage = () => {
   // Fetch product from API
   const { data: product, isLoading, isError, error } = useProduct(id || '');
 
-  // Fetch Reviews
-  useEffect(() => {
-      if (id) {
-          reviewService.search({ search: id, searchField: 'productCode' }).then(res => {
-              if (res.success && res.data) {
-                  setReviews(res.data.items);
-              }
-          });
-      }
-  }, [id]);
 
   // Fetch related products (same category)
   const { data: relatedData } = useProducts({
@@ -316,7 +301,7 @@ export const ProductDetailPage = () => {
     if (product && hasFixedPrice) {
         setIsAddingToCart(true);
         try {
-            await addToCart(product, quantity, { size: selectedSize, color: selectedColor });
+            void addToCart(product, quantity);
             success(t('product.addToCartSuccess') || 'Đã thêm vào giỏ hàng');
         } catch (err) {
             console.error(err);
@@ -325,11 +310,15 @@ export const ProductDetailPage = () => {
             setIsAddingToCart(false);
         }
     }
-  }, [product, hasFixedPrice, quantity, addToCart, selectedSize, selectedColor, success, toastError, t]);
+  }, [product, hasFixedPrice, quantity, addToCart, success, toastError, t]);
 
   const handleWishlistToggle = useCallback(() => {
     if (product) {
-      isWishlisted ? removeFromWishlist(product.code) : addToWishlist(product);
+      if (isWishlisted) {
+        removeFromWishlist(product.code);
+      } else {
+        addToWishlist(product);
+      }
     }
   }, [product, isWishlisted, addToWishlist, removeFromWishlist]);
 

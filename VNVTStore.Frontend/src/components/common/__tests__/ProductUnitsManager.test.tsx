@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { ProductUnitsManager, ProductUnitDto } from '../ProductUnitsManager';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,8 +8,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // Mock dependencies
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => {
-        if (key === 'messages.confirmDelete') return `Are you sure you want to delete ${options.name}?`;
+    t: (key: string, options?: Record<string, unknown>) => {
+        if (key === 'messages.confirmDelete') return `Are you sure you want to delete ${options?.name}?`;
         return key;
     },
   }),
@@ -16,10 +17,10 @@ vi.mock('react-i18next', () => ({
 
 // Mock ConfirmDialog and Badge to simplify testing
 vi.mock('@/components/ui', async (importOriginal) => {
-    const actual = await importOriginal<any>();
+    const actual = await importOriginal<Record<string, unknown>>();
     return {
         ...actual,
-        ConfirmDialog: ({ isOpen, onConfirm, message }: any) => {
+        ConfirmDialog: ({ isOpen, onConfirm, message }: { isOpen: boolean; onConfirm: () => void; message: string }) => {
             if (!isOpen) return null;
             return (
                 <div data-testid="confirm-dialog">
@@ -28,14 +29,11 @@ vi.mock('@/components/ui', async (importOriginal) => {
                 </div>
             );
         },
-        Badge: ({ children }: any) => <div data-testid="mock-badge">{children}</div>
+        Badge: ({ children }: { children: React.ReactNode }) => <div data-testid="mock-badge">{children}</div>
     };
 });
 
 describe('ProductUnitsManager Component', () => {
-    const mockOnAdd = vi.fn();
-    const mockOnEdit = vi.fn();
-    const mockOnDelete = vi.fn();
 
     const baseProps = {
         baseUnitName: 'Cái',
@@ -83,8 +81,8 @@ describe('ProductUnitsManager Component', () => {
         
         expect(within(unitRows[0]).getByText(/Hộp/i)).toBeInTheDocument();
         expect(within(unitRows[0]).getByDisplayValue('10')).toBeInTheDocument();
-        expect(within(unitRows[0]).getByText(/x Cái/i)).toBeInTheDocument();
-        expect(within(unitRows[0]).getByDisplayValue('950000')).toBeInTheDocument();
+        expect(within(unitRows[0]).getByText(new RegExp(`× ${baseProps.baseUnitName}`, 'i'))).toBeInTheDocument();
+        expect(within(unitRows[0]).getByDisplayValue('950.000')).toBeInTheDocument();
     });
 
     it('calls onChange when add button is clicked', async () => {

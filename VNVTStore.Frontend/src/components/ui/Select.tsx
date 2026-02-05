@@ -1,4 +1,4 @@
-import React, { memo, forwardRef, useMemo, type SelectHTMLAttributes } from 'react';
+import React, { memo, forwardRef, useMemo, useId, type SelectHTMLAttributes } from 'react';
 import type { ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -64,7 +64,8 @@ export const Select = memo(
       },
       ref
     ) => {
-      const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+      const generatedId = useId();
+      const selectId = id || generatedId;
 
       const selectClasses = useMemo(
         () =>

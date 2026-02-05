@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Star, X, Edit3 } from 'lucide-react';
+import { Star, Edit3 } from 'lucide-react';
 import { Button, Modal } from '@/components/ui';
 import { cn } from '@/utils/cn';
 import { reviewService, type CreateReviewRequest } from '@/services/reviewService';

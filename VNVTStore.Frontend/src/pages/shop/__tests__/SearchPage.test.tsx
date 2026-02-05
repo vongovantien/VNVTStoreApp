@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import '@testing-library/jest-dom';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SearchPage from '../SearchPage';
-import { useProducts, useDebounce } from '@/hooks';
+import { useProducts } from '../../../hooks';
+import { Product } from '../../../types';
 import { useSearchParams } from 'react-router-dom';
-import React from 'react';
 
 // Mocks
 vi.mock('react-i18next', () => ({
@@ -13,7 +14,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('react-router-dom', () => ({
-  Link: ({ children, to }: any) => <a href={to}>{children}</a>,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
   useSearchParams: vi.fn(),
 }));
 
@@ -27,8 +28,8 @@ describe('SearchPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useSearchParams as any).mockReturnValue([new URLSearchParams(), mockSetSearchParams]);
-    (useProducts as any).mockReturnValue({
+    (useSearchParams as Mock).mockReturnValue([new URLSearchParams(), mockSetSearchParams]);
+    (useProducts as Mock).mockReturnValue({
       data: { products: [], totalPages: 0 },
       isLoading: false,
       isError: false,
@@ -46,9 +47,10 @@ describe('SearchPage', () => {
 
   it('displays products when loaded', () => {
     const mockProducts = [
-      { code: 'p1', name: 'Product 1', price: 100, originalPrice: 120, image: '', slug: 'p1' },
-    ];
-    (useProducts as any).mockReturnValue({
+      { code: 'P1', name: 'Product 1', price: 100, imageURL: '', categoryName: 'Cat 1' },
+      { code: 'P2', name: 'Product 2', price: 200, imageURL: '', categoryName: 'Cat 2' }
+    ] as unknown as Product[];
+    (useProducts as Mock).mockReturnValue({
       data: { products: mockProducts, totalPages: 1 },
       isLoading: false,
       isError: false,
@@ -56,11 +58,11 @@ describe('SearchPage', () => {
 
     render(<SearchPage />);
     
-    expect(screen.getByText('Product 1')).toBeDefined();
+    expect(screen.getByText('Product 1')).toBeInTheDocument();
   });
 
   it('displays loading state', () => {
-    (useProducts as any).mockReturnValue({
+    (useProducts as Mock).mockReturnValue({
       data: null,
       isLoading: true,
       isError: false,
@@ -71,11 +73,11 @@ describe('SearchPage', () => {
     // In SearchPage, loading renders skeletons
     // We can check if any skeleton-related classes or structures exist
     // But since skeletons are usually just divs, let's check for lack of results
-    expect(screen.queryByText('Product 1')).toBeNull();
+    expect(screen.queryByText('Product 1')).not.toBeInTheDocument();
   });
 
   it('displays no results message when search returns nothing', () => {
-    (useProducts as any).mockReturnValue({
+    (useProducts as Mock).mockReturnValue({
       data: { products: [], totalPages: 0 },
       isLoading: false,
       isError: false,
@@ -83,11 +85,11 @@ describe('SearchPage', () => {
 
     render(<SearchPage />);
     
-    expect(screen.getByText('common.noResults')).toBeDefined();
+    expect(screen.getByText('common.noResults')).toBeInTheDocument();
   });
 
   it('handles error state', () => {
-    (useProducts as any).mockReturnValue({
+    (useProducts as Mock).mockReturnValue({
       data: null,
       isLoading: false,
       isError: true,
@@ -96,7 +98,7 @@ describe('SearchPage', () => {
 
     render(<SearchPage />);
     
-    expect(screen.getByText('common.errorOccurred')).toBeDefined();
-    expect(screen.getByText('Api Error')).toBeDefined();
+    expect(screen.getByText('common.errorOccurred')).toBeInTheDocument();
+    expect(screen.getByText('Api Error')).toBeInTheDocument();
   });
 });

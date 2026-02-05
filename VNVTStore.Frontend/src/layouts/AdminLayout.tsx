@@ -33,21 +33,19 @@ import {
   Ruler,
   Star,
   Ticket,
-  MessageSquare,
   Shield,
 
   ChevronRight as BreadcrumbSeparator,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { Button, Input, ConfirmDialog } from '@/components/ui';
+import { Button, ConfirmDialog } from '@/components/ui';
 import { ToastContainer } from '@/components/ui/Toast';
 import { useUIStore, useAuthStore } from '@/store';
-import { UserRole } from '@/types';
 
 // Navigation items
 interface NavItem {
   path: string;
-  icon: any;
+  icon: React.ElementType;
   label: string;
   end?: boolean;
 }
@@ -112,10 +110,26 @@ export const AdminLayout = () => {
 
   // Refs for dropdowns
   const langBtnRef = useRef<HTMLButtonElement>(null);
-  const langDropdownRef = useRef<HTMLDivElement>(null);
   const userBtnRef = useRef<HTMLButtonElement>(null);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [langMenuPosition, setLangMenuPosition] = useState({ top: 0, left: 0 });
+  const [userMenuPosition, setUserMenuPosition] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (showLangMenu && langBtnRef.current) {
+      const rect = langBtnRef.current.getBoundingClientRect();
+      setLangMenuPosition({ top: rect.bottom + 8, left: rect.right - 140 });
+    }
+  }, [showLangMenu]);
+
+  useEffect(() => {
+    if (showUserMenu && userBtnRef.current) {
+      const rect = userBtnRef.current.getBoundingClientRect();
+      setUserMenuPosition({ top: rect.bottom + 8, left: rect.right - 200 });
+    }
+  }, [showUserMenu]);
 
   // Ctrl+K keyboard shortcut
   useEffect(() => {
@@ -459,8 +473,8 @@ export const AdminLayout = () => {
                     ref={langDropdownRef}
                     className="fixed bg-primary rounded-lg shadow-xl border border-border p-1 min-w-[140px] z-[9999]"
                     style={{
-                      top: langBtnRef.current ? langBtnRef.current.getBoundingClientRect().bottom + 8 : 0,
-                      left: langBtnRef.current ? langBtnRef.current.getBoundingClientRect().right - 140 : 0,
+                      top: langMenuPosition.top,
+                      left: langMenuPosition.left,
                     }}
                   >
                     <button
@@ -531,8 +545,8 @@ export const AdminLayout = () => {
                     ref={userDropdownRef}
                     className="fixed bg-primary rounded-lg shadow-xl border border-border py-2 min-w-[200px] z-[9999]"
                     style={{
-                      top: userBtnRef.current ? userBtnRef.current.getBoundingClientRect().bottom + 8 : 0,
-                      left: userBtnRef.current ? userBtnRef.current.getBoundingClientRect().right - 200 : 0,
+                      top: userMenuPosition.top,
+                      left: userMenuPosition.left,
                     }}
                   >
                     <div className="px-4 py-2 border-b border-border">

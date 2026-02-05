@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Shield, Info, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Shield, Info } from 'lucide-react';
 import { Button, Input, Textarea, Badge } from '@/components/ui';
-import { permissionService } from '@/services/permissionService';
-import { useQuery } from '@tanstack/react-query';
+import { usePermissions } from '@/hooks';
 import { Permission } from '@/types';
 
 export interface RoleFormData {
@@ -42,10 +41,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
     const selectedPermissionCodes = watch('permissionCodes');
     
     // Fetch all permissions
-    const { data: permissionsResult, isLoading: isPermissionsLoading } = useQuery({
-        queryKey: ['permissions-all'],
-        queryFn: () => permissionService.getAll()
-    });
+    const { data: permissionsResult, isLoading: isPermissionsLoading } = usePermissions();
 
     const permissions = permissionsResult?.data || [];
 
@@ -56,7 +52,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
         return acc;
     }, {} as Record<string, Permission[]>);
 
-    const togglePermission = (code: string) => {
+    const togglePermission = useCallback((code: string) => {
         const current = [...selectedPermissionCodes];
         const index = current.indexOf(code);
         if (index > -1) {
@@ -65,9 +61,9 @@ export const RoleForm: React.FC<RoleFormProps> = ({
             current.push(code);
         }
         setValue('permissionCodes', current);
-    };
+    }, [selectedPermissionCodes, setValue]);
 
-    const toggleModule = (module: string) => {
+    const toggleModule = useCallback((module: string) => {
         const modulePerms = groupedPermissions[module].map(p => p.code);
         const allSelected = modulePerms.every(code => selectedPermissionCodes.includes(code));
         
@@ -82,15 +78,15 @@ export const RoleForm: React.FC<RoleFormProps> = ({
             });
         }
         setValue('permissionCodes', newSelection);
-    };
+    }, [groupedPermissions, selectedPermissionCodes, setValue]);
 
-    const isModuleAllSelected = (module: string) => {
+    const isModuleAllSelected = useCallback((module: string) => {
         return groupedPermissions[module].every(p => selectedPermissionCodes.includes(p.code));
-    };
+    }, [groupedPermissions, selectedPermissionCodes]);
 
-    const isModuleAnySelected = (module: string) => {
+    const isModuleAnySelected = useCallback((module: string) => {
         return groupedPermissions[module].some(p => selectedPermissionCodes.includes(p.code));
-    };
+    }, [groupedPermissions, selectedPermissionCodes]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

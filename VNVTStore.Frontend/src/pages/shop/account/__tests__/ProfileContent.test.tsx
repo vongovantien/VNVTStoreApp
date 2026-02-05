@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import ProfileContent from '../ProfileContent';
 import { userService } from '@/services/userService';
 
@@ -30,7 +30,7 @@ describe('ProfileContent Component', () => {
     vi.clearAllMocks();
     
     // Default mock response for getProfile
-    (userService.getProfile as any).mockResolvedValue({
+    (userService.getProfile as unknown as { mockResolvedValue: (v: unknown) => void }).mockResolvedValue({
       success: true,
       data: {
         fullName: 'Test User',
@@ -45,8 +45,8 @@ describe('ProfileContent Component', () => {
       render(<ProfileContent />);
 
       await waitFor(() => {
-        expect(screen.getByDisplayValue('Test User')).toBeTruthy();
-        expect(screen.getByDisplayValue('test@example.com')).toBeTruthy();
+        expect(screen.getByDisplayValue('Test User')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('test@example.com')).toBeInTheDocument();
       });
     });
 
@@ -86,13 +86,13 @@ describe('ProfileContent Component', () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText('validation.passwordMismatch')).toBeTruthy();
+        expect(screen.getByText('validation.passwordMismatch')).toBeInTheDocument();
         expect(userService.changePassword).not.toHaveBeenCalled();
       });
     });
 
     it('submits change password request when valid', async () => {
-      (userService.changePassword as any).mockResolvedValue({ success: true });
+      (userService.changePassword as unknown as { mockResolvedValue: (v: unknown) => void }).mockResolvedValue({ success: true });
       
       render(<ProfileContent />);
 
@@ -118,7 +118,7 @@ describe('ProfileContent Component', () => {
 
     it('shows error toast when API fails', async () => {
        const mockError = new Error('API Error');
-       (userService.changePassword as any).mockRejectedValue(mockError);
+       vi.mocked(userService.changePassword).mockRejectedValue(mockError);
        render(<ProfileContent />);
        
        const currentPassInput = screen.getByPlaceholderText('common.placeholders.currentPassword');
@@ -141,7 +141,7 @@ describe('ProfileContent Component', () => {
 
     it('disables save button while loading', async () => {
         // Slow response
-        (userService.changePassword as any).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+        (userService.changePassword as unknown as Mock).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
         render(<ProfileContent />);
         
         const currentPassInput = screen.getByPlaceholderText('common.placeholders.currentPassword');
@@ -158,7 +158,7 @@ describe('ProfileContent Component', () => {
         
         await waitFor(() => expect(saveButton).toBeDisabled());
         
-        await waitFor(() => expect(saveButton).not.toBeDisabled());
+        await waitFor(() => expect(saveButton).toBeEnabled());
     });
   });
 
@@ -166,7 +166,7 @@ describe('ProfileContent Component', () => {
       it('validates email format in read-only field (sanity check)', async () => {
           render(<ProfileContent />);
           await waitFor(() => screen.getByDisplayValue('test@example.com'));
-          const emailInput = screen.getByLabelText('Email');
+          const emailInput = screen.getByLabelText('common.fields.email');
           expect(emailInput).toHaveAttribute('readonly');
       });
 
@@ -181,7 +181,7 @@ describe('ProfileContent Component', () => {
           fireEvent.click(saveButton);
           
           await waitFor(() => {
-              expect(screen.getByText('validation.required')).toBeTruthy();
+              expect(screen.getByText('validation.required')).toBeInTheDocument();
           });
       });
   });

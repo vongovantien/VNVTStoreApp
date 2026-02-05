@@ -39,7 +39,7 @@ test.describe('Business Logic Verification', () => {
         const shippingEl = page.locator('.bg-primary').getByText('Phí vận chuyển').locator('..').locator('span').last();
         let shippingText = await shippingEl.innerText();
 
-        let expectedShipping = cartSubtotal >= 500000 ? 0 : 30000;
+        const expectedShipping = cartSubtotal >= 500000 ? 0 : 30000;
 
         if (expectedShipping === 0) {
             // Might say "Miễn phí"

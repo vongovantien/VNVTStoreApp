@@ -9,7 +9,6 @@ import {
   ChevronDown,
   ChevronRight,
   Star,
-  Loader2,
   AlertCircle,
   Search,
 } from 'lucide-react';
@@ -307,14 +306,10 @@ export const ProductsPage = () => {
     // Client-side filtering for Multi-Category (if passed as separate params or single param in URL)
     // Controller logic handles "category" param. 
     // If selectedCategories has content, it overrides categorySlug.
-    if (selectedCategories.length > 0) {
-      // Logic handled by API "category" param which we set in URL?
-      // Wait, selectedCategories updates URL 'category'.
-      // So API receives it.
-      // But we might have latency or mismatch.
-      // Actually, if we trust API, we don't need this.
-      // products = products.filter((p) => selectedCategories.includes(p.categoryId));
-    }
+    // So API receives it.
+    // But we might have latency or mismatch.
+    // Actually, if we trust API, we don't need this.
+    // products = products.filter((p) => selectedCategories.includes(p.categoryId));
 
     // Client-side Brand (Mock Validation)
     if (selectedBrands.length > 0) {
@@ -326,21 +321,21 @@ export const ProductsPage = () => {
 
     if (selectedRating) {
        // Since backend might ignore 'Rating', and data is mocked
-       products = products.filter((p) => p.rating >= selectedRating);
+       products = products.filter((p) => (p.rating || 0) >= selectedRating);
     }
 
     // Client-side sorting for rating/bestseller (not supported by API)
     switch (sortBy) {
       case 'rating':
-        products.sort((a, b) => b.rating - a.rating);
+        products.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'bestseller':
-        products.sort((a, b) => b.reviewCount - a.reviewCount);
+        products.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
         break;
     }
 
     return products;
-  }, [productsData?.products, categorySlug, selectedCategories, selectedBrands, priceRange, priceType, selectedRating, sortBy]);
+  }, [productsData?.products, selectedBrands, selectedRating, sortBy]);
 
   // Handlers
   const handleCategoryToggle = useCallback((id: string) => {

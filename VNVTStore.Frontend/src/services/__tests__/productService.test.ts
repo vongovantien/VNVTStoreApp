@@ -1,5 +1,5 @@
 
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { productService } from '../productService';
 import { apiClient } from '../api';
 
@@ -20,18 +20,18 @@ describe('productService', () => {
         vi.clearAllMocks();
     });
 
-    const mockGet = apiClient.get as Mock;
-    const mockPost = apiClient.post as Mock;
+    const mockGet = vi.mocked(apiClient.get);
+    const mockPost = vi.mocked(apiClient.post);
 
     describe('search', () => {
         it('should call apiClient.post with /products/search', async () => {
             const params = { pageIndex: 1, pageSize: 10 };
-            const mockResponse = { success: true, data: [] };
+            const mockResponse = { success: true, data: [], message: 'Success', statusCode: 200 };
 
             // search uses http.post internally to /search
             // endpoint is /products
             // so url should be /products/search
-            const mockPost = apiClient.post as any;
+            const mockPost = vi.mocked(apiClient.post);
             mockPost.mockResolvedValue(mockResponse);
 
             const result = await productService.search(params);
@@ -45,7 +45,7 @@ describe('productService', () => {
     describe('getByCode', () => {
         it('should call apiClient.get with /products/:code', async () => {
             const code = '123';
-            const mockResponse = { success: true, data: { code: '123' } };
+            const mockResponse = { success: true, data: { code: '123' }, message: 'Success', statusCode: 200 };
             mockGet.mockResolvedValue(mockResponse);
 
             const result = await productService.getByCode(code);
@@ -65,7 +65,7 @@ describe('productService', () => {
                 price: 100,
                 images: ['base64string']
             };
-            const mockResponse = { success: true, data: { code: 'NEW001', ...payload } };
+            const mockResponse = { success: true, data: { code: 'NEW001', ...payload }, message: 'Success', statusCode: 200 };
             mockPost.mockResolvedValue(mockResponse);
 
             const result = await productService.create(payload);

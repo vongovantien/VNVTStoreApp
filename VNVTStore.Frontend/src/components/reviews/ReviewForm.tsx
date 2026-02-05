@@ -29,7 +29,7 @@ const ReviewForm = ({ orderItemCode, productName, productImage, userCode, onSucc
     }
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: CreateReviewRequest) => {
     setIsSubmitting(true);
     try {
       const payload: CreateReviewRequest = {

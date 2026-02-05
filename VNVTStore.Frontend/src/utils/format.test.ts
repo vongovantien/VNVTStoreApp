@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, formatNumber, slugify, getStatusColor, calculateDiscount, formatFileSize, formatRelativeTime } from './format';
+import { formatCurrency, slugify, getStatusColor, calculateDiscount, formatFileSize } from './format';
 
 describe('formatCurrency', () => {
     it('formats positive integers', () => {

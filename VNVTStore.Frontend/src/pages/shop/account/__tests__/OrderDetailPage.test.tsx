@@ -1,8 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
+import { UseQueryResult } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import OrderDetailPage from '../OrderDetailPage';
-import { useOrder } from '@/hooks';
+import { OrderDto } from '@/services/orderService';
+import { useOrder } from '../../../../hooks/useOrders';
 
 // Mock hooks
 vi.mock('@/hooks', () => ({
@@ -55,11 +57,12 @@ describe('OrderDetailPage', () => {
     });
 
     it('renders loading state', () => {
-        (useOrder as any).mockReturnValue({
+        vi.mocked(useOrder).mockReturnValue({
             isLoading: true,
             isError: false,
             data: null,
-        });
+            error: null,
+        } as unknown as UseQueryResult<OrderDto, Error>);
 
         render(
             <MemoryRouter>
@@ -73,12 +76,12 @@ describe('OrderDetailPage', () => {
     });
 
     it('renders error state', () => {
-        (useOrder as any).mockReturnValue({
+        vi.mocked(useOrder).mockReturnValue({
             isLoading: false,
             isError: true,
             error: new Error('Network Error'),
             data: null,
-        });
+        } as unknown as UseQueryResult<OrderDto, Error>);
 
         render(
             <MemoryRouter>
@@ -115,11 +118,12 @@ describe('OrderDetailPage', () => {
             ],
         };
 
-        (useOrder as any).mockReturnValue({
+        vi.mocked(useOrder).mockReturnValue({
             isLoading: false,
             isError: false,
             data: mockOrder,
-        });
+            error: null,
+        } as unknown as UseQueryResult<OrderDto, Error>);
 
         render(
             <MemoryRouter>
@@ -168,11 +172,12 @@ describe('OrderDetailPage', () => {
             totalAmount: 100000,
         };
 
-        (useOrder as any).mockReturnValue({
+        vi.mocked(useOrder).mockReturnValue({
             isLoading: false,
             isError: false,
             data: mockOrder,
-        });
+            error: null,
+        } as unknown as UseQueryResult<OrderDto, Error>);
 
         render(
             <MemoryRouter>

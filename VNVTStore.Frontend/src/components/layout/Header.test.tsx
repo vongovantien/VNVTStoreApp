@@ -44,6 +44,8 @@ vi.mock('@/services/signalrService', () => ({
         startConnection: vi.fn(),
         on: vi.fn(),
         off: vi.fn(),
+        getStatus: vi.fn().mockReturnValue('Disconnected'),
+        setStatusCallback: vi.fn(),
     },
 }));
 

@@ -1,0 +1,655 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]:
+        - strong [ref=e11]: Khuyến mãi cực hot 2026
+        - img [ref=e12]
+        - text: Giảm giá tới 50% cho tất cả sản phẩm.
+      - link "Mua ngay" [ref=e14] [cursor=pointer]:
+        - /url: /shop
+        - text: Mua ngay →
+    - button "Dismiss" [ref=e16] [cursor=pointer]:
+      - generic [ref=e17]: Dismiss
+      - img [ref=e18]
+  - banner [ref=e21]:
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - 'link "Hotline: 1900 123 456" [ref=e25] [cursor=pointer]':
+          - /url: tel:1900123456
+          - img [ref=e26]
+          - generic [ref=e28]: "Hotline: 1900 123 456"
+        - link "Chat Zalo" [ref=e29] [cursor=pointer]:
+          - /url: https://zalo.me
+          - img [ref=e30]
+          - generic [ref=e32]: Chat Zalo
+      - generic [ref=e33]:
+        - link "Tra cứu đơn hàng" [ref=e34] [cursor=pointer]:
+          - /url: /tracking
+        - link "Hỗ trợ" [ref=e35] [cursor=pointer]:
+          - /url: /support
+        - link "Về chúng tôi" [ref=e36] [cursor=pointer]:
+          - /url: /about
+    - generic [ref=e38]:
+      - link "🏠 VNVT Store" [ref=e39] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e40]: 🏠
+        - generic [ref=e41]:
+          - generic [ref=e42]: VNVT
+          - generic [ref=e43]: Store
+      - generic [ref=e45]:
+        - img [ref=e46]
+        - textbox "Tìm kiếm sản phẩm..." [ref=e50]
+        - button "Tìm kiếm" [ref=e51] [cursor=pointer]
+      - generic [ref=e52]:
+        - button "vi" [ref=e54] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e58]: vi
+        - button [ref=e59] [cursor=pointer]:
+          - img [ref=e60]
+        - link [ref=e62] [cursor=pointer]:
+          - /url: /compare
+          - button [ref=e63]:
+            - img [ref=e64]
+        - link [ref=e68] [cursor=pointer]:
+          - /url: /wishlist
+          - button [ref=e69]:
+            - img [ref=e70]
+        - button [ref=e72] [cursor=pointer]:
+          - img [ref=e73]
+        - button [ref=e78] [cursor=pointer]:
+          - img [ref=e79]
+          - img [ref=e82]
+  - navigation [ref=e84]:
+    - generic [ref=e85]:
+      - button "Danh mục sản phẩm" [ref=e87] [cursor=pointer]:
+        - img [ref=e88]
+        - text: Danh mục sản phẩm
+        - img [ref=e89]
+      - generic [ref=e91]:
+        - link "Trang chủ" [ref=e92] [cursor=pointer]:
+          - /url: /
+        - link "Sản phẩm" [ref=e93] [cursor=pointer]:
+          - /url: /products
+        - link "Khuyến mãi" [ref=e94] [cursor=pointer]:
+          - /url: /promotions
+        - link "Tin tức" [ref=e95] [cursor=pointer]:
+          - /url: /news
+        - link "Liên hệ" [ref=e96] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e97]:
+        - generic [ref=e98]: 🔥 HOT
+        - generic [ref=e99]: Miễn phí ship đơn từ 500K
+  - main [ref=e100]:
+    - generic [ref=e101]:
+      - generic [ref=e103]:
+        - link "Trang chủ" [ref=e104] [cursor=pointer]:
+          - /url: /
+        - img [ref=e105]
+        - generic [ref=e107]: Sản phẩm
+      - generic [ref=e109]:
+        - complementary [ref=e111]:
+          - heading "Bộ lọc" [level=3] [ref=e113]:
+            - img [ref=e114]
+            - text: Bộ lọc
+          - generic [ref=e115]:
+            - heading "Danh mục" [level=4] [ref=e116]
+            - generic [ref=e117]:
+              - generic [ref=e120] [cursor=pointer]: Updated Category 1770000624908
+              - generic [ref=e123] [cursor=pointer]: Updated Category 1770000496715
+              - generic [ref=e126] [cursor=pointer]: Updated Category 1770000099817
+              - generic [ref=e129] [cursor=pointer]: Updated Category 1770000070853
+              - generic [ref=e132] [cursor=pointer]: Updated Category 1770000008318
+              - generic [ref=e135] [cursor=pointer]: Updated Category 1769999971461
+              - generic [ref=e138] [cursor=pointer]: Test Category 1769999932390
+              - generic [ref=e141] [cursor=pointer]: Test Category 1769999903020
+              - generic [ref=e144] [cursor=pointer]: Test Category 1769999844907
+              - generic [ref=e147] [cursor=pointer]: Test Category 1769999827941
+              - generic [ref=e150] [cursor=pointer]: Test Category 1769998987116
+              - generic [ref=e153] [cursor=pointer]: Test Category 1769998949550
+              - generic [ref=e156] [cursor=pointer]: Test Category 1769998891552
+              - generic [ref=e159] [cursor=pointer]: Test Category 1769998856090
+              - generic [ref=e162] [cursor=pointer]: Test Category 1769998795785
+              - generic [ref=e165] [cursor=pointer]: Test Category 1769998774033
+              - generic [ref=e168] [cursor=pointer]: Test Category 1769998743654
+              - generic [ref=e171] [cursor=pointer]: General
+          - generic [ref=e172]:
+            - heading "Loại giá" [level=4] [ref=e173]
+            - generic [ref=e174]:
+              - generic [ref=e178] [cursor=pointer]: Chọn giá trị
+              - generic [ref=e181] [cursor=pointer]: Giá cố định
+              - generic [ref=e184] [cursor=pointer]: Liên hệ báo giá
+          - generic [ref=e185]:
+            - heading "Khoảng giá" [level=4] [ref=e186]
+            - generic [ref=e187]:
+              - spinbutton [ref=e188]
+              - generic [ref=e189]: "-"
+              - spinbutton [ref=e190]
+            - generic [ref=e191]:
+              - button "Dưới 1 triệu" [ref=e192] [cursor=pointer]
+              - button "1 - 5 triệu" [ref=e193] [cursor=pointer]
+              - button "5 - 10 triệu" [ref=e194] [cursor=pointer]
+              - button "Trên 10 triệu" [ref=e195] [cursor=pointer]
+          - generic [ref=e196]:
+            - heading "Thương hiệu" [level=4] [ref=e197]
+            - generic [ref=e201] [cursor=pointer]: VNVT
+          - generic [ref=e202]:
+            - heading "Đánh giá" [level=4] [ref=e203]
+            - generic [ref=e204]:
+              - button "trở lên" [ref=e205] [cursor=pointer]:
+                - img [ref=e206]
+                - img [ref=e208]
+                - img [ref=e210]
+                - img [ref=e212]
+                - img [ref=e214]
+                - generic [ref=e216]: trở lên
+              - button "trở lên" [ref=e217] [cursor=pointer]:
+                - img [ref=e218]
+                - img [ref=e220]
+                - img [ref=e222]
+                - img [ref=e224]
+                - img [ref=e226]
+                - generic [ref=e228]: trở lên
+              - button "trở lên" [ref=e229] [cursor=pointer]:
+                - img [ref=e230]
+                - img [ref=e232]
+                - img [ref=e234]
+                - img [ref=e236]
+                - img [ref=e238]
+                - generic [ref=e240]: trở lên
+              - button "trở lên" [ref=e241] [cursor=pointer]:
+                - img [ref=e242]
+                - img [ref=e244]
+                - img [ref=e246]
+                - img [ref=e248]
+                - img [ref=e250]
+                - generic [ref=e252]: trở lên
+              - button "trở lên" [ref=e253] [cursor=pointer]:
+                - img [ref=e254]
+                - img [ref=e256]
+                - img [ref=e258]
+                - img [ref=e260]
+                - img [ref=e262]
+                - generic [ref=e264]: trở lên
+        - generic [ref=e265]:
+          - generic [ref=e266]:
+            - generic [ref=e267]:
+              - button "Ẩn bộ lọc" [ref=e268] [cursor=pointer]:
+                - img [ref=e269]
+                - text: Ẩn bộ lọc
+              - generic [ref=e270]:
+                - img [ref=e271]
+                - textbox "Tìm kiếm" [ref=e274]
+              - generic [ref=e275]: Hiển thị 12 sản phẩm
+            - generic [ref=e276]:
+              - generic [ref=e277]:
+                - generic [ref=e278]: "Sắp xếp:"
+                - combobox [ref=e279] [cursor=pointer]:
+                  - option "Mới nhất" [selected]
+                  - option "Giá thấp đến cao"
+                  - option "Giá cao đến thấp"
+                  - option "Đánh giá cao"
+                  - option "Bán chạy"
+                - img
+              - generic [ref=e280]:
+                - button [ref=e281] [cursor=pointer]:
+                  - img [ref=e282]
+                - button [ref=e284] [cursor=pointer]:
+                  - img [ref=e285]
+          - generic [ref=e286]:
+            - link "Sản phẩm mẫu 100 Mới Thêm vào giỏ General Sản phẩm mẫu 100 (0) 264.500 ₫" [ref=e288] [cursor=pointer]:
+              - /url: /product/afb6e5ee39
+              - generic [ref=e289]:
+                - img "Sản phẩm mẫu 100" [ref=e290]
+                - generic [ref=e293]: Mới
+                - generic [ref=e294]:
+                  - button "Thêm vào yêu thích" [ref=e295]:
+                    - img [ref=e296]
+                  - button "So sánh" [ref=e298]:
+                    - img [ref=e299]
+                  - button "Quick View" [ref=e303]:
+                    - img [ref=e304]
+                - button "Thêm vào giỏ" [ref=e308]:
+                  - img [ref=e309]
+                  - text: Thêm vào giỏ
+              - generic [ref=e313]:
+                - generic [ref=e314]: General
+                - heading "Sản phẩm mẫu 100" [level=3] [ref=e315]
+                - generic [ref=e316]:
+                  - generic [ref=e317]:
+                    - img [ref=e318]
+                    - img [ref=e320]
+                    - img [ref=e322]
+                    - img [ref=e324]
+                    - img [ref=e326]
+                  - generic [ref=e328]: (0)
+                - generic [ref=e332]: 264.500 ₫
+            - link "Sản phẩm mẫu 99 Mới Thêm vào giỏ General Sản phẩm mẫu 99 (0) 3.138.836 ₫" [ref=e334] [cursor=pointer]:
+              - /url: /product/e948be8bf8
+              - generic [ref=e335]:
+                - img "Sản phẩm mẫu 99" [ref=e336]
+                - generic [ref=e339]: Mới
+                - generic [ref=e340]:
+                  - button "Thêm vào yêu thích" [ref=e341]:
+                    - img [ref=e342]
+                  - button "So sánh" [ref=e344]:
+                    - img [ref=e345]
+                  - button "Quick View" [ref=e349]:
+                    - img [ref=e350]
+                - button "Thêm vào giỏ" [ref=e354]:
+                  - img [ref=e355]
+                  - text: Thêm vào giỏ
+              - generic [ref=e359]:
+                - generic [ref=e360]: General
+                - heading "Sản phẩm mẫu 99" [level=3] [ref=e361]
+                - generic [ref=e362]:
+                  - generic [ref=e363]:
+                    - img [ref=e364]
+                    - img [ref=e366]
+                    - img [ref=e368]
+                    - img [ref=e370]
+                    - img [ref=e372]
+                  - generic [ref=e374]: (0)
+                - generic [ref=e378]: 3.138.836 ₫
+            - link "Sản phẩm mẫu 98 Mới Thêm vào giỏ General Sản phẩm mẫu 98 (0) 1.150.006 ₫" [ref=e380] [cursor=pointer]:
+              - /url: /product/ca1cbc126a
+              - generic [ref=e381]:
+                - img "Sản phẩm mẫu 98" [ref=e382]
+                - generic [ref=e385]: Mới
+                - generic [ref=e386]:
+                  - button "Thêm vào yêu thích" [ref=e387]:
+                    - img [ref=e388]
+                  - button "So sánh" [ref=e390]:
+                    - img [ref=e391]
+                  - button "Quick View" [ref=e395]:
+                    - img [ref=e396]
+                - button "Thêm vào giỏ" [ref=e400]:
+                  - img [ref=e401]
+                  - text: Thêm vào giỏ
+              - generic [ref=e405]:
+                - generic [ref=e406]: General
+                - heading "Sản phẩm mẫu 98" [level=3] [ref=e407]
+                - generic [ref=e408]:
+                  - generic [ref=e409]:
+                    - img [ref=e410]
+                    - img [ref=e412]
+                    - img [ref=e414]
+                    - img [ref=e416]
+                    - img [ref=e418]
+                  - generic [ref=e420]: (0)
+                - generic [ref=e424]: 1.150.006 ₫
+            - link "Sản phẩm mẫu 97 Mới Thêm vào giỏ General Sản phẩm mẫu 97 (0) 1.995.238 ₫" [ref=e426] [cursor=pointer]:
+              - /url: /product/8b67ba71d8
+              - generic [ref=e427]:
+                - img "Sản phẩm mẫu 97" [ref=e428]
+                - generic [ref=e431]: Mới
+                - generic [ref=e432]:
+                  - button "Thêm vào yêu thích" [ref=e433]:
+                    - img [ref=e434]
+                  - button "So sánh" [ref=e436]:
+                    - img [ref=e437]
+                  - button "Quick View" [ref=e441]:
+                    - img [ref=e442]
+                - button "Thêm vào giỏ" [ref=e446]:
+                  - img [ref=e447]
+                  - text: Thêm vào giỏ
+              - generic [ref=e451]:
+                - generic [ref=e452]: General
+                - heading "Sản phẩm mẫu 97" [level=3] [ref=e453]
+                - generic [ref=e454]:
+                  - generic [ref=e455]:
+                    - img [ref=e456]
+                    - img [ref=e458]
+                    - img [ref=e460]
+                    - img [ref=e462]
+                    - img [ref=e464]
+                  - generic [ref=e466]: (0)
+                - generic [ref=e470]: 1.995.238 ₫
+            - link "Sản phẩm mẫu 96 Mới Thêm vào giỏ General Sản phẩm mẫu 96 (0) 3.747.574 ₫" [ref=e472] [cursor=pointer]:
+              - /url: /product/22bffa342d
+              - generic [ref=e473]:
+                - img "Sản phẩm mẫu 96" [ref=e474]
+                - generic [ref=e477]: Mới
+                - generic [ref=e478]:
+                  - button "Thêm vào yêu thích" [ref=e479]:
+                    - img [ref=e480]
+                  - button "So sánh" [ref=e482]:
+                    - img [ref=e483]
+                  - button "Quick View" [ref=e487]:
+                    - img [ref=e488]
+                - button "Thêm vào giỏ" [ref=e492]:
+                  - img [ref=e493]
+                  - text: Thêm vào giỏ
+              - generic [ref=e497]:
+                - generic [ref=e498]: General
+                - heading "Sản phẩm mẫu 96" [level=3] [ref=e499]
+                - generic [ref=e500]:
+                  - generic [ref=e501]:
+                    - img [ref=e502]
+                    - img [ref=e504]
+                    - img [ref=e506]
+                    - img [ref=e508]
+                    - img [ref=e510]
+                  - generic [ref=e512]: (0)
+                - generic [ref=e516]: 3.747.574 ₫
+            - link "Sản phẩm mẫu 95 Mới Thêm vào giỏ General Sản phẩm mẫu 95 (0) 726.565 ₫" [ref=e518] [cursor=pointer]:
+              - /url: /product/a8b8f7d8fb
+              - generic [ref=e519]:
+                - img "Sản phẩm mẫu 95" [ref=e520]
+                - generic [ref=e523]: Mới
+                - generic [ref=e524]:
+                  - button "Thêm vào yêu thích" [ref=e525]:
+                    - img [ref=e526]
+                  - button "So sánh" [ref=e528]:
+                    - img [ref=e529]
+                  - button "Quick View" [ref=e533]:
+                    - img [ref=e534]
+                - button "Thêm vào giỏ" [ref=e538]:
+                  - img [ref=e539]
+                  - text: Thêm vào giỏ
+              - generic [ref=e543]:
+                - generic [ref=e544]: General
+                - heading "Sản phẩm mẫu 95" [level=3] [ref=e545]
+                - generic [ref=e546]:
+                  - generic [ref=e547]:
+                    - img [ref=e548]
+                    - img [ref=e550]
+                    - img [ref=e552]
+                    - img [ref=e554]
+                    - img [ref=e556]
+                  - generic [ref=e558]: (0)
+                - generic [ref=e562]: 726.565 ₫
+            - link "Sản phẩm mẫu 94 Mới Thêm vào giỏ General Sản phẩm mẫu 94 (0) 856.265 ₫" [ref=e564] [cursor=pointer]:
+              - /url: /product/7befed2fc3
+              - generic [ref=e565]:
+                - img "Sản phẩm mẫu 94" [ref=e566]
+                - generic [ref=e569]: Mới
+                - generic [ref=e570]:
+                  - button "Thêm vào yêu thích" [ref=e571]:
+                    - img [ref=e572]
+                  - button "So sánh" [ref=e574]:
+                    - img [ref=e575]
+                  - button "Quick View" [ref=e579]:
+                    - img [ref=e580]
+                - button "Thêm vào giỏ" [ref=e584]:
+                  - img [ref=e585]
+                  - text: Thêm vào giỏ
+              - generic [ref=e589]:
+                - generic [ref=e590]: General
+                - heading "Sản phẩm mẫu 94" [level=3] [ref=e591]
+                - generic [ref=e592]:
+                  - generic [ref=e593]:
+                    - img [ref=e594]
+                    - img [ref=e596]
+                    - img [ref=e598]
+                    - img [ref=e600]
+                    - img [ref=e602]
+                  - generic [ref=e604]: (0)
+                - generic [ref=e608]: 856.265 ₫
+            - link "Sản phẩm mẫu 93 Mới Thêm vào giỏ General Sản phẩm mẫu 93 (0) 2.094.590 ₫" [ref=e610] [cursor=pointer]:
+              - /url: /product/1e9fd981ec
+              - generic [ref=e611]:
+                - img "Sản phẩm mẫu 93" [ref=e612]
+                - generic [ref=e615]: Mới
+                - generic [ref=e616]:
+                  - button "Thêm vào yêu thích" [ref=e617]:
+                    - img [ref=e618]
+                  - button "So sánh" [ref=e620]:
+                    - img [ref=e621]
+                  - button "Quick View" [ref=e625]:
+                    - img [ref=e626]
+                - button "Thêm vào giỏ" [ref=e630]:
+                  - img [ref=e631]
+                  - text: Thêm vào giỏ
+              - generic [ref=e635]:
+                - generic [ref=e636]: General
+                - heading "Sản phẩm mẫu 93" [level=3] [ref=e637]
+                - generic [ref=e638]:
+                  - generic [ref=e639]:
+                    - img [ref=e640]
+                    - img [ref=e642]
+                    - img [ref=e644]
+                    - img [ref=e646]
+                    - img [ref=e648]
+                  - generic [ref=e650]: (0)
+                - generic [ref=e654]: 2.094.590 ₫
+            - link "Sản phẩm mẫu 92 Mới Thêm vào giỏ General Sản phẩm mẫu 92 (0) 2.633.579 ₫" [ref=e656] [cursor=pointer]:
+              - /url: /product/c64f59749c
+              - generic [ref=e657]:
+                - img "Sản phẩm mẫu 92" [ref=e658]
+                - generic [ref=e661]: Mới
+                - generic [ref=e662]:
+                  - button "Thêm vào yêu thích" [ref=e663]:
+                    - img [ref=e664]
+                  - button "So sánh" [ref=e666]:
+                    - img [ref=e667]
+                  - button "Quick View" [ref=e671]:
+                    - img [ref=e672]
+                - button "Thêm vào giỏ" [ref=e676]:
+                  - img [ref=e677]
+                  - text: Thêm vào giỏ
+              - generic [ref=e681]:
+                - generic [ref=e682]: General
+                - heading "Sản phẩm mẫu 92" [level=3] [ref=e683]
+                - generic [ref=e684]:
+                  - generic [ref=e685]:
+                    - img [ref=e686]
+                    - img [ref=e688]
+                    - img [ref=e690]
+                    - img [ref=e692]
+                    - img [ref=e694]
+                  - generic [ref=e696]: (0)
+                - generic [ref=e700]: 2.633.579 ₫
+            - link "Sản phẩm mẫu 91 Mới Thêm vào giỏ General Sản phẩm mẫu 91 (0) 255.064 ₫" [ref=e702] [cursor=pointer]:
+              - /url: /product/012bc15340
+              - generic [ref=e703]:
+                - img "Sản phẩm mẫu 91" [ref=e704]
+                - generic [ref=e707]: Mới
+                - generic [ref=e708]:
+                  - button "Thêm vào yêu thích" [ref=e709]:
+                    - img [ref=e710]
+                  - button "So sánh" [ref=e712]:
+                    - img [ref=e713]
+                  - button "Quick View" [ref=e717]:
+                    - img [ref=e718]
+                - button "Thêm vào giỏ" [ref=e722]:
+                  - img [ref=e723]
+                  - text: Thêm vào giỏ
+              - generic [ref=e727]:
+                - generic [ref=e728]: General
+                - heading "Sản phẩm mẫu 91" [level=3] [ref=e729]
+                - generic [ref=e730]:
+                  - generic [ref=e731]:
+                    - img [ref=e732]
+                    - img [ref=e734]
+                    - img [ref=e736]
+                    - img [ref=e738]
+                    - img [ref=e740]
+                  - generic [ref=e742]: (0)
+                - generic [ref=e746]: 255.064 ₫
+            - link "Sản phẩm mẫu 90 Mới Thêm vào giỏ General Sản phẩm mẫu 90 (0) 3.420.881 ₫" [ref=e748] [cursor=pointer]:
+              - /url: /product/664ed0905e
+              - generic [ref=e749]:
+                - img "Sản phẩm mẫu 90" [ref=e750]
+                - generic [ref=e753]: Mới
+                - generic [ref=e754]:
+                  - button "Thêm vào yêu thích" [ref=e755]:
+                    - img [ref=e756]
+                  - button "So sánh" [ref=e758]:
+                    - img [ref=e759]
+                  - button "Quick View" [ref=e763]:
+                    - img [ref=e764]
+                - button "Thêm vào giỏ" [ref=e768]:
+                  - img [ref=e769]
+                  - text: Thêm vào giỏ
+              - generic [ref=e773]:
+                - generic [ref=e774]: General
+                - heading "Sản phẩm mẫu 90" [level=3] [ref=e775]
+                - generic [ref=e776]:
+                  - generic [ref=e777]:
+                    - img [ref=e778]
+                    - img [ref=e780]
+                    - img [ref=e782]
+                    - img [ref=e784]
+                    - img [ref=e786]
+                  - generic [ref=e788]: (0)
+                - generic [ref=e792]: 3.420.881 ₫
+            - link "Sản phẩm mẫu 89 Mới Thêm vào giỏ General Sản phẩm mẫu 89 (0) 123.778 ₫" [ref=e794] [cursor=pointer]:
+              - /url: /product/945815ed97
+              - generic [ref=e795]:
+                - img "Sản phẩm mẫu 89" [ref=e796]
+                - generic [ref=e799]: Mới
+                - generic [ref=e800]:
+                  - button "Thêm vào yêu thích" [ref=e801]:
+                    - img [ref=e802]
+                  - button "So sánh" [ref=e804]:
+                    - img [ref=e805]
+                  - button "Quick View" [ref=e809]:
+                    - img [ref=e810]
+                - button "Thêm vào giỏ" [ref=e814]:
+                  - img [ref=e815]
+                  - text: Thêm vào giỏ
+              - generic [ref=e819]:
+                - generic [ref=e820]: General
+                - heading "Sản phẩm mẫu 89" [level=3] [ref=e821]
+                - generic [ref=e822]:
+                  - generic [ref=e823]:
+                    - img [ref=e824]
+                    - img [ref=e826]
+                    - img [ref=e828]
+                    - img [ref=e830]
+                    - img [ref=e832]
+                  - generic [ref=e834]: (0)
+                - generic [ref=e838]: 123.778 ₫
+          - generic [ref=e839]:
+            - button "‹" [disabled] [ref=e840] [cursor=pointer]
+            - button "1" [ref=e841] [cursor=pointer]
+            - button "2" [ref=e842] [cursor=pointer]
+            - button "3" [ref=e843] [cursor=pointer]
+            - button "4" [ref=e844] [cursor=pointer]
+            - button "5" [ref=e845] [cursor=pointer]
+            - generic [ref=e846]: ...
+            - button "9" [ref=e847] [cursor=pointer]
+            - button "›" [ref=e848] [cursor=pointer]
+  - contentinfo [ref=e849]:
+    - generic [ref=e852]:
+      - generic [ref=e853]:
+        - img [ref=e855]
+        - generic [ref=e860]:
+          - heading "Miễn phí vận chuyển" [level=4] [ref=e861]
+          - paragraph [ref=e862]: Đơn hàng từ 500K
+      - generic [ref=e863]:
+        - img [ref=e865]
+        - generic [ref=e867]:
+          - heading "Bảo hành chính hãng" [level=4] [ref=e868]
+          - paragraph [ref=e869]: 12-24 tháng
+      - generic [ref=e870]:
+        - img [ref=e872]
+        - generic [ref=e874]:
+          - heading "Đổi trả dễ dàng" [level=4] [ref=e875]
+          - paragraph [ref=e876]: Trong vòng 7 ngày
+      - generic [ref=e877]:
+        - img [ref=e879]
+        - generic [ref=e881]:
+          - heading "Hỗ trợ 24/7" [level=4] [ref=e882]
+          - paragraph [ref=e883]: Tư vấn nhiệt tình
+    - generic [ref=e886]:
+      - generic [ref=e887]:
+        - link "🏠 VNVT Store" [ref=e888] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e889]: 🏠
+          - generic [ref=e890]:
+            - generic [ref=e891]: VNVT
+            - generic [ref=e892]: Store
+        - paragraph [ref=e893]: Cửa hàng đồ gia dụng cao cấp - Chất lượng tạo nên sự khác biệt
+        - generic [ref=e894]:
+          - generic [ref=e895]:
+            - img [ref=e896]
+            - generic [ref=e899]: 123 Nguyễn Huệ, Q.1, TP.HCM
+          - generic [ref=e900]:
+            - img [ref=e901]
+            - generic [ref=e903]: 1900 123 456
+          - generic [ref=e904]:
+            - img [ref=e905]
+            - generic [ref=e908]: contact@vnvtstore.com
+        - generic [ref=e909]:
+          - link [ref=e910] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e911]
+          - link [ref=e913] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e914]
+          - link [ref=e917] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e918]
+          - link "Zalo" [ref=e921] [cursor=pointer]:
+            - /url: https://zalo.me
+            - generic [ref=e922]: Zalo
+      - generic [ref=e923]:
+        - heading "Về VNVT Store" [level=3] [ref=e924]: Về VNVT Store
+        - list [ref=e926]:
+          - listitem [ref=e927]:
+            - link "Về chúng tôi" [ref=e928] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=e929]:
+            - link "Tin tức" [ref=e930] [cursor=pointer]:
+              - /url: /news
+          - listitem [ref=e931]:
+            - link "Khuyến mãi" [ref=e932] [cursor=pointer]:
+              - /url: /promotions
+          - listitem [ref=e933]:
+            - link "Liên hệ" [ref=e934] [cursor=pointer]:
+              - /url: /contact
+      - generic [ref=e935]:
+        - heading "Hỗ trợ khách hàng" [level=3] [ref=e936]: Hỗ trợ khách hàng
+        - list [ref=e938]:
+          - listitem [ref=e939]:
+            - link "Tra cứu đơn hàng" [ref=e940] [cursor=pointer]:
+              - /url: /tracking
+          - listitem [ref=e941]:
+            - link "Hỗ trợ" [ref=e942] [cursor=pointer]:
+              - /url: /support
+          - listitem [ref=e943]:
+            - link "Sản phẩm" [ref=e944] [cursor=pointer]:
+              - /url: /products
+          - listitem [ref=e945]:
+            - link "FAQ" [ref=e946] [cursor=pointer]:
+              - /url: /support
+      - generic [ref=e947]:
+        - heading "Đăng ký nhận tin" [level=3] [ref=e948]: Đăng ký nhận tin
+        - paragraph [ref=e950]: Nhận thông tin khuyến mãi mới nhất
+        - generic [ref=e951]:
+          - textbox "Nhập email của bạn" [ref=e952]
+          - button [ref=e953] [cursor=pointer]:
+            - img [ref=e954]
+        - generic [ref=e957]:
+          - heading "Phương thức thanh toán" [level=4] [ref=e958]
+          - generic [ref=e959]:
+            - generic "Visa" [ref=e960]:
+              - img [ref=e961]
+              - generic [ref=e963]: Visa
+            - generic "MC" [ref=e964]:
+              - img [ref=e965]
+              - generic [ref=e967]: MC
+            - generic "ZaloPay" [ref=e968]:
+              - img [ref=e969]
+              - generic [ref=e972]: ZaloPay
+            - generic "MoMo" [ref=e973]:
+              - img [ref=e974]
+              - generic [ref=e977]: MoMo
+            - generic "VNPAY" [ref=e978]:
+              - img [ref=e979]
+              - generic [ref=e982]: VNPAY
+    - generic [ref=e984]:
+      - paragraph [ref=e985]: © 2026 VNVT Store. Tất cả quyền được bảo lưu.
+      - generic [ref=e986]:
+        - button "�" [ref=e987] [cursor=pointer]
+        - link "Về chúng tôi" [ref=e988] [cursor=pointer]:
+          - /url: /about
+        - link "Hỗ trợ" [ref=e989] [cursor=pointer]:
+          - /url: /support
+  - button [ref=e990] [cursor=pointer]:
+    - img [ref=e991]
+```

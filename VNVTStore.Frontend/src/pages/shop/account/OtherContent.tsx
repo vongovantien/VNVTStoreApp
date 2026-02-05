@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Switch, Button } from '@/components/ui';
-import { Bell, Moon, Sun, Globe, Smartphone, Mail } from 'lucide-react';
+import { Bell, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/store';
 
@@ -24,29 +24,39 @@ export const NotificationsContent = () => {
     );
 };
 
+interface SettingsState {
+    emailNotif: boolean;
+    orderNotif: boolean;
+    promoNotif: boolean;
+    darkMode: boolean;
+    language: string;
+}
+
 export const SettingsContent = () => {
     const { t, i18n } = useTranslation();
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     
     // Preferences State
-    const [settings, setSettings] = useState({
-        emailNotif: true,
-        orderNotif: true,
-        promoNotif: true,
-        darkMode: false,
-        language: 'vi'
-    });
-
-    // Load from LocalStorage on mount
-    useEffect(() => {
+    const [settings, setSettings] = useState<SettingsState>(() => {
+        const defaults = {
+            emailNotif: true,
+            orderNotif: true,
+            promoNotif: true,
+            darkMode: false,
+            language: 'vi'
+        };
         const saved = localStorage.getItem('user_settings');
         if (saved) {
             try {
-                setSettings({ ...settings, ...JSON.parse(saved) });
-            } catch (e) { console.error('Failed to parse settings', e); }
+                return { ...defaults, ...JSON.parse(saved) };
+            } catch (e) { 
+                console.error('Failed to parse settings', e); 
+                return defaults;
+            }
         }
-    }, []);
+        return defaults;
+    });
 
     const handleSave = () => {
         setLoading(true);

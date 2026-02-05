@@ -1,0 +1,1167 @@
+﻿
+> vnvt-react-app@0.0.0 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.17 [39m[90mD:/VNVTStoreApp/VNVTStore.Frontend[39m
+
+node.exe : [90mstderr[2m | 
+src/services/__tests__/signalrService.test.ts[2m > 
+[22m[2msignalRService[2m > [22m[2mshould start 
+connection correctly
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([90mst 
+   derr[2m...ction correctly:String) [], RemoteExc  
+  eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[22m[39m[vitest] The vi.fn() mock did not use 
+'function' or 'class' in its implementation, see 
+https://vitest.dev/api/vi#vi-spyon for examples.
+
+ [31mΓ¥»[39m [30m[42m unit [49m[39m src/services/__tests__/signalrService.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 22[2mms[22m[39m
+[31m     [31m├ù[31m should start connection correctly[39m[32m 13[2mms[22m[39m
+     [32mΓ£ô[39m should register and notify listeners[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should unregister listeners[32m 1[2mms[22m[39m
+ [31mΓ¥»[39m [30m[42m unit [49m[39m src/services/__tests__/promotionService.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 28[2mms[22m[39m
+       [32mΓ£ô[39m should call direct API first[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should fallback to search if direct call fails[39m[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should create promotion with correct wrapper[32m 1[2mms[22m[39m
+[31m       [31m├ù[31m should update promotion with correct wrapper[39m[32m 4[2mms[22m[39m
+ [31mΓ¥»[39m [30m[42m unit [49m[39m src/components/ui/__tests__/Button.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 1340[2mms[22m[39m
+[31m     [31m├ù[31m renders correctly with default props[39m[33m 868[2mms[22m[39m
+[31m     [31m├ù[31m renders different variants correctly[39m[32m 269[2mms[22m[39m
+     [32mΓ£ô[39m handles click events[32m 67[2mms[22m[39m
+     [32mΓ£ô[39m shows loading state[32m 94[2mms[22m[39m
+     [32mΓ£ô[39m handles disabled state[32m 38[2mms[22m[39m
+[90mstderr[2m | 
+src/components/ui/Pagination.stories.tsx[2m > 
+[22m[2mDefault
+[22m[39mreact-i18next:: useTranslation: You will 
+need to pass in an i18next instance by using 
+initReactI18next {
+  "code": "NO_I18NEXT_INSTANCE",
+}
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/stories/Page.stories.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1892[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Logged Out [33m 1359[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Logged In [33m 527[2mms[22m[39m
+[90mstderr[2m | 
+src/components/ui/Input.stories.tsx[2m > 
+[22m[2mWith Error
+[22m[39mYou provided a `value` prop to a form 
+field without an `onChange` handler. This will 
+render a read-only field. If the field should be 
+mutable use `defaultValue`. Otherwise, set either 
+`onChange` or `readOnly`.
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Button.stories.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 2200[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Primary [33m 863[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Secondary [33m 312[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Outline [33m 396[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Loading [33m 328[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Input.stories.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 2468[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 960[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Filled [33m 379[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Flushed [33m 485[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m With Error [33m 337[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Disabled [33m 301[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Skeleton.stories.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 2150[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 902[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Circle [33m 302[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Pagination.stories.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 2744[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 1441[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Loading [33m 473[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Many Pages [33m 406[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Single Page [33m 419[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Select.stories.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 2840[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 1086[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m With Label [33m 394[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m With Helper Text [33m 395[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m With Error [33m 314[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m With Icon [33m 458[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Badge.stories.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 4007[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 890[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Success [33m 401[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Warning [33m 375[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Error [33m 439[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/stories/Header.stories.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 387[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Logged In [32m 300[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/stories/Button.stories.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 449[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Card.stories.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 625[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 370[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/Modal.stories.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 564[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 418[2mms[22m[39m
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/ui/ConfirmDialog.stories.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 593[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 317[2mms[22m[39m
+[90mstderr[2m | 
+src/components/common/DataTable.stories.tsx[2m > 
+[22m[2mDefault
+[22m[39mreact-i18next:: useTranslation: You will 
+need to pass in an i18next instance by using 
+initReactI18next {
+  "code": "NO_I18NEXT_INSTANCE",
+}
+ [32mΓ£ô[39m [30m[45m storybook (chromium) [49m[39m src/components/common/DataTable.stories.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1020[2mms[22m[39m
+   [33m[2mΓ£ô[22m[39m Default [33m 515[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/common/__tests__/ImportModal.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m[33m 2338[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders correctly when open [33m 555[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m closes when close button is clicked [33m 1412[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m handles file selection via input [33m 364[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/ui/__tests__/Select.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1917[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders correctly [33m 1415[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m handles change [33m 475[2mms[22m[39m
+ [31mΓ¥»[39m [30m[42m unit [49m[39m src/components/layout/Header.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 185[2mms[22m[39m
+[31m     [31m├ù[31m renders language switcher correctly[39m[32m 169[2mms[22m[39m
+[31m     [31m├ù[31m opens language menu on click[39m[32m 11[2mms[22m[39m
+[90mstdout[2m | src/pages/shop/account/__tests__/ProfileContent.test.tsx[2m > [22m[2mProfileContent Component[2m > [22m[2mChange Password[2m > [22m[2msubmits change password request when valid
+[22m[39m[DEBUG] Form submitted with: {
+  currentPassword: [32m'***'[39m,
+  newPassword: [32m'***'[39m,
+  confirmPassword: [32m'NewPass1!'[39m
+}
+[DEBUG] Calling userService.changePassword...
+
+[90mstdout[2m | src/pages/shop/account/__tests__/ProfileContent.test.tsx[2m > [22m[2mProfileContent Component[2m > [22m[2mChange Password[2m > [22m[2msubmits change password request when valid
+[22m[39m[DEBUG] API Response: { success: [33mtrue[39m }
+
+[90mstdout[2m | src/pages/shop/account/__tests__/ProfileContent.test.tsx[2m > [22m[2mProfileContent Component[2m > [22m[2mChange Password[2m > [22m[2mshows error toast when API fails
+[22m[39m[DEBUG] Form submitted with: {
+  currentPassword: [32m'***'[39m,
+  newPassword: [32m'***'[39m,
+  confirmPassword: [32m'NewPass1!'[39m
+}
+[DEBUG] Calling userService.changePassword...
+
+[90mstderr[2m | src/pages/shop/account/__tests__/Pr
+ofileContent.test.tsx[2m > [22m[2mProfileContent 
+Component[2m > [22m[2mChange Password[2m > 
+[22m[2mshows error toast when API fails
+[22m[39mChange password error: Error: API Error
+    at D:/VNVTStoreApp/VNVTStore.Frontend/src/pages/s
+hop/account/__tests__/ProfileContent.test.tsx:120:26
+    at [90mfile:///D:/VNVTStoreApp/VNVTStore.Fronten
+d/[39mnode_modules/[4m@vitest/runner[24m/dist/inde
+x.js:145:11
+    at [90mfile:///D:/VNVTStoreApp/VNVTStore.Fronten
+d/[39mnode_modules/[4m@vitest/runner[24m/dist/inde
+x.js:915:26
+    at [90mfile:///D:/VNVTStoreApp/VNVTStore.Fronten
+d/[39mnode_modules/[4m@vitest/runner[24m/dist/inde
+x.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///D:/VNVTStoreApp/V
+NVTStore.Frontend/[39mnode_modules/[4m@vitest/runne
+r[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///D:/VNVTStoreApp/VNVTStore.Fronten
+d/[39mnode_modules/[4m@vitest/runner[24m/dist/inde
+x.js:1653:37
+    at Traces.$ [90m(file:///D:/VNVTStoreApp/VNVTSto
+re.Frontend/[39mnode_modules/[4mvitest[24m/dist/ch
+unks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///D:/VNVTStoreApp/VNVTStore.
+Frontend/[39mnode_modules/[4mvitest[24m/dist/chunk
+s/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///D:/VNVTStoreApp/VNVTStor
+e.Frontend/[39mnode_modules/[4m@vitest/runner[24m/
+dist/index.js:1653:12[90m)[39m
+
+[90mstdout[2m | src/pages/shop/account/__tests__/ProfileContent.test.tsx[2m > [22m[2mProfileContent Component[2m > [22m[2mChange Password[2m > [22m[2mdisables save button while loading
+[22m[39m[DEBUG] Form submitted with: {
+  currentPassword: [32m'***'[39m,
+  newPassword: [32m'***'[39m,
+  confirmPassword: [32m'NewPass1!'[39m
+}
+[DEBUG] Calling userService.changePassword...
+
+[90mstdout[2m | src/pages/shop/account/__tests__/ProfileContent.test.tsx[2m > [22m[2mProfileContent Component[2m > [22m[2mChange Password[2m > [22m[2mdisables save button while loading
+[22m[39m[DEBUG] API Response: [90mundefined[39m
+
+ [31mΓ¥»[39m [30m[42m unit [49m[39m src/components/common/__tests__/ProductUnitsManager.test.tsx [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1715[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders base unit correctly [33m 493[2mms[22m[39m
+[31m     [31m├ù[31m renders additional units[39m[32m 146[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onChange when add button is clicked [33m 595[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onChange when delete is clicked [33m 474[2mms[22m[39m
+ [31mΓ¥»[39m [30m[42m unit [49m[39m src/pages/shop/account/__tests__/ProfileContent.test.tsx [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 2183[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m renders profile form with user data [33m 484[2mms[22m[39m
+       [32mΓ£ô[39m submits profile update successfully[32m 299[2mms[22m[39m
+       [32mΓ£ô[39m shows validation error for mismatched passwords[32m 243[2mms[22m[39m
+       [32mΓ£ô[39m submits change password request when valid[32m 113[2mms[22m[39m
+       [32mΓ£ô[39m shows error toast when API fails[32m 202[2mms[22m[39m
+       [32mΓ£ô[39m disables save button while loading[32m 264[2mms[22m[39m
+[31m       [31m├ù[31m validates email format in read-only field (sanity check)[39m[32m 224[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m requires full name [33m 345[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/pages/shop/__tests__/ContactPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1934[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders contact form fields [33m 606[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m submits form when all fields are valid [33m 1133[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/ui/__tests__/Input.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1368[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m handles onChange [33m 1063[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/ui/__tests__/Modal.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1069[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onClose when close button is clicked [33m 830[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/ui/Button.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 797[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders correctly [33m 701[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/pages/shop/account/__tests__/OrderDetailPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 617[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders order details correctly (Success State) [33m 308[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/components/common/Image.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 747[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders correctly with valid src [33m 594[2mms[22m[39m
+ [31mΓ¥»[39m [30m[42m unit [49m[39m src/pages/admin/forms/__tests__/ProductForm.test.tsx [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 6123[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should render form with all required fields [33m 818[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should render with default values for new product [33m 414[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should load and display categories in dropdown [33m 385[2mms[22m[39m
+       [32mΓ£ô[39m should load and display suppliers in dropdown[32m 229[2mms[22m[39m
+       [32mΓ£ô[39m should load and display units in dropdown[32m 260[2mms[22m[39m
+[31m       [31m├ù[31m should call onSubmit when form is valid and submitted[39m[33m 3052[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should call onCancel when cancel button is clicked [33m 682[2mms[22m[39m
+       [32mΓ£ô[39m should populate form with initial data when editing[32m 277[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/pages/shop/__tests__/SearchPage.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 948[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders search input and updates params on change [33m 347[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays products when loaded [33m 389[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/hooks/__tests__/useRoles.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 530[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should fetch roles with params [33m 309[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/store/__tests__/useCartStore.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 90[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/pages/shop/__tests__/VerifyOrderPage.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 299[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/hooks/__tests__/usePagination.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/hooks/__tests__/useEntityManager.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 260[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/hooks/__tests__/useDataTable.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 185[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/hooks/__tests__/useUtilityHooks.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 185[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/utils/format.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+[90mstdout[2m | src/services/uploadService.test.ts[2m > [22m[2muploadService[2m > [22m[2mshould upload file and prepend base URL to relative path
+[22m[39m[Upload] Uploaded: http://test-api.com/uploads/test.png
+
+[90mstdout[2m | src/services/uploadService.test.ts[2m > [22m[2muploadService[2m > [22m[2mshould handle API URL without v1 suffix correctly
+[22m[39m[Upload] Uploaded: http://other-api.com/uploads/image.jpg
+
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/services/uploadService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/utils/__tests__/schemas.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+[90mstdout[2m | src/services/__tests__/cartService.test.ts[2m > [22m[2mcartService[2m > [22m[2maddToCart[2m > [22m[2mshould call apiClient.post with correct endpoint for Add
+[22m[39mSending AddToCart request to /carts/items { productCode: [32m'P1'[39m, quantity: [33m1[39m }
+
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/services/__tests__/cartService.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/utils/export.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/services/__tests__/authService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/services/__tests__/orderService.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32mΓ£ô[39m [30m[42m unit [49m[39m src/services/__tests__/productService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m[1m[41m Failed Tests 
+10 [49m[22m[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/components/layout/Header.test.tsx[2m > 
+[22mHeader Component[2m > [22mrenders language 
+switcher correctly
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/components/layout/Header.test.tsx[2m > 
+[22mHeader Component[2m > [22mopens language menu 
+on click
+[31m[1mTypeError[22m: 
+__vite_ssr_import_1__.signalRService.getStatus is 
+not a function[39m
+[36m [2mΓ¥»[22m useSignalR 
+src/hooks/useSignalR.ts:[2m5:57[22m[39m
+    [90m  3| [39m
+    [90m  4| [39m[35mexport[39m [35mconst[39m 
+useSignalR [33m=[39m () [33m=>[39m {
+    [90m  5| [39m    [35mconst[39m 
+[status[33m,[39m setStatus] [33m=[39m [34museSta
+te[39m(signalRService[33m.[39m[34mgetStatus[39m(
+))[33m;[39m
+    [90m   | [39m                                  
+                      [31m^[39m
+    [90m  6| [39m
+    [90m  7| [39m    [34museEffect[39m(() 
+[33m=>[39m {
+[90m [2mΓ¥»[22m Header 
+src/components/layout/Header.tsx:[2m76:54[22m[39m
+[90m [2mΓ¥»[22m Object.react_stack_bottom_frame no
+de_modules/react-dom/cjs/react-dom-client.development
+.js:[2m25904:20[22m[39m
+[90m [2mΓ¥»[22m renderWithHooks node_modules/react
+-dom/cjs/react-dom-client.development.js:[2m7662:22
+[22m[39m
+[90m [2mΓ¥»[22m updateFunctionComponent node_modul
+es/react-dom/cjs/react-dom-client.development.js:[2m
+10166:19[22m[39m
+[90m [2mΓ¥»[22m updateSimpleMemoComponent node_mod
+ules/react-dom/cjs/react-dom-client.development.js:[
+2m9830:14[22m[39m
+[90m [2mΓ¥»[22m updateMemoComponent node_modules/r
+eact-dom/cjs/react-dom-client.development.js:[2m9763
+:13[22m[39m
+[90m [2mΓ¥»[22m beginWork node_modules/react-dom/c
+js/react-dom-client.development.js:[2m12204:18[22m
+[39m
+[90m [2mΓ¥»[22m runWithFiberInDEV node_modules/rea
+ct-dom/cjs/react-dom-client.development.js:[2m874:13
+[22m[39m
+[90m [2mΓ¥»[22m performUnitOfWork node_modules/rea
+ct-dom/cjs/react-dom-client.development.js:[2m17641:
+22[22m[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/services/__tests__/promotionService.test.ts[2m 
+> [22mpromotionService[2m > [22mgetByCode[2m > 
+[22mshould fallback to search if direct call fails
+[31m[1mAssertionError[22m: expected "vi.fn()" to 
+be called with arguments: [ '/promotions/search', 
+ΓÇª(1) ][90m
+
+Number of calls: [1m0[22m
+[31m[39m
+[36m [2mΓ¥»[22m src/services/__tests__/promotionSe
+rvice.test.ts:[2m59:30[22m[39m
+    [90m 57| [39m
+    [90m 58| [39m            expect(mockGet).toHave
+BeenCalledWith(`/promotions/code/${cΓÇª
+    [90m 59| [39m            expect(mockPost).toHav
+eBeenCalledWith('/promotions/search'ΓÇª
+    [90m   | [39m                             
+[31m^[39m
+    [90m 60| [39m                
+[33mPostObject[39m[33m:[39m {
+    [90m 61| [39m                    
+pageIndex[33m:[39m [34m1[39m[33m,[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/services/__tests__/promotionService.test.ts[2m 
+> [22mpromotionService[2m > [22mCRUD 
+operations[2m > [22mshould update promotion with 
+correct wrapper
+[31m[1mTypeError[22m: Cannot read properties of 
+undefined (reading 'success')[39m
+[36m [2mΓ¥»[22m Object.update 
+src/services/baseService.ts:[2m119:27[22m[39m
+    [90m117| [39m        async update(code: 
+string, data: TUpdateDto): Promise<ApiRespoΓÇª
+    [90m118| [39m            const response = 
+await http.put<TDto>(`${endpoint}/${code}ΓÇª
+    [90m119| [39m            [35mif[39m 
+([33m![39mresponse[33m.[39msuccess) {
+    [90m   | [39m                          
+[31m^[39m
+    [90m120| [39m                [35mthrow[39m 
+[35mnew[39m 
+[33mError[39m(response[33m.[39mmessage 
+[33m||[39m [32m'Update failed'[39m)[33m;[39m
+    [90m121| [39m            }
+[90m [2mΓ¥»[22m src/services/__tests__/promotionSe
+rvice.test.ts:[2m81:13[22m[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[3/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/services/__tests__/signalrService.test.ts[2m > 
+[22msignalRService[2m > [22mshould start 
+connection correctly
+[31m[1mTypeError[22m: () => ({
+      withUrl: 
+__vite_ssr_import_0__.vi.fn().mockReturnThis(),
+      withAutomaticReconnect: 
+__vite_ss...<omitted>...}) is not a constructor[39m
+[36m [2mΓ¥»[22m SignalRService.startConnection 
+src/services/signalrService.ts:[2m31:27[22m[39m
+    [90m 29| [39m
+    [90m 30| [39m        [35mthis[39m[33m.[39m
+[34mupdateStatus[39m([32m'Connecting'[39m)[33m;[
+39m
+    [90m 31| [39m        
+[35mthis[39m[33m.[39mconnection [33m=[39m 
+[35mnew[39m 
+signalR[33m.[39m[33mHubConnectionBuilder[39m()
+    [90m   | [39m                          
+[31m^[39m
+    [90m 32| [39m            
+[33m.[39m[34mwithUrl[39m([33mHUB_URL[39m)
+    [90m 33| [39m            
+[33m.[39m[34mwithAutomaticReconnect[39m()
+[90m [2mΓ¥»[22m src/services/__tests__/signalrServ
+ice.test.ts:[2m39:30[22m[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[4/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/components/common/__tests__/ProductUnitsManager.t
+est.tsx[2m > [22mProductUnitsManager Component[2m 
+> [22mrenders additional units
+[31m[1mTestingLibraryElementError[22m[39m: 
+Unable to find an element with the text: /x C├íi/i. 
+This could be because the text is broken up by 
+multiple elements. In this case, you can provide a 
+function for your text matcher to make your matcher 
+more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div[39m
+  [33mclass[39m=[32m"grid grid-cols-12 gap-3 
+items-center bg-white dark:bg-slate-800 p-3 
+rounded-lg border border-slate-200 
+dark:border-slate-700 shadow-sm hover:shadow-md 
+transition-shadow"[39m
+  [33mdata-testid[39m=[32m"unit-row-0"[39m
+[36m>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"col-span-4"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-1 
+w-full h-10 text-sm font-medium"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"w-full px-4 py-2 
+text-sm text-left bg-primary border rounded-lg flex 
+items-center justify-between gap-2 transition-all 
+duration-200 outline-none focus:border-primary 
+focus:ring-1 focus:ring-primary disabled:opacity-50 
+disabled:cursor-not-allowed border-gray-200"[39m
+          [33mid[39m=[32m"lazy-select-unit-select-
+0-2x9nh9xc8"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [0mHß╗Öp[0m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide 
+lucide-chevron-down text-tertiary 
+transition-transform"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"16"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            
+[33mstroke-linecap[39m=[32m"round"[39m
+            
+[33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"16"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2
+000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"col-span-3 relative"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-1 
+w-full"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"w-full 
+placeholder:text-text-tertiary transition-all 
+duration-200 outline-none disabled:opacity-50 
+disabled:cursor-not-allowed border border-border 
+rounded-lg focus:border-accent focus:ring-1 
+focus:ring-accent bg-bg-primary text-text-primary 
+px-4 py-2 h-10 text-sm pr-16 text-center 
+font-medium"[39m
+          [33mid[39m=[32m"input-qgl3fj0pf"[39m
+          [33mplaceholder[39m=[32m"1"[39m
+          [33mtype[39m=[32m"number"[39m
+          [33mvalue[39m=[32m"10"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"absolute right-2 top-1/2 
+-translate-y-1/2 text-xs text-slate-400 
+pointer-events-none bg-slate-100 dark:bg-slate-700 
+px-1.5 py-0.5 rounded"[39m
+    [36m>[39m
+      [0m├ù [0m
+      [0mC├íi[0m
+    [36m</span>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"col-span-4 relative"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-1 
+w-full"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"w-full 
+placeholder:text-text-tertiary transition-all 
+duration-200 outline-none disabled:opacity-50 
+disabled:cursor-not-allowed border rounded-lg 
+focus:border-accent focus:ring-1 focus:ring-accent 
+px-4 py-2 h-10 text-sm text-right pr-12 
+font-semibold text-indigo-600 dark:text-indigo-400 
+bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 
+dark:border-indigo-800"[39m
+          [33mid[39m=[32m"input-oc0tifj61"[39m
+          
+[33mplaceholder[39m=[32m"common.fields.price"[39m
+          [33mvalue[39m=[32m"950.000"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"absolute right-3 top-1/2 
+-translate-y-1/2 text-xs font-medium text-indigo-500 
+pointer-events-none"[39m
+    [36m>[39m
+      [0mΓé½[0m
+    [36m</span>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"col-span-1 flex 
+justify-end"[39m
+  [36m>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"text-slate-400 
+hover:text-red-500 p-2 rounded-lg hover:bg-red-50 
+dark:hover:bg-red-900/20 transition-colors"[39m
+      [33mdata-testid[39m=[32m"delete-unit-button-
+0"[39m
+      [33mtype[39m=[32m"button"[39m
+    [36m>[39m
+      [36m<svg[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"lucide lucide-x"[39m
+        [33mfill[39m=[32m"none"[39m
+        [33mheight[39m=[32m"18"[39m
+        [33mstroke[39m=[32m"currentColor"[39m
+        [33mstroke-linecap[39m=[32m"round"[39m
+        [33mstroke-linejoin[39m=[32m"round"[39m
+        [33mstroke-width[39m=[32m"2"[39m
+        [33mviewBox[39m=[32m"0 0 24 24"[39m
+        [33mwidth[39m=[32m"18"[39m
+        [33mxmlns[39m=[32m"http://www.w3.org/2000/
+svg"[39m
+      [36m>[39m
+        [36m<path[39m
+          [33md[39m=[32m"M18 6 6 18"[39m
+        [36m/>[39m
+        [36m<path[39m
+          [33md[39m=[32m"m6 6 12 12"[39m
+        [36m/>[39m
+      [36m</svg>[39m
+    [36m</button>[39m
+  [36m</div>[39m
+[36m</div>[39m
+[90m [2mΓ¥»[22m Object.getElementError node_module
+s/@testing-library/dom/dist/config.js:[2m37:19[22m
+[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/dom/
+dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/dom/
+dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/dom/
+dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2mΓ¥»[22m src/components/common/__tests__/Pr
+oductUnitsManager.test.tsx:[2m86:36[22m[39m
+    [90m 84| [39m        expect(within(unitRows[0])
+.getByText(/Hß╗Öp/i)).toBeInTheDocumenΓÇª
+    [90m 85| [39m        expect(within(unitRows[0])
+.getByDisplayValue('10')).toBeInTheDΓÇª
+    [90m 86| [39m        
+expect(within(unitRows[0]).getByText(/x 
+C├íi/i)).toBeInTheDocumΓÇª
+    [90m   | [39m                                  
+ [31m^[39m
+    [90m 87| [39m        expect(within(unitRows[0])
+.getByDisplayValue('950000')).toBeInΓÇª
+    [90m 88| [39m    })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[5/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/components/ui/__tests__/Button.test.tsx[2m > 
+[22mButton[2m > [22mrenders correctly with 
+default props
+[31m[1mError[22m: [2mexpect([22m[31melement[31
+m[2m).toHaveClass([22m[32m[32m"bg-indigo-600"[32
+m[31m[2m)[22m
+
+Expected the element to have class:
+[32m  bg-indigo-600[31m
+Received:
+[31m  inline-flex items-center justify-center 
+font-semibold transition-all duration-200 
+focus:outline-none focus:ring-2 
+focus:ring-primary/50 focus:ring-offset-2 
+disabled:opacity-50 disabled:cursor-not-allowed 
+disabled:hover:transform-none bg-accent 
+text-accent-foreground hover:bg-accent-hover 
+hover:shadow-lg hover:shadow-accent/30 
+active:opacity-90 px-4 py-2 text-sm gap-2 
+rounded-lg[31m[39m
+[36m [2mΓ¥»[22m src/components/ui/__tests__/Button
+.test.tsx:[2m10:20[22m[39m
+    [90m  8| [39m    [35mconst[39m button 
+[33m=[39m screen[33m.[39m[34mgetByRole[39m([32
+m'button'[39m[33m,[39m { name[33m:[39m 
+[36m/click me/i[39m })[33m;[39m
+    [90m  9| [39m    [34mexpect[39m(button)[33m.
+[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 10| [39m    
+expect(button).toHaveClass('bg-indigo-600'); // 
+Default variant: iΓÇª
+    [90m   | [39m                   [31m^[39m
+    [90m 11| [39m  })[33m;[39m
+    [90m 12| [39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[6/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/components/ui/__tests__/Button.test.tsx[2m > 
+[22mButton[2m > [22mrenders different variants 
+correctly
+[31m[1mError[22m: [2mexpect([22m[31melement[31
+m[2m).toHaveClass([22m[32m[32m"hover:bg-slate-100
+"[32m[31m[2m)[22m
+
+Expected the element to have class:
+[32m  hover:bg-slate-100[31m
+Received:
+[31m  inline-flex items-center justify-center 
+font-semibold transition-all duration-200 
+focus:outline-none focus:ring-2 
+focus:ring-primary/50 focus:ring-offset-2 
+disabled:opacity-50 disabled:cursor-not-allowed 
+disabled:hover:transform-none text-text-secondary 
+hover:bg-bg-tertiary hover:text-accent px-4 py-2 
+text-sm gap-2 rounded-lg[31m[39m
+[36m [2mΓ¥»[22m src/components/ui/__tests__/Button
+.test.tsx:[2m18:60[22m[39m
+    [90m 16| [39m
+    [90m 17| [39m    
+[34mrerender[39m([33m<[39m[33mButton[39m [33mv
+ariant[39m[33m=[39m[32m"ghost"[39m[33m>[39mGho
+st[33m<[39m[33m/[39m[33mButton[39m[33m>[39m)
+[33m;[39m
+    [90m 18| [39m    
+expect(screen.getByRole('button', { name: /ghost/i 
+})).toHaveClassΓÇª
+    [90m   | [39m                                  
+                         [31m^[39m
+    [90m 19| [39m  })[33m;[39m
+    [90m 20| [39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[7/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/pages/admin/forms/__tests__/ProductForm.test.tsx
+[2m > [22mProductForm[2m > [22mForm 
+Submission[2m > [22mshould call onSubmit when form 
+is valid and submitted
+[31m[1mTestingLibraryElementError[22m[39m: Found 
+a label with the text of: /gi├í b├ín|price/i, 
+however no form control was found associated to that 
+label. Make sure you're using the "for" attribute or 
+"aria-labelledby" attribute correctly.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"w-full"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"space-y-6 "[39m
+        [33mid[39m=[32m"_r_5_"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-wrap 
+border-b border-border-color"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-accent-primary 
+text-accent-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mTh├┤ng tin chung[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-transparent text-secondary 
+hover:text-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mH├¼nh ß║únh & Media[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-transparent text-secondary 
+hover:text-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mGi├í cß║ú[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-transparent text-secondary 
+hover:text-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mKho h├áng & SKU[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-transparent text-secondary 
+hover:text-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mTh├┤ng sß╗æ kß╗╣ thuß║¡t[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-transparent text-secondary 
+hover:text-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m─É╞ín vß╗ï t├¡nh[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-transparent text-secondary 
+hover:text-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mPhi├¬n bß║ún[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-4 py-3 
+text-sm font-medium transition-colors border-b-2 
+-mb-px border-transparent text-secondary 
+hover:text-primary"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mPh├ón loß║íi & Trß║íng th├íi[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"pt-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"block animate-in 
+fade-in duration-200"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bg-white 
+dark:bg-slate-800 rounded-2xl shadow-sm border 
+border-border-color p-6 space-y-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"grid 
+grid-cols-12 gap-4"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    
+[33mclass[39m=[32m"col-span-12"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"flex 
+flex-col gap-1 w-full"[39m
+                    [36m>[39m
+                      [36m<label[39m
+                        
+[33mclass[39m=[32m"font-bold text-primary 
+text-sm"[39m
+                        
+[33mfor[39m=[32m"input-8cn3p4bf5"[39m
+                      [36m>[39m
+                        [0mT├¬n[0m
+                        [36m<span[39m
+                          
+[33mclass[39m=[32m"text-red-500 ml-1"[39m
+                        [36m>[39m
+                          [0m*[0m
+                        [36m</span>[39m
+                      [36m</label>[39m
+                      [36m<div[39m
+                        
+[33mclass[39m=[32m"relative flex"[39m
+                      [36m>[39m
+                        [36m<input[39m
+                          
+[33mclass[39m=[32m"w-full 
+placeholder:text-text-tertiary transition-all 
+duration-200 outline-none disabled:opacity-50 
+disabled:cursor-not-allowed border border-border 
+rounded-lg focus:border-accent focus:ring-1 
+focus:ring-accent bg-bg-primary text-text-primary 
+px-4 py-2 text-sm"[39m
+                          
+[33mid[39m=[32m"input-8cn3p4bf5"[39m
+                          
+[33mname[39m=[32m"name"[39m
+                          
+[33mplaceholder[39m=[32m"Nhß║¡p t├¬n sß║ún 
+phß║⌐m..."[39m
+                          
+[33mtype[39m=[32m"text"[39m
+                        [36m/>[39m
+                      [36m</div>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                  [36m<div[39m
+                    
+[33mclass[39m=[32m"col-span-12"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      
+[33mclass[39m=[32m"space-y-1"[39m
+                    [36m>[39m
+                      [36m<label[39m
+                        
+[33mclass[39m=[32m"text-sm font-bold text-primary 
+mb-1 block"[39m
+                      [36m>[39m
+                        [0mM├┤ tß║ú[0m
+                      [36m</label>[39m
+                      [36m<textarea[39m
+                        [33mclass[39m=[32m"w-full 
+min-h-[100px] px-4 py-3 border rounded-xl 
+focus:outline-none focus:ring-4 
+focus:ring-accent-primary/5 bg-primary 
+transition-all resize-y text-base text-primary 
+placeholder:text-tertiary"[39m
+                        
+[33mname[39m=[32m"description"[39m
+                        
+[33mplaceholder[39m=[32m"M├┤ tß║ú chi tiß║┐t 
+sß║ún phß║⌐m..."[39m
+                        [33mrows[39m=[32m"4"[39m
+                      [36m/>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"hidden"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"bg-white 
+dark:bg-slate-800 rounded-2xl shadow-sm border 
+border-border-color p-6 space-y-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"grid 
+grid-cols-12 gap-4"[39m
+                [36m>[39m
+                  [36m<div[39m...
+[90m [2mΓ¥»[22m Object.getElementError node_module
+s/@testing-library/dom/dist/config.js:[2m37:19[22m
+[39m
+[90m [2mΓ¥»[22m getAllByLabelText node_modules/@te
+sting-library/dom/dist/queries/label-text.js:[2m108:
+40[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/dom/
+dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/dom/
+dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2mΓ¥»[22m src/pages/admin/forms/__tests__/Pr
+oductForm.test.tsx:[2m176:39[22m[39m
+    [90m174| [39m
+    [90m175| [39m            [90m// Fill Price 
+(Required)[39m
+    [90m176| [39m            [35mconst[39m 
+priceInput [33m=[39m 
+screen[33m.[39m[34mgetByLabelText[39m([36m/gi├í 
+b├ín|price/i[39m)[33m;[39m
+    [90m   | [39m                                  
+    [31m^[39m
+    [90m177| [39m            [35mawait[39m 
+user[33m.[39m[34mclear[39m(priceInput)[33m;[39m
+    [90m178| [39m            [35mawait[39m 
+user[33m.[39m[34mtype[39m(priceInput[33m,[39m 
+[32m'100000'[39m)[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[8/10]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m unit [49m[39m 
+src/pages/shop/account/__tests__/ProfileContent.test.
+tsx[2m > [22mProfileContent Component[2m > 
+[22mForm Validation[2m > [22mvalidates email 
+format in read-only field (sanity check)
+[31m[1mTestingLibraryElementError[22m[39m: 
+Unable to find a label with the text of: Email
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-6"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-primary rounded-xl 
+p-6 border shadow-sm"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-xl font-bold 
+mb-6"[39m
+        [36m>[39m
+          [0mcommon.account.profile[0m
+        [36m</h2>[39m
+        [36m<form[39m
+          [33mclass[39m=[32m"grid grid-cols-1 
+md:grid-cols-2 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col 
+gap-1 w-full"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-bold 
+text-primary text-sm"[39m
+              
+[33mfor[39m=[32m"input-b5dac0ovy"[39m
+            [36m>[39m
+              [0mcommon.fields.name[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative 
+flex"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"w-full 
+placeholder:text-text-tertiary transition-all 
+duration-200 outline-none disabled:opacity-50 
+disabled:cursor-not-allowed border border-border 
+rounded-lg focus:border-accent focus:ring-1 
+focus:ring-accent bg-bg-primary text-text-primary 
+px-4 py-2 text-sm"[39m
+                
+[33mid[39m=[32m"input-b5dac0ovy"[39m
+                [33mname[39m=[32m"fullName"[39m
+                [33mplaceholder[39m=[32m"common.pl
+aceholders.fullName"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col 
+gap-1 w-full"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-bold 
+text-primary text-sm"[39m
+              
+[33mfor[39m=[32m"input-z87mr1h87"[39m
+            [36m>[39m
+              [0mcommon.fields.email[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative 
+flex"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"w-full 
+placeholder:text-text-tertiary transition-all 
+duration-200 outline-none disabled:opacity-50 
+disabled:cursor-not-allowed border border-border 
+rounded-lg focus:border-accent focus:ring-1 
+focus:ring-accent bg-bg-primary text-text-primary 
+px-4 py-2 text-sm"[39m
+                [33mdisabled[39m=[32m""[39m
+                
+[33mid[39m=[32m"input-z87mr1h87"[39m
+                [33mname[39m=[32m"email"[39m
+                [33mplaceholder[39m=[32m"common.pl
+aceholders.email"[39m
+                [33mreadonly[39m=[32m""[39m
+                [33mtype[39m=[32m"email"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col 
+gap-1 w-full"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-bold 
+text-primary text-sm"[39m
+              
+[33mfor[39m=[32m"input-v86242c2r"[39m
+            [36m>[39m
+              [0mcommon.fields.phone[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative 
+flex"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"w-full 
+placeholder:text-text-tertiary transition-all 
+duration-200 outline-none disabled:opacity-50 
+disabled:cursor-not-allowed border border-border 
+rounded-lg focus:border-accent focus:ring-1 
+focus:ring-accent bg-bg-primary text-text-primary 
+px-4 py-2 text-sm"[39m
+                
+[33mid[39m=[32m"input-v86242c2r"[39m
+                [33mname[39m=[32m"phone"[39m
+                [33mplaceholder[39m=[32m"common.pl
+aceholders.phone"[39m
+                [33mtype[39m=[32m"tel"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"md:col-span-2 
+mt-4"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex 
+items-center justify-center font-semibold 
+transition-all duration-200 focus:outline-none 
+focus:ring-2 focus:ring-primary/50 
+focus:ring-offset-2 disabled:opacity-50 
+disabled:cursor-not-allowed 
+disabled:hover:transform-none bg-accent 
+text-accent-foreground hover:bg-accent-hover 
+hover:shadow-lg hover:shadow-accent/30 
+active:opacity-90 px-4 py-2 text-sm gap-2 
+rounded-lg"[39m
+              [33mtype[39m=[32m"submit"[39m
+            [36m>[39m
+
+[2m Test Files [22m [1m[31m7 failed[39m[22m[2m | [22m[1m[32m37 passed[39m[22m[90m (44)[39m
+[2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m212 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (224)[39m
+[2m   Start at [22m 10:36:48
+              [36m<svg[39m
+                
+[33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide 
+lucide-save"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"18"[39m
+                
+[33mstroke[39m=[32m"currentColor"[39m
+                
+[33mstroke-linecap[39m=[32m"round"[39m
+                
+[33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 
+24"[39m
+                [33mwidth[39m=[32m"18"[39m
+                [33mxmlns[39m=[32m"http://www.w3.o
+rg/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M15.2 3a2 2 0 0 
+1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 
+2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M17 21v-7a1 1 0 
+0 0-1-1H8a1 1 0 0 0-1 1v7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M7 3v4a1 1 0 0 0 
+1 1h7"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mcommon.save[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</form>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-primary rounded-xl 
+overflow-hidden border shadow-sm"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-6 border-b flex 
+items-center gap-3"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide 
+lucide-shield text-indigo-600"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            
+[33mstroke-linecap[39m=[32m"round"[39m
+            
+[33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2
+000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M20 13c0 5-3.5 
+7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 
+13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 
+0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 ...
+[90m [2mΓ¥»[22m Object.getElementError node_module
+s/@testing-library/dom/dist/config.js:[2m37:19[22m
+[39m
+[90m [2mΓ¥»[22m getAllByLabelText node_modules/@te
+sting-library/dom/dist/queries/label-text.js:[2m111:
+38[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/dom/
+dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2mΓ¥»[22m node_modules/@testing-library/dom/
+dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2mΓ¥»[22m src/pages/shop/account/__tests__/P
+rofileContent.test.tsx:[2m169:37[22m[39m
+    [90m167| [39m          
+[34mrender[39m([33m<[39m[33mProfileContent[39m 
+[33m/[39m[33m>[39m)[33m;[39m
+    [90m168| [39m          await waitFor(() => 
+screen.getByDisplayValue('test@example.cΓÇª
+    [90m169| [39m          [35mconst[39m 
+emailInput [33m=[39m screen[33m.[39m[34mgetByLab
+elText[39m([32m'Email'[39m)[33m;[39m
+    [90m   | [39m                                  
+  [31m^[39m
+    [90m170| [39m          [34mexpect[39m(emailIn
+put)[33m.[39m[34mtoHaveAttribute[39m([32m'readon
+ly'[39m)[33m;[39m
+    [90m171| [39m      })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[9/10]ΓÄ»[22m[39m
+
+[2m   Duration [22m 53.81s[2m (transform 99.36s, setup 111.08s, import 163.66s, tests 47.14s, environment 112.56s)[22m
+

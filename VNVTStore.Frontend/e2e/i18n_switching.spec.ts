@@ -11,7 +11,7 @@ test.describe('i18n Language Switching', () => {
 
         // 2. Click Language Toggle (Assuming there's a button or dropdown in Header)
         // We'll look for a button that likely holds the language label or icon
-        const langToggle = page.locator('button').filter({ hasText: /VN|EN/i });
+        const langToggle = page.getByTestId('lang-toggle');
         await langToggle.click();
 
         // Select English

@@ -30,7 +30,7 @@ export interface CreateNewsRequest {
     slug?: string;
 }
 
-export interface UpdateNewsRequest extends Partial<CreateNewsRequest> { }
+export type UpdateNewsRequest = Partial<CreateNewsRequest>;
 
 // ============ Service ============
 export const newsService = createEntityService<NewsDto, CreateNewsRequest, UpdateNewsRequest>({

@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-interface PaginationProps {
+export interface PaginationProps {
   currentPage: number;
   totalPages: number;
   totalItems: number;
@@ -31,7 +31,7 @@ const getPageNumbers = (currentPage: number, totalPages: number) => {
 
   range.push(totalPages);
 
-  for (let i of range) {
+  for (const i of range) {
     if (l) {
       if (i - l === 2) {
         rangeWithDots.push(l + 1);

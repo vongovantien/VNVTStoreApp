@@ -1,10 +1,9 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight,
   Search,
-  SlidersHorizontal,
   Grid,
   List,
   AlertCircle
@@ -57,7 +56,7 @@ const SearchPage = () => {
             <h1 className="text-2xl font-bold mb-6 flex items-center gap-3">
               <Search className="text-accent-primary" />
               {searchQuery ? (
-                <span>{t('search.resultsFor') || 'Search results for'}: <span className="text-accent-primary">"{searchQuery}"</span></span>
+                <span>{t('search.resultsFor') || 'Search results for'}: <span className="text-accent-primary">&quot;{searchQuery}&quot;</span></span>
               ) : (
                 <span>{t('header.searchPlaceholder')}</span>
               )}

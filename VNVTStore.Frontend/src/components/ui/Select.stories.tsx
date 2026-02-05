@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Select } from './Select';
-import { User, MapPin } from 'lucide-react';
+import { User } from 'lucide-react';
 
 const meta = {
   title: 'UI/Select',

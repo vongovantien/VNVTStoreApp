@@ -1,5 +1,5 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
-import storybook from "eslint-plugin-storybook";
+// import storybook from "eslint-plugin-storybook";
 
 import js from '@eslint/js'
 import globals from 'globals'
@@ -17,8 +17,11 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
-  testingLibrary.configs['flat/react'],
-  jestDom.configs['flat/recommended'],
+  {
+    files: ['src/**/__tests__/**/*.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
+    ...testingLibrary.configs['flat/react'],
+    ...jestDom.configs['flat/recommended'],
+  },
   {
     languageOptions: {
       ecmaVersion: 2020,

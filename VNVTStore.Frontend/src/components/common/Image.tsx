@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import defaultImage from '../../assets/default-image.png';
 
 interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -6,24 +6,28 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 const Image: React.FC<ImageProps> = ({ src, fallbackSrc = defaultImage, alt, ...props }) => {
-  const [imgSrc, setImgSrc] = useState<string | undefined>(src);
+  const [lastSrc, setLastSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(src);
 
-  useEffect(() => {
-    setImgSrc(src);
+  // Update state during render when src prop changes
+  // This is a recommended pattern for syncing state to props
+  if (src !== lastSrc) {
+    setLastSrc(src);
     setHasError(false);
-  }, [src]);
+    setCurrentSrc(src);
+  }
 
   const handleError = () => {
     if (!hasError) {
-      setImgSrc(fallbackSrc);
+      setCurrentSrc(fallbackSrc);
       setHasError(true);
     }
   };
 
   return (
     <img
-      src={imgSrc || fallbackSrc}
+      src={currentSrc || fallbackSrc}
       alt={alt}
       onError={handleError}
       {...props}

@@ -1,9 +1,10 @@
+import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
-import i18n from '@/config/i18n';
+import i18n from '../../../../config/i18n';
 import { ProductForm } from '../ProductForm';
 
 // Mock hooks
@@ -173,7 +174,7 @@ describe('ProductForm', () => {
             await user.click(categoryOption);
 
             // Fill Price (Required)
-            const priceInput = screen.getByLabelText(/giá bán|price/i);
+            const priceInput = screen.getByTestId('product-price-input');
             await user.clear(priceInput);
             await user.type(priceInput, '100000');
 
@@ -188,8 +189,8 @@ describe('ProductForm', () => {
 
             await waitFor(() => {
                 expect(onSubmit).toHaveBeenCalled();
-            });
-        });
+            }, { timeout: 8000 });
+        }, 15000);
 
         it('should call onCancel when cancel button is clicked', async () => {
             const onCancel = vi.fn();

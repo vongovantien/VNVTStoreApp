@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Modal } from '../Modal';
 import userEvent from '@testing-library/user-event';
@@ -43,7 +43,7 @@ describe('Modal', () => {
   });
 
   it('calls onClose when clicking overlay', async () => {
-    const user = userEvent.setup();
+    // const user = userEvent.setup();
     render(
       <Modal isOpen={true} onClose={onClose} closeOnOverlayClick={true}>
         <div>Content</div>

@@ -95,8 +95,16 @@ export function createEntityService<
         /**
          * Get by code
          */
-        async getByCode(code: string, params?: Record<string, any>): Promise<ApiResponse<TDto>> {
-            const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+        async getByCode(code: string, params?: Record<string, unknown>): Promise<ApiResponse<TDto>> {
+            const cleanParams: Record<string, string> = {};
+            if (params) {
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        cleanParams[key] = String(value);
+                    }
+                });
+            }
+            const queryString = Object.keys(cleanParams).length > 0 ? '?' + new URLSearchParams(cleanParams).toString() : '';
             return http.get<TDto>(`${endpoint}/${code}${queryString}`);
         },
 
@@ -114,7 +122,7 @@ export function createEntityService<
         /**
          * Update item
          */
-        async update(code: string, data: TUpdateDto): Promise<ApiResponse<TDto>> {
+        async update(code: string | number, data: TUpdateDto): Promise<ApiResponse<TDto>> {
             const response = await http.put<TDto>(`${endpoint}/${code}`, { PostObject: data });
             if (!response.success) {
                 throw new Error(response.message || 'Update failed');
@@ -125,7 +133,7 @@ export function createEntityService<
         /**
          * Delete item
          */
-        async delete(code: string): Promise<ApiResponse<void>> {
+        async delete(code: string | number): Promise<ApiResponse<void>> {
             const response = await http.delete<void>(`${endpoint}/${code}`);
             if (!response.success) {
                 throw new Error(response.message || 'Delete failed');

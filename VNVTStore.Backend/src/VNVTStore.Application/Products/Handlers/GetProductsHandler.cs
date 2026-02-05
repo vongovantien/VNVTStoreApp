@@ -88,10 +88,12 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
                 GROUP BY 1";
             
             var ratings = (await connection.QueryAsync<dynamic>(ratingSql, new { Codes = productCodes.ToArray() })).ToList();
-            var ratingMap = ratings.ToDictionary(
-                r => (string)r.ProductCode, 
-                r => (AverageRating: (decimal)r.AverageRating, ReviewCount: (int)r.ReviewCount)
-            );
+            var ratingMap = ratings
+                .Where(r => r.ProductCode != null)
+                .ToDictionary(
+                    r => (string)r.ProductCode, 
+                    r => (AverageRating: r.AverageRating != null ? (decimal)r.AverageRating : 0m, ReviewCount: r.ReviewCount != null ? (int)r.ReviewCount : 0)
+                );
 
             foreach (var dto in result.Value.Items)
             {

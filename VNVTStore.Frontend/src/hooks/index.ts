@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { debounce, throttle } from 'lodash-es';
 
 // Re-export product hooks
@@ -52,19 +52,24 @@ export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
     delay: number = 300
 ): T {
     const callbackRef = useRef(callback);
-    callbackRef.current = callback;
 
-    const debouncedFn = useRef(
-        debounce((...args: Parameters<T>) => callbackRef.current(...args), delay)
+    useEffect(() => {
+        callbackRef.current = callback;
+    });
+
+    const debouncedFn = useMemo(
+        // eslint-disable-next-line react-hooks/refs
+        () => debounce((...args: Parameters<T>) => callbackRef.current(...args), delay),
+        [delay]
     );
 
     useEffect(() => {
         return () => {
-            debouncedFn.current.cancel();
+            debouncedFn.cancel();
         };
-    }, []);
+    }, [debouncedFn]);
 
-    return debouncedFn.current as unknown as T;
+    return debouncedFn as unknown as T;
 }
 
 /**
@@ -77,19 +82,24 @@ export function useThrottledCallback<T extends (...args: unknown[]) => unknown>(
     delay: number = 300
 ): T {
     const callbackRef = useRef(callback);
-    callbackRef.current = callback;
 
-    const throttledFn = useRef(
-        throttle((...args: Parameters<T>) => callbackRef.current(...args), delay)
+    useEffect(() => {
+        callbackRef.current = callback;
+    });
+
+    const throttledFn = useMemo(
+        // eslint-disable-next-line react-hooks/refs
+        () => throttle((...args: Parameters<T>) => callbackRef.current(...args), delay),
+        [delay]
     );
 
     useEffect(() => {
         return () => {
-            throttledFn.current.cancel();
+            throttledFn.cancel();
         };
-    }, []);
+    }, [throttledFn]);
 
-    return throttledFn.current as unknown as T;
+    return throttledFn as unknown as T;
 }
 
 /**
@@ -222,5 +232,6 @@ export function usePrevious<T>(value: T): T | undefined {
         ref.current = value;
     }, [value]);
 
-    return ref.current;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return useMemo(() => ref.current, [value]);
 }

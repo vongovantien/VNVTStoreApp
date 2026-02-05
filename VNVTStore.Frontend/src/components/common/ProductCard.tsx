@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Star, Eye, Scale, Phone } from 'lucide-react';
-import { cn } from '@/utils/cn';
+
 import { Button, Badge } from '@/components/ui';
 import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';
 import { formatCurrency } from '@/utils/format';
@@ -35,7 +35,6 @@ export const ProductCard = memo(
     showQuickView = true,
     variant = 'grid',
     hoverable = true,
-    actionsOnHover = true,
     className,
     onQuickView,
   }: ProductCardProps) => {
@@ -52,7 +51,6 @@ export const ProductCard = memo(
     const isCompared = isInCompare(product.code);
     const hasFixedPrice = product.price > 0;
     const hasDiscount = product.discount && product.discount > 0;
-    const isLowStock = (product.stockQuantity ?? product.stock) <= 5 && (product.stockQuantity ?? product.stock) > 0;
     const isOutOfStock = (product.stockQuantity ?? product.stock) === 0;
     
     // Calculate isNew based on createdAt within NEW_PRODUCT_DAYS, or use product.isNew if provided
@@ -73,7 +71,11 @@ export const ProductCard = memo(
       (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        isWishlisted ? removeFromWishlist(product.code) : addToWishlist(product);
+        if (isWishlisted) {
+          removeFromWishlist(product.code);
+        } else {
+          addToWishlist(product);
+        }
       },
       [isWishlisted, product, addToWishlist, removeFromWishlist]
     );
@@ -82,7 +84,11 @@ export const ProductCard = memo(
       (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        isCompared ? removeFromCompare(product.code) : addToCompare(product);
+        if (isCompared) {
+          removeFromCompare(product.code);
+        } else {
+          addToCompare(product);
+        }
       },
       [isCompared, product, addToCompare, removeFromCompare]
     );
@@ -95,12 +101,12 @@ export const ProductCard = memo(
           try {
             await addToCart(product);
             toast.success(`${product.name} đã được thêm vào giỏ hàng`);
-          } catch (error) {
+          } catch {
             toast.error(t('product.addToCartError') || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
           }
         }
       },
-      [hasFixedPrice, isOutOfStock, product, addToCart, toast]
+      [hasFixedPrice, isOutOfStock, product, addToCart, toast, t]
     );
 
     const handleQuickView = useCallback(

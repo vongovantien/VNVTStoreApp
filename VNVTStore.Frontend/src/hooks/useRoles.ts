@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { roleService } from '@/services/roleService';
-import type { Role } from '@/types';
 import type { SearchParams } from '@/services/baseService';
 
 export const useRoles = (params: SearchParams) => {
@@ -19,5 +18,12 @@ export const useRole = (code: string) => {
         queryKey: ['role', code],
         queryFn: () => roleService.getByCode(code),
         enabled: !!code,
+    });
+};
+
+export const usePermissions = () => {
+    return useQuery({
+        queryKey: ['permissions-all'],
+        queryFn: () => import('@/services/permissionService').then(m => m.permissionService.getAll())
     });
 };

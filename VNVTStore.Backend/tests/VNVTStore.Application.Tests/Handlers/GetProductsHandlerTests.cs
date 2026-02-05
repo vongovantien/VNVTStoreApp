@@ -10,8 +10,7 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Xunit;
 
-using System.Threading;
-using System.Threading.Tasks;
+using Moq.Protected;
 
 namespace VNVTStore.Application.Tests.Handlers;
 
@@ -45,12 +44,18 @@ public class GetProductsHandlerTests
         _mockParameters = new Mock<IDataParameterCollection>();
 
         // Setup Command and Parameters mocks for Dapper
-        _mockConnection.Setup(c => c.CreateCommand()).Returns(_mockCommand.Object);
+        _mockConnection.Protected()
+            .Setup<DbCommand>("CreateDbCommand")
+            .Returns(_mockCommand.Object);
+            
         // _mockCommand.Setup(c => c.Parameters).Returns(_mockParameters.Object); // Parameters is often hard to mock on DbCommand
-        _mockCommand.Setup(c => c.CreateParameter()).Returns(_mockParameter.Object);
-        _mockCommand.Setup(c => c.ExecuteReaderAsync(It.IsAny<CommandBehavior>(), It.IsAny<CancellationToken>()))
+        _mockCommand.Protected()
+            .Setup<DbParameter>("CreateDbParameter")
+            .Returns(_mockParameter.Object);
+            
+        _mockCommand.Protected()
+            .Setup<Task<DbDataReader>>("ExecuteDbDataReaderAsync", ItExpr.IsAny<CommandBehavior>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(_mockDataReader.Object);
-        // _mockCommand.Setup(c => c.ExecuteReader()).Returns(_mockDataReader.Object);
 
         // Connection Handling
         _mockDapperContext.Setup(c => c.CreateConnection()).Returns(_mockConnection.Object);

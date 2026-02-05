@@ -17,7 +17,6 @@ interface AdvancedFilterProps {
     onClose: () => void;
     filterDefs: FilterDef[];
     onApply: (filters: Record<string, string>) => void;
-    onClear: () => void;
     currentFilters: Record<string, string>;
 }
 
@@ -26,13 +25,13 @@ export const AdvancedFilter = ({
     onClose,
     filterDefs,
     onApply,
-    onClear,
     currentFilters,
 }: AdvancedFilterProps) => {
     const { t } = useTranslation();
     const [localFilters, setLocalFilters] = useState<Record<string, string>>(currentFilters);
 
     useEffect(() => {
+        // eslint-disable-next-line
         setLocalFilters(currentFilters);
     }, [currentFilters, isOpen]);
 
@@ -45,10 +44,6 @@ export const AdvancedFilter = ({
         onClose();
     };
 
-    const handleClear = () => {
-        setLocalFilters({});
-        onClear();
-    };
 
     return (
         <Modal

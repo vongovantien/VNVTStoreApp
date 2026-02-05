@@ -607,7 +607,7 @@ function DataTableInner<T extends Record<string, any>>({
                   >
                     <div className={cn("flex items-center gap-1", column.noWrap && "whitespace-nowrap")}>
                       {column.header}
-                      {column.sortable && <SortIcon columnId={column.id} sortField={sortField} sortDir={sortDir} />}
+                      {column.sortable && <SortIcon columnId={column.id} sortField={sortField} sortDir={sortDir || 'asc'} />}
                     </div>
                   </th>
                 ))}

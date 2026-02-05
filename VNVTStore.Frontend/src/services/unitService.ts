@@ -15,8 +15,7 @@ export interface CreateUnitRequest {
     isActive?: boolean;
 }
 
-export interface UpdateUnitRequest extends Partial<CreateUnitRequest> {
-}
+export type UpdateUnitRequest = Partial<CreateUnitRequest>;
 
 export const unitService = createEntityService<CatalogUnitDto, CreateUnitRequest, UpdateUnitRequest>({
     endpoint: API_ENDPOINTS.UNITS?.BASE || '/units',

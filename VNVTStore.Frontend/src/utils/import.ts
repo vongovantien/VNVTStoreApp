@@ -1,4 +1,4 @@
-export const parseCSV = (text: string): Record<string, any>[] => {
+export const parseCSV = (text: string): Record<string, string | number>[] => {
     const lines = text.split('\n').filter((line) => line.trim() !== '');
     if (lines.length < 2) return [];
 
@@ -9,7 +9,7 @@ export const parseCSV = (text: string): Record<string, any>[] => {
         // For robust parsing, a library like PapaParse is recommended, but this works for simple standard CSVs
         const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
 
-        const obj: Record<string, any> = {};
+        const obj: Record<string, string | number> = {};
         headers.forEach((header, index) => {
             // Try to convert to number if possible
             const value = values[index];

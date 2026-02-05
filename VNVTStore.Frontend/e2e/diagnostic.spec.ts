@@ -8,17 +8,17 @@ test('diagnostic login test', async ({ page }) => {
     await page.goto('/login');
 
     // Fill login
-    await page.getByPlaceholder('email@example.com').fill('admin@vnvt.com');
-    await page.getByPlaceholder('••••••••').fill('Password123!');
+    await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+    await page.fill('[data-testid="password-input"]', 'Admin@123');
 
     console.log('Clicking login button...');
-    await page.getByRole('button', { name: /Đăng nhập|Login/i }).click();
+    await page.click('[data-testid="login-button"]');
 
     console.log('Waiting for URL change...');
     try {
         await expect(page).toHaveURL(/.*\/admin/, { timeout: 10000 });
         console.log('SUCCESS: URL changed to admin');
-    } catch (e) {
+    } catch {
         console.log('FAILURE: Current URL is', page.url());
         // Check for error message on page
         const errorMsg = await page.locator('.bg-red-50').textContent().catch(() => 'No visible error div');

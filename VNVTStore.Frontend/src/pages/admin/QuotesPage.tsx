@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, MessageSquare, DollarSign, Check, Eye, Trash2, ClipboardList, FileText, X, Printer } from 'lucide-react';
+import { Search, MessageSquare, DollarSign, Check, Eye, ClipboardList, FileText, X } from 'lucide-react';
 import { Button, Badge, Modal, Input } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { quoteService } from '@/services/quoteService';
@@ -94,8 +94,8 @@ export const QuotesPage = () => {
         setQuotePrice('');
         fetchQuotes(); // Refresh
       }
-    } catch (err) {
-      error('Lỗi khi cập nhật báo giá');
+    } catch {
+      error(t('common.messages.errorOccurred'));
     }
 
   };

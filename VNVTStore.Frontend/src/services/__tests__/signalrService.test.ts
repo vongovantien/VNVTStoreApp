@@ -11,13 +11,21 @@ vi.mock('@microsoft/signalr', () => {
         onclose: vi.fn(),
         state: 'Disconnected'
     };
+
+    const HubConnectionBuilder = function (this: {
+        withUrl: () => unknown;
+        withAutomaticReconnect: () => unknown;
+        configureLogging: () => unknown;
+        build: () => unknown;
+    }) {
+        this.withUrl = vi.fn().mockReturnThis();
+        this.withAutomaticReconnect = vi.fn().mockReturnThis();
+        this.configureLogging = vi.fn().mockReturnThis();
+        this.build = vi.fn().mockReturnValue(HubConnection);
+    };
+
     return {
-        HubConnectionBuilder: vi.fn().mockImplementation(() => ({
-            withUrl: vi.fn().mockReturnThis(),
-            withAutomaticReconnect: vi.fn().mockReturnThis(),
-            configureLogging: vi.fn().mockReturnThis(),
-            build: vi.fn().mockReturnValue(HubConnection)
-        })),
+        HubConnectionBuilder: HubConnectionBuilder,
         HubConnectionState: {
             Connected: 'Connected',
             Disconnected: 'Disconnected'
@@ -44,8 +52,9 @@ describe('signalRService', () => {
         const callback = vi.fn();
         signalRService.on('test-event', callback);
 
-        // Access private method for testing purpose via any
-        (signalRService as any).notifyListeners('test-event', 'hello');
+        // Access private method for testing purpose
+        interface ServiceWithPrivate { notifyListeners(v1: string, v2: string): void; }
+        (signalRService as unknown as ServiceWithPrivate).notifyListeners('test-event', 'hello');
 
         expect(callback).toHaveBeenCalledWith('hello');
     });
@@ -55,7 +64,8 @@ describe('signalRService', () => {
         signalRService.on('test-event', callback);
         signalRService.off('test-event', callback);
 
-        (signalRService as any).notifyListeners('test-event', 'hello');
+        interface ServiceWithPrivate { notifyListeners(v1: string, v2: string): void; }
+        (signalRService as unknown as ServiceWithPrivate).notifyListeners('test-event', 'hello');
 
         expect(callback).not.toHaveBeenCalled();
     });

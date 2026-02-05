@@ -4,9 +4,10 @@ test.describe('Dynamic Product Management', () => {
 
     test.beforeEach(async ({ page }) => {
         await page.goto('/login');
-        await page.getByPlaceholder('email@example.com').fill('admin@vnvtstore.com');
-        await page.getByPlaceholder('••••••••').fill('Password123!');
-        await page.getByRole('button', { name: /Đăng nhập|Login/i }).click();
+        await page.fill('[data-testid="email-input"]', 'admin@vnvtstore.com');
+        await page.fill('[data-testid="password-input"]', 'Admin@123');
+        await page.click('[data-testid="login-button"]');
+        await page.waitForURL('**/admin/products');
         await expect(page).toHaveURL(/.*\/admin/);
     });
 

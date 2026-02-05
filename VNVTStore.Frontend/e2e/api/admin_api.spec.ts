@@ -7,7 +7,7 @@ test.describe.serial('Admin API Verification', () => {
         const response = await request.post('/api/v1/auth/login', {
             data: {
                 username: 'admin',
-                password: 'Password123!'
+                password: 'Admin@123'
             }
         });
 

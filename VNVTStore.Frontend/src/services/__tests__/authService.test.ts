@@ -36,14 +36,6 @@ describe('authService', () => {
 
     describe('register', () => {
         it('should call apiClient.post with /auth/register', async () => {
-            const data = {
-                username: 'testu',
-                firstName: 'First',
-                lastName: 'Last',
-                email: 'test@test.com',
-                password: 'password',
-                confirmPassword: 'password'
-            };
             const mockResponse = { success: true };
             mockPost.mockResolvedValue(mockResponse);
 

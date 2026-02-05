@@ -1,4 +1,4 @@
-import { memo, forwardRef, useMemo, type InputHTMLAttributes, type ReactNode } from 'react';
+import { memo, forwardRef, useMemo, useId, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
 // ============ Input Variants & Sizes ============
@@ -69,7 +69,8 @@ export const Input = memo(
       },
       ref
     ) => {
-      const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+      const reactId = useId();
+      const inputId = id || reactId;
 
       const inputClasses = useMemo(
         () =>

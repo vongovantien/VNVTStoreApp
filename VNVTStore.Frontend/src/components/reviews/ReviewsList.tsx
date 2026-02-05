@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star, ThumbsUp, MessageSquare, User } from 'lucide-react';
+import { Star, User } from 'lucide-react';
 import { reviewService, type ReviewDto } from '@/services/reviewService';
-import SharedImage from '@/components/common/Image';
 import { formatDate } from '@/utils/format';
 import { Pagination } from '@/components/ui';
 
@@ -18,7 +17,7 @@ const ReviewsList = ({ productCode }: ReviewsListProps) => {
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 5;
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
       const res = await reviewService.getByProduct(productCode, pageIndex, pageSize);
@@ -31,13 +30,13 @@ const ReviewsList = ({ productCode }: ReviewsListProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productCode, pageIndex, pageSize]);
 
   useEffect(() => {
     if (productCode) {
       fetchReviews();
     }
-  }, [productCode, pageIndex]);
+  }, [productCode, fetchReviews]);
 
   return (
     <div className="space-y-8">

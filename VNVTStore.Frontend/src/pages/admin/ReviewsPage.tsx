@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star, Check, X, MessageSquare, Trash2, Search, Filter } from 'lucide-react';
+import { Star, Check, X, MessageSquare, Trash2, Search } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';
@@ -268,7 +268,7 @@ export const ReviewsPage = () => {
                 <span className="font-bold">{selectedReview.userName}</span>
                 {renderStars(selectedReview.rating)}
               </div>
-              <p className="text-sm text-secondary italic">"{selectedReview.comment}"</p>
+              <p className="text-sm text-secondary italic">&quot;{selectedReview.comment}&quot;</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">{t('admin.reviews.yourReply')}</label>

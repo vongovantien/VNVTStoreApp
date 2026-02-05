@@ -20,7 +20,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Render function wrapper to handle state
-const ModalWrapper = (args: any) => {
+const ModalWrapper = (args: Record<string, unknown>) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (

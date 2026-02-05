@@ -5,8 +5,8 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 
-import { Product } from '@/types';
-import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest, type ProductDto } from '@/services/productService';
+import { Product, ProductDetail, ProductUnit, ProductVariant } from '@/types';
+import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest, type ProductDto, type ProductImageDto } from '@/services/productService';
 import { SearchCondition } from '@/services/baseService';
 import { getImageUrl } from '@/utils/format';
 import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
@@ -246,41 +246,40 @@ export function useProducts(params: {
                 const uniqueItems = Array.from(new Map((response.data.items || []).map(item => [item.code, item])).values());
 
                 // Map ProductDto to Frontend Product model
-                const products: Product[] = uniqueItems.map((item: any) => ({
-                    code: item.code,
-                    name: item.name,
-                    slug: item.code, // Use code as slug for now
-                    description: item.description || '',
-                    price: item.price,
-                    // Handle image collection casing
-                    image: getImageUrl(
-                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageURL ||
-                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageUrl ||
-                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.ImageURL ||
-                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageURL ||
-                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageUrl ||
-                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.ImageURL
-                    ),
-                    images: (item.productImages || item.ProductImages || item.product_images)?.map((img: any) => getImageUrl(img.imageURL || img.imageUrl || img.ImageURL)) || [],
-                    // Pass raw DTO for form management
-                    productImages: item.productImages || item.ProductImages || item.product_images || [],
-                    category: item.categoryName || '',
-                    categoryCode: item.categoryCode || '',
-                    stock: item.stockQuantity || 0,
-                    // Attributes
-                    color: item.color,
-                    power: item.power,
-                    voltage: item.voltage,
-                    material: item.material,
-                    size: item.size,
-                    // Mock/Default values for missing backend fields
-                    brand: 'VNVT',
-                    rating: 5,
-                    reviewCount: 0,
-                    isFeatured: false,
-                    isNew: true,
-                    createdAt: item.createdAt || new Date().toISOString()
-                }));
+                const products: Product[] = uniqueItems.map((rawItem: ProductDto | Record<string, unknown>) => {
+                    const item = rawItem as ProductDto;
+                    const images = (item.productImages || (item as unknown as Record<string, unknown>).ProductImages || (item as unknown as Record<string, unknown>).product_images) as ProductImageDto[] | undefined;
+                    const primaryImg = images?.find((img: ProductImageDto) => img.isPrimary) || images?.[0];
+                    const mainImage = getImageUrl(primaryImg?.imageURL);
+
+                    return {
+                        code: item.code,
+                        name: item.name,
+                        slug: item.code, // Use code as slug for now
+                        description: item.description || '',
+                        price: item.price,
+                        image: mainImage,
+                        images: images?.map((img: ProductImageDto) => getImageUrl(img.imageURL)) || [],
+                        // Pass raw DTO for form management
+                        productImages: images || [],
+                        category: item.categoryName || '',
+                        categoryCode: item.categoryCode || '',
+                        stock: item.stockQuantity || 0,
+                        // Attributes
+                        color: item.color,
+                        power: item.power,
+                        voltage: item.voltage,
+                        material: item.material,
+                        size: item.size,
+                        // Mock/Default values for missing backend fields
+                        brand: 'VNVT',
+                        rating: 5,
+                        reviewCount: 0,
+                        isFeatured: false,
+                        isNew: true,
+                        createdAt: item.createdAt || new Date().toISOString()
+                    };
+                });
 
                 return {
                     products,
@@ -315,7 +314,10 @@ export function useProduct(code: string) {
         enabled: !!code,
         select: (response): Product | null => {
             if (response.success && response.data) {
-                const item = response.data as any;
+                const item = response.data as ProductDto;
+                const images = (item.productImages || (item as unknown as Record<string, unknown>).ProductImages || (item as unknown as Record<string, unknown>).product_images) as ProductImageDto[] | undefined;
+                const primaryImg = images?.find((img: ProductImageDto) => img.isPrimary) || images?.[0];
+
                 // Map ProductDto to Frontend Product model
                 return {
                     code: item.code,
@@ -325,23 +327,13 @@ export function useProduct(code: string) {
                     price: item.price,
                     wholesalePrice: item.wholesalePrice,
                     costPrice: item.costPrice,
-                    // Handle image collection casing
-                    image: getImageUrl(
-                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageURL ||
-                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.imageUrl ||
-                        (item.productImages || item.ProductImages || item.product_images)?.find((img: any) => img.isPrimary)?.ImageURL ||
-                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageURL ||
-                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.imageUrl ||
-                        (item.productImages || item.ProductImages || item.product_images)?.[0]?.ImageURL
-                    ),
-                    images: (item.productImages || item.ProductImages || item.product_images)?.map((img: any) => getImageUrl(img.imageURL || img.imageUrl || img.ImageURL)) || [],
-                    // Pass raw DTO for form management
-                    productImages: item.productImages || item.ProductImages || item.product_images || [],
+                    image: getImageUrl(primaryImg?.imageURL),
+                    images: images?.map((img: ProductImageDto) => getImageUrl(img.imageURL)) || [],
+                    productImages: images || [],
                     category: item.categoryName || '',
                     categoryCode: item.categoryCode || '',
                     stock: item.stockQuantity || 0,
                     stockQuantity: item.stockQuantity,
-                    // Attributes
                     color: item.color,
                     power: item.power,
                     voltage: item.voltage,
@@ -350,17 +342,15 @@ export function useProduct(code: string) {
                     countryOfOrigin: item.countryOfOrigin,
                     baseUnit: item.baseUnit,
                     binLocation: item.binLocation,
-                    // Relations
-                    details: item.details || [],
-                    productUnits: item.productUnits || [],
-                    variants: item.variants || [],
-                    // Mock/Default values
+                    details: (item.details as unknown as ProductDetail[]) || [],
+                    productUnits: (item.productUnits as unknown as ProductUnit[]) || [],
+                    variants: (item.variants as unknown as ProductVariant[]) || [],
                     brand: item.brand || 'VNVT',
                     rating: 5,
                     reviewCount: 0,
                     isFeatured: item.isFeatured || false,
                     isNew: item.isNew ?? true,
-                    originalPrice: item.price * 1.2, // Fake original price for demo
+                    originalPrice: item.price * 1.2,
                     createdAt: item.createdAt || new Date().toISOString()
                 };
             }

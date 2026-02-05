@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supplierService, SupplierDto } from '@/services';
+import { supplierService } from '@/services';
 
 import { SearchCondition } from '@/services/baseService';
 
@@ -36,7 +36,7 @@ export const useSuppliers = (params?: {
     });
 };
 
-export const useSuppliersPaged = (params: any) => {
+export const useSuppliersPaged = (params: Record<string, unknown>) => {
     return useQuery({
         queryKey: ['suppliers', 'paged', params],
         queryFn: async () => {

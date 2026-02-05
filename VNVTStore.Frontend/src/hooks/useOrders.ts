@@ -2,7 +2,7 @@
  * useOrders hook - React Query hooks for Order operations
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { orderService, type UpdateOrderRequest } from '@/services/orderService';
+import { orderService } from '@/services/orderService';
 import { SearchCondition } from '@/services/baseService';
 
 export function useOrders(params?: {
@@ -40,10 +40,10 @@ export function useOrders(params?: {
 export function useAdminOrders(params?: {
     pageIndex?: number;
     pageSize?: number;
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
 }) {
     const searchFilters: { field: string; value: string; operator?: SearchCondition }[] = [];
-    const searchTerm = params?.filters?.search;
+    const searchTerm = params?.filters?.search as string;
 
     // Convert filters to array for backend
     if (params?.filters) {

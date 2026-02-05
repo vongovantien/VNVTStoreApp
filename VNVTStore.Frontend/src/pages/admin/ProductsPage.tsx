@@ -8,6 +8,7 @@ import { ProductForm, ProductFormData } from './forms/ProductForm';
 import {
   useProducts,
   useEntityManager,
+  type EntityService
 } from '@/hooks';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { productService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
@@ -135,7 +136,7 @@ export const ProductsPage = () => {
     updateMutation,
     deleteMutation
   } = useEntityManager<Product, CreateProductRequest, UpdateProductRequest>({
-    service: productService,
+    service: productService as unknown as EntityService<Product, CreateProductRequest, UpdateProductRequest>,
     queryKey: ['products'],
     includeChildrenOnEdit: true,
   });

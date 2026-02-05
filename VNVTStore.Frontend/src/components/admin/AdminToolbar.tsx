@@ -30,6 +30,7 @@ interface AdminToolbarProps {
 
   onSearchClick?: () => void;
   onRefresh?: () => void;
+  onReset?: () => void;
 
 
   onImport?: () => void;

@@ -55,9 +55,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
               {React.Children.map(children, (child) => {
                  if (React.isValidElement(child)) {
                     return React.cloneElement(child, {
-                        // @ts-ignore
-                        onClick: (e: any) => {
-                            (child as any).props.onClick?.(e);
+                        // @ts-expect-error - injecting onClick into child
+                        onClick: (e: React.MouseEvent) => {
+                            (child as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>).props.onClick?.(e);
                             setIsOpen(false);
                         }
                     });

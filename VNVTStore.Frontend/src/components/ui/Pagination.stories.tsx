@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Pagination } from './Pagination';
+import { Pagination, PaginationProps } from './Pagination';
 import { useState } from 'react';
 
 const meta = {
@@ -22,7 +22,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Wrapper to handle state
-const PaginationWrapper = (args: any) => {
+const PaginationWrapper = (args: PaginationProps) => {
   const [currentPage, setCurrentPage] = useState(args.currentPage || 1);
   const [pageSize, setPageSize] = useState(args.pageSize || 10);
 
@@ -44,8 +44,9 @@ export const Default: Story = {
   args: {
     currentPage: 1,
     totalPages: 10,
-    totalItems: 95,
+    totalItems: 100,
     pageSize: 10,
+    onPageChange: () => {},
   },
 };
 
@@ -53,10 +54,11 @@ export const Loading: Story = {
   render: (args) => <PaginationWrapper {...args} />,
   args: {
     currentPage: 1,
-    totalPages: 10,
-    totalItems: 95,
+    totalPages: 5,
+    totalItems: 50,
     pageSize: 10,
     isLoading: true,
+    onPageChange: () => {},
   },
 };
 
@@ -67,6 +69,7 @@ export const ManyPages: Story = {
     totalPages: 50,
     totalItems: 495,
     pageSize: 10,
+    onPageChange: () => {},
   },
 };
 
@@ -77,5 +80,6 @@ export const SinglePage: Story = {
     totalPages: 1,
     totalItems: 5,
     pageSize: 10,
+    onPageChange: () => {},
   },
 };

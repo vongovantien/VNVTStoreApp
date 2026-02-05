@@ -3,10 +3,10 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import { useRoles, useRole } from '../useRoles';
-import { roleService } from '@/services/roleService';
+import { roleService } from '../../services/roleService';
 
 // Mock roleService
-vi.mock('@/services/roleService', () => ({
+vi.mock('../../services/roleService', () => ({
     roleService: {
         search: vi.fn(),
         getByCode: vi.fn(),
@@ -43,7 +43,7 @@ describe('useRoles hooks', () => {
                     hasNextPage: false
                 }
             };
-            (roleService.search as any).mockResolvedValue(mockData);
+            vi.mocked(roleService.search).mockResolvedValue(mockData);
 
             const params = { pageIndex: 1, pageSize: 10 };
             const { result } = renderHook(() => useRoles(params), { wrapper });
@@ -54,7 +54,7 @@ describe('useRoles hooks', () => {
         });
 
         it('should handle error states', async () => {
-            (roleService.search as any).mockRejectedValue(new Error('Fetch failed'));
+            vi.mocked(roleService.search).mockRejectedValue(new Error('Fetch failed'));
 
             const { result } = renderHook(() => useRoles({}), { wrapper });
 
@@ -67,7 +67,7 @@ describe('useRoles hooks', () => {
         it('should fetch a single role by code', async () => {
             const mockRole = { code: 'admin', name: 'Admin', permissions: [] };
             const mockResponse = { success: true, message: '', statusCode: 200, data: mockRole };
-            (roleService.getByCode as any).mockResolvedValue(mockResponse);
+            vi.mocked(roleService.getByCode).mockResolvedValue(mockResponse);
 
             const { result } = renderHook(() => useRole('admin'), { wrapper });
 

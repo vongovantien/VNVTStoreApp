@@ -8,7 +8,7 @@ interface UseDataTableProps<T> {
     initialSort?: { field: keyof T; direction: 'asc' | 'desc' };
 }
 
-export const useDataTable = <T extends { id: string | number } & Record<string, any>>({
+export const useDataTable = <T extends { id: string | number } & Record<string, unknown>>({
     data,
     filterFn,
     initialSort,

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ticket, Plus, Search, Trash2, Edit, RefreshCw } from 'lucide-react';
+import { Plus, Search, Trash2, Edit, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';
 import { formatDate } from '@/utils/format';
-import { couponService, type CouponDto } from '@/services/couponService';
+import { couponService, type CouponDto, type CreateCouponRequest, type UpdateCouponRequest } from '@/services/couponService';
 import { promotionService } from '@/services/promotionService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaginationDefaults } from '@/constants';
@@ -52,25 +52,25 @@ export const CouponsPage = () => {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: any) => couponService.create(data),
+    mutationFn: (data: Partial<CouponDto>) => couponService.create(data as CreateCouponRequest),
     onSuccess: () => {
       success(t('messages.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
       setIsModalOpen(false);
       resetForm();
     },
-    onError: (err: any) => toastError(err.message || t('messages.createError'))
+    onError: (err: Error) => toastError(err.message || t('messages.createError'))
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ code, data }: { code: string, data: any }) => couponService.update(code, data),
+    mutationFn: ({ code, data }: { code: string, data: Partial<CouponDto> }) => couponService.update(code, data as UpdateCouponRequest),
     onSuccess: () => {
       success(t('messages.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
       setIsModalOpen(false);
       resetForm();
     },
-    onError: (err: any) => toastError(err.message || t('messages.updateError'))
+    onError: (err: Error) => toastError(err.message || t('messages.updateError'))
   });
 
   const deleteMutation = useMutation({

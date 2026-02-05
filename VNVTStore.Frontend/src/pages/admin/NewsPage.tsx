@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FileText, Plus, Search, Trash2, Edit, Eye, Image as ImageIcon, Globe } from 'lucide-react';
+import { Plus, Search, Trash2, Edit, Image as ImageIcon } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';
@@ -54,25 +54,25 @@ export const NewsPage = () => {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: any) => newsService.create(data),
+    mutationFn: (data: Partial<NewsDto>) => newsService.create(data as any),
     onSuccess: () => {
       success(t('messages.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
       setIsModalOpen(false);
       resetForm();
     },
-    onError: (err: any) => toastError(err.message || t('messages.createError'))
+    onError: (err: Error) => toastError(err.message || t('messages.createError'))
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ code, data }: { code: string, data: any }) => newsService.update(code, data),
+    mutationFn: ({ code, data }: { code: string, data: Partial<NewsDto> }) => newsService.update(code, data as any),
     onSuccess: () => {
       success(t('messages.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
       setIsModalOpen(false);
       resetForm();
     },
-    onError: (err: any) => toastError(err.message || t('messages.updateError'))
+    onError: (err: Error) => toastError(err.message || t('messages.updateError'))
   });
 
   const deleteMutation = useMutation({

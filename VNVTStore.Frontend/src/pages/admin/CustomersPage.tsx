@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mail, Phone, Users, AlertTriangle, Key } from 'lucide-react';
-import { Button, Modal, Badge, ConfirmDialog, TableActions, Input, Select, Switch } from '@/components/ui';
+import { Button, Modal, Badge, ConfirmDialog, Input, Select, Switch } from '@/components/ui';
 import { useToast } from '@/store';
-import { formatCurrency, formatDate } from '@/utils/format';
+import { formatDate } from '@/utils/format';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
-import { useEntityManager } from '@/hooks';
+import { useEntityManager, type EntityService } from '@/hooks';
 import { customerService, type CustomerDto, type CreateCustomerRequest, type UpdateCustomerRequest } from '@/services';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { PaginationDefaults, SortDirection } from '@/constants';
@@ -90,7 +90,7 @@ export const CustomersPage = () => {
       update: updateCustomer,
       delete: deleteCustomer
   } = useEntityManager<CustomerDto, CreateCustomerRequest, UpdateCustomerRequest>({
-    service: customerService,
+    service: customerService as unknown as EntityService<CustomerDto, CreateCustomerRequest, UpdateCustomerRequest>,
     queryKey: ['customers', pageIndex, pageSize, sortField, sortDir, filters],
   });
 
@@ -105,7 +105,7 @@ export const CustomersPage = () => {
       setItemsToDelete(null);
       refetch();
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || t('common.deleteError'));
     }
   });
@@ -195,7 +195,7 @@ export const CustomersPage = () => {
           await customerService.update(resettingCustomer.code, { password: newPassword });
           toast.success(t('messages.saveSuccess'));
           setResettingCustomer(null);
-      } catch (err) {
+      } catch {
           toast.error(t('messages.error'));
       }
   };

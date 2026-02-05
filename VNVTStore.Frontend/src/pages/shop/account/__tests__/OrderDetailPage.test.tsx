@@ -4,7 +4,7 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import OrderDetailPage from '../OrderDetailPage';
 import { OrderDto } from '@/services/orderService';
-import { useOrder } from '../../../../hooks/useOrders';
+import { useOrder } from '@/hooks';
 
 // Mock hooks
 vi.mock('@/hooks', () => ({

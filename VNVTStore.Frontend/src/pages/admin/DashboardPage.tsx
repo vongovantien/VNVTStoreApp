@@ -1,16 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import {
-  DollarSign,
-  ShoppingBag,
-  Users,
-  Package,
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  FileText,
-  Loader2,
-} from 'lucide-react';
+import { ShoppingBag, Users, DollarSign, ArrowUpRight, TrendingUp, TrendingDown, Package, Loader2 } from 'lucide-react';
 import { RevenueChart, AdminPageHeader } from '@/components/admin';
 import { formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { dashboardService } from '@/services';

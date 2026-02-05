@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient, QueryKey } from '@tanstack/react-query';
+import { ApiResponse } from '@/services/api';
 import { useToast } from '@/store';
 import { useTranslation } from 'react-i18next';
 
 export interface EntityService<T, CreateDto, UpdateDto> {
-    create: (data: CreateDto) => Promise<any>;
-    update: (id: any, data: UpdateDto) => Promise<any>;
-    delete: (id: any) => Promise<any>;
-    getByCode?: (code: any, params?: any) => Promise<any>; // Optional fetch detail method
+    create: (data: CreateDto) => Promise<ApiResponse<unknown>>;
+    update: (id: string | number, data: UpdateDto) => Promise<ApiResponse<unknown>>;
+    delete: (id: string | number) => Promise<ApiResponse<unknown>>;
+    getByCode?: (code: string, params?: Record<string, unknown>) => Promise<ApiResponse<T>>; // Optional fetch detail method
 }
 
 interface UseEntityManagerOptions<T, CreateDto, UpdateDto> {
@@ -96,7 +97,7 @@ export const useEntityManager = <T extends { code?: string; id?: string | number
                     setEditingItem(response.data);
                 } else if (response) {
                     // Fallback if response is direct object or different format
-                    setEditingItem(response as T);
+                    setEditingItem(response.data as T);
                 }
             } catch (err) {
                 console.error("Failed to fetch fresh item details", err);
@@ -124,11 +125,11 @@ export const useEntityManager = <T extends { code?: string; id?: string | number
         createMutation.mutate(data);
     }, [createMutation]);
 
-    const processUpdate = useCallback((id: any, data: UpdateDto) => {
+    const processUpdate = useCallback((id: string | number, data: UpdateDto) => {
         updateMutation.mutate({ id, data });
     }, [updateMutation]);
 
-    const processDelete = useCallback((id: any) => {
+    const processDelete = useCallback((id: string | number) => {
         deleteMutation.mutate(id);
     }, [deleteMutation]);
 

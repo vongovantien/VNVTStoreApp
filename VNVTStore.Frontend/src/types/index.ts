@@ -80,7 +80,7 @@ export interface ProductTag {
 
 export interface ProductImage {
     code: string;
-    imageURL: string;
+    imageURL?: string;
     isPrimary?: boolean;
 }
 

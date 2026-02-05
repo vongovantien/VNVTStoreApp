@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Star, Eye, Scale, Phone } from 'lucide-react';
+import { cn } from '@/utils/cn';
 
 import { Button, Badge } from '@/components/ui';
 import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';

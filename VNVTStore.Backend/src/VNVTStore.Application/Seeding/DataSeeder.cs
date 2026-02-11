@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
+using Serilog;
 
 namespace VNVTStore.Application.Seeding;
 
@@ -25,7 +26,7 @@ public static class DataSeeder
                 UserRole.Admin
             );
             context.TblUsers.Add(admin);
-            Console.WriteLine("Seeded Admin User: admin / Admin@123");
+            Log.Information("[SeedAsync] Seeded Admin User: admin / Admin@123");
         }
 
         // 2. Seed Base Data (Category, Brand, Unit)
@@ -52,7 +53,68 @@ public static class DataSeeder
 
         await context.SaveChangesAsync(default);
 
-        // 3. Seed 100 Products
+        // 3. Seed Staff Roles and Users for AccessChannel Testing
+        var webStaffRole = await context.TblRoles.FirstOrDefaultAsync(r => r.Code == "WEB_STAFF");
+        if (webStaffRole == null)
+        {
+            webStaffRole = new TblRole
+            {
+                Code = "WEB_STAFF",
+                Name = "Web Staff",
+                Description = "Staff with Web Access Only",
+                IsActive = true
+            };
+            context.TblRoles.Add(webStaffRole);
+        }
+
+        var posStaffRole = await context.TblRoles.FirstOrDefaultAsync(r => r.Code == "POS_STAFF");
+        if (posStaffRole == null)
+        {
+            posStaffRole = new TblRole
+            {
+                Code = "POS_STAFF",
+                Name = "POS Staff",
+                Description = "Staff with POS Access Only",
+                IsActive = true
+            };
+            context.TblRoles.Add(posStaffRole);
+        }
+        
+        // Seed Users for these roles
+        // Note: Using TblUser.Create and then updating RoleCode manually because Factory uses Enum
+        var webUser = await context.TblUsers.FirstOrDefaultAsync(u => u.Username == "webuser");
+        if (webUser == null)
+        {
+            var user = TblUser.Create(
+                "webuser",
+                "webuser@vnvtstore.com",
+                passwordHasher.Hash("Staff@123"),
+                "Web Staff User",
+                UserRole.Staff
+            );
+            user.UpdateRole("WEB_STAFF");
+            context.TblUsers.Add(user);
+            Log.Information("[SeedAsync] Seeded Web Staff: webuser / Staff@123");
+        }
+
+        var posUser = await context.TblUsers.FirstOrDefaultAsync(u => u.Username == "posuser");
+        if (posUser == null)
+        {
+            var user = TblUser.Create(
+                "posuser",
+                "posuser@vnvtstore.com",
+                passwordHasher.Hash("Staff@123"),
+                "POS Staff User",
+                UserRole.Staff
+            );
+            user.UpdateRole("POS_STAFF");
+            context.TblUsers.Add(user);
+            Log.Information("[SeedAsync] Seeded POS Staff: posuser / Staff@123");
+        }
+        
+        await context.SaveChangesAsync(default);
+
+        // 4. Seed 100 Products
         var productCount = await context.TblProducts.CountAsync();
         if (productCount < 100)
         {
@@ -125,7 +187,7 @@ public static class DataSeeder
             }
 
             await context.SaveChangesAsync(default);
-            Console.WriteLine($"Successfully seeded {productsToCreate} products.");
+            Log.Information("[SeedAsync] Successfully seeded {Count} products.", productsToCreate);
         }
     }
 }

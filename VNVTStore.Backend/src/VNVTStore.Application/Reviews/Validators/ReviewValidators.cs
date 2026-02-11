@@ -40,10 +40,5 @@ public class UpdateReviewDtoValidator : AbstractValidator<UpdateReviewDto>
             .MaximumLength(1000)
             .When(x => !string.IsNullOrEmpty(x.Comment))
             .WithMessage("Nhận xét không được vượt quá 1000 ký tự");
-
-        RuleFor(x => x.AdminReply)
-            .MaximumLength(500)
-            .When(x => !string.IsNullOrEmpty(x.AdminReply))
-            .WithMessage("Phản hồi admin không được vượt quá 500 ký tự");
     }
 }

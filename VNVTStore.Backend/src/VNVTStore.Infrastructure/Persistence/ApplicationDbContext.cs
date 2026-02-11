@@ -20,6 +20,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblAddress> TblAddresses { get; set; }
 
     public virtual DbSet<TblBanner> TblBanners { get; set; }
+    public virtual DbSet<TblSystemConfig> TblSystemConfigs { get; set; }
 
     public virtual DbSet<TblCart> TblCarts { get; set; }
 
@@ -67,8 +68,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblQuoteItem> TblQuoteItems { get; set; }
     public virtual DbSet<TblDebtLog> TblDebtLogs { get; set; }
     public virtual DbSet<TblSupplier> TblSuppliers { get; set; }
-
-
+    public virtual DbSet<TblMenu> TblMenus { get; set; }
+    public virtual DbSet<TblRoleMenu> TblRoleMenus { get; set; }
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<DateTime>()
@@ -639,6 +640,17 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("TblReview_UserCode_fkey");
+
+            entity.HasOne(d => d.ProductCodeNavigation).WithMany()
+                .HasForeignKey(d => d.ProductCode)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("TblReview_ProductCode_fkey");
+
+            entity.HasOne(d => d.ParentNavigation).WithMany(p => p.InverseParentNavigation)
+                .HasForeignKey(d => d.ParentCode)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblReview_ParentCode_fkey");
+
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -1086,6 +1098,55 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+        });
+
+        // System Config Configuration
+        modelBuilder.Entity<TblSystemConfig>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblSystemConfig_pkey");
+            entity.ToTable("TblSystemConfig");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.ConfigValue).IsRequired(false);
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+        });
+
+        // Menu Configuration
+        modelBuilder.Entity<TblMenu>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblMenu_pkey");
+            entity.ToTable("TblMenu");
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Path).HasMaxLength(255);
+            entity.Property(e => e.GroupCode).HasMaxLength(50);
+            entity.Property(e => e.GroupName).HasMaxLength(100);
+            entity.Property(e => e.Icon).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        // RoleMenu Configuration (Junction Table)
+        modelBuilder.Entity<TblRoleMenu>(entity =>
+        {
+            entity.HasKey(e => new { e.RoleCode, e.MenuCode }).HasName("TblRoleMenu_pkey");
+            entity.ToTable("TblRoleMenu");
+            entity.Property(e => e.RoleCode).HasMaxLength(50);
+            entity.Property(e => e.MenuCode).HasMaxLength(50);
+
+            entity.HasOne(d => d.RoleCodeNavigation)
+                .WithMany(p => p.TblRoleMenus)
+                .HasForeignKey(d => d.RoleCode)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblRoleMenu_RoleCode_fkey");
+
+            entity.HasOne(d => d.MenuCodeNavigation)
+                .WithMany(p => p.TblRoleMenus)
+                .HasForeignKey(d => d.MenuCode)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblRoleMenu_MenuCode_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

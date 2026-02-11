@@ -567,6 +567,50 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.ToTable("TblFile", (string)null);
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblMenu", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("GroupCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Code")
+                        .HasName("TblMenu_pkey");
+
+                    b.ToTable("TblMenu", (string)null);
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblNews", b =>
                 {
                     b.Property<string>("Code")
@@ -1470,9 +1514,6 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValueSql("('REV'::text || lpad((nextval('review_code_seq'::regclass))::text, 6, '0'::text))");
 
-                    b.Property<string>("AdminReply")
-                        .HasColumnType("text");
-
                     b.Property<string>("Comment")
                         .HasColumnType("text");
 
@@ -1500,6 +1541,12 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("ParentCode")
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ProductCode")
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int?>("Rating")
                         .HasColumnType("integer");
 
@@ -1517,6 +1564,10 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasName("TblReview_pkey");
 
                     b.HasIndex("OrderItemCode");
+
+                    b.HasIndex("ParentCode");
+
+                    b.HasIndex("ProductCode");
 
                     b.HasIndex("UserCode");
 
@@ -1556,6 +1607,24 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.ToTable("TblRole", (string)null);
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblRoleMenu", b =>
+                {
+                    b.Property<string>("RoleCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("MenuCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("RoleCode", "MenuCode")
+                        .HasName("TblRoleMenu_pkey");
+
+                    b.HasIndex("MenuCode");
+
+                    b.ToTable("TblRoleMenu", (string)null);
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblRolePermission", b =>
                 {
                     b.Property<string>("RoleCode")
@@ -1575,6 +1644,7 @@ namespace VNVTStore.Infrastructure.Migrations
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblSupplier", b =>
                 {
                     b.Property<string>("Code")
+                        .HasMaxLength(50)
                         .HasColumnType("character varying");
 
                     b.Property<string>("Address")
@@ -1609,6 +1679,7 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("character varying");
 
                     b.Property<string>("Notes")
@@ -1629,6 +1700,45 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasName("TblSupplier_pkey");
 
                     b.ToTable("TblSupplier", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblSystemConfig", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ConfigValue")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("ADD");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Code")
+                        .HasName("TblSystemConfig_pkey");
+
+                    b.ToTable("TblSystemConfig", (string)null);
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblTag", b =>
@@ -2148,6 +2258,18 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasForeignKey("OrderItemCode")
                         .HasConstraintName("TblReview_OrderItemCode_fkey");
 
+                    b.HasOne("VNVTStore.Domain.Entities.TblReview", "ParentNavigation")
+                        .WithMany("InverseParentNavigation")
+                        .HasForeignKey("ParentCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("TblReview_ParentCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblProduct", "ProductCodeNavigation")
+                        .WithMany()
+                        .HasForeignKey("ProductCode")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("TblReview_ProductCode_fkey");
+
                     b.HasOne("VNVTStore.Domain.Entities.TblUser", "UserCodeNavigation")
                         .WithMany("TblReviews")
                         .HasForeignKey("UserCode")
@@ -2156,7 +2278,32 @@ namespace VNVTStore.Infrastructure.Migrations
 
                     b.Navigation("OrderItemCodeNavigation");
 
+                    b.Navigation("ParentNavigation");
+
+                    b.Navigation("ProductCodeNavigation");
+
                     b.Navigation("UserCodeNavigation");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblRoleMenu", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblMenu", "MenuCodeNavigation")
+                        .WithMany("TblRoleMenus")
+                        .HasForeignKey("MenuCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblRoleMenu_MenuCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblRole", "RoleCodeNavigation")
+                        .WithMany("TblRoleMenus")
+                        .HasForeignKey("RoleCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblRoleMenu_RoleCode_fkey");
+
+                    b.Navigation("MenuCodeNavigation");
+
+                    b.Navigation("RoleCodeNavigation");
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblRolePermission", b =>
@@ -2229,6 +2376,11 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("TblOrders");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblMenu", b =>
+                {
+                    b.Navigation("TblRoleMenus");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblOrder", b =>
                 {
                     b.Navigation("TblOrderItems");
@@ -2277,8 +2429,15 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("TblQuoteItems");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblReview", b =>
+                {
+                    b.Navigation("InverseParentNavigation");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblRole", b =>
                 {
+                    b.Navigation("TblRoleMenus");
+
                     b.Navigation("TblRolePermissions");
 
                     b.Navigation("TblUsers");

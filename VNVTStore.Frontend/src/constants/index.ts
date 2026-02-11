@@ -1,12 +1,12 @@
 export enum OrderStatus {
-    PENDING = 'Pending',
-    CONFIRMED = 'Confirmed',
-    PROCESSING = 'Processing',
-    SHIPPING = 'Shipping',
-    DELIVERED = 'Delivered',
-    CANCELLED = 'Cancelled',
-    RETURNED = 'Returned',
-    REFUNDED = 'Refunded'
+    PENDING = 'pending',
+    CONFIRMED = 'confirmed',
+    PROCESSING = 'processing',
+    SHIPPING = 'shipping',
+    DELIVERED = 'delivered',
+    CANCELLED = 'cancelled',
+    RETURNED = 'returned',
+    REFUNDED = 'refunded'
 }
 
 export const OrderStatusLabel: Record<string, string> = {
@@ -47,6 +47,19 @@ export enum ReviewStatus {
     PENDING = 'Pending',
     APPROVED = 'Approved',
     REJECTED = 'Rejected'
+}
+
+export enum Role {
+    ADMIN = 'Admin',
+    USER = 'User',
+    CUSTOMER = 'Customer'
+}
+
+export enum QuoteStatus {
+    PENDING = 'pending',
+    QUOTED = 'quoted',
+    CLOSED = 'closed',
+    CANCELLED = 'cancelled'
 }
 
 export const PageSize = {

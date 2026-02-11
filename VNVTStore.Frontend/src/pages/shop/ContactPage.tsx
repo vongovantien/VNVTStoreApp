@@ -25,7 +25,7 @@ export const ContactPage = () => {
         }
     });
 
-    const onSubmit = (data: ContactFormData) => {
+    const onSubmit = () => {
         toast.success(t('contactPage.success'));
         reset();
     };

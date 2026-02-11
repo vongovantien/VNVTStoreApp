@@ -5,7 +5,7 @@ import { Ruler } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { unitService, type CatalogUnitDto, type CreateUnitRequest, type UpdateUnitRequest } from '@/services';
-import { DataTable, type DataTableColumn } from '@/components/common';
+import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, useUnits } from '@/hooks';
 import { CatalogUnitForm, type CatalogUnitFormData } from './forms/CatalogUnitForm';
@@ -139,16 +139,7 @@ export default function UnitsPage() {
       sortable: true,
       className: 'font-medium'
     },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (unit) => (
-        <Badge color={unit.isActive !== false ? 'success' : 'secondary'}>
-          {unit.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
-        </Badge>
-      ),
-      className: 'text-center w-[120px]',
-    },
+    CommonColumns.createStatusColumn(t),
     {
         id: 'actions',
         header: '',

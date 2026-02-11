@@ -28,7 +28,7 @@ public class EmailService : IEmailService
 
         if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(fromEmail))
         {
-            _logger.LogWarning("Email settings are missing. Email to {To} with subject {Subject} was not sent.", to, subject);
+            _logger.LogWarning("[SendEmailAsync] error: Email settings are missing. Email to {To} with subject {Subject} was not sent.", to, subject);
             return;
         }
 
@@ -50,11 +50,11 @@ public class EmailService : IEmailService
             mailMessage.To.Add(to);
 
             await client.SendMailAsync(mailMessage);
-            _logger.LogInformation("Email sent to {To} with subject {Subject}", to, subject);
+            _logger.LogInformation("[SendEmailAsync] Email sent to {To} with subject {Subject}", to, subject);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {To}", to);
+            _logger.LogError(ex, "[SendEmailAsync] error: Failed to send email to {To}", to);
             // We might not want to throw here to avoid failing the main request if email is secondary
             // But for verification it is critical.
             throw; 

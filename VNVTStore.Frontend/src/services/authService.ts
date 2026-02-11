@@ -29,6 +29,8 @@ export interface AuthResponseDto {
         fullName?: string;
         role?: string;
         avatar?: string;
+        permissions: string[];
+        menus: string[];
     };
 }
 
@@ -39,6 +41,8 @@ export interface UserDto {
     fullName?: string;
     role?: string;
     avatar?: string;
+    permissions: string[];
+    menus: string[];
 }
 
 // ============ Auth Service ============

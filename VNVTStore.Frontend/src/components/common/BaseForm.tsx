@@ -206,12 +206,12 @@ function FieldRenderer<T extends FieldValues>({
       return (
         <div className={colSpanClass}>
           <div className="space-y-1">
-            <label className="text-sm font-bold text-primary mb-1 block">
+            <label className="text-sm font-bold text-text-primary block">
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             <textarea
-              className="w-full min-h-[100px] px-4 py-3 border rounded-xl focus:outline-none focus:ring-4 focus:ring-accent-primary/5 bg-primary transition-all resize-y text-base text-primary placeholder:text-tertiary"
+              className="w-full min-h-[100px] px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent bg-bg-primary transition-all resize-y text-base text-text-primary placeholder:text-text-tertiary"
               placeholder={field.placeholder}
               rows={field.rows || 4}
               disabled={field.disabled}
@@ -259,7 +259,7 @@ function FieldRenderer<T extends FieldValues>({
     case 'switch':
       return (
         <div className={colSpanClass}>
-          <div className="p-4 bg-tertiary/30 dark:bg-slate-900/10 rounded-xl border border-border-color">
+          <div className="py-2 border-b border-border last:border-0">
             <Controller
               name={field.name as Path<T>}
               control={control}
@@ -283,7 +283,7 @@ function FieldRenderer<T extends FieldValues>({
       return (
         <div className={colSpanClass}>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">
+            <label className="text-sm font-bold text-text-primary">
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -321,19 +321,19 @@ function FieldRenderer<T extends FieldValues>({
             
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
+              className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
                 isDragActive 
-                  ? 'border-accent-primary bg-accent-primary/5' 
-                  : 'border-border-color hover:border-accent-primary/50'
+                  ? 'border-accent bg-accent/5' 
+                  : 'border-border hover:border-accent/50 hover:bg-bg-secondary'
               } ${currentValue ? 'h-16' : 'h-24'}`}
             >
               <input {...getInputProps()} />
               {isUploading ? (
-                <p className="text-sm text-accent-primary font-medium">{t('common.uploading', 'Đang tải lên...')}</p>
+                <p className="text-sm text-accent font-medium">{t('common.uploading', 'Đang tải lên...')}</p>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full">
-                  <Upload size={20} className="text-tertiary mb-2" />
-                  <p className="text-xs text-secondary font-medium">
+                  <Upload size={20} className="text-text-tertiary mb-2" />
+                  <p className="text-xs text-text-secondary font-medium">
                     {isDragActive 
                       ? t('common.dropHere', 'Thả file vào đây') 
                       : t('common.dragOrClick', 'Kéo thả hoặc click để chọn file')}
@@ -445,7 +445,7 @@ export function BaseForm<T extends FieldValues>({
       if (layout === 'tabs') {
         return (
           <div className="space-y-4">
-            <div className="flex flex-wrap border-b border-border-color">
+            <div className="flex flex-wrap border-b border-border">
               {fieldGroups.map((group, index) => (
                 <button
                   key={index}
@@ -453,8 +453,8 @@ export function BaseForm<T extends FieldValues>({
                   onClick={() => setActiveTab(index)}
                   className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
                     activeTab === index
-                      ? 'border-accent-primary text-accent-primary'
-                      : 'border-transparent text-secondary hover:text-primary'
+                      ? 'border-accent text-accent'
+                      : 'border-transparent text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   {group.title || `Tab ${index + 1}`}
@@ -496,18 +496,13 @@ export function BaseForm<T extends FieldValues>({
   };
 
   const renderGroup = (group: FieldGroup, groupIndex: number, hideTitle: boolean = false) => (
-    <div key={groupIndex} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-border-color p-6 space-y-4">
+    <div key={groupIndex} className="bg-bg-primary rounded-2xl shadow-sm border border-border p-6 space-y-5">
         {(!hideTitle && (group.title || group.description)) && (
-            <div className="space-y-1 mb-6">
+            <div className="pb-4 border-b border-border">
                 {group.title && (
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-accent-primary/10 flex items-center justify-center text-accent-primary font-bold text-base">
-                            {groupIndex + 1}
-                        </div>
-                        <h3 className="text-base font-extrabold text-primary uppercase tracking-widest">{group.title}</h3>
-                    </div>
+                    <h3 className="text-lg font-bold text-text-primary">{group.title}</h3>
                 )}
-                {group.description && <p className="text-sm text-secondary ml-13">{group.description}</p>}
+                {group.description && <p className="text-sm text-text-secondary mt-1">{group.description}</p>}
             </div>
         )}
         <div className="grid grid-cols-12 gap-4">
@@ -531,8 +526,9 @@ export function BaseForm<T extends FieldValues>({
       {onCancel && (
         <Button 
           type="button" 
-          variant="outline" 
+          variant="ghost" 
           onClick={onCancel}
+          className="text-text-secondary hover:text-text-primary"
         >
           {cancelLabel || t('common.cancel')}
         </Button>
@@ -542,6 +538,7 @@ export function BaseForm<T extends FieldValues>({
         isLoading={isLoading} 
         form={isModal ? undefined : formId}
         onClick={isModal ? handleManualSubmit : (e) => e.stopPropagation()}
+        className="px-8 shadow-md hover:shadow-lg transition-all"
       >
         {submitLabel || t('common.save')}
       </Button>
@@ -569,7 +566,7 @@ export function BaseForm<T extends FieldValues>({
 
       {/* If NOT modal, render buttons inside form normal flow */}
       {!isModal && (
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           {actionButtons}
         </div>
       )}

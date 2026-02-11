@@ -18,6 +18,5 @@ public record GetReviewByCodeQuery(string Code) : GetByCodeQuery<ReviewDto>(Code
 public record GetAllReviewsQuery(
     int PageIndex = AppConstants.Paging.DefaultPageNumber, 
     int PageSize = AppConstants.Paging.DefaultPageSize, 
-    string? Search = null,
     bool? IsApproved = null
-) : GetPagedQuery<ReviewDto>(PageIndex, PageSize, Search);
+) : GetPagedQuery<ReviewDto>(PageIndex, PageSize);

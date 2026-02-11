@@ -15,13 +15,17 @@ public record GetByCodeQuery<TResponse>(string Code, bool IncludeChildren = fals
 public record GetPagedQuery<TResponse>(
     int PageIndex = AppConstants.Paging.DefaultPageNumber,
     int PageSize = AppConstants.Paging.DefaultPageSize,
-    string? Search = null,
     SortDTO? SortDTO = null,
     List<SearchDTO>? Searching = null,
     List<string>? Fields = null,
     string? SortField = null,
     bool SortDescending = true
-) : IRequest<Result<PagedResult<TResponse>>>;
+) : IRequest<Result<PagedResult<TResponse>>>
+{
+    // Secondary constructor to simplify inheritance for basic paged queries
+    public GetPagedQuery(int pageIndex, int pageSize) 
+        : this(pageIndex, pageSize, null, null, null, null, true) { }
+}
 
 /// <summary>
 /// Base Query cho việc lấy tất cả items - REUSABLE

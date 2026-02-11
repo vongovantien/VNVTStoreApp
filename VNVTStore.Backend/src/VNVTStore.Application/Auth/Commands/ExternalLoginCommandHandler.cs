@@ -6,6 +6,7 @@ using VNVTStore.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using FirebaseAdmin.Auth;
 using FirebaseAdmin;
+using Microsoft.Extensions.Logging;
 
 namespace VNVTStore.Application.Auth.Commands;
 
@@ -13,11 +14,13 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
 {
     private readonly IApplicationDbContext _context;
     private readonly IJwtService _jwtService;
+    private readonly ILogger<ExternalLoginCommandHandler> _logger;
 
-    public ExternalLoginCommandHandler(IApplicationDbContext context, IJwtService jwtService)
+    public ExternalLoginCommandHandler(IApplicationDbContext context, IJwtService jwtService, ILogger<ExternalLoginCommandHandler> logger)
     {
         _context = context;
         _jwtService = jwtService;
+        _logger = logger;
     }
 
     public async Task<Result<AuthResponseDto>> Handle(ExternalLoginCommand request, CancellationToken cancellationToken)
@@ -83,7 +86,7 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
             {
                 fullError += $" | Inner: {ex.InnerException.Message}";
             }
-            Console.WriteLine($"[Error] Firebase verification failed: {fullError}");
+            _logger.LogError(ex, "[Handle] error: Firebase verification failed: {FullError}", fullError);
             return Result<AuthResponseDto>.Failure(fullError);
         }
 
@@ -122,8 +125,8 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
             return Result<AuthResponseDto>.Failure("Account is locked.");
         }
 
-        // 3. Generate Tokens using IJwtService
-        var accessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role);
+        // 3. Generate Tokens using IJwtService (external login has no custom permissions or menus)
+        var accessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, Array.Empty<string>(), Array.Empty<string>());
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));

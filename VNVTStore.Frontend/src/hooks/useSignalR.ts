@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { signalRService, SignalRNotification } from '@/services/signalrService';
+import { signalRService, SignalRNotification, ConnectionStatus } from '@/services/signalrService';
 
 export const useSignalR = () => {
-    const [status, setStatus] = useState(signalRService.getStatus());
+    const [status, setStatus] = useState<ConnectionStatus>(signalRService.getStatus());
 
     useEffect(() => {
         signalRService.setStatusCallback((newStatus) => {
-            setStatus(newStatus as any);
+            setStatus(newStatus);
         });
 
         const init = async () => {

@@ -7,6 +7,7 @@ public class TblRole : IEntity
     public TblRole()
     {
         TblRolePermissions = new HashSet<TblRolePermission>();
+        TblRoleMenus = new HashSet<TblRoleMenu>();
         TblUsers = new HashSet<TblUser>();
     }
 
@@ -19,6 +20,7 @@ public class TblRole : IEntity
     public string? ModifiedType { get; set; }
 
     public virtual ICollection<TblRolePermission> TblRolePermissions { get; set; }
+    public virtual ICollection<TblRoleMenu> TblRoleMenus { get; set; }
     public virtual ICollection<TblUser> TblUsers { get; set; }
 
     public static TblRole Create(string name, string? description = null)

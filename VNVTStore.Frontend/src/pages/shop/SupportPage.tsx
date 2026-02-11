@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
-    HelpCircle, MessageCircle, Phone, Mail, FileText,
+    HelpCircle, MessageCircle, Phone, Mail,
     ChevronDown, ChevronUp, Package, CreditCard, Truck, RefreshCw
 } from 'lucide-react';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { Link } from 'react-router-dom';
 
 export const SupportPage = () => {

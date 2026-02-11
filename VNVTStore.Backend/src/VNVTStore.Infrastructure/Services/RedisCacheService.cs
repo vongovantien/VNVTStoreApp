@@ -31,7 +31,7 @@ public class RedisCacheService : ICacheService, IDisposable
         
         if (string.IsNullOrEmpty(connectionString))
         {
-            _logger.LogWarning("Redis connection string not configured. Redis caching is disabled.");
+            _logger.LogWarning("[Constructor] error: Redis connection string not configured. Redis caching is disabled.");
             _isEnabled = false;
             return;
         }
@@ -41,11 +41,11 @@ public class RedisCacheService : ICacheService, IDisposable
             _redis = ConnectionMultiplexer.Connect(connectionString);
             _db = _redis.GetDatabase();
             _isEnabled = true;
-            _logger.LogInformation("Redis cache connected successfully to {ConnectionString}", connectionString);
+            _logger.LogInformation("[Constructor] Redis cache connected successfully to {ConnectionString}", connectionString);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to connect to Redis. Redis caching is disabled.");
+            _logger.LogError(ex, "[Constructor] error: Failed to connect to Redis. Redis caching is disabled.");
             _isEnabled = false;
         }
     }
@@ -59,16 +59,16 @@ public class RedisCacheService : ICacheService, IDisposable
             var value = await _db.StringGetAsync(key);
             if (value.IsNullOrEmpty)
             {
-                _logger.LogDebug("Redis MISS for key: {Key}", key);
+                _logger.LogDebug("[GetAsync] Redis MISS for key: {Key}", key);
                 return default;
             }
 
-            _logger.LogDebug("Redis HIT for key: {Key}", key);
+            _logger.LogDebug("[GetAsync] Redis HIT for key: {Key}", key);
             return JsonSerializer.Deserialize<T>(value!, _jsonOptions);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Redis GET failed for key: {Key}", key);
+            _logger.LogError(ex, "[GetAsync] error: Redis GET failed for key: {Key}", key);
             return default;
         }
     }
@@ -82,11 +82,11 @@ public class RedisCacheService : ICacheService, IDisposable
             var json = JsonSerializer.Serialize(value, _jsonOptions);
             var expiry = absoluteExpiration ?? _defaultExpiration;
             await _db.StringSetAsync(key, json, expiry);
-            _logger.LogDebug("Redis SET for key: {Key}, Expiration: {Expiration}", key, expiry);
+            _logger.LogDebug("[SetAsync] Redis SET for key: {Key}, Expiration: {Expiration}", key, expiry);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Redis SET failed for key: {Key}", key);
+            _logger.LogError(ex, "[SetAsync] error: Redis SET failed for key: {Key}", key);
         }
     }
 
@@ -97,11 +97,11 @@ public class RedisCacheService : ICacheService, IDisposable
         try
         {
             await _db.KeyDeleteAsync(key);
-            _logger.LogDebug("Redis REMOVE for key: {Key}", key);
+            _logger.LogDebug("[RemoveAsync] Redis REMOVE for key: {Key}", key);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Redis REMOVE failed for key: {Key}", key);
+            _logger.LogError(ex, "[RemoveAsync] error: Redis REMOVE failed for key: {Key}", key);
         }
     }
 
@@ -117,12 +117,12 @@ public class RedisCacheService : ICacheService, IDisposable
             if (keysToRemove.Length > 0)
             {
                 await _db.KeyDeleteAsync(keysToRemove);
-                _logger.LogDebug("Redis REMOVE by prefix: {Prefix}, Count: {Count}", prefix, keysToRemove.Length);
+                _logger.LogDebug("[RemoveByPrefixAsync] Redis REMOVE by prefix: {Prefix}, Count: {Count}", prefix, keysToRemove.Length);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Redis REMOVE by prefix failed for: {Prefix}", prefix);
+            _logger.LogError(ex, "[RemoveByPrefixAsync] error: Redis REMOVE by prefix failed for: {Prefix}", prefix);
         }
     }
 

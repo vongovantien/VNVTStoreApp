@@ -61,7 +61,7 @@ describe('exportToExcel', () => {
             style: {},
             click: mockClick,
         };
-        mockCreateElement.mockReturnValue(mockLink as any);
+        mockCreateElement.mockReturnValue(mockLink as unknown as HTMLElement);
         mockCreateObjectURL.mockReturnValue('blob:url');
     });
 

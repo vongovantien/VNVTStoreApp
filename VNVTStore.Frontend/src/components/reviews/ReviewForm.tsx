@@ -7,15 +7,16 @@ import { reviewService as reviewApi, type CreateReviewRequest } from '@/services
 import { useToast } from '@/store/toastStore';
 
 interface ReviewFormProps {
-  orderItemCode: string;
+  orderItemCode?: string;
   productName: string;
   productImage?: string;
   userCode: string;
+  parentCode?: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const ReviewForm = ({ orderItemCode, productName, productImage, userCode, onSuccess, onCancel }: ReviewFormProps) => {
+const ReviewForm = ({ orderItemCode, productName, productImage, userCode, parentCode, onSuccess, onCancel }: ReviewFormProps) => {
   const { t } = useTranslation();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -32,14 +33,18 @@ const ReviewForm = ({ orderItemCode, productName, productImage, userCode, onSucc
   const onSubmit = async (data: CreateReviewRequest) => {
     setIsSubmitting(true);
     try {
-      const payload: CreateReviewRequest = {
-        orderItemCode: orderItemCode,
-        rating: rating,
-        comment: data.comment,
-        userCode: userCode
-      };
-
-      const res = await reviewApi.create(payload);
+      let res;
+      if (parentCode) {
+        res = await reviewApi.reply(parentCode, data.comment);
+      } else {
+        const payload: CreateReviewRequest = {
+          orderItemCode: orderItemCode,
+          rating: rating,
+          comment: data.comment,
+          userCode: userCode,
+        };
+        res = await reviewApi.create(payload);
+      }
       if (res.success) {
         toast.success(t('review.submit_success') || 'Review submitted successfully!');
         onSuccess();
@@ -81,35 +86,37 @@ const ReviewForm = ({ orderItemCode, productName, productImage, userCode, onSucc
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Rating Stars */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">{t('review.rating') || 'Rating'}</label>
-          <div className="flex gap-1" onMouseLeave={() => setHoverRating(0)}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                className="focus:outline-none transition-transform hover:scale-110"
-                onClick={() => setRating(star)}
-                onMouseEnter={() => setHoverRating(star)}
-              >
-                <Star
-                  size={32}
-                  className={`${
-                    star <= (hoverRating || rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
-                  } transition-colors`}
-                />
-              </button>
-            ))}
+        {!parentCode && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">{t('review.rating') || 'Rating'}</label>
+            <div className="flex gap-1" onMouseLeave={() => setHoverRating(0)}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  className="focus:outline-none transition-transform hover:scale-110"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                >
+                  <Star
+                    size={32}
+                    className={`${
+                      star <= (hoverRating || rating)
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-gray-300'
+                    } transition-colors`}
+                  />
+                </button>
+              ))}
+            </div>
+            <p className="text-sm text-tertiary">
+              {rating === 5 ? 'Excellent!' : 
+               rating === 4 ? 'Good' : 
+               rating === 3 ? 'Average' : 
+               rating === 2 ? 'Poor' : 'Terrible'}
+            </p>
           </div>
-          <p className="text-sm text-tertiary">
-            {rating === 5 ? 'Excellent!' : 
-             rating === 4 ? 'Good' : 
-             rating === 3 ? 'Average' : 
-             rating === 2 ? 'Poor' : 'Terrible'}
-          </p>
-        </div>
+        )}
 
         {/* Comment */}
         <div className="space-y-2">

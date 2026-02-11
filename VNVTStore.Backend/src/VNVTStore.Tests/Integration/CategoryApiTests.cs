@@ -10,7 +10,7 @@ namespace VNVTStore.Tests.Integration;
 
 public class CategoryApiTests : ApiTestBase
 {
-    public CategoryApiTests(WebApplicationFactory<Program> factory) : base(factory) { }
+    public CategoryApiTests(CustomWebApplicationFactory<Program> factory) : base(factory) { }
 
     [Fact]
     public async Task GetAll_ShouldNotReturnServerError()

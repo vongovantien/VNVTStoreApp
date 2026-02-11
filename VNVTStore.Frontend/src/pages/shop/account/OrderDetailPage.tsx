@@ -10,6 +10,7 @@ import SharedImage from '@/components/common/Image';
 import { useOrder } from '@/hooks';
 import { formatDate, formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { OrderItemDto } from '@/services/orderService';
+import { OrderStatus } from '@/constants';
 
 // ============ ORDER ITEM COMPONENT (MEMOIZED) ============
 // Extracted to prevent re-renders of list items when parent state changes unrelated to items
@@ -78,11 +79,14 @@ const OrderDetailPage = () => {
     // Compute Status Icon (Memoized Value)
     const StatusIcon = useMemo(() => {
         if (!order) return Clock;
-        switch (order.status) {
-            case 'Delivered': return CheckCircle;
-            case 'Cancelled': return AlertCircle;
-            case 'Processing': return Package;
-            case 'Shipping': return Truck;
+        // Normalize status to lowercase for consistency
+        const status = order.status.toLowerCase();
+        
+        switch (status) {
+            case OrderStatus.DELIVERED: return CheckCircle;
+            case OrderStatus.CANCELLED: return AlertCircle;
+            case OrderStatus.PROCESSING: return Package;
+            case OrderStatus.SHIPPING: return Truck;
             default: return Clock;
         }
     }, [order]);
@@ -131,7 +135,7 @@ const OrderDetailPage = () => {
                             {formatDate(order.orderDate)}
                         </p>
                     </div>
-                    {order.status === 'Delivered' && (
+                    {order.status.toLowerCase() === OrderStatus.DELIVERED && (
                         <div className="flex gap-2">
                              <Button variant="outline" className="border-error text-error hover:bg-error/5" onClick={() => navigate('/support')}>
                                 {t('order.returnRefund') || 'Yêu cầu Trả hàng/Hoàn tiền'}

@@ -190,6 +190,58 @@ public class ReviewHandlerTests
         Assert.False(result.IsSuccess);
     }
 
+    [Fact]
+    public async Task CreateReview_WithEmptyStrings_ShouldTreatAsNull()
+    {
+        // Arrange
+        var dto = new CreateReviewDto
+        {
+            UserCode = "USER001",
+            ProductCode = "", // Empty string from FE
+            OrderItemCode = "", // Empty string from FE
+            Rating = 5,
+            Comment = "Excellent"
+        };
+        var request = new CreateCommand<CreateReviewDto, ReviewDto>(dto);
+
+        // Act
+        var result = await _handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var capturedReview = _reviewsDatabase.Last();
+        Assert.Null(capturedReview.ProductCode);
+        Assert.Null(capturedReview.OrderItemCode);
+    }
+
+    [Fact]
+    public async Task ReplyReview_ShouldInheritProductCodeFromParent()
+    {
+        // Arrange
+        var parentReview = new TblReview
+        {
+            Code = "REV001",
+            UserCode = "USER001",
+            ProductCode = "PROD001",
+            Comment = "Parent comment"
+        };
+        _reviewRepoMock.Setup(x => x.GetByCodeAsync("REV001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(parentReview);
+        
+        _currentUserMock.Setup(x => x.UserCode).Returns("ADMIN001");
+
+        var command = new ReplyReviewCommand("REV001", "Reply comment");
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var reply = _reviewsDatabase.Last();
+        Assert.Equal("PROD001", reply.ProductCode);
+        Assert.Equal("REV001", reply.ParentCode);
+    }
+
     private void SetPrivateProperty(object obj, string propertyName, object value)
     {
         var type = obj.GetType();

@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 // Layouts
 import { ShopLayout } from '@/layouts/ShopLayout';
@@ -12,7 +12,7 @@ import { PageLoader } from '@/components/common/PageLoader';
 const HomePage = lazy(() => import('@/pages/shop/HomePage'));
 const ProductsPage = lazy(() => import('@/pages/shop/ProductsPage'));
 const ProductDetailPage = lazy(() => import('@/pages/shop/ProductDetailPage'));
-const OrderDetailPage = lazy(() => import('@/pages/shop/account/OrderDetailPage'));
+
 const CartPage = lazy(() => import('@/pages/shop/CartPage'));
 const CheckoutPage = lazy(() => import('@/pages/shop/CheckoutPage'));
 

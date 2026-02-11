@@ -17,7 +17,7 @@ public class PermissionsController : BaseApiController<TblPermission, Permission
     [HasPermission(Permissions.Settings.ManageRoles)]
     public async Task<IActionResult> GetAll()
     {
-        var result = await Mediator.Send(new GetPagedQuery<PermissionDto> { PageSize = 1000 });
+        var result = await Mediator.Send(new GetPagedQuery<PermissionDto>(PageSize: 1000));
         return Ok(result);
     }
 }

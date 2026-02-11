@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { uploadService } from './uploadService';
 import apiClient from '@/services/api'; // Import real apiClient
 
 describe('uploadService', () => {
-    let postSpy: any;
+    let postSpy: MockInstance;
 
     beforeEach(() => {
         // Spy on the axios instance post method

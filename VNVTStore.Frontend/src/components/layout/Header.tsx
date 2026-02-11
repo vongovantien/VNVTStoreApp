@@ -16,7 +16,6 @@ import {
   MessageCircle,
   Scale,
   Globe,
-  Bell,
   LayoutDashboard,
   Package,
   LogOut,
@@ -24,6 +23,7 @@ import {
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast } from '@/store';
+import { NotificationDropdown } from '@/components/common';
 import { type SignalRNotification } from '@/services/signalrService';
 import { useClickOutside, useSignalR } from '@/hooks';
 import { useCategories } from '@/hooks/useProducts';
@@ -67,9 +67,7 @@ export const Header = memo(() => {
   const compareCount = useCompareStore((state) => state.items.length);
   const { theme, toggleTheme, setCartOpen } = useUIStore();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { unreadCount, notifications, addNotification, markAllRead } = useNotificationStore();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const notificationRef = useClickOutside<HTMLDivElement>(() => setShowNotifications(false));
+  const { addNotification } = useNotificationStore();
 
   const { info } = useToast();
 
@@ -235,41 +233,12 @@ export const Header = memo(() => {
               )}
             </div>
 
-            {/* Notifications - Only for Admin or Logged in? For now everyone or Admin */}
+            {/* Notifications - Only for Admin */}
             {user?.role === 'Admin' && (
-                <div className="relative" ref={notificationRef}>
-                    <Button variant="ghost" size="sm" className="relative" onClick={() => { setShowNotifications(!showNotifications); markAllRead(); }}>
-                        <Bell size={20} />
-                        {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                                {unreadCount}
-                            </span>
-                        )}
-                    </Button>
-                    {showNotifications && (
-                        <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-[50]">
-                            <div className="p-3 border-b font-medium text-sm flex justify-between items-center">
-                                <span>{t('header.notifications') || 'Notifications'}</span>
-                                <span className="text-xs text-secondary cursor-pointer hover:text-primary" onClick={() => setShowNotifications(false)}>Close</span>
-                            </div>
-                            <div className="max-h-64 overflow-y-auto">
-                                {notifications.length === 0 ? (
-                                    <div className="p-4 text-center text-sm text-secondary">
-                                        No new notifications
-                                    </div>
-                                ) : (
-                                    <ul className="divide-y divide-slate-100 dark:divide-slate-700">
-                                        {notifications.map((notif, idx) => (
-                                            <li key={idx} className="p-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                                                {notif}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <NotificationDropdown 
+                    isConnected={isConnected}
+                    onNotificationClick={() => navigate('/admin/orders')}
+                />
             )}
 
             {/* Theme Toggle */}

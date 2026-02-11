@@ -137,6 +137,11 @@ export const API_ENDPOINTS = {
         SEARCH: '/permissions/search',
         ALL: '/permissions/all',
     },
+    MENUS: {
+        BASE: '/menus',
+        SEARCH: '/menus/search',
+        BY_CODE: (code: string) => `/menus/${code}`,
+    },
 } as const;
 
 export default API_ENDPOINTS;

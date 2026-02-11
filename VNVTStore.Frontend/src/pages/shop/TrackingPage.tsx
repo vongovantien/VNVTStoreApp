@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Search, Package, Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Search, CheckCircle, Clock } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { useToast } from '@/store';
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
@@ -15,11 +16,13 @@ public class FileService : IFileService
 {
     private readonly IImageUploadService _imageUploadService;
     private readonly IApplicationDbContext _context;
+    private readonly ILogger<FileService> _logger;
 
-    public FileService(IImageUploadService imageUploadService, IApplicationDbContext context)
+    public FileService(IImageUploadService imageUploadService, IApplicationDbContext context, ILogger<FileService> logger)
     {
         _imageUploadService = imageUploadService;
         _context = context;
+        _logger = logger;
     }
 
     public async Task<Result<IEnumerable<string>>> SaveAndLinkImagesAsync(
@@ -106,37 +109,35 @@ public class FileService : IFileService
 
         if (urlsToProcess.Any())
         {
-            Console.WriteLine($"[FileService] Processing {urlsToProcess.Count} URLs to upload: {string.Join(", ", urlsToProcess)}");
+            _logger.LogInformation("[SaveAndLinkImagesAsync] Processing {Count} URLs to upload: {Urls}", urlsToProcess.Count, string.Join(", ", urlsToProcess));
             
             foreach (var url in urlsToProcess)
             {
-                Console.WriteLine($"[FileService] Attempting to upload URL: {url}");
+                _logger.LogDebug("[SaveAndLinkImagesAsync] Attempting to upload URL: {Url}", url);
                 
                 // Upload External URL to Cloudinary
                 var fileName = System.IO.Path.GetFileName(url);
                 if (string.IsNullOrEmpty(fileName) || fileName.Length < 3)
                     fileName = $"imported_{Guid.NewGuid()}";
                 
-                Console.WriteLine($"[FileService] Using filename: {fileName}, folder: {folderName}");
+                _logger.LogDebug("[SaveAndLinkImagesAsync] Using filename: {FileName}, folder: {FolderName}", fileName, folderName);
                     
                 var uploadResult = await _imageUploadService.UploadUrlAsync(url, fileName, folderName);
-                
-                Console.WriteLine($"[FileService] UploadUrlAsync result - Success: {uploadResult.IsSuccess}, Error: {uploadResult.Error?.Message ?? "None"}");
                 
                 if (uploadResult.IsSuccess)
                 {
                     var newFileCode = uploadResult.Value.Code;
-                    Console.WriteLine($"[FileService] Upload successful! Code: {newFileCode}, URL: {uploadResult.Value.Url}");
+                    _logger.LogInformation("[SaveAndLinkImagesAsync] Upload successful! Code: {Code}, URL: {Url}", newFileCode, uploadResult.Value.Url);
                     
                     // Case 1: Newly created file (from missingUrls)
                     var fileEntity = await _context.TblFiles.FirstOrDefaultAsync(f => f.Code == newFileCode, cancellationToken);
-                    Console.WriteLine($"[FileService] Found entity by code {newFileCode}: {fileEntity != null}");
+                    _logger.LogDebug("[SaveAndLinkImagesAsync] Found entity by code {Code}: {Found}", newFileCode, fileEntity != null);
                     
                     if (fileEntity != null)
                     {
                         fileEntity.MasterCode = masterCode;
                         fileEntity.MasterType = masterType;
-                        Console.WriteLine($"[FileService] Linked file {newFileCode} to {masterType}:{masterCode}");
+                        _logger.LogInformation("[SaveAndLinkImagesAsync] Linked file {Code} to {MasterType}:{MasterCode}", newFileCode, masterType, masterCode);
                     }
 
                     // Case 2: Existing file in DB that was replaced (from externalUrlsInDb)
@@ -148,7 +149,7 @@ public class FileService : IFileService
                         var oldEntities = await _context.TblFiles
                             .Where(f => f.Path == url && f.MasterCode == masterCode)
                             .ToListAsync(cancellationToken);
-                        Console.WriteLine($"[FileService] Removing {oldEntities.Count} old external URL entries");
+                        _logger.LogDebug("[SaveAndLinkImagesAsync] Removing {Count} old external URL entries", oldEntities.Count);
                         _context.TblFiles.RemoveRange(oldEntities);
                     }
                     
@@ -157,13 +158,13 @@ public class FileService : IFileService
                 }
                 else
                 {
-                    Console.WriteLine($"[FileService] Upload FAILED for {url}. Keeping original URL in list.");
+                    _logger.LogWarning("[SaveAndLinkImagesAsync] Error: Upload FAILED for {Url}. Keeping original URL in list", url);
                 }
             }
         }
         else
         {
-            Console.WriteLine($"[FileService] No URLs to process. uniqueUrls: {string.Join(", ", uniqueUrls)}, uniqueUrlsFoundInDb: {string.Join(", ", uniqueUrlsFoundInDb)}");
+            _logger.LogDebug("[SaveAndLinkImagesAsync] No URLs to process. uniqueUrls: {UniqueUrls}, uniqueUrlsFoundInDb: {FoundUrls}", string.Join(", ", uniqueUrls), string.Join(", ", uniqueUrlsFoundInDb));
         }
 
         await _context.SaveChangesAsync(cancellationToken);

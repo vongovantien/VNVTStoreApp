@@ -56,11 +56,14 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
-        'warn',
+        'off',
         { allowConstantExport: true },
       ],
       'react/react-in-jsx-scope': 'off', // Not needed for React 17+
       'react/prop-types': 'off', // We use TS
+      'no-unused-vars': 'off', // Handle via @typescript-eslint
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
   {

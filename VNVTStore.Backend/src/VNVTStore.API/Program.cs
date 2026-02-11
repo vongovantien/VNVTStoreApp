@@ -27,9 +27,9 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting VNVTStore API...");
-    
+
     var builder = WebApplication.CreateBuilder(args);
-    
+
     // Use Serilog for logging
     builder.Host.UseSerilog();
 
@@ -40,115 +40,118 @@ try
     builder.Services.AddSignalR();
     builder.Services.AddHttpContextAccessor();
 
-// Initialize Firebase Admin SDK
-var firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
-if (File.Exists(firebaseKeyPath))
-{
-/*
-    try 
+    // Initialize Firebase Admin SDK
+    var firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
+    if (File.Exists(firebaseKeyPath))
     {
-        if (FirebaseApp.DefaultInstance == null)
+        try 
         {
-            var jsonText = File.ReadAllText(firebaseKeyPath);
-            FirebaseApp.Create(new AppOptions
+            var json = File.ReadAllText(firebaseKeyPath);
+            // Some environments/files may have malformed private_key strings (e.g. literal \n instead of actual newlines)
+            // We ensure it's properly formatted for the Google Auth library.
+            if (json.Contains("\\n"))
             {
-                Credential = GoogleCredential.FromJson(jsonText)
+                json = json.Replace("\\\\n", "\\n"); // Handle double escaped if any
+            }
+
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromJson(json)
             });
-            Console.WriteLine("[Info] Firebase Admin SDK initialized successfully.");
+            Log.Information("[Firebase] Firebase Admin SDK initialized successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "[Firebase] Failed to initialize Firebase Admin SDK. Exception: {Message}", ex.Message);
         }
     }
-    catch (Exception ex)
+    else
     {
-        Console.WriteLine($"[Error] Firebase Init Failed: {ex.Message}");
+        Log.Warning("[Firebase] Warning: Firebase service account file not found.");
     }
-*/
-    Console.WriteLine("[Warning] Firebase initialization skipped for debugging/migrations.");
-}
-else
-{
-    Console.WriteLine("[Warning] Firebase service account file not found.");
-}
 
-// Increase Request Body Limits for Large Image Uploads
-builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
-{
-    options.MultipartBodyLengthLimit = 200 * 1024 * 1024; // 200MB
-    options.ValueLengthLimit = 200 * 1024 * 1024; // 200MB just in case
-});
-
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.Limits.MaxRequestBodySize = 200 * 1024 * 1024; // 200MB
-});
-
-var app = builder.Build();
-
-// Seed RBAC Permissions
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
-    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-    
-    // Automatically apply migrations
-    if (context is DbContext dbContext)
+    // Increase Request Body Limits for Large Image Uploads
+    builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
     {
-        await dbContext.Database.MigrateAsync();
+        options.MultipartBodyLengthLimit = 200 * 1024 * 1024; // 200MB
+        options.ValueLengthLimit = 200 * 1024 * 1024; // 200MB just in case
+    });
+
+    builder.WebHost.ConfigureKestrel(serverOptions =>
+    {
+        serverOptions.Limits.MaxRequestBodySize = 200 * 1024 * 1024; // 200MB
+    });
+
+    var app = builder.Build();
+
+    // Seed RBAC Permissions and Apply Migrations
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        
+        try 
+        {
+            // Automatically apply migrations on startup
+            if (context is DbContext dbContext)
+            {
+                await dbContext.Database.MigrateAsync();
+            }
+            
+            await PermissionSeeder.SeedAsync(context);
+            await DataSeeder.SeedAsync(context, passwordHasher);
+            await MenuSeeder.SeedAsync(context);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Database initialization or seeding failed. This is expected if migrations are pending or DB is unavailable.");
+        }
     }
-    
-    await PermissionSeeder.SeedAsync(context);
-    await DataSeeder.SeedAsync(context, passwordHasher);
+
+    // Configure the HTTP request pipeline
+    // Enable Swagger/Scalar in all environments for demo purposes
+    app.UseSwagger(options =>
+    {
+        options.RouteTemplate = "openapi/{documentName}.json";
+    });
+    app.MapScalarApiReference(options =>
+    {
+        options.WithTitle("VNVTStore API")
+               .WithTheme(Scalar.AspNetCore.ScalarTheme.DeepSpace)
+               .WithDefaultHttpClient(Scalar.AspNetCore.ScalarTarget.CSharp, Scalar.AspNetCore.ScalarClient.HttpClient);
+    });
+
+    if (app.Environment.IsDevelopment())
+    {
+        // Dev specific middleware if any
+    }
+
+    app.UseHttpsRedirection();
+    app.UseMiddleware<SecurityHeadersMiddleware>();
+    app.UseCors("AllowedOrigins");
+    app.UseStaticFiles();
+    app.UseRateLimiter();
+
+    // Add Serilog request logging
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    });
+
+    // Add request localization middleware
+    app.UseLanguageLocalization();
+    app.UseExceptionHandling();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+    app.MapHub<VNVTStore.Infrastructure.Hubs.NotificationHub>("/notificationHub");
+
+    app.MapGet("/", () => "VNVTStore API is running! Access docs at /scalar/v1");
+
+    app.Run();
 }
-
-// Configure the HTTP request pipeline
-// Enable Swagger/Scalar in all environments for demo purposes
-app.UseSwagger(options =>
-{
-    options.RouteTemplate = "openapi/{documentName}.json";
-});
-app.MapScalarApiReference(options =>
-{
-    options.WithTitle("VNVTStore API")
-           .WithTheme(Scalar.AspNetCore.ScalarTheme.DeepSpace)
-           .WithDefaultHttpClient(Scalar.AspNetCore.ScalarTarget.CSharp, Scalar.AspNetCore.ScalarClient.HttpClient);
-});
-
-if (app.Environment.IsDevelopment())
-{
-    // Dev specific middleware if any
-}
-
-app.UseHttpsRedirection();
-
-app.UseMiddleware<SecurityHeadersMiddleware>();
-
-app.UseCors("AllowedOrigins");
-
-app.UseStaticFiles();
-
-app.UseRateLimiter();
-
-// Add Serilog request logging
-app.UseSerilogRequestLogging(options =>
-{
-    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-});
-
-// Add request localization middleware
-app.UseLanguageLocalization();
-
-app.UseExceptionHandling();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-app.MapHub<VNVTStore.Infrastructure.Hubs.NotificationHub>("/notificationHub");
-
-app.MapGet("/", () => "VNVTStore API is running! Access docs at /scalar/v1");
-
-app.Run();
-}
-catch (Exception ex)
+catch (Exception ex) when (ex is not Microsoft.Extensions.Hosting.HostAbortedException)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
 }

@@ -128,30 +128,30 @@ export const Modal = memo(
               >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between px-6 py-5 border-b border-border">
                     {title && (
-                      <h3 className="text-lg font-semibold text-primary">{title}</h3>
+                      <h3 className="text-xl font-bold text-text-primary tracking-tight">{title}</h3>
                     )}
                     {showCloseButton && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={onClose}
-                        className="ml-auto -mr-2"
+                        className="ml-auto -mr-2 rounded-full w-10 h-10 p-0 hover:bg-bg-tertiary transition-colors"
                         aria-label="Close modal"
                       >
-                        <X size={20} />
+                        <X size={22} className="text-text-secondary" />
                       </Button>
                     )}
                   </div>
                 )}
 
                 {/* Body */}
-                <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">{children}</div>
+                <div className="px-6 py-6 max-h-[70vh] overflow-y-auto custom-scrollbar">{children}</div>
 
                 {/* Footer */}
                 {footer && (
-                  <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-secondary/30 rounded-b-2xl">
+                  <div className="flex items-center justify-end gap-3 px-6 py-5 border-t border-border bg-bg-primary rounded-b-2xl">
                     {footer}
                   </div>
                 )}

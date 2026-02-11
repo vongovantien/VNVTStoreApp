@@ -49,6 +49,7 @@ export const WithError: Story = {
     placeholder: 'Enter email',
     error: 'Invalid email address',
     value: 'invalid-email',
+    onChange: () => {},
   },
 };
 

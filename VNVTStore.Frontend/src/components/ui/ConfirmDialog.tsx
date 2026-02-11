@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Loader2, CheckCircle, Info } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { Button } from './Button';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -143,19 +144,14 @@ export const ConfirmDialog = memo(({
                   )}
                 </button>
                 {!hideCancel && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
                     onClick={onClose}
                     disabled={isLoading}
-                    className={cn(
-                      'mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm sm:mt-0 sm:w-auto',
-                      'bg-white text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-                      'dark:bg-slate-700 dark:text-white dark:ring-slate-600 dark:hover:bg-slate-600',
-                      'disabled:opacity-50 disabled:cursor-not-allowed'
-                    )}
+                    className="mt-3 w-full sm:mt-0 sm:w-auto"
                   >
                     {cancelText}
-                  </button>
+                  </Button>
                 )}
               </div>
             </motion.div>

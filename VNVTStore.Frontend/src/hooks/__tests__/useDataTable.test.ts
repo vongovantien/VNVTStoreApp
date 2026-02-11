@@ -1,172 +1,89 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDataTable } from '../useDataTable';
-
-interface TestItem {
-    id: string;
-    name: string;
-    price: number;
-    category: string;
-}
-
-const mockData: TestItem[] = [
-    { id: '1', name: 'Apple', price: 100, category: 'Fruit' },
-    { id: '2', name: 'Banana', price: 50, category: 'Fruit' },
-    { id: '3', name: 'Carrot', price: 30, category: 'Vegetable' },
-    { id: '4', name: 'Donut', price: 25, category: 'Bakery' },
-    { id: '5', name: 'Egg', price: 15, category: 'Dairy' },
-];
+import { PaginationDefaults, SortDirection } from '@/constants';
 
 describe('useDataTable', () => {
     describe('initialization', () => {
-        it('should initialize with data', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
+        it('should initialize with default values', () => {
+            const { result } = renderHook(() => useDataTable());
 
-            expect(result.current.data.length).toBeGreaterThan(0);
-            expect(result.current.totalItems).toBe(5);
-            expect(result.current.currentPage).toBe(1);
-        });
-
-        it('should start with empty selection', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
-
+            expect(result.current.currentPage).toBe(PaginationDefaults.PAGE_INDEX);
+            expect(result.current.pageSize).toBe(PaginationDefaults.PAGE_SIZE);
+            expect(result.current.searchQuery).toBe('');
             expect(result.current.selectedIds.size).toBe(0);
         });
-    });
 
-    describe('search', () => {
-        it('should filter data by search query', () => {
+        it('should initialize with custom values', () => {
             const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
+                useDataTable({
+                    defaultPageIndex: 2,
+                    defaultPageSize: 20,
+                    defaultSortField: 'price',
+                    defaultSortDir: SortDirection.ASC
+                })
             );
 
-            act(() => {
-                result.current.setSearchQuery('apple');
-            });
-
-            expect(result.current.totalItems).toBe(1);
-        });
-
-        it('should be case insensitive', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
-
-            act(() => {
-                result.current.setSearchQuery('BANANA');
-            });
-
-            expect(result.current.totalItems).toBe(1);
-        });
-
-        it('should filter by specific field', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
-
-            act(() => {
-                result.current.setSearchField('category');
-                result.current.setSearchQuery('Fruit');
-            });
-
-            expect(result.current.totalItems).toBe(2);
+            expect(result.current.currentPage).toBe(2);
+            expect(result.current.pageSize).toBe(20);
+            expect(result.current.sortField).toBe('price');
+            expect(result.current.sortDir).toBe(SortDirection.ASC);
         });
     });
 
-    describe('sorting', () => {
-        it('should sort ascending by field', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
+    describe('state updates', () => {
+        it('should update search query', () => {
+            const { result } = renderHook(() => useDataTable({ defaultPageIndex: 2 }));
 
             act(() => {
-                result.current.handleSort('name');
+                result.current.setSearchQuery('test');
             });
 
-            expect(result.current.sortConfig?.field).toBe('name');
-            expect(result.current.sortConfig?.direction).toBe('asc');
+            expect(result.current.searchQuery).toBe('test');
         });
 
-        it('should toggle sort direction', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
+        it('should update pagination', () => {
+            const { result } = renderHook(() => useDataTable());
 
             act(() => {
-                result.current.handleSort('price');
+                result.current.setCurrentPage(3);
+                result.current.setPageSize(50);
             });
-            expect(result.current.sortConfig?.direction).toBe('asc');
+
+            expect(result.current.currentPage).toBe(3);
+            expect(result.current.pageSize).toBe(50);
+        });
+
+        it('should update sorting', () => {
+            const { result } = renderHook(() => useDataTable());
 
             act(() => {
-                result.current.handleSort('price');
+                result.current.onSort('name', 'asc');
             });
-            expect(result.current.sortConfig?.direction).toBe('desc');
+
+            expect(result.current.sortField).toBe('name');
+            expect(result.current.sortDir).toBe('asc');
+            expect(result.current.currentPage).toBe(1); // onSort resets page
         });
     });
 
     describe('selection', () => {
-        it('should select a row', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
+        it('should update selection', () => {
+            const { result } = renderHook(() => useDataTable());
 
+            const ids = new Set(['1', '2']);
             act(() => {
-                result.current.handleSelectRow('1');
+                result.current.setSelectedIds(ids);
             });
 
-            expect(result.current.selectedIds.has('1')).toBe(true);
-        });
-
-        it('should deselect a row', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
-
-            act(() => {
-                result.current.handleSelectRow('1');
-                result.current.handleSelectRow('1');
-            });
-
-            expect(result.current.selectedIds.has('1')).toBe(false);
-        });
-
-        it('should select all rows', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
-
-            act(() => {
-                result.current.handleSelectAll(true);
-            });
-
-            expect(result.current.selectedIds.size).toBe(5);
-        });
-
-        it('should deselect all rows', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
-
-            act(() => {
-                result.current.handleSelectAll(true);
-                result.current.handleSelectAll(false);
-            });
-
-            expect(result.current.selectedIds.size).toBe(0);
+            expect(result.current.selectedIds).toEqual(ids);
         });
 
         it('should reset selection', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: mockData })
-            );
+            const { result } = renderHook(() => useDataTable());
 
             act(() => {
-                result.current.handleSelectRow('1');
-                result.current.handleSelectRow('2');
+                result.current.setSelectedIds(new Set(['1']));
                 result.current.resetSelection();
             });
 
@@ -174,46 +91,22 @@ describe('useDataTable', () => {
         });
     });
 
-    describe('pagination', () => {
-        const largeData = Array.from({ length: 25 }, (_, i) => ({
-            id: String(i + 1),
-            name: `Item ${i + 1}`,
-            price: (i + 1) * 10,
-            category: 'Test',
-        }));
-
-        it('should paginate data', () => {
+    describe('reset', () => {
+        it('should reset filters and pagination', () => {
             const { result } = renderHook(() =>
-                useDataTable({ data: largeData })
-            );
-
-            expect(result.current.data.length).toBe(10); // default page size
-            expect(result.current.totalPages).toBe(3);
-        });
-
-        it('should navigate pages', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: largeData })
+                useDataTable({ defaultPageIndex: 1, defaultPageSize: 10 })
             );
 
             act(() => {
-                result.current.setCurrentPage(2);
+                result.current.setSearchQuery('test');
+                result.current.setCurrentPage(5);
+                result.current.setFilters({ status: 'active' });
+                result.current.resetFilters();
             });
 
-            expect(result.current.currentPage).toBe(2);
-        });
-
-        it('should change items per page', () => {
-            const { result } = renderHook(() =>
-                useDataTable({ data: largeData })
-            );
-
-            act(() => {
-                result.current.setItemsPerPage(25);
-            });
-
-            expect(result.current.data.length).toBe(25);
-            expect(result.current.totalPages).toBe(1);
+            expect(result.current.searchQuery).toBe('');
+            expect(result.current.currentPage).toBe(1);
+            expect(result.current.filters).toEqual({});
         });
     });
 });

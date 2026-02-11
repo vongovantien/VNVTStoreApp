@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supplierService } from '@/services';
-
 import { SearchCondition } from '@/services/baseService';
+import { SUPPLIER_LIST_FIELDS } from '@/constants/fieldConstants';
 
 export const useSuppliers = (params?: {
     pageIndex?: number;
@@ -15,7 +15,7 @@ export const useSuppliers = (params?: {
         pageIndex = 1,
         pageSize = 1000,
         search,
-        fields = ['Code', 'Name', 'IsActive', "CreatedAt"]
+        fields = SUPPLIER_LIST_FIELDS
     } = params || {};
 
     return useQuery({

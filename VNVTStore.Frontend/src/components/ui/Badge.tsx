@@ -97,7 +97,7 @@ export const Badge = memo(
       () =>
         cn(
           // Base
-          'inline-flex items-center gap-1 font-semibold transition-all',
+          'inline-flex items-center gap-1 font-semibold transition-all whitespace-nowrap',
           // Color & variant
           colorStyles[color][variant],
           // Size

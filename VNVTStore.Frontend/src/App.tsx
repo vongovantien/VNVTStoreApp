@@ -8,9 +8,9 @@ import './config/i18n';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 10 * 1000, // 10 seconds (reduce from 5m to avoid stale data on navigation)
       gcTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true, // Re-enable to ensure data is fresh when returning to tab
       retry: 1,
     },
   },

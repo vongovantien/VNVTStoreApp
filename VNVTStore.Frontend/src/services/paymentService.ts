@@ -17,7 +17,8 @@ class PaymentService {
     endpoint = '/payments';
 
     // Admin: Get all payments (Mocked for now as backend missing)
-    async getAll(params?: any): Promise<ApiResponse<PagedResult<PaymentTransaction>>> {
+     
+    async getAll(_params?: Record<string, unknown>): Promise<ApiResponse<PagedResult<PaymentTransaction>>> {
         // Mock delay
         await new Promise(resolve => setTimeout(resolve, 800));
 
@@ -28,7 +29,7 @@ class PaymentService {
             userName: `User ${i + 1}`,
             paymentMethod: i % 3 === 0 ? 'VNPAY' : i % 3 === 1 ? 'MOMO' : 'COD',
             amount: (i + 1) * 500000,
-            status: ['pending', 'success', 'failed', 'refunded'][i % 4] as any,
+            status: ['pending', 'success', 'failed', 'refunded'][i % 4] as PaymentTransaction['status'],
             transactionId: `TRX-${Date.now()}-${i}`,
             createdAt: new Date().toISOString()
         }));

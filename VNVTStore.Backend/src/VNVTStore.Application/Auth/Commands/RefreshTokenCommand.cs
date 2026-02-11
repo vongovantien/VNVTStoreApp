@@ -54,10 +54,12 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             return Result.Failure<AuthResponseDto>(Error.Validation("Invalid access token or refresh token"));
         }
 
-        var newAccessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role);
+        // TODO: Ideally, fetch permissions and menus from user's role here
+        var newAccessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, Array.Empty<string>(), Array.Empty<string>());
         var newRefreshToken = _jwtService.GenerateRefreshToken();
 
         user.SetRefreshToken(newRefreshToken, DateTime.UtcNow.AddDays(7));
+        user.UpdateLastLogin();
         
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button, Input, Select, Modal } from '@/components/ui';
 import CustomImage from '@/components/common/Image';
 import { useCartStore, useAuthStore, useToast } from '@/store'; // Consolidated import
@@ -11,6 +11,7 @@ import { orderService, type CreateOrderRequest } from '@/services/orderService';
 import { paymentService } from '@/services/paymentService';
 import { PaymentMethod } from '@/constants';
 import { useCheckoutStore } from '@/store/checkoutStore';
+import { REGEX } from '@/constants/regex';
 
 export const CheckoutPage = () => {
   const { t } = useTranslation();
@@ -48,13 +49,13 @@ export const CheckoutPage = () => {
              email: user.email || ''
          });
      }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, formData.fullName, setFormData]);
 
   const [isProcessing, setIsProcessing] = useState(false);
 
   const subtotal = getTotal();
   const shippingFee = subtotal >= 500000 ? 0 : 30000;
-  const total = subtotal + shippingFee;
+  // const total = subtotal + shippingFee; // Removed unused total variable
 
   // Pre-fill if user has address (Logic omitted for brevity, could use userService.getMyAddresses())
 
@@ -104,7 +105,7 @@ export const CheckoutPage = () => {
       } else {
         toast.error(res.message || t('checkout.voucherInvalid') || 'Mã giảm giá không tồn tại');
       }
-    } catch (e) {
+    } catch {
       toast.error(t('checkout.voucherError') || 'Lỗi kiểm tra mã giảm giá');
     }
   };
@@ -114,8 +115,8 @@ export const CheckoutPage = () => {
   const finalTotal = Math.max(0, subtotal + shippingFee - discountAmount);
 
   /* Validation Regex */
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+  const emailRegex = REGEX.EMAIL;
+  const phoneRegex = REGEX.PHONE;
 
   const [errors, setErrors] = useState({
       email: '',

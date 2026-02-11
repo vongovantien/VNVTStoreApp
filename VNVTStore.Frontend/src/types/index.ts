@@ -148,6 +148,7 @@ export interface User {
     roleCode?: string;
     roleName?: string;
     permissions?: string[];
+    menus?: string[];
     addresses?: Address[];
     status: UserStatus;
     createdAt: string;
@@ -297,6 +298,18 @@ export interface ApiResponse<T> {
     errors?: Record<string, string[]>;
 }
 
+// ============ Menu Types ============
+export interface Menu {
+    code: string;
+    name: string;
+    path: string;
+    groupCode: string;
+    groupName: string;
+    icon?: string;
+    sortOrder: number;
+    isActive: boolean;
+}
+
 // ============ RBAC Types ============
 export interface Permission {
     code: string;
@@ -311,6 +324,7 @@ export interface Role {
     description?: string;
     isActive: boolean;
     permissions: Permission[];
+    menus: Menu[];
 }
 
 export interface RolePermission {

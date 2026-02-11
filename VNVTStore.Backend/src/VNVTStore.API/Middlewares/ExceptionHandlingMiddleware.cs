@@ -29,7 +29,7 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
+            _logger.LogError(ex, "[InvokeAsync] error: An unhandled exception occurred: {Message}", ex.Message);
             await HandleExceptionAsync(context, ex, _env);
         }
     }

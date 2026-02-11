@@ -32,12 +32,25 @@ public class CategoriesController : BaseApiController<TblCategory, CategoryDto, 
         return HandleResult(result);
     }
 
+    [HttpPost("import")]
+    [Authorize(Roles = "admin,Admin")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Import(IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest("File is empty");
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+        
+        var result = await Mediator.Send(new VNVTStore.Application.Categories.Commands.ImportCategoriesCommand(memoryStream));
+        return HandleResult(result);
+    }
+
     [HttpGet("template")]
     [AllowAnonymous]
     public IActionResult GetTemplate()
     {
-        var csv = "Code,Name,Description,ParentCategoryCode,IsActive\nCAT001,Sample Category,Description here,,true";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-        return File(bytes, "text/csv", "categories_template.csv");
+        var bytes = VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.CategoryImportDto>();
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "categories_template.xlsx");
     }
 }

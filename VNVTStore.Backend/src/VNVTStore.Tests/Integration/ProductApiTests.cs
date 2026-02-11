@@ -18,7 +18,7 @@ namespace VNVTStore.Tests.Integration;
 
 public class ProductApiTests : ApiTestBase
 {
-    public ProductApiTests(WebApplicationFactory<Program> factory) : base(factory)
+    public ProductApiTests(CustomWebApplicationFactory<Program> factory) : base(factory)
     {
     }
 

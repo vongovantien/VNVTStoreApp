@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Bell,
   Search,
   Sun,
   Moon,
@@ -40,13 +39,16 @@ import {
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { ToastContainer } from '@/components/ui/Toast';
-import { useUIStore, useAuthStore } from '@/store';
+import { useUIStore, useAuthStore, useToastStore, useNotificationStore } from '@/store';
+import { NotificationDropdown } from '@/components/common';
+import { useSignalR } from '@/hooks/useSignalR';
 
 // Navigation items
 interface NavItem {
   path: string;
   icon: React.ElementType;
   label: string;
+  code: string;
   end?: boolean;
 }
 
@@ -59,37 +61,37 @@ const navGroups: NavGroup[] = [
   {
     title: 'admin.sidebar.core',
     items: [
-      { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', end: true },
-      { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders' },
-      { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers' },
+      { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', code: 'DASHBOARD', end: true },
+      { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders', code: 'ORDERS' },
+      { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers', code: 'CUSTOMERS' },
     ]
   },
   {
     title: 'admin.sidebar.inventory',
     items: [
-      { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories' },
-      { path: '/admin/products', icon: Package, label: 'admin.sidebar.products' },
-      { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers' },
-      { path: '/admin/brands', icon: Tag, label: 'admin.sidebar.brands' },
-      { path: '/admin/units', icon: Ruler, label: 'admin.sidebar.units' },
+      { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories', code: 'CATEGORIES' },
+      { path: '/admin/products', icon: Package, label: 'admin.sidebar.products', code: 'PRODUCTS' },
+      { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers', code: 'SUPPLIERS' },
+      { path: '/admin/brands', icon: Tag, label: 'admin.sidebar.brands', code: 'BRANDS' },
+      { path: '/admin/units', icon: Ruler, label: 'admin.sidebar.units', code: 'UNITS' },
     ]
   },
   {
     title: 'admin.sidebar.marketing',
     items: [
-      { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes' },
-      { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions' },
-      { path: '/admin/coupons', icon: Ticket, label: 'admin.sidebar.coupons' },
-      { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners' },
-      { path: '/admin/news', icon: FileText, label: 'admin.sidebar.news' },
-      { path: '/admin/reviews', icon: Star, label: 'admin.sidebar.reviews' },
+      { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes', code: 'QUOTES' },
+      { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions', code: 'PROMOTIONS' },
+      { path: '/admin/coupons', icon: Ticket, label: 'admin.sidebar.coupons', code: 'COUPONS' },
+      { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners', code: 'BANNERS' },
+      { path: '/admin/news', icon: FileText, label: 'admin.sidebar.news', code: 'NEWS' },
+      { path: '/admin/reviews', icon: Star, label: 'admin.sidebar.reviews', code: 'REVIEWS' },
     ]
   },
   {
     title: 'admin.sidebar.system',
     items: [
-      { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings' },
-      { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles' },
+      { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings', code: 'SETTINGS' },
+      { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles', code: 'ROLES' },
     ]
   }
 ];
@@ -105,8 +107,18 @@ export const AdminLayout = () => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { theme, toggleTheme } = useUIStore();
-  const { logout, user, isAuthenticated } = useAuthStore();
+  const { logout, user, isAuthenticated, hasMenu } = useAuthStore();
   const location = useLocation();
+
+  // Filter navigation items based on user's menus
+  const filteredNavGroups = useMemo(() => {
+    return navGroups
+      .map(group => ({
+        ...group,
+        items: group.items.filter(item => hasMenu(item.code))
+      }))
+      .filter(group => group.items.length > 0);
+  }, [hasMenu]);
 
   // Refs for dropdowns
   const langBtnRef = useRef<HTMLButtonElement>(null);
@@ -130,6 +142,30 @@ export const AdminLayout = () => {
       setUserMenuPosition({ top: rect.bottom + 8, left: rect.right - 200 });
     }
   }, [showUserMenu]);
+
+  // SignalR Integration
+  const { on, isConnected } = useSignalR();
+  const { info } = useToastStore();
+  const { addNotification } = useNotificationStore();
+
+  useEffect(() => {
+    // Listen for new orders
+    const cleanupOrder = on('ReceiveOrderNotification', (data: unknown) => {
+       const message = typeof data === 'string' ? data : (data as { Message: string })?.Message || t('admin.notifications.newOrder');
+       // Show toast
+       info(message);
+       // Add to notification list
+       addNotification(message);
+       
+       // Optional: Play a sound
+       const audio = new Audio('/notification.mp3'); // Ensure this file exists or remove
+       audio.play().catch(e => console.log('Audio play failed', e)); 
+    });
+
+    return () => {
+        cleanupOrder();
+    };
+  }, [on, info, addNotification, t]);
 
   // Ctrl+K keyboard shortcut
   useEffect(() => {
@@ -278,8 +314,8 @@ export const AdminLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
-          {navGroups.map((group, index) => (
+        <nav className="flex-1 overflow-y-scroll custom-scrollbar-dark p-4 space-y-6">
+          {filteredNavGroups.map((group, index) => (
             <div key={index}>
               {!sidebarCollapsed && (
                 <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -321,7 +357,7 @@ export const AdminLayout = () => {
         </nav>
 
         {/* Logout */}
-        <div className="p-4 border-t border-gray-800 mt-auto">
+        <div className="p-4 border-t border-gray-800 shrink-0">
           <button
             onClick={handleLogout}
             className={cn(
@@ -349,15 +385,21 @@ export const AdminLayout = () => {
               initial={{ x: -280 }}
               animate={{ x: 0 }}
               exit={{ x: -280 }}
-              className="fixed left-0 top-0 z-50 h-screen w-64 bg-gray-900 text-white lg:hidden"
+              className="fixed left-0 top-0 z-50 h-screen w-64 bg-gray-900 text-white lg:hidden flex flex-col"
             >
               {/* Same content as desktop sidebar */}
-              <div className="flex items-center h-16 px-4 border-b border-gray-800">
+              <div className="flex items-center h-16 px-4 border-b border-gray-800 shrink-0">
                 <span className="text-2xl">🏠</span>
                 <span className="font-bold text-lg ml-2">VNVT Admin</span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="ml-auto p-2 text-gray-400 hover:text-white"
+                >
+                  <ChevronLeft size={20} />
+                </button>
               </div>
-              <nav className="p-4 space-y-6">
-                {navGroups.map((group, index) => (
+              <nav className="flex-1 overflow-y-scroll custom-scrollbar-dark p-4 space-y-6">
+                {filteredNavGroups.map((group, index) => (
                   <div key={index}>
                     <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       {t(group.title)}
@@ -386,6 +428,17 @@ export const AdminLayout = () => {
                   </div>
                 ))}
               </nav>
+              
+              {/* Logout button for mobile */}
+              <div className="p-4 border-t border-gray-800 shrink-0">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 rounded-lg hover:text-white hover:bg-gray-800 transition-all"
+                >
+                  <LogOut size={20} />
+                  <span>{t('common.logout')}</span>
+                </button>
+              </div>
             </motion.aside>
           </>
         )}
@@ -508,10 +561,11 @@ export const AdminLayout = () => {
                 {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               </Button>
 
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell size={20} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full" />
-              </Button>
+              {/* Notifications Dropdown */}
+              <NotificationDropdown 
+                isConnected={isConnected}
+                onNotificationClick={() => navigate('/admin/orders')}
+              />
 
               {/* View Store */}
               <a 

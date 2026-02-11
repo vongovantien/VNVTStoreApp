@@ -17,6 +17,18 @@ public static class AppConstants
     }
 
     /// <summary>
+    /// Master Types for file associations
+    /// </summary>
+    public static class MasterTypes
+    {
+        public const string Product = "Product";
+        public const string Category = "Category";
+        public const string Banner = "Banner";
+        public const string News = "News";
+        public const string User = "User";
+    }
+
+    /// <summary>
     /// Validation Constants
     /// </summary>
     public static class Validation

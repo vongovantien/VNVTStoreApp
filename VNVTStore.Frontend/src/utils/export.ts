@@ -58,6 +58,9 @@ export const exportToExcel = async <T extends Record<string, any>>(
             // Handle different value types
             if (value === null || value === undefined) {
                 row[String(col.key)] = '';
+            } else if (typeof value === 'boolean') {
+                // Translate boolean to Vietnamese
+                row[String(col.key)] = value ? 'Có' : 'Không';
             } else if (typeof value === 'object') {
                 row[String(col.key)] = JSON.stringify(value);
             } else {
@@ -123,6 +126,12 @@ export const exportToCSV = <T extends Record<string, any>>(
                 .map((key) => {
                     const value = row[key];
                     // Handle strings with commas or quotes
+                    if (value === null || value === undefined) {
+                        return '';
+                    }
+                    if (typeof value === 'boolean') {
+                        return value ? 'Có' : 'Không';
+                    }
                     if (typeof value === 'string') {
                         return `"${value.replace(/"/g, '""')}"`;
                     }

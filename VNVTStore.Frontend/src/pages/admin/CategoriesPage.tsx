@@ -5,14 +5,14 @@ import { Folder, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useCategoriesList, useEntityManager } from '@/hooks';
 import { categoryService, productService, type CategoryDto, type CreateCategoryRequest, type UpdateCategoryRequest } from '@/services';
-import { DataTable, type DataTableColumn } from '@/components/common';
+import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { CategoryForm, type CategoryFormData } from './forms';
 import { PaginationDefaults } from '@/constants';
 import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
 import { getImageUrl } from '@/utils/format';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useToast } from '@/store';
 
 export default function CategoriesPage() {
@@ -121,13 +121,19 @@ export default function CategoriesPage() {
   };
 
 
+  const importMutation = useMutation({
+    mutationFn: (file: File) => categoryService.import(file),
+    onSuccess: () => {
+      toast.success(t('common.messages.importSuccess') || 'Import successful');
+      refetch();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t('common.messages.importError') || 'Import failed');
+    },
+  });
+
   const handleImport = async (file: File) => {
-      try {
-          await categoryService.import(file);
-          refetch();
-      } catch (error) {
-          console.error("Import error", error);
-      }
+    await importMutation.mutateAsync(file);
   };
 
   const handleDelete = () => {
@@ -194,15 +200,7 @@ export default function CategoriesPage() {
         );
       }
     },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (category) => (
-        <Badge color={category.isActive !== false ? 'success' : 'secondary'}>
-          {category.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
-        </Badge>
-      )
-    },
+    CommonColumns.createStatusColumn(t),
     {
       id: 'actions',
       header: t('common.fields.action'),
@@ -334,7 +332,7 @@ export default function CategoriesPage() {
             imageBaseUrl={apiBaseUrl.replace(/\/api\/v1\/?$/, '')}
         />
        )}
-
+       
       {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!categoryToDelete}

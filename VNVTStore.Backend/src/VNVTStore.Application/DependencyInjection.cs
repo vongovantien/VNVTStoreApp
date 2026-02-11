@@ -71,6 +71,12 @@ public static class DependencyInjection
         services.AddScoped<IRequestHandler<GetPagedQuery<ProductDto>, Result<PagedResult<ProductDto>>>, GetProductsHandler>();
         services.AddScoped<IRequestHandler<CreateCommand<CreateProductDto, ProductDto>, Result<ProductDto>>, CreateProductHandler>();
         services.AddScoped<IRequestHandler<UpdateCommand<UpdateProductDto, ProductDto>, Result<ProductDto>>, UpdateProductHandler>();
+        
+        // Banner specialized handlers
+        services.AddScoped<IRequestHandler<GetPagedQuery<BannerDto>, Result<PagedResult<BannerDto>>>, VNVTStore.Application.Banners.Handlers.GetBannersHandler>();
+        services.AddScoped<IRequestHandler<GetByCodeQuery<BannerDto>, Result<BannerDto>>, VNVTStore.Application.Banners.Handlers.GetBannerByCodeHandler>();
+        services.AddScoped<IRequestHandler<CreateCommand<CreateBannerDto, BannerDto>, Result<BannerDto>>, VNVTStore.Application.Banners.Handlers.CreateBannerHandler>();
+        services.AddScoped<IRequestHandler<UpdateCommand<UpdateBannerDto, BannerDto>, Result<BannerDto>>, VNVTStore.Application.Banners.Handlers.UpdateBannerHandler>();
 
         return services;
     }

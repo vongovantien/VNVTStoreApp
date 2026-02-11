@@ -48,7 +48,8 @@ public enum PaymentMethod
 public enum UserRole
 {
     Customer,
-    Admin
+    Admin,
+    Staff
 }
 
 /// <summary>

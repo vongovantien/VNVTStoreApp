@@ -5,7 +5,7 @@ import { Building2, RefreshCw, Mail, Truck, Phone } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supplierService, type SupplierDto, type CreateSupplierRequest, type UpdateSupplierRequest } from '@/services';
-import { DataTable, type DataTableColumn } from '@/components/common';
+import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, useSuppliersPaged } from '@/hooks';
 import { SearchCondition } from '@/services/baseService';
@@ -200,16 +200,7 @@ export default function SuppliersPage() {
       accessor: 'address',
       className: 'hidden md:table-cell max-w-[200px] truncate'
     },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (supplier) => (
-        <Badge color={supplier.isActive !== false ? 'success' : 'secondary'}>
-          {supplier.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
-        </Badge>
-      ),
-      className: 'text-center',
-    },
+    CommonColumns.createStatusColumn(t),
     {
         id: 'actions',
         header: '',

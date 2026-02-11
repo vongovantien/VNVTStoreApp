@@ -3,8 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '../../../../config/i18n';
 import { ProductForm } from '../ProductForm';
 
 // Mock hooks
@@ -90,9 +88,7 @@ const renderProductForm = (props = {}) => {
 
     return render(
         <QueryClientProvider client={queryClient}>
-            <I18nextProvider i18n={i18n}>
-                <ProductForm {...defaultProps} />
-            </I18nextProvider>
+            <ProductForm {...defaultProps} />
         </QueryClientProvider>
     );
 };
@@ -167,19 +163,25 @@ describe('ProductForm', () => {
             const nameInput = screen.getByPlaceholderText(/tên sản phẩm|product name/i);
             await user.type(nameInput, 'Test Product');
 
-            // Fill Category (Required)
-            const categorySelect = screen.getByLabelText(/danh mục|category/i);
+            // Fill Category (Required) - in Organization tab
+            const organizationTab = screen.getByRole('button', { name: /organization/i });
+            await user.click(organizationTab);
+            const categorySelect = await screen.findByLabelText(/danh mục|category/i);
             await user.click(categorySelect);
             const categoryOption = await screen.findByText('Test Category 1');
             await user.click(categoryOption);
 
-            // Fill Price (Required)
+            // Fill Price (Required) - in Pricing tab
+            const pricingTab = screen.getByRole('button', { name: /pricing/i });
+            await user.click(pricingTab);
             const priceInput = screen.getByTestId('product-price-input');
             await user.clear(priceInput);
             await user.type(priceInput, '100000');
 
-            // Fill Stock (Required)
-            const stockInput = screen.getByLabelText(/tồn kho|stock/i);
+            // Fill Stock (Required) - in Inventory tab
+            const inventoryTab = screen.getByRole('button', { name: /inventory/i });
+            await user.click(inventoryTab);
+            const stockInput = await screen.findByPlaceholderText(/tồn kho|enter quantity/i);
             await user.clear(stockInput);
             await user.type(stockInput, '10');
 

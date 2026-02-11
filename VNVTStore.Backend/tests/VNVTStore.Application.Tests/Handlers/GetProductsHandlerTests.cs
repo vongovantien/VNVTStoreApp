@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using AutoMapper;
 using Moq;
+using Moq.Protected;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
@@ -10,7 +11,8 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Xunit;
 
-using Moq.Protected;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace VNVTStore.Application.Tests.Handlers;
 
@@ -24,8 +26,7 @@ public class GetProductsHandlerTests
     private readonly Mock<DbConnection> _mockConnection;
     private readonly Mock<DbCommand> _mockCommand;
     private readonly Mock<DbDataReader> _mockDataReader;
-    private readonly Mock<DbParameter> _mockParameter;
-    private readonly Mock<IDataParameterCollection> _mockParameters;
+    private readonly Mock<DbParameterCollection> _mockParameters;
 
     private readonly GetProductsHandler _handler;
 
@@ -40,22 +41,23 @@ public class GetProductsHandlerTests
         _mockConnection = new Mock<DbConnection>();
         _mockCommand = new Mock<DbCommand>();
         _mockDataReader = new Mock<DbDataReader>();
-        _mockParameter = new Mock<DbParameter>();
-        _mockParameters = new Mock<IDataParameterCollection>();
+        _mockParameters = new Mock<DbParameterCollection>();
 
         // Setup Command and Parameters mocks for Dapper
-        _mockConnection.Protected()
-            .Setup<DbCommand>("CreateDbCommand")
-            .Returns(_mockCommand.Object);
-            
-        // _mockCommand.Setup(c => c.Parameters).Returns(_mockParameters.Object); // Parameters is often hard to mock on DbCommand
-        _mockCommand.Protected()
-            .Setup<DbParameter>("CreateDbParameter")
-            .Returns(_mockParameter.Object);
-            
+        // Dapper needs DbCommand for async operations. 
+        // We must setup the protected property DbParameterCollection instead of mocking Parameters directly.
+        _mockCommand.Protected().Setup<DbParameterCollection>("DbParameterCollection").Returns(_mockParameters.Object);
+        
+        // Setup CreateParameter
+        var mockParameter = new Mock<DbParameter>();
+        _mockCommand.Protected().Setup<DbParameter>("CreateDbParameter").Returns(mockParameter.Object);
+
+        // We must also setup the protected method ExecuteDbDataReaderAsync which Dapper calls
         _mockCommand.Protected()
             .Setup<Task<DbDataReader>>("ExecuteDbDataReaderAsync", ItExpr.IsAny<CommandBehavior>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(_mockDataReader.Object);
+
+        _mockConnection.Protected().Setup<DbCommand>("CreateDbCommand").Returns(_mockCommand.Object);
 
         // Connection Handling
         _mockDapperContext.Setup(c => c.CreateConnection()).Returns(_mockConnection.Object);
@@ -77,7 +79,14 @@ public class GetProductsHandlerTests
     public async Task Handle_ShouldExecuteCorrectFileQuery()
     {
         // Arrange
-        var request = new GetPagedQuery<ProductDto> { PageIndex = 1, PageSize = 10 };
+        // Specify Fields to avoid automatic collection population in BaseHandler,
+        // allowing us to focus on the manual fetch logic in GetProductsHandler.
+        var request = new GetPagedQuery<ProductDto> 
+        { 
+            PageIndex = 1, 
+            PageSize = 10,
+            Fields = new List<string> { "Code", "Name" }
+        };
         
         // Capture SQL commands
         var capturedSqls = new List<string>();
@@ -129,15 +138,47 @@ public class GetProductsHandlerTests
             }
         });
         
-        // Allow reading once per query
+        // Allow reading for the sequence:
+        // 1. Products (paging)
+        // 2. Manual Files (TblFile)
+        // 3. Manual Reviews (TblReview) - return empty
         var readCount = 0;
+        var queryIndex = 0;
+
         _mockDataReader.Setup(r => r.Read()).Returns(() => {
             readCount++;
-            if (readCount == 1) return true; // Product Row 1
-            if (readCount == 2) { isProductQuery = false; return false; } // End Product
-            if (readCount == 3) return true; // File Row 1
-            if (readCount == 4) return false; // End File
-            return false;
+            var res = false;
+            
+            // Query 1: Products (paging)
+            if (readCount == 1) { queryIndex = 1; res = true; } 
+            else if (readCount == 2) { res = false; }
+            
+            // Query 2: Manual Files (TblFile)
+            else if (readCount == 3) { queryIndex = 2; isProductQuery = false; res = true; } // row 1
+            else if (readCount == 4) { res = false; }
+
+            // Query 3: Manual Reviews (TblReview)
+            else if (readCount == 5) { queryIndex = 3; res = false; }
+
+            Console.WriteLine($"[TEST-DEBUG] Read() Q{queryIndex}, Count: {readCount}, Result: {res}");
+            return res;
+        });
+
+        _mockDataReader.Setup(r => r.ReadAsync(It.IsAny<CancellationToken>())).Returns(() => {
+            readCount++;
+            var res = false;
+
+            // Same logic for Async
+            if (readCount == 1) { queryIndex = 1; res = true; } 
+            else if (readCount == 2) { res = false; }
+            
+            else if (readCount == 3) { queryIndex = 2; isProductQuery = false; res = true; }
+            else if (readCount == 4) { res = false; }
+
+            else if (readCount == 5) { queryIndex = 3; res = false; }
+
+            Console.WriteLine($"[TEST-DEBUG] ReadAsync() Q{queryIndex}, Count: {readCount}, Result: {res}");
+            return Task.FromResult(res);
         });
 
         // Act
@@ -147,13 +188,19 @@ public class GetProductsHandlerTests
         }
         catch (Exception ex)
         {
-            // Dapper might still complain about type conversion or flags, but capturing SQL is the goal
-             // Console.WriteLine(ex);
+            Console.WriteLine($"[TEST-DEBUG] Exception in Handle: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
         }
 
         // Assert
+        Console.WriteLine($"[TEST-DEBUG] Captured SQLs count: {capturedSqls.Count}");
+        foreach(var sql in capturedSqls) 
+        {
+             Console.WriteLine($"[TEST-DEBUG] SQL: {sql.Substring(0, Math.Min(sql.Length, 50))}...");
+        }
+
         // We look for the file query in captured commands
-        var fileQuery = capturedSqls.FirstOrDefault(s => s.Contains("TblFile"));
+        var fileQuery = capturedSqls.FirstOrDefault(s => s != null && s.Contains("TblFile"));
         Assert.NotNull(fileQuery);
         Assert.Contains("ANY(@Codes)", fileQuery);
     }

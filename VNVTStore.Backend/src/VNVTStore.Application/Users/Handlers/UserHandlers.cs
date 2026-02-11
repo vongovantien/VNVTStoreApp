@@ -49,24 +49,13 @@ public class UserHandlers : BaseHandler<TblUser>,
         return await GetByCodeAsync<UserDto>(request.userCode, MessageConstants.User, cancellationToken);
     }
 
+
     public async Task<Result<PagedResult<UserDto>>> Handle(GetPagedQuery<UserDto> request, CancellationToken cancellationToken)
     {
-        var searchFields = request.Searching ?? new List<SearchDTO>();
-
-        if (!string.IsNullOrEmpty(request.Search))
-        {
-            // Search across Username, Email, FullName with OR condition
-            searchFields.Add(new SearchDTO { SearchField = "Username", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-            searchFields.Add(new SearchDTO { SearchField = "Email", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-            searchFields.Add(new SearchDTO { SearchField = "FullName", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-        }
-
-        // Role filter is passed via Searching list from Controller if present
-
         return await GetPagedDapperAsync<UserDto>(
             request.PageIndex, 
             request.PageSize, 
-            searchFields, 
+            request.Searching, 
             request.SortDTO, 
             null, // referenceTables
             request.Fields, 

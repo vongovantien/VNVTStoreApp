@@ -275,14 +275,14 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
 
   const fieldGroups: FieldGroup[] = [
     {
-      title: t('admin.groups.general'),
+      title: t('admin.groups.general', 'General'),
       fields: [
-        { name: 'name', type: 'text', label: t('common.fields.name'), required: true, colSpan: 12, placeholder: t('common.placeholders.productName') },
-        { name: 'description', type: 'textarea', label: t('common.fields.description'), colSpan: 12, placeholder: t('common.placeholders.productDescription') }
+        { name: 'name', type: 'text', label: t('common.fields.name', 'Name'), required: true, colSpan: 12, placeholder: t('common.placeholders.productName', 'Product Name') },
+        { name: 'description', type: 'textarea', label: t('common.fields.description', 'Description'), colSpan: 12, placeholder: t('common.placeholders.productDescription', 'Product Description') }
       ]
     },
     {
-        title: t('admin.groups.images'),
+        title: t('admin.groups.images', 'Images'),
         fields: [
             { 
                 name: 'images', type: 'custom', label: t('common.fields.image'), colSpan: 12,
@@ -302,7 +302,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         ]
     },
     {
-        title: t('admin.groups.pricing'),
+        title: t('admin.groups.pricing', 'Pricing'),
         fields: [
             {
                 name: 'pricingSection', type: 'custom', label: '', colSpan: 12,
@@ -357,11 +357,11 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                                 {/* Giá vốn (INPUT - primary) */}
                                 <div className="col-span-3">
                                     <Input
-                                        label={t('common.fields.costPrice')}
+                                        label={t('common.fields.costPrice', 'Cost Price')}
                                         isRequired
                                         value={formatNumber(costPrice)}
                                         onChange={(e) => handleCostChange(parseNumber(e.target.value))}
-                                        placeholder={t('common.placeholders.enterPrice')}
+                                        placeholder={t('common.placeholders.enterPrice', 'Enter price...')}
                                         className="text-right"
                                     />
                                 </div>
@@ -370,10 +370,10 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                                 {/* Giá bán sỉ (INPUT) */}
                                 <div className="col-span-3">
                                     <Input
-                                        label={t('common.fields.wholesalePrice')}
+                                        label={t('common.fields.wholesalePrice', 'Wholesale Price')}
                                         value={formatNumber(wholesalePrice)}
                                         onChange={(e) => form.setValue('wholesalePrice', parseNumber(e.target.value), { shouldValidate: true })}
-                                        placeholder={t('common.placeholders.enterPrice')}
+                                        placeholder={t('common.placeholders.enterPrice', 'Enter price...')}
                                         className={`text-right ${wholesalePrice >= price && wholesalePrice > 0 ? 'border-yellow-500' : ''}`}
                                     />
                                 </div>
@@ -396,10 +396,10 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                                     <Input
                                         id="product-price-input"
                                         data-testid="product-price-input"
-                                        label={`${t('common.fields.price')} bán`}
+                                        label={`${t('common.fields.price', 'Price')} bán`}
                                         value={formatNumber(price)}
                                         onChange={(e) => form.setValue('price', parseNumber(e.target.value), { shouldValidate: true })}
-                                        placeholder={t('common.placeholders.enterPrice')}
+                                        placeholder={t('common.placeholders.enterPrice', 'Enter price...')}
                                         className="text-right font-semibold bg-green-50 dark:bg-green-900/20 border-green-300"
                                     />
                                 </div>
@@ -429,10 +429,10 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         ]
     },
     {
-        title: t('admin.groups.inventory'),
+        title: t('admin.groups.inventory', 'Inventory'),
         fields: [
-            { name: 'stockQuantity', type: 'number', label: t('common.fields.stock'), required: true, colSpan: 6, placeholder: t('common.placeholders.enterQuantity') },
-            { name: 'code', type: 'text', label: t('common.fields.code'), disabled: true, colSpan: 6, placeholder: t('common.placeholders.enterCode') },
+            { name: 'stockQuantity', type: 'number', label: t('common.fields.stock', 'Stock'), required: true, colSpan: 6, placeholder: t('common.placeholders.enterQuantity', 'Enter quantity...') },
+            { name: 'code', type: 'text', label: t('common.fields.code', 'Code'), disabled: true, colSpan: 6, placeholder: t('common.placeholders.enterCode', 'Enter code...') },
             { name: 'minStockLevel', type: 'number', label: t('common.fields.minStock'), colSpan: 4, placeholder: '0' },
             { 
                 name: 'baseUnit', type: 'custom', label: t('common.fields.unit'), colSpan: 4,
@@ -440,7 +440,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                     const form = f as UseFormReturn<ProductFormData>;
                     return (
                         <Controller control={form.control} name="baseUnit" render={({ field, fieldState }) => (
-                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.unit')} error={fieldState.error?.message} queryKeyPrefix="units" fetchFn={fetchUnits} placeholder={t('common.placeholders.select')} initialLabel={field.value} />
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.unit', 'Unit')} error={fieldState.error?.message} queryKeyPrefix="units" fetchFn={fetchUnits} placeholder={t('common.placeholders.select', 'Select...')} initialLabel={field.value} />
                         )} />
                     );
                 }
@@ -449,7 +449,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         ]
     },
     {
-        title: t('admin.groups.specs'),
+        title: t('admin.groups.specs', 'Specifications'),
         fields: [
             {
                 name: 'details', type: 'custom', label: t('common.fields.specs'), colSpan: 12,
@@ -490,7 +490,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         ]
     },
     {
-        title: t('admin.groups.units'),
+        title: t('admin.groups.units', 'Units'),
         fields: [
             {
                 name: 'unitsSection', type: 'custom', label: '', colSpan: 12,
@@ -510,7 +510,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         ]
     },
     {
-        title: t('product.variants'),
+        title: t('product.variants', 'Variants'),
         fields: [
             {
                 name: 'variants', type: 'custom', label: '', colSpan: 12,
@@ -532,16 +532,16 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
 
   const fieldGroupsSidebar: FieldGroup[] = [
     {
-        title: t('admin.groups.organization'),
+        title: t('admin.groups.organization', 'Organization'),
         fields: [
-            { name: 'isActive', type: 'switch', label: t('common.fields.status'), description: t('admin.statusHint'), colSpan: 12 },
+            { name: 'isActive', type: 'switch', label: t('common.fields.status', 'Status'), description: t('admin.statusHint', 'Status hint'), colSpan: 12 },
             { 
                 name: 'categoryCode', type: 'custom', label: t('common.fields.category'), required: true, colSpan: 12,
                 render: (f: unknown) => {
                     const form = f as UseFormReturn<ProductFormData>;
                     return (
                         <Controller control={form.control} name="categoryCode" render={({ field, fieldState }) => (
-                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.category')} error={fieldState.error?.message} required queryKeyPrefix="categories" fetchFn={fetchCategories} placeholder={t('common.placeholders.select')} initialLabel={initialData?.categoryName} />
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.category', 'Category')} error={fieldState.error?.message} required queryKeyPrefix="categories" fetchFn={fetchCategories} placeholder={t('common.placeholders.select', 'Select...')} initialLabel={initialData?.categoryName} />
                         )} />
                     );
                 }
@@ -552,7 +552,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                     const form = f as UseFormReturn<ProductFormData>;
                     return (
                         <Controller control={form.control} name="brandCode" render={({ field, fieldState }) => (
-                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.brand')} error={fieldState.error?.message} queryKeyPrefix="brands" fetchFn={fetchBrands} placeholder={t('common.placeholders.select')} initialLabel={initialData?.brandName} />
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.brand', 'Brand')} error={fieldState.error?.message} queryKeyPrefix="brands" fetchFn={fetchBrands} placeholder={t('common.placeholders.select', 'Select...')} initialLabel={initialData?.brandName} />
                         )} />
                     );
                 }
@@ -563,7 +563,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
                     const form = f as UseFormReturn<ProductFormData>;
                     return (
                         <Controller control={form.control} name="supplierCode" render={({ field, fieldState }) => (
-                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.supplier')} error={fieldState.error?.message} queryKeyPrefix="suppliers" fetchFn={fetchSuppliers} placeholder={t('common.placeholders.select')} initialLabel={initialData?.supplierName} />
+                            <LazySelect {...field} value={field.value || ''} onChange={field.onChange} label={t('common.fields.supplier', 'Supplier')} error={fieldState.error?.message} queryKeyPrefix="suppliers" fetchFn={fetchSuppliers} placeholder={t('common.placeholders.select', 'Select...')} initialLabel={initialData?.supplierName} />
                         )} />
                     );
                 }

@@ -20,12 +20,25 @@ public class BrandsController : BaseApiController<TblBrand, BrandDto, CreateBran
         return HandleResult(result);
     }
 
+    [HttpPost("import")]
+    [Authorize(Roles = "admin,Admin")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Import(IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest("File is empty");
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+        
+        var result = await Mediator.Send(new VNVTStore.Application.Brands.Commands.ImportBrandsCommand(memoryStream));
+        return HandleResult(result);
+    }
+
     [HttpGet("template")]
     [AllowAnonymous]
     public IActionResult GetTemplate()
     {
-        var csv = "Code,Name,Description,ImageUrl,IsActive\nBRAND001,Sample Brand,Brand description,,true";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-        return File(bytes, "text/csv", "brands_template.csv");
+        var bytes = VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.BrandImportDto>();
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "brands_template.xlsx");
     }
 }

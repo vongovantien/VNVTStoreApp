@@ -17,6 +17,7 @@ using VNVTStore.Domain.Interfaces;
 using VNVTStore.Infrastructure.Persistence;
 using VNVTStore.Tests.Common;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace VNVTStore.Tests.Handlers;
 
@@ -29,6 +30,7 @@ public class UpdateProductHandlerTests : IDisposable
     private readonly Mock<IBaseUrlService> _mockBaseUrlService;
     private readonly Mock<IDapperContext> _mockDapperContext;
     private readonly Mock<IRepository<TblProduct>> _mockRepository;
+    private readonly Mock<ILogger<UpdateProductHandler>> _mockLogger;
     private readonly UpdateProductHandler _handler;
 
     public UpdateProductHandlerTests()
@@ -52,6 +54,7 @@ public class UpdateProductHandlerTests : IDisposable
         _mockBaseUrlService = new Mock<IBaseUrlService>();
         _mockBaseUrlService.Setup(x => x.GetBaseUrl()).Returns("http://test-api.com");
         _mockDapperContext = new Mock<IDapperContext>();
+        _mockLogger = new Mock<ILogger<UpdateProductHandler>>();
         
         // We use the real DbContext for the repository part in a way or mock it
         // Actually, BaseHandler uses IRepository<T>. Let's mock it but point to the context if possible
@@ -69,7 +72,8 @@ public class UpdateProductHandlerTests : IDisposable
             _mockDapperContext.Object,
             _mockBaseUrlService.Object,
             _mockFileService.Object,
-            _context
+            _context,
+            _mockLogger.Object
         );
     }
 
@@ -82,11 +86,9 @@ public class UpdateProductHandlerTests : IDisposable
     [Fact]
     public async Task Handle_UpdateProductWithChildren_ShouldReplaceChildren()
     {
-        // Seed dependencies to avoid Foreign Key violations
-        await _context.TblCategories.AddAsync(new TblCategory { Code = "CAT01", Name = "Category 1", IsActive = true });
-        await _context.TblBrands.AddAsync(new TblBrand { Code = "BRAND01", Name = "Brand 1", IsActive = true });
+        // CAT01, BRAND01, SUP01 are already seeded by TestDbContextFactory - only add UNIT1
         await _context.TblUnits.AddAsync(new TblUnit { Code = "UNIT1", Name = "Cái", IsActive = true });
-        await _context.TblSuppliers.AddAsync(new TblSupplier { Code = "SUP01", Name = "Supplier 1", IsActive = true });
+        await _context.SaveChangesAsync();
         
         var product = TblProduct.Create("Old Name", 1000, 800, 10, "CAT01", 500, "SUP01", "BRAND01", "Cái");
         product.Code = "PROD001";

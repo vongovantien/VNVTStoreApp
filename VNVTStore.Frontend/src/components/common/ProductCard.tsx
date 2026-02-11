@@ -156,7 +156,7 @@ export const ProductCard = memo(
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-              {isNew && <Badge color="error" className="absolute top-2 left-2">{t('product.new')}</Badge>}
+              {isNew && <Badge color="error" className="absolute top-2 left-2">{t('product.new', 'New')}</Badge>}
               {hasDiscount && <Badge color="error" className="absolute top-2 left-2">{`-${product.discount}%`}</Badge>}
             </div>
           </Link>
@@ -190,7 +190,7 @@ export const ProductCard = memo(
                     )}
                   </>
                 ) : (
-                  <span className="text-base font-semibold text-primary">{t('product.contactForPrice')}</span>
+                  <span className="text-base font-semibold text-primary">{t('product.contactForPrice', 'Contact for Price')}</span>
                 )}
               </div>
 
@@ -207,11 +207,11 @@ export const ProductCard = memo(
                 {hasFixedPrice ? (
                   <Button size="sm" onClick={handleAddToCart} disabled={isOutOfStock}>
                     <ShoppingCart size={16} />
-                    {t('product.addToCart')}
+                    {t('product.addToCart', 'Add to Cart')}
                   </Button>
                 ) : (
                   <Button size="sm" variant="outline" leftIcon={<Phone size={16} />}>
-                    {t('product.requestQuote')}
+                    {t('product.requestQuote', 'Request Quote')}
                   </Button>
                 )}
               </div>
@@ -250,7 +250,7 @@ export const ProductCard = memo(
             <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
               {isNew && (
                 <Badge className="bg-red-500 text-white border-0 shadow-sm px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider">
-                  {t('product.new')}
+                  {t('product.new', 'New')}
                 </Badge>
               )}
               {hasDiscount && (
@@ -268,7 +268,7 @@ export const ProductCard = memo(
                   'w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-transform hover:scale-110 text-slate-600 hover:text-rose-500',
                   isWishlisted && 'text-rose-500'
                 )}
-                title={t('product.addToWishlist')}
+                title={t('product.addToWishlist', 'Add to Wishlist')}
               >
                 <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} className={isWishlisted ? "animate-pulse-once" : ""} />
               </button>
@@ -278,7 +278,7 @@ export const ProductCard = memo(
                   'w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md transition-transform hover:scale-110 text-slate-600 hover:text-indigo-600 delay-75',
                   isCompared && 'bg-indigo-600 text-white hover:text-white'
                 )}
-                title={t('product.compare')}
+                title={t('product.compare', 'Compare')}
               >
                 <Scale size={18} />
               </button>
@@ -302,7 +302,7 @@ export const ProductCard = memo(
                   disabled={isOutOfStock}
                 >
                   <ShoppingCart size={18} className="mr-2" />
-                  {isOutOfStock ? t('product.outOfStock') : t('product.addToCart')}
+                  {isOutOfStock ? t('product.outOfStock', 'Out of Stock') : t('product.addToCart', 'Add to Cart')}
                 </Button>
               ) : (
                 <Button
@@ -350,7 +350,7 @@ export const ProductCard = memo(
                     )}
                   </div>
                 ) : (
-                  <span className="text-base font-semibold text-indigo-600">{t('product.contactForPrice')}</span>
+                  <span className="text-base font-semibold text-indigo-600">{t('product.contactForPrice', 'Contact for Price')}</span>
                 )}
               </div>
             </div>

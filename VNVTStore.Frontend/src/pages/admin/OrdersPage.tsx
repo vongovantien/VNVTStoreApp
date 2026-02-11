@@ -10,7 +10,7 @@ import { AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';
 import { DataTableColumn } from '@/components/common/DataTable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { PaginationDefaults } from '@/constants';
+import { PaginationDefaults, OrderStatus } from '@/constants';
 import { StatsCards } from '@/components/admin/StatsCards';
 import { useQuery } from '@tanstack/react-query';
 
@@ -94,10 +94,9 @@ export const OrdersPage = () => {
       header: t('common.fields.payment'),
       accessor: (row) => (
         <Badge
-          color={row.paymentStatus === 'paid' ? 'success' : row.paymentStatus === 'pending' ? 'warning' : 'error'}
-          size="sm"
+          color={row.paymentStatus === 'Completed' ? 'success' : row.paymentStatus === 'Pending' ? 'warning' : 'error'}
         >
-          {row.paymentStatus === 'paid' ? t('admin.payment.paid') : row.paymentStatus === 'pending' ? t('admin.payment.pending') : t('admin.payment.failed')}
+          {row.paymentStatus === 'Completed' ? t('admin.payment.paid') : row.paymentStatus === 'Pending' ? t('admin.payment.pending') : t('admin.payment.failed')}
         </Badge>
       ),
       className: 'text-center',
@@ -127,7 +126,7 @@ export const OrdersPage = () => {
   const [visibleColumns, setVisibleColumns] = useState<string[]>(columns.map(c => c.id));
 
   // Fetch Data
-  const { data: ordersData, isLoading, isFetching } = useAdminOrders({
+  const { data: ordersData, isLoading, isFetching, refetch } = useAdminOrders({
     pageIndex: currentPage,
     pageSize: pageSize,
     filters: {
@@ -172,8 +171,8 @@ export const OrdersPage = () => {
         subtitle="admin.subtitles.orders"
         rightSection={
           <div className="flex items-center gap-2">
-            <Badge color="warning">{t('admin.order.pendingCount', { count: orders.filter(o => o.status === 'pending').length })}</Badge>
-            <Badge color="info">{t('admin.order.shippingCount', { count: orders.filter(o => o.status === 'shipping').length })}</Badge>
+            <Badge color="warning">{t('admin.order.pendingCount', { count: orders.filter(o => o.status === OrderStatus.PENDING).length })}</Badge>
+            <Badge color="info">{t('admin.order.shippingCount', { count: orders.filter(o => o.status === OrderStatus.SHIPPING).length })}</Badge>
           </div>
         }
       />
@@ -219,42 +218,44 @@ export const OrdersPage = () => {
         }}
         
         onAdd={() => { }} // Placeholder
+        onRefresh={refetch}
         onView={(order) => setSelectedOrder(order)}
         onEdit={(order) => setSelectedOrder(order)} // Map Edit to View for now as Order Edit is complex
         onDelete={(order) => setOrderToDelete(order)}
         renderRowActions={(order) => (
           <>
-            {order.status === 'pending' && (
+
+            {order.status === OrderStatus.PENDING && (
               <button
                 className="p-1.5 hover:bg-success/10 rounded transition-colors text-success"
                 title={t('admin.actions.confirmOrder')}
-                onClick={() => updateStatus(order.code, 'confirmed')}
+                onClick={() => updateStatus(order.code, OrderStatus.CONFIRMED)}
               >
                 <Check size={18} />
               </button>
             )}
   
-            {order.status === 'confirmed' && (
+            {order.status === OrderStatus.CONFIRMED && (
               <button
                 className="p-1.5 hover:bg-primary/10 rounded transition-colors text-primary"
                 title={t('admin.actions.shipOrder')}
-                onClick={() => updateStatus(order.code, 'shipping')}
+                onClick={() => updateStatus(order.code, OrderStatus.SHIPPING)}
               >
                 <Truck size={18} />
               </button>
             )}
   
-            {order.status === 'shipping' && (
+            {order.status === OrderStatus.SHIPPING && (
               <button
                 className="p-1.5 hover:bg-success/10 rounded transition-colors text-success"
                 title={t('admin.actions.markDelivered')}
-                onClick={() => updateStatus(order.code, 'delivered')}
+                onClick={() => updateStatus(order.code, OrderStatus.DELIVERED)}
               >
                 <Package size={18} />
               </button>
             )}
   
-            {order.status === 'delivered' && (
+            {order.status === OrderStatus.DELIVERED && (
               <button
                 className="p-1.5 hover:bg-secondary rounded transition-colors text-secondary"
                 title={t('admin.actions.printInvoice')}
@@ -264,11 +265,11 @@ export const OrdersPage = () => {
               </button>
             )}
   
-            {order.status === 'pending' && (
+            {order.status === OrderStatus.PENDING && (
               <button
                 className="p-1.5 hover:bg-error/10 rounded transition-colors text-error"
                 title={t('admin.actions.cancelOrder')}
-                onClick={() => updateStatus(order.code, 'cancelled')}
+                onClick={() => updateStatus(order.code, OrderStatus.CANCELLED)}
               >
                 <X size={18} />
               </button>
@@ -318,11 +319,11 @@ export const OrdersPage = () => {
             label: t('common.fields.status'),
             type: 'select',
             options: [
-              { value: 'pending', label: t('admin.status.pending') },
-              { value: 'confirmed', label: t('admin.status.confirmed') },
-              { value: 'shipping', label: t('admin.status.shipping') },
-              { value: 'delivered', label: t('admin.status.delivered') },
-              { value: 'cancelled', label: t('admin.status.cancelled') },
+              { value: OrderStatus.PENDING, label: t('admin.status.pending') },
+              { value: OrderStatus.CONFIRMED, label: t('admin.status.confirmed') },
+              { value: OrderStatus.SHIPPING, label: t('admin.status.shipping') },
+              { value: OrderStatus.DELIVERED, label: t('admin.status.delivered') },
+              { value: OrderStatus.CANCELLED, label: t('admin.status.cancelled') },
             ]
           },
           {
@@ -330,8 +331,8 @@ export const OrdersPage = () => {
             label: t('common.fields.payment'),
             type: 'select',
             options: [
-              { value: 'paid', label: t('admin.status.paid') },
-              { value: 'pending', label: t('admin.status.unpaid') },
+              { value: 'Completed', label: t('admin.status.paid') },
+              { value: 'Pending', label: t('admin.status.unpaid') },
             ]
           },
           {
@@ -390,12 +391,12 @@ export const OrdersPage = () => {
         footer={
           selectedOrder && (
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSelectedOrder(null)}>{t('common.close')}</Button>
-              {selectedOrder.status === 'pending' && (
-                <Button onClick={() => updateStatus(selectedOrder.code, 'confirmed')}>{t('admin.actions.confirmOrderFull')}</Button>
+              <Button variant="ghost" onClick={() => setSelectedOrder(null)}>{t('common.close')}</Button>
+              {selectedOrder.status === OrderStatus.PENDING && (
+                <Button variant="primary" onClick={() => updateStatus(selectedOrder.code, OrderStatus.CONFIRMED)}>{t('admin.actions.confirmOrderFull')}</Button>
               )}
-              {selectedOrder.status === 'delivered' && (
-                <Button leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>{t('admin.actions.printInvoice')}</Button>
+              {selectedOrder.status === OrderStatus.DELIVERED && (
+                <Button variant="outline" leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>{t('admin.actions.printInvoice')}</Button>
               )}
             </div>
           )
@@ -408,8 +409,8 @@ export const OrdersPage = () => {
               <Badge color={getStatusColor(selectedOrder.status) as "success" | "warning" | "error" | "info" | "primary" | "secondary"}>
                 {getStatusText(selectedOrder.status)}
               </Badge>
-              <Badge color={selectedOrder.paymentStatus === 'paid' ? 'success' : 'warning'}>
-                {selectedOrder.paymentStatus === 'paid' ? t('admin.payment.paid') : t('admin.payment.pending')}
+              <Badge color={selectedOrder.paymentStatus === 'Completed' ? 'success' : 'warning'}>
+                {selectedOrder.paymentStatus === 'Completed' ? t('admin.payment.paid') : t('admin.payment.pending')}
               </Badge>
             </div>
 

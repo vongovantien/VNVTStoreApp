@@ -2,15 +2,16 @@
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { BaseForm, FieldDefinition } from '@/components/common';
+import { REGEX } from '@/constants/regex';
 
 // ============ Schema with Validation ============
 const supplierSchema = z.object({
   name: z.string().min(1, 'required'), // will be handled by t('admin.validation.supplierNameRequired')
   contactPerson: z.string().optional(),
   email: z.string().email('invalid_email').optional().or(z.literal('')),
-  phone: z.string().regex(/^[0-9]{10,11}$/, 'invalid_phone').optional().or(z.literal('')),
+  phone: z.string().regex(REGEX.PHONE_SIMPLE, 'invalid_phone').optional().or(z.literal('')),
   address: z.string().optional(),
-  taxCode: z.string().optional(),
+  taxCode: z.string().regex(REGEX.TAX_CODE, 'invalid_tax_code').optional().or(z.literal('')),
   bankAccount: z.string().optional(),
   bankName: z.string().optional(),
   notes: z.string().optional(),

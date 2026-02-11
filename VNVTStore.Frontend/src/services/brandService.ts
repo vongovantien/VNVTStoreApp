@@ -37,7 +37,21 @@ export const brandService = {
         });
     },
     getStats: async () => {
-        const response = await apiClient.get<any>(`${API_ENDPOINTS.BRANDS}/stats`);
+        const response = await apiClient.get<{ total: number; active: number }>(`${API_ENDPOINTS.BRANDS}/stats`);
         return response.data || { total: 0, active: 0 };
+    },
+
+    import: async (file: File): Promise<ApiResponse<number>> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return apiClient.post(`${API_ENDPOINTS.BRANDS}/import`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+
+    getTemplate: (): string => {
+        return `${API_ENDPOINTS.BRANDS}/template`;
     }
 };

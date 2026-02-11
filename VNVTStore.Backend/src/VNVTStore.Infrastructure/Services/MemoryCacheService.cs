@@ -27,11 +27,11 @@ public class MemoryCacheService : ICacheService
         var value = _cache.Get<T>(key);
         if (value != null)
         {
-            _logger.LogDebug("Cache HIT for key: {Key}", key);
+            _logger.LogDebug("[GetAsync] Cache HIT for key: {Key}", key);
         }
         else
         {
-            _logger.LogDebug("Cache MISS for key: {Key}", key);
+            _logger.LogDebug("[GetAsync] Cache MISS for key: {Key}", key);
         }
         return Task.FromResult(value);
     }
@@ -46,7 +46,7 @@ public class MemoryCacheService : ICacheService
 
         _cache.Set(key, value, options);
         _keys.TryAdd(key, 0);
-        _logger.LogDebug("Cache SET for key: {Key}, Expiration: {Expiration}", key, absoluteExpiration ?? _defaultExpiration);
+        _logger.LogDebug("[SetAsync] Cache SET for key: {Key}, Expiration: {Expiration}", key, absoluteExpiration ?? _defaultExpiration);
         
         return Task.CompletedTask;
     }
@@ -55,7 +55,7 @@ public class MemoryCacheService : ICacheService
     {
         _cache.Remove(key);
         _keys.TryRemove(key, out _);
-        _logger.LogDebug("Cache REMOVE for key: {Key}", key);
+        _logger.LogDebug("[RemoveAsync] Cache REMOVE for key: {Key}", key);
         return Task.CompletedTask;
     }
 
@@ -69,7 +69,7 @@ public class MemoryCacheService : ICacheService
             _keys.TryRemove(key, out _);
         }
         
-        _logger.LogDebug("Cache REMOVE by prefix: {Prefix}, Count: {Count}", prefix, keysToRemove.Count);
+        _logger.LogDebug("[RemoveByPrefixAsync] Cache REMOVE by prefix: {Prefix}, Count: {Count}", prefix, keysToRemove.Count);
         return Task.CompletedTask;
     }
 

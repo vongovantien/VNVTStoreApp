@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Search, Trash2, Edit, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
-import { DataTable } from '@/components/common';
+import { DataTable, CommonColumns } from '@/components/common';
 import { formatDate } from '@/utils/format';
 import { couponService, type CouponDto, type CreateCouponRequest, type UpdateCouponRequest } from '@/services/couponService';
 import { promotionService } from '@/services/promotionService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaginationDefaults } from '@/constants';
+import { COUPON_LIST_FIELDS } from '@/constants/fieldConstants';
 import { useToast } from '@/store';
 
 export const CouponsPage = () => {
@@ -37,7 +38,8 @@ export const CouponsPage = () => {
     queryFn: () => couponService.search({
       pageIndex: currentPage,
       pageSize: pageSize,
-      search: searchQuery
+      search: searchQuery,
+      fields: COUPON_LIST_FIELDS
     }),
   });
 
@@ -145,16 +147,7 @@ export const CouponsPage = () => {
       ),
       className: 'text-center'
     },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (row: CouponDto) => (
-        <Badge color={row.isActive ? 'success' : 'error'} size="sm">
-          {row.isActive ? t('admin.status.active') : t('admin.status.inactive')}
-        </Badge>
-      ),
-      className: 'text-center'
-    },
+    CommonColumns.createStatusColumn(t),
     {
       id: 'date',
       header: t('common.fields.date'),
@@ -231,7 +224,7 @@ export const CouponsPage = () => {
         title={editingCoupon ? t('admin.coupon.edit') : t('admin.coupon.add')}
         footer={
           <div className="flex justify-end gap-2">
-             <Button variant="outline" onClick={() => setIsModalOpen(false)}>{t('common.cancel')}</Button>
+             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>{t('common.cancel')}</Button>
              <Button onClick={handleSubmit} isLoading={createMutation.isPending || updateMutation.isPending}>{t('common.save')}</Button>
           </div>
         }

@@ -138,4 +138,19 @@ public class OrdersController : BaseApiController
         var result = await Mediator.Send(query);
         return HandleResult(result);
     }
+
+    [HttpPut("{code}/status")]
+    [Authorize(Roles = "admin,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<OrderDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateOrderStatus(string code, [FromBody] UpdateOrderStatusDto dto)
+    {
+         if (!Enum.TryParse<OrderStatus>(dto.Status, true, out var status))
+         {
+             return BadRequest(new { message = "Invalid status" });
+         }
+
+         var result = await Mediator.Send(new UpdateOrderStatusCommand(code, status));
+         return HandleResult(result, "Order status updated");
+    }
+
 }

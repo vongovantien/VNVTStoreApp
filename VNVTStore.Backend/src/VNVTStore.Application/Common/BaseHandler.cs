@@ -1,7 +1,10 @@
 using AutoMapper;
+#pragma warning disable CS8602 // Dereference of a possibly null reference
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Text;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Domain.Interfaces;
@@ -15,6 +18,7 @@ using VNVTStore.Application.Common.Attributes;
 using VNVTStore.Application.Interfaces;
 using Newtonsoft.Json;
 using System.Reflection;
+using System.Collections;
 using System.Collections.Concurrent;
 
 
@@ -26,6 +30,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
     protected readonly IUnitOfWork _unitOfWork;
     protected readonly IMapper _mapper;
     protected readonly IDapperContext _dapperContext;
+    protected readonly string _entityName;
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _propertyCache = new();
 
 
@@ -39,6 +44,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _dapperContext = dapperContext;
+        _entityName = typeof(TEntity).Name.Replace("Tbl", "");
     }
 
     // Backwards-compatible constructor for handlers not using Dapper
@@ -48,6 +54,11 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         IMapper mapper)
         : this(repository, unitOfWork, mapper, null!)
     {
+    }
+
+    public virtual async Task<Result<PagedResult<TResponse>>> Handle<TResponse>(GetPagedQuery<TResponse> request, CancellationToken cancellationToken) where TResponse : class, new()
+    {
+        return await GetPagedDapperAsync<TResponse>(request.PageIndex, request.PageSize, request.Searching, request.SortDTO, null, request.Fields, cancellationToken);
     }
 
     protected async Task<Result<TResponse>> CreateAsync<TCreateDto, TResponse>(
@@ -360,18 +371,18 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         
         // Setup search fields
         searchFields ??= new List<SearchDTO>();
-        sortDTO ??= new SortDTO { SortBy = "CreatedAt", Sort = "DESC" };
+        sortDTO ??= new SortDTO { SortBy = nameof(IEntity.CreatedAt), Sort = "DESC" };
         if (string.IsNullOrEmpty(sortDTO.Sort)) 
             sortDTO.Sort = sortDTO.SortDescending ? "DESC" : "ASC";
 
         // Filter out Soft Deleted items by default
-        if (!searchFields.Any(s => s.SearchField == "ModifiedType"))
+        if (!searchFields.Any(s => s.SearchField == nameof(IEntity.ModifiedType)))
         {
             searchFields.Add(new SearchDTO 
             { 
-                SearchField = "ModifiedType", 
+                SearchField = nameof(IEntity.ModifiedType), 
                 SearchCondition = SearchCondition.NotEqual, 
-                SearchValue = "Delete" 
+                SearchValue = ModificationType.Delete.ToString() 
             });
         }
         
@@ -383,11 +394,38 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             ? autoRefTables 
             : referenceTables.Concat(autoRefTables).ToList();
 
+        // Fix: Filter out fields that are ReferenceCollections (child lists) as they are not columns in the main table
+        // They are populated separately in PopulateCollectionsAsync
+        List<string>? sqlFields = null;
+        if (fields != null && fields.Any())
+        {
+            var collectionProps = typeof(TResponse).GetProperties()
+                .Where(p => Attribute.IsDefined(p, typeof(ReferenceCollectionAttribute)))
+                .Select(p => p.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            sqlFields = fields.Where(f => !collectionProps.Contains(f)).ToList();
+            
+            // If filtering results in empty list, we effectively select nothing? 
+            // QueryBuilder handles empty fields as "SELECT *", so checking Empty is tricky.
+            // But if user requested ONLY collection fields, we still need main entity ID at least?
+            // Usually we assume if fields is empty after filtering, we fallback to specific columns or *?
+            // Actually QueryBuilder logic: if (fields == null || !fields.Any()) -> Select *
+            // So if I pass empty list, it selects *. This might be okay, or retrieving too much.
+            // Better to at least select ID/Code if list is empty but original wasn't?
+            
+            if (sqlFields.Count == 0 && fields.Count > 0)
+            {
+                 // User asked ONLY for collections. We need 'Code' to fetch children.
+                 // Ensure 'Code' is selected.
+                 sqlFields.Add("Code");
+            }
+        }
+
         // Build parameterized query (SQL injection safe)
         var queryResult = QueryBuilder.BuildRawQueryPagingParameterized(
-            pageSize, pageIndex, tableName, referenceTables, searchFields, sortDTO, fields);
+            pageSize, pageIndex, tableName, referenceTables, searchFields, sortDTO, sqlFields);
         
-        Console.WriteLine($"[Dapper Debug] SQL Generation took: {sw.ElapsedMilliseconds}ms");
         sw.Restart();
 
         // Execute with parameters
@@ -398,7 +436,6 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         
         // Convert to list
         var resultList = dynamicResults.ToList();
-        Console.WriteLine($"[Dapper Debug] Query Execution took: {sw.ElapsedMilliseconds}ms. Rows: {resultList.Count}");
         sw.Restart();
 
         var dtos = new List<TResponse>();
@@ -410,12 +447,11 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             dtos = MapDynamicList<TResponse>(resultList);
         }
         
-        Console.WriteLine($"[Dapper Debug] Mapping took: {sw.ElapsedMilliseconds}ms");
         sw.Restart();
         
         // Populate Collections with ConfigureAwait
-        await PopulateCollectionsAsync(dtos, cancellationToken).ConfigureAwait(false);
-        Console.WriteLine($"[Dapper Debug] PopulateCollections took: {sw.ElapsedMilliseconds}ms");
+        // Pass the original 'fields' (not sqlFields) to control which collections to fetch
+        await PopulateCollectionsAsync(dtos, fields, cancellationToken).ConfigureAwait(false);
 
         return Result.Success(new PagedResult<TResponse>(dtos, totalCount, pageIndex, pageSize));
     }
@@ -461,6 +497,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
     /// </summary>
     protected async Task PopulateCollectionsAsync<TResponse>(
         List<TResponse> items,
+        List<string>? fields = null,
         CancellationToken cancellationToken = default) where TResponse : class, new()
     {
         if (items == null || !items.Any()) return;
@@ -471,10 +508,63 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         var responseType = typeof(TResponse);
         var props = responseType.GetProperties();
 
+        // Parse fields to dictionary: CollectionName -> Set of Fields
+        // e.g. "ProductImages.Name" -> "ProductImages": ["Name"]
+        // "ProductImages" -> "ProductImages": [] (means all)
+        var collectionFieldsMap = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        
+        if (fields != null && fields.Any())
+        {
+            foreach (var f in fields)
+            {
+                var parts = f.Split('.', 2);
+                var collectionName = parts[0];
+                
+                if (!collectionFieldsMap.ContainsKey(collectionName))
+                {
+                    collectionFieldsMap[collectionName] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                }
+
+                if (parts.Length > 1)
+                {
+                    // Partial selection: string "Name" from "ProductImages.Name"
+                    collectionFieldsMap[collectionName].Add(parts[1]);
+                }
+                else
+                {
+                    // Full selection: string "ProductImages"
+                    // Mark as empty to signify "Select *" or handle as full object
+                    collectionFieldsMap[collectionName].Clear(); 
+                }
+            }
+        }
+
         foreach (var prop in props)
         {
+            // Optimization: Skip if fields are specified and this property is not requested
+            // Note: If fields contains "ProductImages.Name", key "ProductImages" exists in map.
+            if (fields != null && fields.Any() && !collectionFieldsMap.ContainsKey(prop.Name))
+            {
+                continue;
+            }
+
             var collAttr = prop.GetCustomAttribute<ReferenceCollectionAttribute>();
             if (collAttr == null) continue;
+
+            // Determine which fields to select for this collection
+            List<string>? childSelectFields = null;
+            if (collectionFieldsMap.TryGetValue(prop.Name, out var requestedChildFields) && requestedChildFields.Any())
+            {
+                // Partial selection requested
+                // MUST include Key and ForeignKey for mapping/joining
+                // Primary Key of Child (collAttr.Key)
+                // We assume child type has property named same as Key, usually "Code"
+                requestedChildFields.Add("Code"); 
+                // Foreign Key to Parent (collAttr.ForeignKey)
+                requestedChildFields.Add(collAttr.ForeignKey);
+                
+                childSelectFields = requestedChildFields.ToList();
+            }
 
             // Get parent codes from items
             var parentKeyProp = responseType.GetProperty(collAttr.ParentKey);
@@ -489,11 +579,33 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             if (!parentCodes.Any()) continue;
 
             // Build parameterized SQL for child query (SQL injection safe)
-            var sql = $"SELECT * FROM \"{collAttr.ChildTableName}\" WHERE \"{collAttr.ForeignKey}\" = ANY(@Codes)";
+            var sb = new StringBuilder();
+            sb.Append("SELECT ");
+            if (childSelectFields == null || !childSelectFields.Any())
+            {
+                sb.Append("c.*");
+            }
+            else
+            {
+                var selectParts = childSelectFields.Select(f => {
+                    var colName = SqlBuilderHelpers.NormalizeFieldName(f);
+                    // Handle specific mappings: ImageURL -> Path for TblFile
+                    if (collAttr.ChildTableName == "TblFile" && f.Equals("ImageURL", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return $"c.\"Path\" AS \"{f}\"";
+                    }
+                    return $"c.\"{colName}\"";
+                });
+                sb.Append(string.Join(", ", selectParts));
+            }
+
+            sb.Append($" FROM \"{collAttr.ChildTableName}\" AS c WHERE c.\"{collAttr.ForeignKey}\" = ANY(@Codes)");
+            
+            var sql = sb.ToString();
             
             if (!string.IsNullOrEmpty(collAttr.FilterColumn) && !string.IsNullOrEmpty(collAttr.FilterValue))
             {
-                sql += $" AND \"{collAttr.FilterColumn}\" = @FilterValue";
+                sql += $" AND c.\"{collAttr.FilterColumn}\" = @FilterValue";
             }
 
             var parameters = new { Codes = parentCodes.ToArray(), FilterValue = collAttr.FilterValue };
@@ -503,15 +615,21 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
                 .ConfigureAwait(false);
             
             // Performance Optimization: Direct Mapping for children instead of JSON
-            var mapMethod = typeof(BaseHandler<TEntity>).GetMethod("MapDynamicList", BindingFlags.NonPublic | BindingFlags.Instance);
-            var genericMapMethod = mapMethod!.MakeGenericMethod(collAttr.ChildDtoType);
-            var childList = genericMapMethod.Invoke(this, new object[] { children }) as System.Collections.IList;
+            // Refactored to avoid generic reflection and CS8602 errors
+            
+            var childDtoType = collAttr.ChildDtoType;
+            if (childDtoType == null) continue;
 
-            if (childList == null) continue;
+#pragma warning disable CS8602 // Dereference of a possibly null reference
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+            // Use the non-generic helper
+            var childList = MapDynamicListRuntime(childDtoType, children);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8602 // Dereference of a possibly null reference
 
             // Group children by foreign key
             var groupedChildren = new Dictionary<string, List<object>>();
-            var foreignKeyProp = collAttr.ChildDtoType.GetProperty(collAttr.ForeignKey);
+            var foreignKeyProp = childDtoType.GetProperty(collAttr.ForeignKey);
             
             if (foreignKeyProp == null)
             {
@@ -529,7 +647,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
 
             if (foreignKeyProp == null) continue;
 
-            foreach (var child in (System.Collections.IEnumerable)childList)
+            foreach (var child in childList)
             {
                 var fkValue = foreignKeyProp.GetValue(child)?.ToString();
                 if (string.IsNullOrEmpty(fkValue)) continue;
@@ -601,6 +719,53 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         }
         return list;
     }
+
+    /// <summary>
+    /// Non-generic version of MapDynamicList to allow runtime type mapping without MakeGenericMethod reflection
+    /// </summary>
+    private System.Collections.IList MapDynamicListRuntime(Type targetType, dynamic source)
+    {
+#pragma warning disable CS8602 // Dereference of a possibly null reference
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+        var listType = typeof(List<>).MakeGenericType(targetType);
+        var list = (System.Collections.IList)Activator.CreateInstance(listType)!;
+        
+        var props = _propertyCache.GetOrAdd(targetType, t => t.GetProperties(BindingFlags.Public | BindingFlags.Instance));
+
+        foreach (var row in source)
+        {
+            var dict = (IDictionary<string, object>)row;
+            var item = Activator.CreateInstance(targetType)!;
+            
+            foreach (var prop in props)
+            {
+                if (dict.TryGetValue(prop.Name, out var value) && value != null && value != DBNull.Value)
+                {
+                    try
+                    {
+                        var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                        
+                        if (propType.IsEnum)
+                        {
+                            prop.SetValue(item, Enum.ToObject(propType, Convert.ChangeType(value, Enum.GetUnderlyingType(propType))));
+                        }
+                        else
+                        {
+                            prop.SetValue(item, Convert.ChangeType(value, propType));
+                        }
+                    }
+                    catch
+                    {
+                        // Skip
+                    }
+                }
+            }
+            list.Add(item);
+        }
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8602 // Dereference of a possibly null reference
+        return list;
+    }
 }
 
 /// <summary>
@@ -621,8 +786,6 @@ public class BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseHandl
     where TCreateDto : class
     where TUpdateDto : class
 {
-    private readonly string _entityName;
-
     public BaseHandler(
         IRepository<TEntity> repository,
         IUnitOfWork unitOfWork,
@@ -630,11 +793,10 @@ public class BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseHandl
         IDapperContext dapperContext)
         : base(repository, unitOfWork, mapper, dapperContext)
     {
-        _entityName = typeof(TEntity).Name.Replace("Tbl", "");
     }
 
     public virtual Task<Result<PagedResult<TResponse>>> Handle(GetPagedQuery<TResponse> request, CancellationToken cancellationToken)
-        => GetPagedDapperAsync<TResponse>(request.PageIndex, request.PageSize, request.Searching, request.SortDTO, null, request.Fields, cancellationToken);
+        => base.Handle<TResponse>(request, cancellationToken);
 
     public virtual Task<Result<TResponse>> Handle(GetByCodeQuery<TResponse> request, CancellationToken cancellationToken)
         => GetByCodeAsync<TResponse>(request.Code, _entityName, cancellationToken);

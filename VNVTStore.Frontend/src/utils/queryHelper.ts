@@ -82,15 +82,12 @@ export const applyClientFilters = <T extends Record<string, unknown>>(data: T[],
 };
 
 // Helper to access nested properties 'user.role.name'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getNestedValue = (obj: any, path: string): any => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return path.split('.').reduce((acc: any, part) => acc && acc[part], obj);
+const getNestedValue = (obj: unknown, path: string): unknown => {
+    return path.split('.').reduce((acc: unknown, part) => (acc as Record<string, unknown>)?.[part], obj);
 };
 
 // Helper for loose equality (handling string/number types and date strings)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const compareEqual = (a: any, b: any): boolean => {
+const compareEqual = (a: unknown, b: unknown): boolean => {
     // strict equality first
     if (a === b) return true;
     // loose equality for numbers/strings mismatch

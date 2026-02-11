@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search, Trash2, Edit, Image as ImageIcon } from 'lucide-react';
+import { Plus, Search, Trash2, Edit, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
-import { DataTable } from '@/components/common';
+import { DataTable, CommonColumns } from '@/components/common';
 import { formatDate } from '@/utils/format';
 import { newsService, type NewsDto } from '@/services/newsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -160,16 +160,7 @@ export const NewsPage = () => {
        header: t('common.fields.author'),
        accessor: (row: NewsDto) => row.author || t('common.none')
     },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (row: NewsDto) => (
-        <Badge color={row.isActive ? 'success' : 'error'} size="sm">
-          {row.isActive ? t('admin.status.published') : t('admin.status.draft')}
-        </Badge>
-      ),
-      className: 'text-center'
-    },
+    CommonColumns.createStatusColumn(t),
     {
       id: 'date',
       header: t('common.fields.date'),
@@ -200,6 +191,11 @@ export const NewsPage = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+        </div>
+        <div className="flex gap-2">
+            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-news'] })}>
+               <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
+            </Button>
         </div>
       </div>
 
@@ -242,7 +238,7 @@ export const NewsPage = () => {
         size="xl"
         footer={
           <div className="flex justify-end gap-2">
-             <Button variant="outline" onClick={() => setIsModalOpen(false)}>{t('common.cancel')}</Button>
+             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>{t('common.cancel')}</Button>
              <Button onClick={handleSubmit} isLoading={createMutation.isPending || updateMutation.isPending}>{t('common.save')}</Button>
           </div>
         }

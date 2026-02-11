@@ -9,6 +9,7 @@ import { reviewService, type ReviewDto } from '@/services/reviewService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaginationDefaults } from '@/constants';
 import { useToast } from '@/store';
+import { REVIEW_LIST_FIELDS } from '@/constants/fieldConstants';
 
 export const ReviewsPage = () => {
   const { t } = useTranslation();
@@ -19,21 +20,18 @@ export const ReviewsPage = () => {
   const [currentPage, setCurrentPage] = useState(PaginationDefaults.PAGE_INDEX);
   const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedReview, setSelectedReview] = useState<ReviewDto | null>(null);
   const [reviewToDelete, setReviewToDelete] = useState<ReviewDto | null>(null);
   const [replyText, setReplyText] = useState('');
 
   // Queries
   const { data: reviewsData, isLoading, isFetching } = useQuery({
-    queryKey: ['admin-reviews', currentPage, pageSize, searchQuery, statusFilter],
+    queryKey: ['admin-reviews', currentPage, pageSize, searchQuery],
     queryFn: () => reviewService.search({
       pageIndex: currentPage,
       pageSize: pageSize,
       search: searchQuery,
-      filters: statusFilter !== 'all' ? [
-        { field: 'isApproved', value: statusFilter === 'approved' }
-      ] : []
+      fields: REVIEW_LIST_FIELDS
     }),
   });
 
@@ -41,24 +39,6 @@ export const ReviewsPage = () => {
   const totalPages = reviewsData?.data?.totalPages || 1;
 
   // Mutations
-  const approveMutation = useMutation({
-    mutationFn: (code: string) => reviewService.approve(code),
-    onSuccess: () => {
-      success(t('messages.updateSuccess'));
-      queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
-    },
-    onError: () => toastError(t('messages.updateError'))
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: (code: string) => reviewService.reject(code),
-    onSuccess: () => {
-      success(t('messages.updateSuccess'));
-      queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
-    },
-    onError: () => toastError(t('messages.updateError'))
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (code: string) => reviewService.delete(code),
     onSuccess: () => {
@@ -71,7 +51,7 @@ export const ReviewsPage = () => {
 
   const replyMutation = useMutation({
     mutationFn: (data: { code: string, reply: string }) => 
-      reviewService.update(data.code, { adminReply: data.reply }),
+      reviewService.reply(data.code, data.reply),
     onSuccess: () => {
       success(t('messages.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
@@ -136,9 +116,9 @@ export const ReviewsPage = () => {
       accessor: (row: ReviewDto) => (
         <div className="max-w-[300px]">
           <p className="text-sm line-clamp-2">{row.comment}</p>
-          {row.adminReply && (
+          {row.replies && row.replies.length > 0 && (
             <p className="text-xs text-primary mt-1 flex items-center gap-1 italic">
-              <MessageSquare size={10} /> {t('admin.reviews.replied')}
+              <MessageSquare size={10} /> {t('admin.reviews.replied')} ({row.replies.length})
             </p>
           )}
         </div>
@@ -168,34 +148,6 @@ export const ReviewsPage = () => {
         subtitle="admin.subtitles.reviews"
       />
 
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between bg-primary p-4 rounded-xl border border-tertiary">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" size={18} />
-          <input
-            type="text"
-            placeholder={t('common.placeholders.search')}
-            className="w-full pl-10 pr-4 py-2 bg-secondary border border-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-           <select 
-            className="bg-secondary border border-tertiary rounded-lg px-3 py-2 text-sm focus:outline-none"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-           >
-              <option value="all">{t('admin.reviews.all')}</option>
-              <option value="approved">{t('admin.reviews.approved')}</option>
-              <option value="pending">{t('admin.reviews.pending')}</option>
-           </select>
-           <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-reviews'] })}>
-              {t('common.refresh')}
-           </Button>
-        </div>
-      </div>
-
       <DataTable
         columns={columns}
         data={reviews}
@@ -208,32 +160,23 @@ export const ReviewsPage = () => {
         onPageChange={setCurrentPage}
         onPageSizeChange={setPageSize}
 
+        // Standardized Toolbar
+        onSearch={setSearchQuery}
+        onRefresh={() => queryClient.invalidateQueries({ queryKey: ['admin-reviews'] })}
+        
+        onReset={() => {
+            setSearchQuery('');
+            setCurrentPage(PaginationDefaults.PAGE_INDEX);
+        }}
+        
         renderRowActions={(row) => (
           <div className="flex items-center gap-1">
-            {!row.isApproved && (
-              <button
-                className="p-1.5 hover:bg-success/10 rounded text-success"
-                title={t('admin.actions.approve')}
-                onClick={() => approveMutation.mutate(row.code)}
-              >
-                <Check size={18} />
-              </button>
-            )}
-            {row.isApproved && (
-               <button
-                 className="p-1.5 hover:bg-warning/10 rounded text-warning"
-                 title={t('admin.actions.unapprove')}
-                 onClick={() => rejectMutation.mutate(row.code)}
-               >
-                 <X size={18} />
-               </button>
-            )}
             <button
               className="p-1.5 hover:bg-primary/10 rounded text-primary"
               title={t('admin.actions.reply')}
               onClick={() => {
                 setSelectedReview(row);
-                setReplyText(row.adminReply || '');
+                setReplyText('');
               }}
             >
               <MessageSquare size={18} />
@@ -256,7 +199,7 @@ export const ReviewsPage = () => {
         title={t('admin.reviews.replyTitle')}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setSelectedReview(null)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={() => setSelectedReview(null)}>{t('common.cancel')}</Button>
             <Button onClick={handleReply} isLoading={replyMutation.isPending}>{t('common.save')}</Button>
           </div>
         }
@@ -270,6 +213,17 @@ export const ReviewsPage = () => {
               </div>
               <p className="text-sm text-secondary italic">&quot;{selectedReview.comment}&quot;</p>
             </div>
+            {selectedReview.replies && selectedReview.replies.length > 0 && (
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                <p className="text-xs font-bold text-tertiary uppercase">{t('admin.reviews.existingReplies') || 'Existing Replies'}</p>
+                {selectedReview.replies.map((reply, idx) => (
+                  <div key={reply.code || idx} className="bg-tertiary/10 p-2 rounded text-sm border-l-2 border-indigo-500">
+                    <p className="text-xs font-semibold">{reply.userName || 'Admin'}</p>
+                    <p>{reply.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium mb-1">{t('admin.reviews.yourReply')}</label>
               <textarea

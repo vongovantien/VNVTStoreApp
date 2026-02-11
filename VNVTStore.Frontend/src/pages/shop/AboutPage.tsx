@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Award, Users, Target, Heart, ShieldCheck, Truck, CheckCircle } from 'lucide-react';
+import { Award, Users, Heart, ShieldCheck, Truck } from 'lucide-react';
 
 export const AboutPage = () => {
     const { t } = useTranslation();

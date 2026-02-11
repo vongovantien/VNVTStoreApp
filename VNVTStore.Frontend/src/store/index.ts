@@ -2,8 +2,57 @@ import { create, StoreApi } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { UserRole } from '@/types';
 import type { Product, CartItem, User } from '@/types';
-import { authService, cartService } from '@/services';
+import { cartService } from '@/services';
 import { injectStore, AuthState } from '@/services/api';
+
+// ============ Helpers ============
+/**
+ * Get or generate a unique ID for the current browser tab.
+ * Persists only as long as the tab/window is open.
+ */
+const getTabId = () => {
+    if (typeof window === 'undefined') return 'server';
+    let tabId = sessionStorage.getItem('vnvt-tab-id');
+    if (!tabId) {
+        tabId = Math.random().toString(36).substring(2, 11);
+        sessionStorage.setItem('vnvt-tab-id', tabId);
+    }
+    return tabId;
+};
+
+/**
+ * Creates a tab-isolated storage wrapper.
+ */
+const createTabStorage = () => ({
+    getItem: (name: string) => {
+        const tabId = getTabId();
+        const tabKey = `${name}-${tabId}`;
+        // Try tab-specific first, then fallback to shared (for migration/compatibility)
+        return sessionStorage.getItem(tabKey) || localStorage.getItem(tabKey) ||
+            sessionStorage.getItem(name) || localStorage.getItem(name);
+    },
+    setItem: (name: string, value: string) => {
+        const tabId = getTabId();
+        const tabKey = `${name}-${tabId}`;
+        const isRemember = localStorage.getItem('vnvt-remember') === 'true';
+
+        if (isRemember && name.includes('auth')) {
+            localStorage.setItem(tabKey, value);
+            sessionStorage.removeItem(tabKey);
+        } else {
+            sessionStorage.setItem(tabKey, value);
+            localStorage.removeItem(tabKey);
+        }
+    },
+    removeItem: (name: string) => {
+        const tabId = getTabId();
+        const tabKey = `${name}-${tabId}`;
+        sessionStorage.removeItem(tabKey);
+        localStorage.removeItem(tabKey);
+        sessionStorage.removeItem(name);
+        localStorage.removeItem(name);
+    },
+});
 
 // ============ Cart Store ============
 interface CartState {
@@ -34,7 +83,7 @@ export const useCartStore = create<CartState>()(
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
                 } catch (error) {
-                    console.error('Failed to fetch cart', error);
+                    console.error('[fetchCart] Failed to fetch cart', error);
                 } finally {
                     set({ isLoading: false });
                 }
@@ -96,7 +145,7 @@ export const useCartStore = create<CartState>()(
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
                 } catch (error) {
-                    console.error('Add to cart failed', error);
+                    console.error('[addItem] Add to cart failed', error);
                     throw error;
                 } finally {
                     set({ isLoading: false });
@@ -147,7 +196,7 @@ export const useCartStore = create<CartState>()(
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
                 } catch (error) {
-                    console.error('Update quantity failed', error);
+                    console.error('[updateQuantity] Update quantity failed', error);
                 }
             },
             clearCart: async () => {
@@ -169,7 +218,7 @@ export const useCartStore = create<CartState>()(
         }),
         {
             name: 'vnvt-cart',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => createTabStorage()),
             partialize: (state) => ({ items: state.items }), // Don't persist isLoading
         }
     )
@@ -178,26 +227,31 @@ export const useCartStore = create<CartState>()(
 // ============ Auth Store ============
 // AuthState interface is now imported from @/services/api to avoid circular dependency
 
-// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
-// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
-// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
-// Modified to strict sessionStorage for Auth Isolation as per user request
-// Custom storage to handle "Remember me" (localStorage vs sessionStorage)
 const authStorage = {
     getItem: (name: string) => {
-        return localStorage.getItem(name) || sessionStorage.getItem(name);
+        const tabId = getTabId();
+        const tabKey = `${name}-${tabId}`;
+        return localStorage.getItem(tabKey) || sessionStorage.getItem(tabKey) ||
+            localStorage.getItem(name) || sessionStorage.getItem(name);
     },
     setItem: (name: string, value: string) => {
+        const tabId = getTabId();
+        const tabKey = `${name}-${tabId}`;
         const isRemember = localStorage.getItem('vnvt-remember') === 'true';
+
         if (isRemember) {
-            localStorage.setItem(name, value);
-            sessionStorage.removeItem(name);
+            localStorage.setItem(tabKey, value);
+            sessionStorage.removeItem(tabKey);
         } else {
-            sessionStorage.setItem(name, value);
-            localStorage.removeItem(name);
+            sessionStorage.setItem(tabKey, value);
+            localStorage.removeItem(tabKey);
         }
     },
     removeItem: (name: string) => {
+        const tabId = getTabId();
+        const tabKey = `${name}-${tabId}`;
+        localStorage.removeItem(tabKey);
+        sessionStorage.removeItem(tabKey);
         localStorage.removeItem(name);
         sessionStorage.removeItem(name);
     },
@@ -211,13 +265,15 @@ export const useAuthStore = create<AuthState>()(
             token: null,
             refreshToken: null,
             permissions: [],
-            login: async (user: User, token?: string, refreshToken?: string) => {
+            menus: [],
+            login: async (user: User, token?: string, refreshToken?: string, menus?: string[]) => {
                 set({
                     user,
                     isAuthenticated: true,
                     token: token || null,
                     refreshToken: refreshToken || null,
-                    permissions: user.permissions || []
+                    permissions: user.permissions || [],
+                    menus: menus || []
                 });
 
                 // Sync local cart items to backend
@@ -230,7 +286,7 @@ export const useAuthStore = create<AuthState>()(
                             quantity: item.quantity,
                             size: item.size,
                             color: item.color
-                        }).catch(err => console.error('Failed to sync item', item))
+                        }).catch(() => console.error('[login] Failed to sync item', item))
                     )).then(() => fetchCart());
                 } else {
                     await fetchCart();
@@ -245,11 +301,18 @@ export const useAuthStore = create<AuthState>()(
             },
             setTokens: (token: string, refreshToken: string) => set({ token, refreshToken }),
             setPermissions: (permissions: string[]) => set({ permissions }),
+            setMenus: (menus: string[]) => set({ menus }),
             hasPermission: (permission: string) => {
                 const { permissions, user } = get();
                 // Admin role has all permissions usually, but we check the list
                 if (user?.role === UserRole.Admin) return true;
                 return permissions.includes(permission);
+            },
+            hasMenu: (menuCode: string) => {
+                const { menus, user } = get();
+                // Admin role has all menus
+                if (user?.role === UserRole.Admin) return true;
+                return menus.includes(menuCode);
             },
         }),
         {
@@ -415,7 +478,7 @@ interface NotificationState {
 
 export const useNotificationStore = create<NotificationState>()(
     persist(
-        (set, get) => ({
+        (set) => ({
             notifications: [],
             unreadCount: 0,
             addNotification: (message) => {

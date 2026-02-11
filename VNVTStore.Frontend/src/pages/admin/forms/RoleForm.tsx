@@ -1,16 +1,17 @@
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Shield, Info } from 'lucide-react';
-import { Button, Input, Textarea, Badge } from '@/components/ui';
-import { usePermissions } from '@/hooks';
-import { Permission } from '@/types';
+import { Shield, Info, Menu as MenuIcon } from 'lucide-react';
+import { Button, Input, Textarea, Badge, Loading } from '@/components/ui';
+import { usePermissions, useMenus } from '@/hooks';
+import { Menu } from '@/types';
 
 export interface RoleFormData {
     name: string;
     description?: string;
     isActive: boolean;
     permissionCodes: string[];
+    menuCodes: string[];
 }
 
 interface RoleFormProps {
@@ -34,16 +35,21 @@ export const RoleForm: React.FC<RoleFormProps> = ({
             name: '',
             description: '',
             isActive: true,
-            permissionCodes: []
+            permissionCodes: [],
+            menuCodes: []
         }
     });
 
     const selectedPermissionCodes = watch('permissionCodes');
+    const selectedMenuCodes = watch('menuCodes');
     
     // Fetch all permissions
     const { data: permissionsResult, isLoading: isPermissionsLoading } = usePermissions();
-
     const permissions = permissionsResult?.data || [];
+
+    // Fetch all menus
+    const { data: menusResult, isLoading: isMenusLoading } = useMenus();
+    const menus = menusResult?.data || [];
 
     // Group permissions by module
     const groupedPermissions = permissions.reduce((acc, curr) => {
@@ -51,6 +57,13 @@ export const RoleForm: React.FC<RoleFormProps> = ({
         acc[curr.module].push(curr);
         return acc;
     }, {} as Record<string, Permission[]>);
+
+    // Group menus by groupName
+    const groupedMenus = menus.reduce((acc, curr) => {
+        if (!acc[curr.groupName]) acc[curr.groupName] = [];
+        acc[curr.groupName].push(curr);
+        return acc;
+    }, {} as Record<string, Menu[]>);
 
     const togglePermission = useCallback((code: string) => {
         const current = [...selectedPermissionCodes];
@@ -63,16 +76,25 @@ export const RoleForm: React.FC<RoleFormProps> = ({
         setValue('permissionCodes', current);
     }, [selectedPermissionCodes, setValue]);
 
-    const toggleModule = useCallback((module: string) => {
+    const toggleMenu = useCallback((code: string) => {
+        const current = [...selectedMenuCodes];
+        const index = current.indexOf(code);
+        if (index > -1) {
+            current.splice(index, 1);
+        } else {
+            current.push(code);
+        }
+        setValue('menuCodes', current);
+    }, [selectedMenuCodes, setValue]);
+
+    const togglePermissionModule = useCallback((module: string) => {
         const modulePerms = groupedPermissions[module].map(p => p.code);
         const allSelected = modulePerms.every(code => selectedPermissionCodes.includes(code));
         
         let newSelection = [...selectedPermissionCodes];
         if (allSelected) {
-            // Unselect all in module
             newSelection = newSelection.filter(code => !modulePerms.includes(code));
         } else {
-            // Select all in module
             modulePerms.forEach(code => {
                 if (!newSelection.includes(code)) newSelection.push(code);
             });
@@ -80,24 +102,47 @@ export const RoleForm: React.FC<RoleFormProps> = ({
         setValue('permissionCodes', newSelection);
     }, [groupedPermissions, selectedPermissionCodes, setValue]);
 
+    const toggleMenuGroup = useCallback((groupName: string) => {
+        const groupMenus = groupedMenus[groupName].map(m => m.code);
+        const allSelected = groupMenus.every(code => selectedMenuCodes.includes(code));
+        
+        let newSelection = [...selectedMenuCodes];
+        if (allSelected) {
+            newSelection = newSelection.filter(code => !groupMenus.includes(code));
+        } else {
+            groupMenus.forEach(code => {
+                if (!newSelection.includes(code)) newSelection.push(code);
+            });
+        }
+        setValue('menuCodes', newSelection);
+    }, [groupedMenus, selectedMenuCodes, setValue]);
+
     const isModuleAllSelected = useCallback((module: string) => {
-        return groupedPermissions[module].every(p => selectedPermissionCodes.includes(p.code));
+        return groupedPermissions[module]?.every(p => selectedPermissionCodes.includes(p.code)) ?? false;
     }, [groupedPermissions, selectedPermissionCodes]);
 
     const isModuleAnySelected = useCallback((module: string) => {
-        return groupedPermissions[module].some(p => selectedPermissionCodes.includes(p.code));
+        return groupedPermissions[module]?.some(p => selectedPermissionCodes.includes(p.code)) ?? false;
     }, [groupedPermissions, selectedPermissionCodes]);
+
+    const isMenuGroupAllSelected = useCallback((groupName: string) => {
+        return groupedMenus[groupName]?.every(m => selectedMenuCodes.includes(m.code)) ?? false;
+    }, [groupedMenus, selectedMenuCodes]);
+
+    const isMenuGroupAnySelected = useCallback((groupName: string) => {
+        return groupedMenus[groupName]?.some(m => selectedMenuCodes.includes(m.code)) ?? false;
+    }, [groupedMenus, selectedMenuCodes]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Side: General Info */}
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2">
-                        <Info size={18} />
-                        {t('common.fields.info')}
-                    </h3>
-                    
+            {/* General Info */}
+            <div className="space-y-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2">
+                    <Info size={18} />
+                    {t('common.fields.info')}
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                         label={t('common.fields.name')}
                         {...register('name', { required: t('validation.required') })}
@@ -105,14 +150,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                         placeholder={t('rbac.roles.namePlaceholder')}
                     />
 
-                    <Textarea
-                        label={t('common.fields.description')}
-                        {...register('description')}
-                        placeholder={t('rbac.roles.descriptionPlaceholder')}
-                        rows={4}
-                    />
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 pt-6">
                         <input
                             type="checkbox"
                             id="isActive"
@@ -125,7 +163,69 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                     </div>
                 </div>
 
-                {/* Right Side: Permissions Selection */}
+                <Textarea
+                    label={t('common.fields.description')}
+                    {...register('description')}
+                    placeholder={t('rbac.roles.descriptionPlaceholder')}
+                    rows={2}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Menu Access */}
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2">
+                        <MenuIcon size={18} />
+                        {t('rbac.menuAccess')}
+                        <Badge size="sm" color="primary" className="ml-auto">
+                            {selectedMenuCodes.length} {t('common.selected')}
+                        </Badge>
+                    </h3>
+
+                    {isMenusLoading ? (
+                        <div className="flex justify-center py-8">
+                            <Loading />
+                        </div>
+                    ) : (
+                        <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3">
+                            {Object.entries(groupedMenus).map(([groupName, menuItems]) => (
+                                <div key={groupName} className="border rounded-lg p-3 bg-slate-50 dark:bg-slate-800/50">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={isMenuGroupAllSelected(groupName)}
+                                                onChange={() => toggleMenuGroup(groupName)}
+                                                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                            />
+                                            <span className="font-bold text-slate-800 dark:text-slate-200">{groupName}</span>
+                                        </div>
+                                        <Badge size="sm" variant="soft" color={isMenuGroupAllSelected(groupName) ? 'success' : isMenuGroupAnySelected(groupName) ? 'info' : 'secondary'}>
+                                            {menuItems.filter(m => selectedMenuCodes.includes(m.code)).length} / {menuItems.length}
+                                        </Badge>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-1 pl-6">
+                                        {menuItems.map(menu => (
+                                            <label key={menu.code} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded px-1 group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedMenuCodes.includes(menu.code)}
+                                                    onChange={() => toggleMenu(menu.code)}
+                                                    className="w-3.5 h-3.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                                />
+                                                <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200">
+                                                    {menu.name}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Permissions */}
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2">
                         <Shield size={18} />
@@ -137,10 +237,10 @@ export const RoleForm: React.FC<RoleFormProps> = ({
 
                     {isPermissionsLoading ? (
                         <div className="flex justify-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            <Loading />
                         </div>
                     ) : (
-                        <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4">
+                        <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3">
                             {Object.entries(groupedPermissions).map(([module, perms]) => (
                                 <div key={module} className="border rounded-lg p-3 bg-slate-50 dark:bg-slate-800/50">
                                     <div className="flex items-center justify-between mb-2">
@@ -148,7 +248,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                                             <input
                                                 type="checkbox"
                                                 checked={isModuleAllSelected(module)}
-                                                onChange={() => toggleModule(module)}
+                                                onChange={() => togglePermissionModule(module)}
                                                 className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                             />
                                             <span className="font-bold text-slate-800 dark:text-slate-200">{module}</span>

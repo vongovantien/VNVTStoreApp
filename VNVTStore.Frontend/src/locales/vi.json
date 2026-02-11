@@ -93,27 +93,13 @@
   },
   "common": {
     "home": "Trang chủ",
+    "none": "Không",
     "adminDashboard": "Quản trị hệ thống",
     "products": "Sản phẩm",
     "categories": "Danh mục",
     "cart": "Giỏ hàng",
     "wishlist": "Yêu thích",
     "compare": "So sánh",
-    "account": {
-      "title": "Tài khoản của tôi",
-      "profile": "Hồ sơ của tôi",
-      "orders": "Đơn hàng của tôi",
-      "addresses": "Sổ địa chỉ",
-      "security": "Bảo mật & Mật khẩu",
-      "changePassword": "Đổi mật khẩu",
-      "twoFactor": "Xác thực 2 bước (2FA)",
-      "twoFactorDesc": "Tăng cường bảo mật bằng cách yêu cầu mã xác thực mỗi khi đăng nhập.",
-      "notActivated": "Chưa kích hoạt",
-      "setupTwoFactor": "Thiết lập xác thực 2 bước",
-      "notificationSettings": "Cài đặt thông báo",
-      "emailNotifications": "Thông báo qua Email",
-      "emailNotificationsDesc": "Nhận thông tin về đơn hàng và ưu đãi qua email"
-    },
     "login": "Đăng nhập",
     "register": "Đăng ký",
     "logout": "Đăng xuất",
@@ -156,7 +142,9 @@
       "move": "Di chuyển",
       "share": "Chia sẻ",
       "addToFavorites": "Thêm vào yêu thích",
-      "none": "Không"
+      "none": "Không",
+      "markAsRead": "Đánh dấu đã đọc",
+      "clearAll": "Xóa tất cả"
     },
     "placeholders": {
       "search": "Tìm kiếm...",
@@ -233,6 +221,8 @@
       "status": "Trạng thái",
       "description": "Mô tả",
       "code": "Mã",
+      "user": "Người dùng",
+      "comment": "Bình luận",
       "quantity": "Số lượng",
       "total": "Tổng tiền",
       "date": "Ngày",
@@ -304,7 +294,8 @@
       "attributeName": "Tên thuộc tính",
       "attributeValue": "Giá trị thuộc tính",
       "sku": "Mã SKU",
-      "stockQuantity": "Số lượng tồn"
+      "stockQuantity": "Số lượng tồn",
+      "active": "Đang hoạt động"
     },
     "status": {
       "active": "Hoạt động",
@@ -350,7 +341,11 @@
     "columnsVisible": "Cột hiển thị",
     "columns": "Cột",
     "importData": "Nhập dữ liệu",
-    "quickAccess": "Truy cập nhanh"
+    "quickAccess": "Truy cập nhanh",
+    "noNotifications": "Không có thông báo mới",
+    "clearAll": "Xóa tất cả",
+    "viewDetails": "Xem chi tiết",
+    "active": "Đánh dấu đã đọc"
   },
   "pagination": {
     "previous": "Trước",
@@ -433,7 +428,8 @@
       "units": "Đơn vị tính",
       "coupons": "Mã giảm giá",
       "news": "Tin tức/Bài viết",
-      "reviews": "Đánh giá"
+      "reviews": "Đánh giá",
+      "roles": "Phân quyền"
     },
     "userMenu": {
       "signedInAs": "Đăng nhập với tư cách",
@@ -635,7 +631,8 @@
     "promotions": "Khuyến mãi",
     "news": "Tin tức",
     "contact": "Liên hệ",
-    "freeShipping": "Miễn phí ship đơn từ 500K"
+    "freeShipping": "Miễn phí ship đơn từ 500K",
+    "notifications": "Thông báo"
   },
   "home": {
     "categories": "Danh mục sản phẩm",
@@ -980,6 +977,7 @@
     "saveError": "Không thể lưu. Vui lòng thử lại.",
     "loginSuccess": "Đăng nhập thành công!",
     "loginError": "Tên đăng nhập hoặc mật khẩu không đúng",
+    "registerSuccess": "Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.",
     "logoutConfirmTitle": "Xác nhận đăng xuất",
     "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
     "error": "Có lỗi xảy ra",
@@ -1074,6 +1072,8 @@
     "sendMessage": "Gửi tin nhắn"
   },
   "review": {
+    "shareExperience": "Chia sẻ trải nghiệm của bạn",
+    "helpOthers": "Đánh giá của bạn sẽ giúp người khác tham khảo",
     "writeReview": "Viết đánh giá",
     "yourRating": "Đánh giá của bạn",
     "comment": "Nhận xét",
@@ -1091,5 +1091,18 @@
     "terrible": "Rất tệ",
     "minCharsLeft": "Cần thêm {{count}} ký tự nữa",
     "minLengthReached": "Đã đủ độ dài tối thiểu"
+  },
+  "rbac": {
+    "permissions": "Quyền hạn",
+    "menuAccess": "Quyền truy cập menu",
+    "roles": {
+      "title": "Quản lý vai trò",
+      "subtitle": "Phân quyền và quản lý vai trò người dùng",
+      "create": "Tạo vai trò mới",
+      "edit": "Sửa vai trò",
+      "deleteConfirm": "Bạn có chắc chắn muốn xóa vai trò \"{{name}}\" không?",
+      "namePlaceholder": "Nhập tên vai trò...",
+      "descriptionPlaceholder": "Mô tả ngắn về vai trò này..."
+    }
   }
 }

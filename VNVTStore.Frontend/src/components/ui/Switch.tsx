@@ -32,12 +32,12 @@ export const Switch = ({
       {(label || description) && (
         <div className="mr-4">
           {label && (
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label className="text-sm font-semibold text-text-primary">
               {label}
             </label>
           )}
           {description && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-text-secondary mt-0.5">
               {description}
             </p>
           )}
@@ -50,17 +50,17 @@ export const Switch = ({
         disabled={disabled}
         onClick={() => onChange?.(!checked)}
         className={cn(
-          'relative inline-flex items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50',
+          'relative inline-flex items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent/40',
           currentSize.track,
           checked 
-            ? 'bg-indigo-600 shadow-inner' 
-            : 'bg-slate-200 dark:bg-slate-700',
+            ? 'bg-accent shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]' 
+            : 'bg-bg-tertiary shadow-inner',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       >
         <span
           className={cn(
-            'inline-block transform rounded-full bg-white shadow-xl transition-all duration-200 ease-in-out',
+            'inline-block transform rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
             currentSize.thumb,
             checked ? currentSize.translate : 'translate-x-1'
           )}
@@ -81,7 +81,7 @@ export const FormSwitch = ({
 }: FormSwitchProps) => {
   return (
     <div className={cn(
-      'p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg',
+      'py-3 border-b border-border last:border-0',
       containerClassName
     )}>
       <Switch {...props} />

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Save, Store, CreditCard, Truck, Bell, Shield, Eye, EyeOff, Lock } from 'lucide-react';
-import { Button, Input, Switch } from '@/components/ui';
+import { Save, Store, CreditCard, Truck, Bell, Shield, Eye, EyeOff, Lock, Zap } from 'lucide-react';
+import { Button, Input, Switch, Badge } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { useToast, useSettings } from '@/store';
+import { systemConfigService, UpdateSystemConfigRequest } from '@/services/systemConfigService';
+import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createSchemas } from '@/utils/schemas';
@@ -33,6 +35,7 @@ export const SettingsPage = () => {
     { id: 'shipping', label: t('admin.settingsPage.tabs.shipping'), icon: Truck },
     { id: 'notifications', label: t('admin.settingsPage.tabs.notifications'), icon: Bell },
     { id: 'security', label: t('admin.settingsPage.tabs.security'), icon: Shield },
+    { id: 'flashSale', label: t('admin.settingsPage.tabs.flashSale', 'Flash Sale'), icon: Zap },
   ];
 
   const GeneralSettings = () => {
@@ -310,6 +313,96 @@ export const SettingsPage = () => {
     );
   };
 
+  const FlashSaleSettings = () => {
+    const [schedule, setSchedule] = useState<{ id: number, label: string, active: boolean }[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                const res = await systemConfigService.get('FLASHSALE_TIMES');
+                if (res.success && res.data && res.data.configValue) {
+                    setSchedule(JSON.parse(res.data.configValue));
+                } else {
+                    // Default if not found
+                    setSchedule([
+                        { id: 1, label: "09:00", active: true },
+                        { id: 2, label: "12:00", active: false },
+                        { id: 3, label: "15:00", active: false },
+                        { id: 4, label: "20:00", active: false }
+                    ]);
+                }
+            } catch (err) {
+                console.error(err);
+                // Fallback default
+                setSchedule([
+                        { id: 1, label: "09:00", active: true },
+                        { id: 2, label: "12:00", active: false },
+                        { id: 3, label: "15:00", active: false },
+                        { id: 4, label: "20:00", active: false }
+                    ]);
+            }
+        };
+        fetchConfig();
+    }, []);
+
+    const handleToggle = (id: number) => {
+        setSchedule(prev => prev.map(item => item.id === id ? { ...item, active: !item.active } : item));
+    };
+
+    const handleSaveFlashSale = async () => {
+        setLoading(true);
+        try {
+            const payload: UpdateSystemConfigRequest = {
+                configKey: 'FLASHSALE_TIMES',
+                configValue: JSON.stringify(schedule),
+                isActive: true
+            };
+            const res = await systemConfigService.update(payload);
+            if (res.success) {
+                toast.success(t('messages.saveSuccess'));
+            } else {
+                toast.error(t('messages.saveError'));
+            }
+        } catch {
+            toast.error(t('messages.saveError'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+                <Zap size={20} />
+                {t('admin.settingsPage.tabs.flashSale', 'Cấu hình Flash Sale')}
+            </h2>
+
+            <div className="p-4 border border-gray-100 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
+                <h3 className="font-bold text-md mb-4">{t('admin.settingsPage.flashSale.schedule', 'Khung giờ hiển thị')}</h3>
+                <div className="space-y-3">
+                    {schedule.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
+                            <span className="font-medium text-lg font-mono">{item.label}</span>
+                            <div className="flex items-center gap-3">
+                                <Badge color={item.active ? 'success' : 'secondary'} size="sm">
+                                    {item.active ? t('common.status.active') : t('common.status.inactive')}
+                                </Badge>
+                                <Switch 
+                                    checked={item.active} 
+                                    onChange={() => handleToggle(item.id)}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <Button onClick={handleSaveFlashSale} leftIcon={<Save size={18} />} isLoading={loading}>{t('common.save')}</Button>
+        </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
@@ -343,6 +436,7 @@ export const SettingsPage = () => {
             {activeTab === 'shipping' && <ShippingSettings />}
             {activeTab === 'notifications' && <NotificationSettings />}
             {activeTab === 'security' && <SecuritySettings />}
+            {activeTab === 'flashSale' && <FlashSaleSettings />}
           </div>
         </div>
       </div>

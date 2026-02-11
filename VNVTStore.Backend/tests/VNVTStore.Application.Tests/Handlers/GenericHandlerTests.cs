@@ -35,7 +35,7 @@ public class GenericHandlerTests
         // Assert
         query.PageIndex.Should().Be(AppConstants.Paging.DefaultPageNumber);
         query.PageSize.Should().Be(AppConstants.Paging.DefaultPageSize);
-        query.Search.Should().BeNull();
+        query.Searching.Should().BeNull();
     }
 
     [Fact]

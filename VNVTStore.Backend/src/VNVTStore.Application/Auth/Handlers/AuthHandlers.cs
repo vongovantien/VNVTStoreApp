@@ -7,6 +7,7 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace VNVTStore.Application.Auth.Handlers;
 
@@ -182,14 +183,32 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
 
     public async Task<Result<AuthResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await _repository.FindAsync(u => u.Username == request.username || u.Email == request.username, cancellationToken);
+        // Use Where + Include to get Role, Permissions, and Menus
+        var user = await _repository.Where(u => u.Username == request.username || u.Email == request.username)
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRolePermissions)
+                    .ThenInclude(rp => rp.PermissionCodeNavigation)
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRoleMenus)
+                    .ThenInclude(rm => rm.MenuCodeNavigation)
+            .FirstOrDefaultAsync(cancellationToken);
         
         if (user == null || !_passwordHasher.Verify(request.password, user.PasswordHash))
         {
             return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
         }
         
-        var token = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role);
+        var permissions = user.RoleCodeNavigation?.TblRolePermissions
+            .Where(rp => rp.PermissionCodeNavigation != null)
+            .Select(rp => rp.PermissionCodeNavigation!.Name)
+            .ToList() ?? new List<string>();
+            
+        var menus = user.RoleCodeNavigation?.TblRoleMenus
+            .Where(rm => rm.MenuCodeNavigation != null)
+            .Select(rm => rm.MenuCodeNavigation!.Code)
+            .ToList() ?? new List<string>();
+
+        var token = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, permissions, menus);
         var refreshToken = _jwtService.GenerateRefreshToken();
         
         user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7)); // 7 days expiry
@@ -198,11 +217,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
-        return Result.Success(new AuthResponseDto
+        var responseDto = new AuthResponseDto
         {
             Token = token,
             RefreshToken = refreshToken,
             User = _mapper.Map<UserDto>(user)
-        });
+        };
+        
+        responseDto.User.Permissions = permissions;
+        responseDto.User.Menus = menus;
+
+        return Result.Success(responseDto);
     }
 }

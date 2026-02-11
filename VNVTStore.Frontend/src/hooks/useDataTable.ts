@@ -1,152 +1,125 @@
-import { useState, useMemo } from 'react';
-import { applyClientFilters } from '@/utils/queryHelper';
-import { SearchCondition } from '@/services/api';
+import { useState, useCallback, useEffect } from 'react';
+import { PaginationDefaults, SortDirection } from '@/constants';
 
-interface UseDataTableProps<T> {
-    data: T[];
-    filterFn?: (item: T, filterTerm: string, filterField?: string) => boolean;
-    initialSort?: { field: keyof T; direction: 'asc' | 'desc' };
+// Custom debounce hook for search
+function useDebouncedValue<T>(value: T, delay: number = 300): T {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(timer);
+    }, [value, delay]);
+
+    return debouncedValue;
 }
 
-export const useDataTable = <T extends { id: string | number } & Record<string, unknown>>({
-    data,
-    filterFn,
-    initialSort,
-}: UseDataTableProps<T>) => {
-    // Selection
-    const [selectedIds, setSelectedIds] = useState<Set<string | number>>(new Set());
+export interface UseDataTableProps {
+    defaultPageIndex?: number;
+    defaultPageSize?: number;
+    defaultSortField?: string;
+    defaultSortDir?: SortDirection;
+    initialFilters?: Record<string, string>;
+    searchDebounceMs?: number;
+}
+
+export interface UseDataTableReturn {
+    // Pagination
+    currentPage: number;
+    pageSize: number;
+    setCurrentPage: (page: number) => void;
+    setPageSize: (size: number) => void;
+
+    // Sorting
+    sortField: string;
+    sortDir: SortDirection;
+    onSort: (field: string, dir: 'asc' | 'desc') => void;
 
     // Search & Filter
+    searchQuery: string;
+    debouncedSearchQuery: string;
+    setSearchQuery: (query: string) => void;
+    filters: Record<string, string>;
+    setFilters: (filters: Record<string, string>) => void;
+    handleAdvancedSearch: (filters: Record<string, string>) => void;
+    resetFilters: () => void;
+
+    // Selection
+    selectedIds: Set<string>;
+    setSelectedIds: (ids: Set<string>) => void;
+    resetSelection: () => void;
+}
+
+export function useDataTable({
+    defaultPageIndex = PaginationDefaults.PAGE_INDEX,
+    defaultPageSize = PaginationDefaults.PAGE_SIZE,
+    defaultSortField = 'createdAt',
+    defaultSortDir = SortDirection.DESC,
+    initialFilters = {},
+    searchDebounceMs = 300
+}: UseDataTableProps = {}): UseDataTableReturn {
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(defaultPageIndex);
+    const [pageSize, setPageSize] = useState(defaultPageSize);
+
+    // Sorting State
+    const [sortField, setSortField] = useState(defaultSortField);
+    const [sortDir, setSortDir] = useState(defaultSortDir);
+
+    // Search & Filter State
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchField, setSearchField] = useState<string>('all');
+    const debouncedSearchQuery = useDebouncedValue(searchQuery, searchDebounceMs);
+    const [filters, setFilters] = useState<Record<string, string>>(initialFilters);
 
-    // Sort
-    const [sortConfig, setSortConfig] = useState<{ field: keyof T; direction: 'asc' | 'desc' } | null>(
-        initialSort || null
-    );
-
-    // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-
-    // --- Logic ---
-
-    // 1. Filter
-    const filteredData = useMemo(() => {
-        let result = data;
-
-        // Apply external filters (complex SearchDTOs) logic locally if data is all here
-        // Note: If server-side pagination is used, 'data' is usually just current page, so this runs on that subset.
-        // But for client-side tables, this is powerful.
-        // We can extend this hook to accept 'filters' prop if needed, 
-        // but for now let's keep searchField/searchQuery behavior and map it to a SearchDTO.
-
-        if (searchQuery) {
-            const lowerQuery = searchQuery.toLowerCase();
-            // Reuse the simple logic OR use the new helper?
-            // Let's use the new helper for single field search to ensure consistency
-            if (searchField !== 'all') {
-                result = applyClientFilters(result, [{
-                    searchField: searchField,
-                    searchCondition: SearchCondition.Contains,
-                    searchValue: lowerQuery
-                }]);
-            } else {
-                // Fallback to "All Fields" search which is not in SearchDTO standard usually
-                result = result.filter(item =>
-                    Object.values(item).some(val =>
-                        String(val).toLowerCase().includes(lowerQuery)
-                    )
-                );
-            }
-        }
-
-        if (filterFn) {
-            result = result.filter(item => filterFn(item, searchQuery.toLowerCase(), searchField));
-        }
-
-        return result;
-    }, [data, searchQuery, searchField, filterFn]);
-
-    // 2. Sort
-    const sortedData = useMemo(() => {
-        if (!sortConfig) return filteredData;
-
-        return [...filteredData].sort((a, b) => {
-            const aVal = a[sortConfig.field];
-            const bVal = b[sortConfig.field];
-
-            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }, [filteredData, sortConfig]);
-
-    // 3. Paginate
-    const paginatedData = useMemo(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        return sortedData.slice(startIndex, startIndex + itemsPerPage);
-    }, [sortedData, currentPage, itemsPerPage]);
-
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    // Selection State
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     // Handlers
-    const handleSelectAll = (checked: boolean) => {
-        if (checked) {
-            // Select all visible items (or all filtered items depending on UX preference)
-            // Usually users expect "Select All" to select current page or all 
-            // Let's implement select all filtered for power usage
-            setSelectedIds(new Set(filteredData.map(d => d.id)));
-        } else {
-            setSelectedIds(new Set());
+    const onSort = useCallback((field: string, dir: 'asc' | 'desc') => {
+        setSortField(field);
+        setSortDir(dir as SortDirection);
+        setCurrentPage(defaultPageIndex); // Reset to first page on sort change
+    }, [defaultPageIndex]);
+
+    const handleAdvancedSearch = useCallback((newFilters: Record<string, string>) => {
+        setFilters(newFilters);
+        // If there's a specific 'search' field in the advanced filters, sync it
+        if (newFilters.search !== undefined) {
+            setSearchQuery(newFilters.search);
         }
-    };
+        setCurrentPage(defaultPageIndex);
+    }, [defaultPageIndex]);
 
-    const handleSelectRow = (id: string | number) => {
-        setSelectedIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) {
-                next.delete(id);
-            } else {
-                next.add(id);
-            }
-            return next;
-        });
-    };
+    const resetFilters = useCallback(() => {
+        setFilters(initialFilters);
+        setSearchQuery('');
+        setCurrentPage(defaultPageIndex);
+        setPageSize(defaultPageSize);
+        setSortField(defaultSortField);
+        setSortDir(defaultSortDir);
+    }, [defaultPageIndex, defaultPageSize, defaultSortField, defaultSortDir, initialFilters]);
 
-    const handleSort = (field: keyof T) => {
-        setSortConfig((current) => {
-            if (current?.field === field) {
-                return { field, direction: current.direction === 'asc' ? 'desc' : 'asc' };
-            }
-            return { field, direction: 'asc' };
-        });
-    };
+    const resetSelection = useCallback(() => {
+        setSelectedIds(new Set());
+    }, []);
 
     return {
-        // State
-        selectedIds,
-        searchQuery,
-        searchField,
-        sortConfig,
         currentPage,
-        itemsPerPage,
-
-        // Data
-        data: paginatedData,
-        totalItems: filteredData.length,
-        totalPages,
-
-        // Setters
-        setSearchQuery,
-        setSearchField,
-        setItemsPerPage,
+        pageSize,
         setCurrentPage,
-
-        // Actions
-        handleSelectAll,
-        handleSelectRow,
-        handleSort,
-        resetSelection: () => setSelectedIds(new Set()),
+        setPageSize,
+        sortField,
+        sortDir,
+        onSort,
+        searchQuery,
+        debouncedSearchQuery,
+        setSearchQuery,
+        filters,
+        setFilters,
+        handleAdvancedSearch,
+        resetFilters,
+        selectedIds,
+        setSelectedIds,
+        resetSelection
     };
-};
+}

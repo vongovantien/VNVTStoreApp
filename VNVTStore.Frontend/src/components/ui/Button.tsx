@@ -32,12 +32,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 // ============ Style Maps ============
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-accent text-accent-foreground hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/30 active:opacity-90',
-  secondary: 'bg-secondary text-white hover:bg-slate-600 active:bg-slate-700', // mapped to new secondary var
-  outline: 'border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground',
-  ghost: 'text-text-secondary hover:bg-bg-tertiary hover:text-accent',
-  danger: 'bg-error text-white hover:opacity-90 active:opacity-100',
-  success: 'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800', // Keep specific success color or map to semantic? Keeping for now.
+  primary: 'bg-accent text-accent-foreground hover:bg-accent-hover hover:shadow-md hover:shadow-accent/20 active:scale-[0.98]',
+  secondary: 'bg-secondary text-white hover:opacity-90 active:scale-[0.98]',
+  outline: 'border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground hover:shadow-md hover:shadow-accent/10 active:scale-[0.98]',
+  ghost: 'text-text-secondary hover:bg-bg-tertiary hover:text-accent active:scale-[0.98]',
+  danger: 'bg-error text-white hover:shadow-md hover:shadow-error/20 active:scale-[0.98]',
+  success: 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98]',
   link: 'text-accent hover:underline p-0 h-auto',
 };
 

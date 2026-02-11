@@ -10,17 +10,19 @@ export interface SignalRNotification {
 
 type SignalRCallback = (data: string | SignalRNotification) => void;
 
+export type ConnectionStatus = 'Connected' | 'Disconnected' | 'Connecting' | 'Reconnecting';
+
 class SignalRService {
     private connection: signalR.HubConnection | null = null;
     private callbacks: Record<string, SignalRCallback[]> = {};
-    private connectionStatus: 'Connected' | 'Disconnected' | 'Connecting' | 'Reconnecting' = 'Disconnected';
-    private onStatusChange: ((status: string) => void) | null = null;
+    private connectionStatus: ConnectionStatus = 'Disconnected';
+    private onStatusChange: ((status: ConnectionStatus) => void) | null = null;
 
     public getStatus() {
         return this.connectionStatus;
     }
 
-    public setStatusCallback(callback: (status: string) => void) {
+    public setStatusCallback(callback: (status: ConnectionStatus) => void) {
         this.onStatusChange = callback;
     }
 
@@ -62,7 +64,7 @@ class SignalRService {
         }
     }
 
-    private updateStatus(status: 'Connected' | 'Disconnected' | 'Connecting' | 'Reconnecting') {
+    private updateStatus(status: ConnectionStatus) {
         this.connectionStatus = status;
         if (this.onStatusChange) this.onStatusChange(status);
     }

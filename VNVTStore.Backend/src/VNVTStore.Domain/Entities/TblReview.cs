@@ -24,9 +24,9 @@ public partial class TblReview : IEntity
     
     public bool IsActive { get; set; } = true;
     
-    public string? AdminReply { get; set; }
-
     public string? ProductCode { get; set; }
+
+    public string? ParentCode { get; set; }
 
     public string? ModifiedType { get; set; }
 
@@ -35,4 +35,8 @@ public partial class TblReview : IEntity
     public virtual TblProduct? ProductCodeNavigation { get; set; }
 
     public virtual TblUser UserCodeNavigation { get; set; } = null!;
+
+    public virtual TblReview? ParentNavigation { get; set; }
+
+    public virtual ICollection<TblReview> InverseParentNavigation { get; set; } = new List<TblReview>();
 }

@@ -19,16 +19,17 @@ import {
 
 import { promotionService, Promotion, CreatePromotionRequest, UpdatePromotionRequest, PromotionFilter } from '@/services/promotionService';
 import { useQuery } from '@tanstack/react-query';
-import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common/DataTable';
 import { PaginationDefaults, SortDirection } from '@/constants';
 import { useToast } from '@/store';
 import { AdminPageHeader } from '@/components/admin';
+import { PROMOTION_LIST_FIELDS } from '@/constants/fieldConstants';
 
 // We need a hook to fetch promotions compatible with DataTable
 const usePromotions = (params: PromotionFilter) => {
   return useQuery({
     queryKey: ['promotions', params],
-    queryFn: () => promotionService.getAll(params), // Reverted to original queryFn as mutationFn is incorrect for useQuery
+    queryFn: () => promotionService.getAll({ ...params, fields: PROMOTION_LIST_FIELDS }),
     placeholderData: (previousData) => previousData,
   });
 };
@@ -160,22 +161,7 @@ export const PromotionsPage = () => {
       className: 'text-center',
       headerClassName: 'text-center'
     },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (p) => (
-        <Badge
-          color={p.isActive ? 'success' : 'error'}
-          size="sm"
-          variant="outline"
-        >
-          {p.isActive ? t('common.status.active') : t('common.status.inactive')}
-        </Badge>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
-    },
-
+    CommonColumns.createStatusColumn(t),
   ];
 
   // Handler Wrappers

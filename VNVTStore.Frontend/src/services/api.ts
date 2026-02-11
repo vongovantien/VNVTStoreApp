@@ -8,13 +8,16 @@ export interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
   refreshToken: string | null;
-  login: (user: User, token?: string, refreshToken?: string) => Promise<void>;
+  login: (user: User, token?: string, refreshToken?: string, menus?: string[]) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   setTokens: (token: string, refreshToken: string) => void;
   permissions: string[];
   setPermissions: (permissions: string[]) => void;
   hasPermission: (permission: string) => boolean;
+  menus: string[];
+  setMenus: (menus: string[]) => void;
+  hasMenu: (menuCode: string) => boolean;
 }
 
 let authStore: StoreApi<AuthState> | null = null;

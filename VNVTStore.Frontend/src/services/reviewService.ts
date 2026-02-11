@@ -3,8 +3,9 @@
  * Uses only baseService CRUD methods
  */
 
-import { createEntityService, API_ENDPOINTS, type PagedResult } from './baseService';
+import { createEntityService, API_ENDPOINTS, type SearchParams, SearchCondition } from './baseService';
 import { apiClient } from './api';
+import { REVIEW_LIST_FIELDS } from '@/constants/fieldConstants';
 
 // ============ Types ============
 export interface ReviewDto {
@@ -16,9 +17,11 @@ export interface ReviewDto {
     productName?: string;
     rating: number;
     comment: string;
-    adminReply?: string;
     createdAt: string;
     isApproved?: boolean;
+    parentCode?: string;
+    replies?: ReviewDto[];
+    userAvatar?: string;
 }
 
 export interface ReviewSearchParams {
@@ -34,13 +37,13 @@ export interface CreateReviewRequest {
     productCode?: string;
     rating: number;
     comment: string;
+    parentCode?: string;
 }
 
 export interface UpdateReviewRequest {
     rating?: number;
     comment?: string;
     isApproved?: boolean;
-    adminReply?: string;
 }
 
 // ============ Service ============
@@ -57,8 +60,18 @@ export const reviewService = {
     reject: (code: string) =>
         apiClient.post(`${API_ENDPOINTS.REVIEWS.BASE}/${code}/reject`),
 
-    getByProduct: (productCode: string, pageIndex: number = 1, pageSize: number = 10) =>
-        apiClient.get<PagedResult<ReviewDto>>(`${API_ENDPOINTS.REVIEWS.BY_PRODUCT(productCode)}?pageIndex=${pageIndex}&pageSize=${pageSize}`),
+    reply: (code: string, reply: string) =>
+        apiClient.post(`${API_ENDPOINTS.REVIEWS.BASE}/${code}/reply`, JSON.stringify(reply)), // Backend expects string body
+
+    getByProduct: (productCode: string, params?: SearchParams) =>
+        baseReviewService.search({
+            ...params,
+            filters: [
+                ...(params?.filters || []),
+                { field: 'ProductCode', value: productCode, operator: SearchCondition.Equal }
+            ],
+            fields: params?.fields || REVIEW_LIST_FIELDS
+        }),
 };
 
 export default reviewService;

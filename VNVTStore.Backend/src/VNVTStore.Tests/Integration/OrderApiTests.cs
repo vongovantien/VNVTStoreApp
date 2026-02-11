@@ -8,7 +8,7 @@ namespace VNVTStore.Tests.Integration;
 
 public class OrderApiTests : ApiTestBase
 {
-    public OrderApiTests(WebApplicationFactory<Program> factory) : base(factory) { }
+    public OrderApiTests(CustomWebApplicationFactory<Program> factory) : base(factory) { }
 
     [Fact]
     public async Task GetOrders_ReturnsSuccessOrUnauthorized()

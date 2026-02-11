@@ -93,12 +93,26 @@ public static class QueryBuilder
         var sb = new StringBuilder();
         
         // Build SELECT clause
+        // Ensure Primary Key (Code) and Sort field are included if partial fields are used
+        if (fields != null && fields.Any())
+        {
+            var requestedFields = fields.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (!requestedFields.Contains("Code") && !requestedFields.Contains(rootAlias + ".Code"))
+            {
+                fields.Add("Code");
+            }
+            if (!requestedFields.Contains(sortDTO.SortBy) && !requestedFields.Contains(rootAlias + "." + sortDTO.SortBy))
+            {
+                fields.Add(sortDTO.SortBy);
+            }
+        }
+
         sb.Append("WITH TempResult AS(\r\n    ");
         BuildSelectClause(sb, rootAlias, fields, refTblList);
         sb.Append(" FROM \"").Append(rootTbl).Append("\" AS ").Append(rootAlias);
         
         // Build JOINs
-        BuildJoinClauses(sb, rootAlias, refTblList, fields);
+        BuildJoinClauses(sb, rootAlias, refTblList, fields, searchFieldList);
         
         // Build WHERE clause with parameters
         var (whereClause, whereParams) = BuildRawQueryConditionParameterized(searchFieldList, rootAlias);
@@ -122,7 +136,6 @@ public static class QueryBuilder
         sb.AppendLine("OFFSET @PageOffset ROWS");
         sb.Append("FETCH NEXT @PageSize ROWS ONLY");
 
-        Console.WriteLine($"[Dapper Debug] SQL Generation took: {sw.ElapsedMilliseconds}ms");
         return new QueryResult(sb.ToString(), parameters);
     }
 
@@ -153,7 +166,7 @@ public static class QueryBuilder
         BuildSelectClause(sb, rootAlias, fields, refTblList);
         sb.Append(" FROM \"").Append(rootTbl).Append("\" AS ").Append(rootAlias);
         
-        BuildJoinClauses(sb, rootAlias, refTblList, fields);
+        BuildJoinClauses(sb, rootAlias, refTblList, fields, searchFieldList);
         
         var whereClause = BuildRawQueryCondition(searchFieldList, rootAlias);
         if (!string.IsNullOrEmpty(whereClause))
@@ -171,7 +184,6 @@ public static class QueryBuilder
         sb.Append("FETCH NEXT ").Append(pageSize).Append(" ROWS ONLY");
 
         var finalSql = sb.ToString();
-        Console.WriteLine($"[Dapper Debug] SQL Generation took: {sw.ElapsedMilliseconds}ms");
         return finalSql;
     }
 
@@ -297,7 +309,7 @@ public static class QueryBuilder
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[QueryBuilder Error] {ex.Message}");
+            // Error building condition - return empty to skip
             return string.Empty;
         }
     }
@@ -421,7 +433,9 @@ public static class QueryBuilder
         if (value == null) return $"{field} IS NOT NULL ";
         var paramName = $"p{paramIndex++}";
         parameters.Add(paramName, value);
-        return $"{field} != @{paramName} ";
+        // Fix: NULL != 'Value' is UNKNOWN in SQL, so it filters out NULLs.
+        // For search filters, we usually want NULLs included if they don't match the excluded value.
+        return $"({field} IS NULL OR {field} != @{paramName}) ";
     }
 
     private static string BuildComparisonParam(string field, string op, object? value, DynamicParameters parameters, ref int paramIndex)
@@ -670,7 +684,7 @@ public static class QueryBuilder
         return $"({string.Join(" OR ", conditions)}) ";
     }
 
-    private static void BuildSelectClause(StringBuilder sb, string rootAlias, List<string>? fields, List<ReferenceTable>? refTblList)
+    public static void BuildSelectClause(StringBuilder sb, string rootAlias, List<string>? fields, List<ReferenceTable>? refTblList)
     {
         sb.Append("SELECT ");
         
@@ -685,8 +699,6 @@ public static class QueryBuilder
                 .Select(SqlBuilderHelpers.NormalizeFieldName)
                 .ToList();
 
-
-
             var fieldList = normalizedFields
                 .Where(f => refTblList?.Any(r => r.AliasName == f) != true)
                 .Select(f => $"{rootAlias}.\"{f}\"");
@@ -695,13 +707,47 @@ public static class QueryBuilder
         }
     }
 
-    private static void BuildJoinClauses(StringBuilder sb, string rootAlias, List<ReferenceTable>? refTblList, List<string>? fields)
+    /// <summary>
+    /// Builds SELECT clause for a specific alias and fields list (Used for Child Collection Partial Select)
+    /// </summary>
+    public static void BuildSelectClause(StringBuilder sb, string alias, List<string>? fields)
+    {
+        sb.Append("SELECT ");
+
+        if (fields == null || !fields.Any())
+        {
+            sb.Append(alias).Append(".*");
+        }
+        else
+        {
+            var fieldList = fields
+                .Where(f => !string.IsNullOrEmpty(f))
+                .Select(f => $"{alias}.\"{SqlBuilderHelpers.NormalizeFieldName(f)}\"");
+            
+            sb.Append(string.Join(", ", fieldList));
+        }
+        
+    }
+
+    private static void BuildJoinClauses(StringBuilder sb, string rootAlias, List<ReferenceTable>? refTblList, List<string>? fields, List<SearchDTO>? searchFields = null)
     {
         if (refTblList == null || !refTblList.Any()) return;
 
         var normalizedFields = fields?
             .Select(SqlBuilderHelpers.NormalizeFieldName)
-            .ToHashSet();
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // Also consider fields used in search
+        HashSet<string>? searchAliases = null;
+        if (searchFields != null)
+        {
+            foreach (var s in searchFields)
+            {
+                if (string.IsNullOrEmpty(s.SearchField) || !s.SearchField.Contains('.')) continue;
+                searchAliases ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                searchAliases.Add(SqlBuilderHelpers.NormalizeFieldName(s.SearchField.Split('.')[0]));
+            }
+        }
 
         var tableIndex = 1;
         foreach (var refTbl in refTblList)
@@ -714,12 +760,22 @@ public static class QueryBuilder
                 continue;
             }
 
-            if (normalizedFields != null && !normalizedFields.Contains(refTbl.AliasName))
+            // Join if requested in fields OR used in search
+            // If fields is null, we join everything (legacy behavior)
+            if (normalizedFields != null && 
+                !normalizedFields.Contains(refTbl.AliasName) && 
+                (searchAliases == null || !searchAliases.Contains(refTbl.AliasName)))
+            {
                 continue;
+            }
 
             var targetAlias = $"t{tableIndex}";
             
-            sb.Insert(sb.ToString().IndexOf(" FROM"), $", {targetAlias}.\"{refTbl.ColumnName}\" AS \"{refTbl.AliasName}\"");
+            // Only add to SELECT if it was in normalizedFields (or normalizedFields is null)
+            if (normalizedFields == null || normalizedFields.Contains(refTbl.AliasName))
+            {
+                sb.Insert(sb.ToString().IndexOf(" FROM"), $", {targetAlias}.\"{refTbl.ColumnName}\" AS \"{refTbl.AliasName}\"");
+            }
 
             sb.Append(SqlBuilderHelpers.BuildLeftJoin(
                 refTbl.TableName,

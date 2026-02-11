@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronUp, ChevronDown, AlertCircle, Filter } from 'lucide-react';
-import { Pagination } from '@/components/ui';
+import { Pagination, Badge, Loading } from '@/components/ui';
 import { AdminToolbar } from '@/components/admin/AdminToolbar';
 import { ColumnVisibility } from '@/components/admin/ColumnVisibility';
 import { TableActions } from '@/components/ui';
@@ -99,6 +99,28 @@ export interface DataTableProps<T extends Record<string, any>> {
   initialFilters?: Record<string, string>;
   onSearch?: (query: string) => void;
 }
+
+// ============ Helper Functions ============
+export const createStatusColumn = <T extends { isActive?: boolean }>(t: (key: string) => string): DataTableColumn<T> => ({
+  id: 'isActive',
+  header: t('common.fields.status'),
+  accessor: (row: T) => (
+    <Badge
+      color={row.isActive ? 'success' : 'error'}
+      size="sm"
+      variant="soft"
+    >
+      {row.isActive ? t('common.status.active') : t('common.status.inactive')}
+    </Badge>
+  ),
+  className: 'text-center',
+  headerClassName: 'text-center',
+  width: 120,
+});
+
+export const CommonColumns = {
+  createStatusColumn,
+};
 
 const SortIcon = ({ columnId, sortField, sortDir }: { columnId: string; sortField: string | null; sortDir: 'asc' | 'desc' }) => {
   if (sortField !== columnId) return null;
@@ -364,10 +386,20 @@ function DataTableInner<T extends Record<string, any>>({
   }, [setSelectedIds]);
 
   const handleExport = useCallback(() => {
-      // If onExportAllData is provided, fetch all data first
-      const dataToExport = onExportAllData ? onExportAllData() : sortedData;
-      exportData(dataToExport, exportFilename, exportColumns);
-  }, [sortedData, exportFilename, exportColumns, onExportAllData, exportData]);
+    // If onExportAllData is provided, fetch all data first
+    const dataToExport = onExportAllData ? onExportAllData() : sortedData;
+    
+    // Automatically generate export columns from visible columns if not provided
+    const cols = exportColumns || visibleColumnDefs
+      .filter(col => col.id !== 'actions') // Don't export actions column
+      .map(col => ({
+        key: (typeof col.accessor === 'string' ? col.accessor : col.id) as keyof T,
+        label: typeof col.header === 'string' ? col.header : col.id,
+        width: 15
+      }));
+
+    exportData(dataToExport, exportFilename, cols);
+  }, [sortedData, exportFilename, exportColumns, onExportAllData, exportData, visibleColumnDefs]);
 
   const handleReset = useCallback(() => {
     setSearchQuery('');
@@ -528,15 +560,6 @@ function DataTableInner<T extends Record<string, any>>({
             >
               {t('common.actions.close')}
             </button>
-            <button
-              className="px-4 py-2 rounded-lg text-secondary hover:text-primary hover:bg-secondary font-medium transition-all"
-              onClick={() => {
-                setAdvancedFilters({});
-                if (onAdvancedSearch) onAdvancedSearch({});
-              }}
-            >
-              {t('common.actions.reset')}
-            </button>
           </div>
         </div>
       )}
@@ -568,9 +591,7 @@ function DataTableInner<T extends Record<string, any>>({
             <>
               {(isLoading || isFetching) && (
                 <div className="absolute inset-0 bg-primary/40 z-10 flex items-center justify-center backdrop-blur-[1px]">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
+                  <Loading />
                 </div>
               )}
               <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-60")}>
@@ -632,7 +653,7 @@ function DataTableInner<T extends Record<string, any>>({
                     <tr
                       key={rowKey}
                       className={cn(
-                        "hover:bg-secondary transition-colors",
+                        "hover:bg-tertiary transition-colors",
                         isSelected && "bg-blue-50/50 dark:bg-blue-900/20",
                         rowClassName?.(row, index)
                       )}
@@ -675,18 +696,16 @@ function DataTableInner<T extends Record<string, any>>({
       </div>
       
        {/* Pagination */}
-       <div className="border-t border-border p-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={handlePageSizeChange}
-            pageSizeOptions={pageSizeOptions}
-            isLoading={isLoading || isFetching}
-          />
-       </div>
+       <Pagination
+         currentPage={currentPage}
+         totalPages={totalPages}
+         totalItems={totalItems}
+         pageSize={pageSize}
+         onPageChange={setCurrentPage}
+         onPageSizeChange={handlePageSizeChange}
+         pageSizeOptions={pageSizeOptions}
+         isLoading={isLoading || isFetching}
+       />
 
     </div>
     </div>

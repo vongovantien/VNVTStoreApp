@@ -57,4 +57,9 @@ public partial class TblCartItem : IEntity
     {
         Quantity = quantity;
     }
+
+    public void SetProduct(TblProduct product)
+    {
+        ProductCodeNavigation = product;
+    }
 }

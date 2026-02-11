@@ -32,7 +32,7 @@ public class JwtService : IJwtService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(string userCode, string username, string email, UserRole role)
+    public string GenerateToken(string userCode, string username, string email, UserRole role, IEnumerable<string> permissions, IEnumerable<string> menus)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
@@ -45,6 +45,24 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Email, email),
             new Claim("userCode", userCode)
         };
+
+        // Add permission claims
+        if (permissions != null)
+        {
+            foreach (var permission in permissions)
+            {
+                claims.Add(new Claim("Permission", permission));
+            }
+        }
+        
+        // Add menu claims for frontend authorization
+        if (menus != null)
+        {
+            foreach (var menu in menus)
+            {
+                claims.Add(new Claim("Menu", menu));
+            }
+        }
 
         // Always add role
         claims.Add(new Claim(ClaimTypes.Role, role.ToString()));

@@ -21,7 +21,7 @@ namespace VNVTStore.Domain.Entities
         [MaxLength(200)]
         public string? LinkUrl { get; set; }
         
-        [MaxLength(50)]
+        [MaxLength(150)] // Increased from 50
         public string? LinkText { get; set; }
         
         public bool IsActive { get; set; } = true;
@@ -29,7 +29,18 @@ namespace VNVTStore.Domain.Entities
         public int Priority { get; set; } = 0;
         
         public DateTime? CreatedAt { get; set; } = DateTime.Now;
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.Now;
         public string? ModifiedType { get; set; }
+
+        public void Update(string title, string? content, string? linkUrl, string? linkText, bool isActive, int priority)
+        {
+            Title = title;
+            Content = content;
+            LinkUrl = linkUrl;
+            LinkText = linkText;
+            IsActive = isActive;
+            Priority = priority;
+            UpdatedAt = DateTime.Now;
+        }
     }
 }

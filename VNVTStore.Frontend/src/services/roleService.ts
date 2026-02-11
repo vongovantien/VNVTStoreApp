@@ -7,6 +7,7 @@ export interface CreateRoleRequest {
     description?: string;
     isActive: boolean;
     permissionCodes: string[];
+    menuCodes: string[];
 }
 
 export type UpdateRoleRequest = Partial<CreateRoleRequest>;

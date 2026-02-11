@@ -7,13 +7,12 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Users.Commands;
 using VNVTStore.Application.Users.Queries;
-
-using VNVTStore.Application.Users.Queries;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.API.Controllers.v1;
 
+[Authorize]
 public class UsersController : BaseApiController
 {
     private readonly ICurrentUser _currentUser;
@@ -24,135 +23,67 @@ public class UsersController : BaseApiController
     }
 
     /// <summary>
-    /// Get current user profile
+    /// Lấy thông tin cá nhân của người dùng hiện tại
     /// </summary>
-    [Authorize]
     [HttpGet("profile")]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProfile()
     {
-        var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await Mediator.Send(new GetUserProfileQuery(userCode));
+        var userCode = _currentUser.UserCode;
+        if (string.IsNullOrEmpty(userCode)) return Unauthorized();
+
+        var result = await Mediator.Send(new GetUserProfileQuery(userCode!));
         return HandleResult(result);
     }
 
     /// <summary>
-    /// Update current user profile
+    /// Cập nhật thông tin cá nhân
     /// </summary>
-    [Authorize]
     [HttpPut("profile")]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
-        var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await Mediator.Send(new UpdateProfileCommand(
-            userCode, request.fullName, request.phone, request.email));
-        
+        if (request == null) return BadRequest(ApiResponse<string>.Fail(MessageConstants.Get(MessageConstants.BadRequest)));
+
+        var userCode = _currentUser.UserCode;
+        if (string.IsNullOrEmpty(userCode)) return Unauthorized();
+
+        var command = new UpdateProfileCommand(
+            userCode!,
+            request.fullName,
+            request.phone,
+            request.email,
+            request.avatarUrl);
+
+        var result = await Mediator.Send(command);
         return HandleResult(result, MessageConstants.Get(MessageConstants.ProfileUpdated));
     }
 
     /// <summary>
-    /// Change password
+    /// Đổi mật khẩu
     /// </summary>
-    [Authorize]
     [HttpPost("change-password")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
-        var userCode = _currentUser.UserCode ?? throw new UnauthorizedAccessException();
-        var result = await Mediator.Send(new ChangePasswordCommand(
-            userCode, request.currentPassword, request.newPassword));
+        if (request == null) return BadRequest(ApiResponse<string>.Fail(MessageConstants.Get(MessageConstants.BadRequest)));
         
+        var userCode = _currentUser.UserCode;
+        if (string.IsNullOrEmpty(userCode)) return Unauthorized();
+
+        // Ensure passwords are not null
+        if (string.IsNullOrEmpty(request.currentPassword) || string.IsNullOrEmpty(request.newPassword))
+             return BadRequest(ApiResponse<string>.Fail(MessageConstants.Get(MessageConstants.BadRequest)));
+
+        var command = new ChangePasswordCommand(
+            userCode!,
+            request.currentPassword,
+            request.newPassword);
+
+        var result = await Mediator.Send(command);
         return HandleResult(result, MessageConstants.Get(MessageConstants.PasswordChanged));
-    }
-
-    /// <summary>
-    /// Create new user (Admin only)
-    /// </summary>
-    [HttpPost]
-    [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> Create([FromBody] CreateUserDto dto)
-    {
-        var result = await Mediator.Send(new CreateCommand<CreateUserDto, UserDto>(dto));
-        return HandleResult(result);
-    }
-
-    /// <summary>
-    /// Get all users (Admin only)
-    /// </summary>
-    [Authorize(Roles = "admin,Admin")]
-    [HttpGet]
-    public async Task<IActionResult> GetAllUsers(
-        [FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber,
-        [FromQuery] int pageSize = AppConstants.Paging.DefaultPageSize,
-        [FromQuery] string? search = null,
-        [FromQuery] string? role = null)
-    {
-        List<SearchDTO>? searching = null;
-        if (!string.IsNullOrEmpty(role))
-        {
-            searching = new List<SearchDTO> 
-            { 
-                new SearchDTO { SearchField = "Role", SearchValue = role, SearchCondition = SearchCondition.Equal } 
-            };
-        }
-
-        var query = new GetPagedQuery<UserDto>(pageIndex, pageSize, search, null, searching);
-        var result = await Mediator.Send(query);
-        return HandleResult(result);
-    }
-    /// <summary>
-    /// Search users (Admin only)
-    /// </summary>
-    [Authorize(Roles = "admin,Admin")]
-    [HttpPost("search")]
-    public async Task<IActionResult> Search([FromBody] RequestDTO request)
-    {
-        var pageIndex = request.PageIndex ?? AppConstants.Paging.DefaultPageNumber;
-        var pageSize = request.PageSize ?? AppConstants.Paging.DefaultPageSize;
-        
-        var query = new GetPagedQuery<UserDto>(
-            pageIndex, 
-            pageSize, 
-            null, 
-            request.SortDTO, 
-            request.Searching, 
-            request.Fields
-        );
-        var result = await Mediator.Send(query);
-        return HandleResult(result);
-    }
-
-    /// <summary>
-    /// Get user by code (Admin only)
-    /// </summary>
-    [HttpGet("{code}")]
-    [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> GetByCode(string code)
-    {
-        var result = await Mediator.Send(new GetByCodeQuery<UserDto>(code));
-        return HandleResult(result);
-    }
-
-    /// <summary>
-    /// Delete user (Admin only)
-    /// </summary>
-    [HttpDelete("{code}")]
-    [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> Delete(string code)
-    {
-        var result = await Mediator.Send(new DeleteCommand<TblUser>(code));
-        return HandleDelete(result);
-    }
-
-    /// <summary>
-    /// Delete multiple users (Admin only)
-    /// </summary>
-    [HttpPost("delete-multiple")]
-    [Authorize(Roles = "admin,Admin")]
-    public async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
-    {
-        var result = await Mediator.Send(new DeleteMultipleCommand<TblUser>(codes));
-        return HandleDelete(result);
     }
 }
 
-public record UpdateProfileRequest(string? fullName, string? phone, string? email);
+public record UpdateProfileRequest(string? fullName, string? phone, string? email, string? avatarUrl = null);
 public record ChangePasswordRequest(string currentPassword, string newPassword, string confirmNewPassword);

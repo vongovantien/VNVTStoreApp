@@ -32,11 +32,21 @@ public class RoleHandlers : BaseHandler<TblRole, RoleDto, CreateRoleDto, UpdateR
                  entity.Code = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
              }
              
+             // Handle Permissions
              if (request.Dto.PermissionCodes?.Any() == true)
              {
                  foreach (var permCode in request.Dto.PermissionCodes)
                  {
                      entity.TblRolePermissions.Add(new TblRolePermission { RoleCode = entity.Code, PermissionCode = permCode });
+                 }
+             }
+             
+             // Handle Menus
+             if (request.Dto.MenuCodes?.Any() == true)
+             {
+                 foreach (var menuCode in request.Dto.MenuCodes)
+                 {
+                     entity.TblRoleMenus.Add(new TblRoleMenu { RoleCode = entity.Code, MenuCode = menuCode });
                  }
              }
          });
@@ -45,19 +55,33 @@ public class RoleHandlers : BaseHandler<TblRole, RoleDto, CreateRoleDto, UpdateR
     public override async Task<Result<RoleDto>> Handle(UpdateCommand<UpdateRoleDto, RoleDto> request, CancellationToken cancellationToken)
     {
         return await base.UpdateAsync<UpdateRoleDto, RoleDto>(request.Code, request.Dto, "Role", cancellationToken, async entity => {
+            // Handle Permissions
             if (request.Dto.PermissionCodes != null)
             {
-                // Clear existing
-                var existing = await _context.TblRolePermissions
+                var existingPerms = await _context.TblRolePermissions
                     .Where(rp => rp.RoleCode == entity.Code)
                     .ToListAsync(cancellationToken);
                 
-                _context.TblRolePermissions.RemoveRange(existing);
+                _context.TblRolePermissions.RemoveRange(existingPerms);
 
-                // Add new
                 foreach (var permCode in request.Dto.PermissionCodes)
                 {
                     entity.TblRolePermissions.Add(new TblRolePermission { RoleCode = entity.Code, PermissionCode = permCode });
+                }
+            }
+            
+            // Handle Menus
+            if (request.Dto.MenuCodes != null)
+            {
+                var existingMenus = await _context.TblRoleMenus
+                    .Where(rm => rm.RoleCode == entity.Code)
+                    .ToListAsync(cancellationToken);
+                
+                _context.TblRoleMenus.RemoveRange(existingMenus);
+
+                foreach (var menuCode in request.Dto.MenuCodes)
+                {
+                    entity.TblRoleMenus.Add(new TblRoleMenu { RoleCode = entity.Code, MenuCode = menuCode });
                 }
             }
         });
@@ -67,6 +91,8 @@ public class RoleHandlers : BaseHandler<TblRole, RoleDto, CreateRoleDto, UpdateR
     {
         return await GetByCodeIncludeChildrenAsync<RoleDto>(request.Code, "Role", cancellationToken, query => 
             query.Include(r => r.TblRolePermissions)
-                 .ThenInclude(rp => rp.PermissionCodeNavigation));
+                 .ThenInclude(rp => rp.PermissionCodeNavigation)
+                 .Include(r => r.TblRoleMenus)
+                 .ThenInclude(rm => rm.MenuCodeNavigation));
     }
 }

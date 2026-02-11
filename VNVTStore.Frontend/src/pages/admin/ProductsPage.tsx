@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Package, AlertTriangle, Star, XCircle } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Package, AlertTriangle, XCircle } from 'lucide-react';
+import { Modal, ConfirmDialog } from '@/components/ui';
 
-import { formatCurrency, getImageUrl } from '@/utils/format';
+
 import { ProductForm, ProductFormData } from './forms/ProductForm';
 import {
   useProducts,
@@ -14,26 +14,25 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { productService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
 import { useToast } from '@/store';
 import type { Product, ProductUnit } from '@/types';
-import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { DataTable } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
 import { PaginationDefaults, SortDirection } from '@/constants';
 import { PRODUCT_LIST_FIELDS } from '@/constants/fieldConstants';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 
+import { ProductDetailModal } from './components/ProductDetailModal';
+import { useProductColumns } from './hooks/useProductColumns';
+
 // Types for sorting
 type SortField = 'name' | 'price' | 'stock' | 'createdAt';
 
 export const ProductsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const toast = useToast();
+  
+  // Get columns from hook
+  const columns = useProductColumns();
 
-  // Helper to safely get image URL regardless of casing
-  const getSafeImageUrl = (img: string | { imageURL?: string; imageUrl?: string; ImageURL?: string } | null | undefined) => {
-      if (!img) return '';
-      if (typeof img === 'string') return getImageUrl(img);
-      const imageObj = img as { imageURL?: string; imageUrl?: string; ImageURL?: string };
-      return getImageUrl(imageObj.imageURL || imageObj.imageUrl || imageObj.ImageURL || '');
-  };
 
   // Helper to extract detail/spec value
   const getDetailValue = (details: { specName: string; specValue: string }[] | undefined, keys: string[]) => {
@@ -89,7 +88,7 @@ export const ProductsPage = () => {
 
   // Fetch Stats
   const { data: statsData, isLoading: isStatsLoading } = useQuery({
-      queryKey: ['product-stats'],
+      queryKey: ['products', 'stats'],
       queryFn: () => productService.getStats(),
       staleTime: 60000,
   });
@@ -271,114 +270,7 @@ export const ProductsPage = () => {
     // Don't clear selection on cancel - user may want to keep their selection
   };
 
-  // Column Definitions
-  const columns: DataTableColumn<Product>[] = [
-    {
-      id: 'image',
-      header: t('common.fields.image'),
-      width: '120px',
-      className: 'text-center',
-      accessor: (product) => (
-        <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
-               {(product.images?.[0] || product.productImages?.[0]) ? (
-                 <img 
-                   src={getSafeImageUrl(product.images?.[0] || product.productImages?.[0])} 
-                   alt={product.name} 
-                   className="w-full h-full object-cover"
-                   onError={(e) => console.error("Img Error:", e.currentTarget.src)}
-                 />
-               ) : (
-                 <div className="w-full h-full flex items-center justify-center text-gray-400">
-                   <Package size={18} />
-                 </div>
-               )}
-            </div>
-        </div>
-      )
-    },
-    {
-      id: 'name',
-      header: t('common.fields.name'),
-      accessor: (product) => (
-        <div>
-          <p className="font-medium text-sm text-slate-700 dark:text-slate-200">{product.name}</p>
-          <p className="text-xs text-slate-500">{product.brand}</p>
-        </div>
-      ),
-      sortable: true
-    },
-    {
-      id: 'category',
-      header: t('common.fields.category'),
-      accessor: 'category',
-    },
-    {
-      id: 'price',
-      header: t('common.fields.price'),
-      accessor: (product) => (
-        product.price > 0 ? (
-          <span className="font-semibold text-rose-600">{formatCurrency(product.price)}</span>
-        ) : (
-          <Badge color="primary" size="sm">{t('common.fields.contact')}</Badge>
-        )
-      ),
-      className: 'text-right',
-      headerClassName: 'text-right',
-      sortable: true
-    },
-    {
-      id: 'stock',
-      header: t('common.fields.stock'),
-      accessor: (product) => (
-        <span className={product.stock > 10 ? 'text-emerald-600 font-medium' : product.stock > 0 ? 'text-amber-600 font-medium' : 'text-rose-600 font-medium'}>
-          {product.stock}
-        </span>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center',
-      sortable: true
-    },
-    {
-      id: 'rating',
-      header: t('common.fields.rating'),
-      accessor: (product) => (
-        <div className="flex items-center justify-center gap-1 text-sm">
-          <Star size={16} className="text-amber-400 fill-amber-400" />
-          <span>{product.rating} ({product.reviewCount})</span>
-        </div>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
-    },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (product) => (
-        <Badge
-          color={product.isActive !== false ? 'success' : 'error'}
-          size="sm"
-          variant="outline"
-        >
-          {product.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
-        </Badge>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
-    },
-    {
-      id: 'createdAt',
-      header: t('common.fields.createdAt') || 'Created At',
-      accessor: (product) => (
-        <span className="text-sm text-slate-500">
-           {new Date(product.createdAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' })}
-        </span>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center',
-      sortable: true
-    }
-  ];
+
 
       const productInitialData = useMemo(() => editingProduct ? {
         name: editingProduct.name,
@@ -537,123 +429,11 @@ export const ProductsPage = () => {
           </Modal>
 
       {/* View Modal */}
-      <Modal
-        isOpen={!!viewingProduct}
-        onClose={() => setViewingProduct(null)}
-        title={t('common.actions.view') + ' ' + t('common.modules.products')}
-        size="lg"
-      >
-        {viewingProduct && (
-          <div className="space-y-6">
-            <div className="flex items-start gap-6">
-              <img
-                src={getSafeImageUrl(viewingProduct.images?.[0] || viewingProduct.productImages?.[0]) || 'https://placehold.co/200'}
-                alt={viewingProduct.name}
-                className="w-32 h-32 rounded-lg object-cover border bg-white"
-              />
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-white">{viewingProduct.name}</h2>
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge color="info">{viewingProduct.brand || t('common.fields.noBrand')}</Badge>
-                  <Badge color="secondary">{viewingProduct.category || '-'}</Badge>
-                  <Badge color={viewingProduct.isActive !== false ? 'success' : 'error'}>
-                    {viewingProduct.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
-                  </Badge>
-                </div>
-                <div className="mt-4 flex flex-col gap-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-sm text-slate-500 w-20">{t('common.fields.price')}:</span>
-                    <span className="text-2xl font-bold text-rose-600">{formatCurrency(viewingProduct.price)}</span>
-                  </div>
-                  {(viewingProduct.wholesalePrice || 0) > 0 && (
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm text-slate-500 w-20">{t('common.fields.wholesalePrice')}:</span>
-                      <span className="text-lg font-semibold text-blue-600">{formatCurrency(viewingProduct.wholesalePrice || 0)}</span>
-                    </div>
-                  )}
-                  {(viewingProduct.costPrice || 0) > 0 && (
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm text-slate-500 w-20">{t('common.fields.costPrice')}:</span>
-                      <span className="text-md font-medium text-slate-600">{formatCurrency(viewingProduct.costPrice || 0)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2">{t('common.fields.info')}</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between py-1 border-b border-dashed">
-                    <span className="text-slate-500">{t('common.fields.stock')}</span>
-                    <span className="font-medium">{viewingProduct.stock}</span>
-                  </div>
-                  {viewingProduct.material && (
-                    <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('common.fields.material')}</span>
-                      <span className="font-medium">{viewingProduct.material}</span>
-                    </div>
-                  )}
-                  {viewingProduct.size && (
-                    <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('common.fields.size')}</span>
-                      <span className="font-medium">{viewingProduct.size}</span>
-                    </div>
-                  )}
-                  {viewingProduct.color && (
-                    <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('common.fields.color')}</span>
-                      <span className="font-medium">{viewingProduct.color}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2">{t('common.fields.specs')}</h3>
-                <div className="space-y-2 text-sm">
-                  {viewingProduct.details?.map((detail, idx) => (
-                    <div key={idx} className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{detail.specName}</span>
-                      <span className="font-medium">{detail.specValue}</span>
-                    </div>
-                  ))}
-                  
-                  {viewingProduct.voltage && (
-                    <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('common.fields.voltage')}</span>
-                      <span className="font-medium">{viewingProduct.voltage}</span>
-                    </div>
-                  )}
-                  {viewingProduct.power && (
-                    <div className="flex justify-between py-1 border-b border-dashed">
-                      <span className="text-slate-500">{t('common.fields.power')}</span>
-                      <span className="font-medium">{viewingProduct.power}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {viewingProduct.description && (
-              <div>
-                <h3 className="font-semibold text-slate-800 dark:text-white border-b pb-2 mb-2">{t('common.fields.description')}</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-40 overflow-y-auto">
-                  {viewingProduct.description}
-                </p>
-              </div>
-            )}
-
-            <div className="flex justify-end pt-4">
-              <Button onClick={() => setViewingProduct(null)}>
-                {t('common.actions.close')}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
-
+      <ProductDetailModal 
+        product={viewingProduct} 
+        onClose={() => setViewingProduct(null)} 
+      />
+      
       {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!productToDelete || showBulkConfirm}

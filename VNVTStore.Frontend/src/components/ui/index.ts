@@ -14,3 +14,4 @@ export { Switch, FormSwitch, type SwitchProps, type FormSwitchProps } from './Sw
 export { default as LazySelect, type LazySelectOption } from './LazySelect';
 export { Checkbox, type CheckboxProps } from './Checkbox';
 export { Textarea, type TextareaProps, type TextareaVariant, type TextareaSize } from './Textarea';
+export { Loading } from './Loading';

@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bannerService, CreateBannerRequest, UpdateBannerRequest } from '@/services/bannerService';
 import { SearchParams } from '@/services/baseService';
+import { BANNER_LIST_FIELDS } from '@/constants/fieldConstants';
 
 export const useBanners = (params?: SearchParams) => {
+    const { fields = BANNER_LIST_FIELDS } = params || {};
     return useQuery({
         queryKey: ['banners', params],
-        queryFn: () => bannerService.search(params || {}),
+        queryFn: () => bannerService.search({ ...params, fields: params?.fields || fields }),
         select: (response) => {
             if (response.success && response.data) {
                 // Deduplicate

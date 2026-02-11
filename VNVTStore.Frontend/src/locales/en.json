@@ -46,7 +46,9 @@
       "move": "Move",
       "share": "Share",
       "addToFavorites": "Add to favorites",
-      "none": "None"
+      "none": "None",
+      "markAsRead": "Mark as read",
+      "clearAll": "Clear All"
     },
     "add": "Add",
     "placeholders": {
@@ -186,7 +188,8 @@
       "username": "Username",
       "unitName": "Unit Name",
       "conversionRate": "Conversion Rate",
-      "product": "Product"
+      "product": "Product",
+      "active": "Active"
     },
     "status": {
       "active": "Active",
@@ -231,7 +234,11 @@
     "deleteError": "Delete failed",
     "columnsVisible": "Columns Visible",
     "columns": "Columns",
-    "importData": "Import Data"
+    "importData": "Import Data",
+    "noNotifications": "No new notifications",
+    "clearAll": "Clear All",
+    "viewDetails": "View Details",
+    "active": "Mark read"
   },
   "pagination": {
     "previous": "Previous",
@@ -318,7 +325,8 @@
       "banners": "Banners",
       "coupons": "Coupons",
       "news": "News/Posts",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "roles": "Roles"
     },
     "userMenu": {
       "signedInAs": "Signed in as",
@@ -510,7 +518,8 @@
     "promotions": "Promotions",
     "news": "News",
     "contact": "Contact",
-    "freeShipping": "Free shipping on orders over 500K"
+    "freeShipping": "Free shipping on orders over 500K",
+    "notifications": "Notifications"
   },
   "home": {
     "categories": "Product Categories",
@@ -578,6 +587,9 @@
     "tab": {
       "description": "Description",
       "specs": "Specifications",
+      "units": "Units",
+      "variants": "Variants",
+      "images": "Images",
       "reviews": "Reviews"
     },
     "variants": "Variants",
@@ -857,6 +869,7 @@
     "saveError": "Unable to save. Please try again.",
     "loginSuccess": "Login successful!",
     "loginError": "Invalid username or password",
+    "registerSuccess": "Registration successful! You can now log in.",
     "logoutConfirmTitle": "Confirm Logout",
     "logoutConfirmMessage": "Are you sure you want to log out?",
     "error": "An error occurred",
@@ -952,6 +965,8 @@
     "sendMessage": "Send Message"
   },
   "review": {
+    "shareExperience": "Share your experience",
+    "helpOthers": "Your review will help others",
     "writeReview": "Write a Review",
     "yourRating": "Your Rating",
     "comment": "Comment",
@@ -969,5 +984,18 @@
     "terrible": "Terrible",
     "minCharsLeft": "{{count}} characters left",
     "minLengthReached": "Minimum length reached"
+  },
+  "rbac": {
+    "permissions": "Permissions",
+    "roles": {
+      "title": "Role Management",
+      "subtitle": "Manage user roles and permissions",
+      "create": "Create Role",
+      "edit": "Edit Role",
+      "deleteConfirm": "Are you sure you want to delete the role \"{{name}}\"?",
+      "namePlaceholder": "Enter role name...",
+      "descriptionPlaceholder": "Brief description of this role..."
+    },
+    "menuAccess": "Menu Access"
   }
 }

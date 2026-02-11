@@ -21,7 +21,8 @@ public class MappingProfile : Profile
             .ForMember(d => d.RoleName, opt => opt.MapFrom(s => s.RoleCodeNavigation != null ? s.RoleCodeNavigation.Name : null))
             .ForMember(d => d.Permissions, opt => opt.MapFrom(s => s.RoleCodeNavigation != null 
                 ? s.RoleCodeNavigation.TblRolePermissions.Select(rp => rp.PermissionCode).ToList() 
-                : new List<string>()));
+                : new List<string>()))
+            .ForMember(d => d.Avatar, opt => opt.MapFrom(s => s.AvatarUrl));
         CreateMap<CreateUserDto, TblUser>().ConstructUsing(s => TblUser.Create(s.Username, s.Email, "", s.FullName, UserRole.Customer));
 
         // Banner mappings
@@ -99,7 +100,8 @@ public class MappingProfile : Profile
 
         // Order mappings
         CreateMap<TblOrder, OrderDto>()
-            .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.TblOrderItems));
+            .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.TblOrderItems))
+            .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => src.TblPayment != null ? src.TblPayment.Status.ToString() : "Pending"));
         
         CreateMap<TblOrderItem, OrderItemDto>()
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductCodeNavigation != null ? src.ProductCodeNavigation.Name : null));
@@ -122,6 +124,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserCodeNavigation != null ? src.UserCodeNavigation.Username : null))
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.OrderItemCodeNavigation != null && src.OrderItemCodeNavigation.ProductCodeNavigation != null ? src.OrderItemCodeNavigation.ProductCodeNavigation.Name : null))
             .ForMember(dest => dest.ProductCode, opt => opt.MapFrom(src => src.OrderItemCodeNavigation != null ? src.OrderItemCodeNavigation.ProductCode : null))
+            .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.InverseParentNavigation))
             .ReverseMap();
 
         // Coupon mappings

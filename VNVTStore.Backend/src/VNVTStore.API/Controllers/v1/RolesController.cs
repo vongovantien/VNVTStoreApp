@@ -19,6 +19,6 @@ public class RolesController : BaseApiController<TblRole, RoleDto, CreateRoleDto
     {
         // For now, return permissions from TblPermission via MediatR if we add a query for it, 
         // or just use generic GetPaged for TblPermission.
-        return Ok(await Mediator.Send(new GetPagedQuery<PermissionDto>()));
+        return Ok(await Mediator.Send(new GetPagedQuery<PermissionDto> { PageIndex = 1, PageSize = 1000 }));
     }
 }

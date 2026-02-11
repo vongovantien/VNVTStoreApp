@@ -6,7 +6,7 @@ import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from '@/hooks/useBanners';
 import { BannerForm, BannerFormData } from './forms/BannerForm';
 import { useToast } from '@/store';
-import { BannerDto } from '@/services/bannerService';
+import { bannerService, BannerDto } from '@/services/bannerService';
 import { formatDate } from '@/utils/format';
 import { AdminPageHeader } from '@/components/admin';
 import { PaginationDefaults } from '@/constants';
@@ -218,6 +218,11 @@ const BannersPage = () => {
 
         enableColumnVisibility={true}
         exportFilename="banners_export"
+        
+        // Import
+        onImport={async (file) => { await bannerService.import(file); refetch(); }}
+        importTemplateUrl={bannerService.getTemplate()}
+        importTitle={t('common.importData')}
       />
 
       {/* Form Modal */}
@@ -233,6 +238,7 @@ const BannersPage = () => {
             content: editingBanner.content || '',
             linkUrl: editingBanner.linkUrl || '',
             linkText: editingBanner.linkText || '',
+            imageURL: editingBanner.imageURL || '',
             priority: editingBanner.priority,
             isActive: editingBanner.isActive
           } : undefined}
@@ -284,7 +290,7 @@ const BannersPage = () => {
             </div>
 
             <div className="flex justify-end pt-4">
-              <Button onClick={() => setViewingBanner(null)}>
+              <Button onClick={() => setViewingBanner(null)} variant="ghost">
                 {t('common.close')}
               </Button>
             </div>

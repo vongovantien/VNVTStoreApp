@@ -42,11 +42,11 @@ public partial class TblOrder : IEntity
     
     public DateTime? VerificationTokenExpiresAt { get; private set; }
 
-    public virtual TblAddress? AddressCodeNavigation { get; private set; }
+    public virtual TblAddress? AddressCodeNavigation { get; set; }
 
     public virtual TblCoupon? CouponCodeNavigation { get; private set; }
 
-    public virtual ICollection<TblOrderItem> TblOrderItems { get; private set; }
+    public virtual ICollection<TblOrderItem> TblOrderItems { get; set; } = new List<TblOrderItem>();
 
     public virtual TblPayment? TblPayment { get; private set; }
 
@@ -68,6 +68,7 @@ public partial class TblOrder : IEntity
 
         return new TblOrder
         {
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
             UserCode = userCode,
             AddressCode = addressCode,
             OrderDate = DateTime.UtcNow,

@@ -1,96 +1,68 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { productService } from '../productService';
-import { apiClient } from '../api';
+import apiClient from '../api';
+import { API_ENDPOINTS } from '../baseService';
 
-// Mock API Client
-vi.mock('../api', () => {
-    const mockFn = {
+// Mock apiClient
+vi.mock('../api', () => ({
+    default: {
         get: vi.fn(),
         post: vi.fn(),
-    };
-    return {
-        apiClient: mockFn,
-        default: mockFn,
-    };
-});
+        put: vi.fn(),
+        delete: vi.fn(),
+    }
+}));
 
 describe('productService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    const mockGet = vi.mocked(apiClient.get);
-    const mockPost = vi.mocked(apiClient.post);
+    describe('import', () => {
+        it('should call api.post with correct parameters', async () => {
+            const file = new File(['dummy'], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            (apiClient.post as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ success: true, data: 10 });
 
-    describe('search', () => {
-        it('should call apiClient.post with /products/search', async () => {
-            const params = { pageIndex: 1, pageSize: 10 };
-            const mockResponse = { success: true, data: [], message: 'Success', statusCode: 200 };
+            const result = await productService.import(file);
 
-            // search uses http.post internally to /search
-            // endpoint is /products
-            // so url should be /products/search
-            const mockPost = vi.mocked(apiClient.post);
-            mockPost.mockResolvedValue(mockResponse);
-
-            const result = await productService.search(params);
-
-            expect(mockPost).toHaveBeenCalled();
-            expect(mockPost.mock.calls[0][0]).toContain('/search');
-            expect(result).toEqual(mockResponse);
+            expect(apiClient.post).toHaveBeenCalledTimes(1);
+            expect(apiClient.post).toHaveBeenCalledWith(
+                `${API_ENDPOINTS.PRODUCTS.BASE}/import`,
+                expect.any(FormData),
+                expect.objectContaining({
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                })
+            );
+            expect(result.data).toBe(10);
         });
     });
 
-    describe('getByCode', () => {
-        it('should call apiClient.get with /products/:code', async () => {
-            const code = '123';
-            const mockResponse = { success: true, data: { code: '123' }, message: 'Success', statusCode: 200 };
-            mockGet.mockResolvedValue(mockResponse);
-
-            const result = await productService.getByCode(code);
-
-            // endpoint + /code
-            // check first arg contains code
-            expect(mockGet).toHaveBeenCalled();
-            expect(mockGet.mock.calls[0][0]).toContain(code);
-            expect(result).toEqual(mockResponse);
+    describe('getTemplate', () => {
+        it('should return the correct template URL', () => {
+            const url = productService.getTemplate();
+            expect(url).toBe(`${API_ENDPOINTS.PRODUCTS.BASE}/template`);
         });
     });
 
-    describe('create', () => {
-        it('should call apiClient.post with /products and payload', async () => {
-            const payload = {
-                name: 'New Product',
-                price: 100,
-                images: ['base64string']
-            };
-            const mockResponse = { success: true, data: { code: 'NEW001', ...payload }, message: 'Success', statusCode: 200 };
-            mockPost.mockResolvedValue(mockResponse);
+    describe('getStats', () => {
+        it('should return stats when api call is successful', async () => {
+            const mockStats = { total: 100, outOfStock: 5, lowStock: 10 };
+            (apiClient.get as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ success: true, data: mockStats });
 
-            const result = await productService.create(payload);
+            const result = await productService.getStats();
 
-            // Expect endpoint to be base products endpoint
-            expect(mockPost).toHaveBeenCalled();
-            // Since API_ENDPOINTS.PRODUCTS.BASE is likely used, and previous search test expected '/search'
-            // Create typically posts to the base URL or similar. 
-            // Warning: The search test checked for '/search', implying BASE is '/products'.
-            // createEntityService uses endpoint.
-            // If search logic was: internal search method -> /products/search?
-            // createEntityService likely does post(endpoint, data).
-            // So we expect post to be called with endpoint.
+            expect(apiClient.get).toHaveBeenCalledWith(`${API_ENDPOINTS.PRODUCTS.BASE}/stats`);
+            expect(result).toEqual(mockStats);
+        });
 
-            // Checking first assertion of search test: 
-            // "search uses http.post internally to /search" -> comment in test file.
-            // But productService defines endpoint: API_ENDPOINTS.PRODUCTS.BASE.
-            // Let's assume endpoint is passed correctly.
+        it('should return default stats when api returns 404/error', async () => {
+            (apiClient.get as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ success: false, message: '404 Not Found' });
 
-            const url = mockPost.mock.calls[0][0];
-            const body = mockPost.mock.calls[0][1];
+            const result = await productService.getStats();
 
-            expect(url).toContain('/products');
-            expect(body).toEqual({ PostObject: payload });
-            expect(result).toEqual(mockResponse);
+            expect(result).toEqual({ total: 0, outOfStock: 0, lowStock: 0 });
         });
     });
 });

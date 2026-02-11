@@ -24,6 +24,7 @@ export interface UpdateProfileRequest {
     fullName?: string;
     phone?: string;
     email?: string;
+    avatarUrl?: string; // Add avatarUrl to request
 }
 
 export interface ChangePasswordRequest {

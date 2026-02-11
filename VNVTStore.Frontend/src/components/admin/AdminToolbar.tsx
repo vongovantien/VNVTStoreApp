@@ -18,38 +18,12 @@ interface AdminToolbarAction {
   onClick?: () => void;
   title?: string;
   disabled?: boolean;
-  className?: string; // Additional classes for specific buttons (e.g., active state)
-}
-
-interface AdminToolbarProps {
-  onAdd?: () => void;
-  onViewDetails?: () => void; // Converted from onMore
-  onEdit?: () => void;
-  onDelete?: () => void;
-  // Removed onCheck
-
-  onSearchClick?: () => void;
-  onRefresh?: () => void;
-  onReset?: () => void;
-
-
-  onImport?: () => void;
-  onExport?: () => void;
-  // Removed onPrint
-
-  // Removed onHelp
-
-  // States
-  isSearchActive?: boolean;
-  isExporting?: boolean;
-  selectedCount?: number;
   className?: string;
-  searchRef?: React.Ref<HTMLButtonElement>;
-  children?: React.ReactNode;
+  label?: string; // Added label prop
 }
 
 // Specific styled versions based on screenshot (Blue icons)
-const BlueItem = React.forwardRef<HTMLButtonElement, AdminToolbarAction>(({ icon, onClick, title, disabled, className: itemClassName }, ref) => (
+const BlueItem = React.forwardRef<HTMLButtonElement, AdminToolbarAction>(({ icon, onClick, title, disabled, className: itemClassName, label }, ref) => (
   <button
     type="button"
     ref={ref}
@@ -57,16 +31,36 @@ const BlueItem = React.forwardRef<HTMLButtonElement, AdminToolbarAction>(({ icon
     disabled={disabled || !onClick}
     title={title}
     className={cn(
-      "p-2 hover:bg-blue-50 dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed",
+      "p-2 hover:bg-blue-50 dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2",
       itemClassName
     )}
   >
     <div className="w-5 h-5 flex items-center justify-center text-[#2d7ad6]">
       {icon}
     </div>
+    {label && <span className="text-[#2d7ad6] font-medium text-sm whitespace-nowrap">{label}</span>}
   </button>
 ));
 BlueItem.displayName = "BlueItem";
+
+interface AdminToolbarProps {
+  onAdd?: () => void;
+  onViewDetails?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onSearchClick?: () => void;
+  onRefresh?: () => void;
+  onImport?: () => void;
+  onExport?: () => void;
+  onReset?: () => void;
+  isSearchActive?: boolean;
+  isExporting?: boolean;
+  selectedCount?: number;
+  className?: string;
+  searchRef?: React.Ref<HTMLButtonElement>;
+  children?: React.ReactNode;
+  searchInput?: React.ReactNode;
+}
 
 export const AdminToolbar = ({
   onAdd,

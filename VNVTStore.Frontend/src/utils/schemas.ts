@@ -1,13 +1,9 @@
 import { z } from 'zod';
 import type { TFunction } from 'i18next';
+import { REGEX } from '@/constants/regex';
 
 /**
- * Common Regex Patterns
- */
-export const REGEX = {
-    PHONE: /^(0[3|5|7|8|9])([0-9]{8})$/,
-    PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/, // At least 6 chars, 1 upper, 1 lower, 1 digit
-};
+ * Custom Zod-like helpers for common fields
 
 /**
  * Custom Zod-like helpers for common fields
@@ -96,7 +92,7 @@ export const createSchemas = (t: TFunction) => {
         content: z.string().optional(),
         linkUrl: z.string().optional(),
         linkText: z.string().optional(),
-        imageUrl: z.string().optional(),
+        imageURL: z.string().optional(),
         priority: z.number().int().default(0),
         isActive: z.boolean().default(true),
     });

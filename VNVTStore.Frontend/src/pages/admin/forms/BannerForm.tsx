@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { BaseForm, FieldDefinition } from '@/components/common';
 import { createSchemas } from '@/utils/schemas';
@@ -14,7 +14,7 @@ export interface BannerFormData {
   imageURL: string;
   priority: number;
   isActive: boolean;
-  [key: string]: any; // Required for FieldValues compatibility if we can't use 'any' then what?
+  [key: string]: string | number | boolean | undefined; // Index signature for FieldValues compatibility
 }
 
 // ============ Props ============
@@ -100,7 +100,7 @@ export const BannerForm = ({
 
   return (
     <BaseForm<BannerFormData>
-      schema={bannerSchema as any}
+      schema={bannerSchema as z.ZodType<BannerFormData>}
       defaultValues={defaultValues}
       fields={fields}
       onSubmit={onSubmit}

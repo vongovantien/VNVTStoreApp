@@ -7,7 +7,7 @@ namespace VNVTStore.Application.Interfaces;
 /// </summary>
 public interface IJwtService
 {
-    string GenerateToken(string userCode, string username, string email, UserRole role);
+    string GenerateToken(string userCode, string username, string email, UserRole role, IEnumerable<string> permissions, IEnumerable<string> menus);
     string GenerateRefreshToken();
     System.Security.Claims.ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
 }

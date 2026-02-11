@@ -36,6 +36,8 @@ public interface IApplicationDbContext
     DbSet<TblQuoteItem> TblQuoteItems { get; }
     DbSet<TblSupplier> TblSuppliers { get; }
     DbSet<TblDebtLog> TblDebtLogs { get; }
-    
+    DbSet<TblSystemConfig> TblSystemConfigs { get; }
+    DbSet<TblMenu> TblMenus { get; }
+    DbSet<TblRoleMenu> TblRoleMenus { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

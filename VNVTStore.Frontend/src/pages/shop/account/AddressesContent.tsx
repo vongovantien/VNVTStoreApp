@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui';
 import { addressService, type AddressDto, type CreateAddressRequest } from '@/services/userService';
 import { useToast } from '@/store';
-import { MapPin, Star, Edit2, Trash2, CheckCircle, X, Plus } from 'lucide-react';
+import { MapPin, Star, Edit2, Trash2, CheckCircle, Plus } from 'lucide-react';
 import { z } from 'zod';
 import { createSchemas } from '@/utils/schemas';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';

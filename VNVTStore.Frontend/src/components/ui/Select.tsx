@@ -71,9 +71,9 @@ export const Select = memo(
         () =>
           cn(
             // Base styles
-            'w-full bg-primary text-primary appearance-none cursor-pointer',
-            'border border-gray-200 rounded-lg',
-            'transition-all duration-200 outline-none focus:border-primary focus:ring-1 focus:ring-primary',
+            'w-full bg-bg-primary text-text-primary appearance-none cursor-pointer',
+            'border border-border rounded-lg',
+            'transition-all duration-200 outline-none focus:border-accent focus:ring-1 focus:ring-accent',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             // Size
             sizeStyles[size].select,
@@ -86,6 +86,7 @@ export const Select = memo(
           ),
         [size, leftIcon, error, className]
       );
+
 
       return (
         <div className={cn('flex flex-col gap-1', fullWidth && 'w-full', wrapperClassName)}>

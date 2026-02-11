@@ -1,17 +1,17 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Shield, Edit, Trash2, Plus, Info, CheckCircle2, XCircle } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { roleService, CreateRoleRequest, UpdateRoleRequest } from '@/services/roleService';
 import { useEntityManager, useRoles } from '@/hooks';
 import type { Role } from '@/types';
-import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
 import { PaginationDefaults, SortDirection } from '@/constants';
 import { RoleForm, RoleFormData } from './forms/RoleForm';
 
 export const RolesPage = () => {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
     // State
     const [currentPage, setCurrentPage] = useState<number>(PaginationDefaults.PAGE_INDEX);
@@ -74,9 +74,10 @@ export const RolesPage = () => {
                 name: data.name,
                 description: data.description,
                 isActive: data.isActive,
-                permissionCodes: data.permissionCodes
+                permissionCodes: data.permissionCodes,
+                menuCodes: data.menuCodes
             });
-        } catch (err) {
+        } catch {
             // Error handled by hook
         }
     };
@@ -90,10 +91,11 @@ export const RolesPage = () => {
                     name: data.name,
                     description: data.description,
                     isActive: data.isActive,
-                    permissionCodes: data.permissionCodes
+                    permissionCodes: data.permissionCodes,
+                    menuCodes: data.menuCodes
                 }
             });
-        } catch (err) {
+        } catch {
             // Error handled by hook
         }
     };
@@ -137,21 +139,7 @@ export const RolesPage = () => {
                 </div>
             )
         },
-        {
-            id: 'status',
-            header: t('common.fields.status'),
-            accessor: (role) => (
-                <Badge
-                    color={role.isActive ? 'success' : 'error'}
-                    size="sm"
-                    variant="soft"
-                >
-                    {role.isActive ? t('common.status.active') : t('common.status.inactive')}
-                </Badge>
-            ),
-            className: 'text-center',
-            headerClassName: 'text-center'
-        },
+        CommonColumns.createStatusColumn(t),
         {
             id: 'actions',
             header: '',
@@ -185,7 +173,8 @@ export const RolesPage = () => {
         name: editingRole.name,
         description: editingRole.description,
         isActive: editingRole.isActive,
-        permissionCodes: editingRole.permissions?.map(p => p.code) || []
+        permissionCodes: editingRole.permissions?.map(p => p.code) || [],
+        menuCodes: editingRole.menus?.map(m => m.code) || []
     } : undefined, [editingRole]);
 
     return (

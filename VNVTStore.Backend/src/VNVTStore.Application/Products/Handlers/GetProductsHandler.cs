@@ -36,13 +36,6 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
     {
         var searchFields = request.Searching ?? new List<SearchDTO>();
 
-        if (!string.IsNullOrEmpty(request.Search))
-        {
-            searchFields.Add(new SearchDTO { SearchField = "Name", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-            searchFields.Add(new SearchDTO { SearchField = "Code", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-            searchFields.Add(new SearchDTO { SearchField = "Description", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-        }
-
         // Add filter for active products for public APIs
         if (!searchFields.Any(s => s.SearchField.Equals("IsActive", StringComparison.OrdinalIgnoreCase)))
         {
@@ -55,11 +48,11 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
 
         if (result.IsSuccess && result.Value.Items.Any())
         {
-            using var connection = _dapperContext.CreateConnection();
-            if (connection.State != System.Data.ConnectionState.Open) connection.Open();
-            
-            var productCodes = result.Value.Items.Select(p => p.Code).ToList();
-            
+                using var connection = _dapperContext.CreateConnection();
+                if (connection.State != System.Data.ConnectionState.Open) connection.Open();
+                
+                var productCodes = result.Value.Items.Select(p => p.Code).ToList();
+
             Log.Information("[Debug] GetProductsHandler manual image fetch for {Count} products. Codes: {Codes}", 
                 productCodes.Count, string.Join(",", productCodes));
 
@@ -77,26 +70,26 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
             var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
 
             // 2. Fetch Ratings and Review Counts
-            var ratingSql = @"
-                SELECT 
-                    COALESCE(""ProductCode"", (SELECT oi.""ProductCode"" FROM ""TblOrderItem"" oi WHERE oi.""Code"" = r.""OrderItemCode"")) as ProductCode, 
-                    AVG(CAST(""Rating"" AS DECIMAL)) as AverageRating, 
-                    COUNT(*) as ReviewCount
-                FROM ""TblReview"" r
-                WHERE (""ProductCode"" = ANY(@Codes) OR (SELECT oi.""ProductCode"" FROM ""TblOrderItem"" oi WHERE oi.""Code"" = r.""OrderItemCode"") = ANY(@Codes))
-                  AND ""IsApproved"" = true
-                GROUP BY 1";
-            
-            var ratings = (await connection.QueryAsync<dynamic>(ratingSql, new { Codes = productCodes.ToArray() })).ToList();
-            var ratingMap = ratings
-                .Where(r => r.ProductCode != null)
-                .ToDictionary(
-                    r => (string)r.ProductCode, 
-                    r => (AverageRating: r.AverageRating != null ? (decimal)r.AverageRating : 0m, ReviewCount: r.ReviewCount != null ? (int)r.ReviewCount : 0)
-                );
+                var ratingSql = @"
+                    SELECT 
+                        COALESCE(""ProductCode"", (SELECT oi.""ProductCode"" FROM ""TblOrderItem"" oi WHERE oi.""Code"" = r.""OrderItemCode"")) as ProductCode, 
+                        AVG(CAST(""Rating"" AS DECIMAL)) as AverageRating, 
+                        COUNT(*) as ReviewCount
+                    FROM ""TblReview"" r
+                    WHERE (""ProductCode"" = ANY(@Codes) OR (SELECT oi.""ProductCode"" FROM ""TblOrderItem"" oi WHERE oi.""Code"" = r.""OrderItemCode"") = ANY(@Codes))
+                      AND ""IsApproved"" = true
+                    GROUP BY 1";
+                
+                var ratings = (await connection.QueryAsync<dynamic>(ratingSql, new { Codes = productCodes.ToArray() })).ToList();
+                var ratingMap = ratings
+                    .Where(r => r.ProductCode != null)
+                    .ToDictionary(
+                        r => (string)r.ProductCode, 
+                        r => (AverageRating: r.AverageRating != null ? (decimal)r.AverageRating : 0m, ReviewCount: r.ReviewCount != null ? (int)r.ReviewCount : 0)
+                    );
 
-            foreach (var dto in result.Value.Items)
-            {
+                foreach (var dto in result.Value.Items)
+                {
                 // Populate Images
                 if (fileGroups.TryGetValue(dto.Code, out var productFiles))
                 {
@@ -118,18 +111,18 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
                 }
 
                 // Populate Ratings
-                if (ratingMap.TryGetValue(dto.Code, out var ratingInfo))
-                {
-                    dto.AverageRating = ratingInfo.AverageRating;
-                    dto.ReviewCount = ratingInfo.ReviewCount;
-                }
-                else 
-                {
-                    dto.AverageRating = 0;
-                    dto.ReviewCount = 0;
+                    if (ratingMap.TryGetValue(dto.Code, out var ratingInfo))
+                    {
+                        dto.AverageRating = ratingInfo.AverageRating;
+                        dto.ReviewCount = ratingInfo.ReviewCount;
+                    }
+                    else 
+                    {
+                        dto.AverageRating = 0;
+                        dto.ReviewCount = 0;
+                    }
                 }
             }
-        }
 
         return result;
     }

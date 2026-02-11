@@ -18,8 +18,8 @@ import { Button } from '@/components/ui';
 import { useProducts, useCategories } from '@/hooks/useProducts';
 import { useQuery } from '@tanstack/react-query';
 import { promotionService, type Promotion } from '@/services/promotionService';
-
-import { HOME_BANNERS, FLASH_SALE_TIMES } from '@/data/homeData';
+import { bannerService } from '@/services/bannerService';
+import { systemConfigService } from '@/services/systemConfigService';
 import { formatCurrency } from '@/utils/format';
 import { useBrands } from '@/hooks/useBrands';
 
@@ -54,6 +54,13 @@ export const HomePage = () => {
 
   const featuredProducts = products.slice(0, 8);
   const newProducts = products.slice(0, 4);
+  // Fetch banners
+  const { data: bannerData } = useQuery({
+    queryKey: ['banners'],
+    queryFn: () => bannerService.getAll(),
+  });
+  const banners = bannerData?.data?.items?.filter(b => b.isActive) || [];
+
   // Fetch flash sales
   const { data: flashSales } = useQuery({
     queryKey: ['flash-sales'],
@@ -72,17 +79,76 @@ export const HomePage = () => {
 
   const saleProducts = flashSaleProductsData?.products || [];
 
+  interface FlashSaleTimeSlot {
+      active: boolean;
+      label: string; // "09:00", "12:00" etc
+  }
+
   // Countdown Timer Logic
   const [timeLeft, setTimeLeft] = useState<{hours: number, minutes: number, seconds: number}>({ hours: 0, minutes: 0, seconds: 0 });
+  const [flashSaleConfig, setFlashSaleConfig] = useState<FlashSaleTimeSlot[]>([]);
 
   useEffect(() => {
-    if (!flashSales?.data || flashSales.data.length === 0) return;
-    
-    // Find the soonest ending flash sale
-    const activeFlashSale = flashSales.data?.find((p: Promotion) => p.isActive && new Date(p.endDate) > new Date());
-    if(!activeFlashSale) return;
+    // Fetch Flash Sale Config
+    const fetchConfig = async () => {
+        try {
+            const res = await systemConfigService.get('FLASHSALE_TIMES');
+            if (res.success && res.data?.configValue) {
+                setFlashSaleConfig(JSON.parse(res.data.configValue));
+            }
+        } catch {
+            console.error("Failed to fetch flash sale config");
+        }
+    };
+    fetchConfig();
+  }, []);
 
-    const targetDate = new Date(activeFlashSale.endDate).getTime();
+  useEffect(() => {
+    // Logic: Find the current active slot from config to determine END TIME
+    // IF config is empty, fallback to existing logic (promotion endDate)
+    
+    let targetDate = 0;
+
+    if (flashSaleConfig.length > 0) {
+        // Simple logic: Find current active slot, End Time is the start of NEXT slot? 
+        // Or assume slots are e.g. 09:00, 12:00. If now is 10:00, we are in 09:00 slot, end is 12:00.
+        // If 20:00 is last slot, end is 24:00 (or determined by logic).
+        
+        const now = new Date();
+        const currentHour = now.getHours();
+        
+        // Filter active slots and sort
+        const activeSlots = flashSaleConfig
+            .filter((s) => s.active)
+            .map((s) => parseInt(s.label.split(':')[0]))
+            .sort((a, b) => a - b);
+            
+        // Find slot we are currently in
+        const currentSlotIndex = activeSlots.findIndex(h => currentHour >= h && (activeSlots.indexOf(h) === activeSlots.length - 1 || currentHour < activeSlots[activeSlots.indexOf(h) + 1]));
+        
+        if (currentSlotIndex !== -1) {
+            const nextSlotHour = activeSlots[currentSlotIndex + 1];
+            const endHour = nextSlotHour ? nextSlotHour : 24; // Default to midnight if last slot
+            
+            const target = new Date();
+            target.setHours(endHour, 0, 0, 0);
+            if (endHour === 24) { // Wrap to next day
+                 target.setDate(target.getDate() + 1);
+                 target.setHours(0, 0, 0, 0);
+            }
+            targetDate = target.getTime();
+        }
+    } 
+    
+    // Fallback if no config or no active slot found, use Promotion EndDate
+    if (!targetDate && flashSales?.data) {
+        const activeFlashSale = flashSales.data?.find((p: Promotion) => p.isActive && new Date(p.endDate) > new Date());
+        if (activeFlashSale) {
+            targetDate = new Date(activeFlashSale.endDate).getTime();
+        }
+    }
+
+    if (!targetDate) return;
 
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -90,6 +156,7 @@ export const HomePage = () => {
 
       if (distance < 0) {
         clearInterval(timer);
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
         return;
       }
 
@@ -101,24 +168,26 @@ export const HomePage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [flashSales?.data]);
+  }, [flashSales?.data, flashSaleConfig]);
 
   // Auto slide
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HOME_BANNERS.length);
+      if (banners.length > 0) {
+          setCurrentSlide((prev) => (prev + 1) % banners.length);
+      }
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [banners.length]);
 
   return (
     <div className="min-h-screen">
       {/* Hero Banner Slider */}
       <section className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
-        {HOME_BANNERS.map((banner, index) => (
+        {banners.map((banner, index) => (
 
           <motion.div
-            key={banner.id}
+            key={banner.code}
             className={`absolute inset-0 ${index === currentSlide ? 'z-10' : 'z-0'}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: index === currentSlide ? 1 : 0 }}
@@ -127,7 +196,7 @@ export const HomePage = () => {
             {/* Background */}
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${banner.image})` }}
+              style={{ backgroundImage: `url(${banner.imageURL})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
 
@@ -141,7 +210,7 @@ export const HomePage = () => {
                   transition={{ delay: 0.2 }}
                 >
                   <Sparkles size={16} />
-                  {t(`home.banners.${banner.id}.subtitle`)}
+                  {banner.content || t('home.banner.specialOffer')}
                 </motion.span>
 
                 <motion.h1
@@ -150,7 +219,7 @@ export const HomePage = () => {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  {t(`home.banners.${banner.id}.title`)}
+                  {banner.title}
                 </motion.h1>
 
                 <motion.p
@@ -159,7 +228,7 @@ export const HomePage = () => {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
                 >
-                  {t(`home.banners.${banner.id}.description`)}
+                  {banner.content}
                 </motion.p>
 
                 <motion.div
@@ -167,9 +236,9 @@ export const HomePage = () => {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <Link to={banner.link}>
+                  <Link to={banner.linkUrl || '#'}>
                     <Button size="lg" rounded rightIcon={<ArrowRight size={20} />}>
-                      {t(`home.banners.${banner.id}.cta`)}
+                      {banner.linkText || t('common.viewNow')}
                     </Button>
                   </Link>
                 </motion.div>
@@ -180,7 +249,7 @@ export const HomePage = () => {
 
         {/* Dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-          {HOME_BANNERS.map((_, index) => (
+          {banners.map((_, index) => (
 
             <button
               key={index}

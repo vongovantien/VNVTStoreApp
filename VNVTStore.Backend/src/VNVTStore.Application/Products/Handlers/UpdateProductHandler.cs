@@ -12,6 +12,7 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace VNVTStore.Application.Products.Handlers;
 
@@ -21,6 +22,7 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
     private readonly IFileService _fileService;
     private readonly IBaseUrlService _baseUrlService;
     private readonly IApplicationDbContext _context;
+    private readonly ILogger<UpdateProductHandler> _logger;
 
     public UpdateProductHandler(
         IRepository<TblProduct> repository,
@@ -29,12 +31,14 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
         IDapperContext dapperContext,
         IBaseUrlService baseUrlService,
         IFileService fileService,
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        ILogger<UpdateProductHandler> logger)
         : base(repository, unitOfWork, mapper, dapperContext)
     {
         _baseUrlService = baseUrlService;
         _fileService = fileService;
         _context = context;
+        _logger = logger;
     }
 
     public async Task<Result<ProductDto>> Handle(UpdateCommand<UpdateProductDto, ProductDto> request, CancellationToken cancellationToken)
@@ -55,14 +59,6 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
             }
 
             var supplierCode = string.IsNullOrWhiteSpace(request.Dto.SupplierCode) ? null : request.Dto.SupplierCode;
-            
-            // DEBUG: Log incoming price values
-            Console.WriteLine($"[UpdateProductHandler] Incoming DTO values:");
-            Console.WriteLine($"  Price: {request.Dto.Price}");
-            Console.WriteLine($"  WholesalePrice: {request.Dto.WholesalePrice}");
-            Console.WriteLine($"  CostPrice: {request.Dto.CostPrice}");
-            Console.WriteLine($"  VatRate: {request.Dto.VatRate}");
-            Console.WriteLine($"  Current Product Price: {product.Price}");
             
             product.UpdateInfo(
                 request.Dto.Name ?? product.Name, 
@@ -172,10 +168,8 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
                 }
             }
 
-            Console.WriteLine($"[UpdateProductHandler] request.Dto.Images is null: {request.Dto.Images == null}, Count: {request.Dto.Images?.Count ?? 0}");
             if (request.Dto.Images != null && request.Dto.Images.Count > 0)
             {
-                Console.WriteLine($"[UpdateProductHandler] Images to sync: {string.Join(", ", request.Dto.Images)}");
                 var syncResult = await _fileService.SyncProductImagesAsync(
                     product.Code, 
                     request.Dto.Images, 
@@ -220,8 +214,9 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
 
             return Result.Success(productDto);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "[UpdateProductHandler] Error updating product {Code}", request.Code);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

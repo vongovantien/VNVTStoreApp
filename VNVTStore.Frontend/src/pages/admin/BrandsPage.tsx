@@ -5,7 +5,7 @@ import { Tag } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog, TableActions } from '@/components/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { brandService, productService, type BrandDto, type CreateBrandRequest, type UpdateBrandRequest } from '@/services';
-import { DataTable, type DataTableColumn } from '@/components/common';
+import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common';
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, useBrands } from '@/hooks';
 import { BrandForm, type BrandFormData } from './forms';
@@ -169,16 +169,7 @@ export default function BrandsPage() {
       accessor: 'description',
       className: 'hidden md:table-cell max-w-[300px] truncate'
     },
-    {
-      id: 'status',
-      header: t('common.fields.status'),
-      accessor: (brand) => (
-        <Badge color={brand.isActive !== false ? 'success' : 'secondary'}>
-          {brand.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
-        </Badge>
-      ),
-      className: 'text-center w-[120px]',
-    },
+    CommonColumns.createStatusColumn(t),
     {
         id: 'actions',
         header: '',
@@ -253,6 +244,11 @@ export default function BrandsPage() {
         onEdit={(item) => openEdit(item)}
         onDelete={(item) => confirmDelete(item)}
         onView={(item) => setViewingBrand(item)}
+        
+        // Import
+        onImport={async (file) => { await brandService.import(file); refetch(); }}
+        importTemplateUrl={brandService.getTemplate()}
+        importTitle={t('common.importData')}
       />
 
        {/* Form Modal */}

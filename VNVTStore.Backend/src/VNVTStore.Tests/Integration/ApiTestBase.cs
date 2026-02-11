@@ -5,12 +5,12 @@ using VNVTStore.API;
 
 namespace VNVTStore.Tests.Integration;
 
-public class ApiTestBase : IClassFixture<WebApplicationFactory<Program>>
+public class ApiTestBase : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     protected readonly HttpClient Client;
-    protected readonly WebApplicationFactory<Program> Factory;
+    protected readonly CustomWebApplicationFactory<Program> Factory;
 
-    public ApiTestBase(WebApplicationFactory<Program> factory)
+    public ApiTestBase(CustomWebApplicationFactory<Program> factory)
     {
         Factory = factory;
         Client = factory.CreateClient();

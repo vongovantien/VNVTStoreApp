@@ -27,3 +27,10 @@ export const usePermissions = () => {
         queryFn: () => import('@/services/permissionService').then(m => m.permissionService.getAll())
     });
 };
+
+export const useMenus = () => {
+    return useQuery({
+        queryKey: ['menus-all'],
+        queryFn: () => import('@/services/menuService').then(m => m.menuService.getAll())
+    });
+};

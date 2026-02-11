@@ -2,12 +2,14 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VNVTStore.Application.Auth.Commands;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.API.Controllers.v1;
 
+[EnableRateLimiting("AuthLimit")]
 public class AuthController : BaseApiController
 {
     public AuthController(IMediator mediator) : base(mediator)

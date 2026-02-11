@@ -1,7 +1,7 @@
 import { createEntityService } from './baseService';
 import { API_ENDPOINTS } from '@/constants';
 import { Permission } from '@/types';
-import apiClient, { ApiResponse } from './api';
+import apiClient, { ApiResponse, PagedResult } from './api';
 
 export const permissionService = {
     ...createEntityService<Permission, Permission, Permission>({
@@ -9,7 +9,7 @@ export const permissionService = {
         resourceName: 'Permission'
     }),
     getAll: async (): Promise<ApiResponse<Permission[]>> => {
-        const response = await apiClient.get<any>(API_ENDPOINTS.PERMISSIONS.ALL);
+        const response = await apiClient.get<PagedResult<Permission>>(API_ENDPOINTS.PERMISSIONS.ALL);
         // The endpoint returns a PagedResult if using BaseApiController.GetAll custom implementation
         // or just the direct array if we implemented it elsewhere.
         // My implementation in PermissionsController uses GetPagedQuery.
@@ -19,7 +19,12 @@ export const permissionService = {
                 data: response.data.items
             };
         }
-        return response;
+        return {
+            success: response.success,
+            message: response.message,
+            data: [],
+            statusCode: response.statusCode
+        };
     }
 };
 

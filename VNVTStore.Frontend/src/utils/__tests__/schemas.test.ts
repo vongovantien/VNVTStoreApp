@@ -1,15 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
 import { createSchemas } from '../schemas';
-import { z } from 'zod';
 
 // Mock TFunction
-const t = vi.fn((key: string, params?: any) => {
+const t = vi.fn((key: string, params?: Record<string, unknown>) => {
     if (params?.field) return `${params.field} is required`;
     return key;
 });
 
 describe('Validation Schemas', () => {
-    const schemas = createSchemas(t as any);
+    const schemas = createSchemas(t as unknown as any);
 
     describe('contactSchema', () => {
         it('should validate correctly with valid data', () => {

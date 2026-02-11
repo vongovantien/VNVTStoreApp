@@ -76,6 +76,29 @@ public static class ServiceCollectionExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+            options.OnRejected = async (context, token) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    await context.HttpContext.Response.WriteAsJsonAsync(new
+                    {
+                        Status = "Error",
+                        Message = $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s).",
+                        RetryAfterSeconds = retryAfter.TotalSeconds
+                    }, token);
+                }
+                else
+                {
+                    await context.HttpContext.Response.WriteAsJsonAsync(new
+                    {
+                        Status = "Error",
+                        Message = "Too many requests. Please try again later."
+                    }, token);
+                }
+            };
+
+            // Global Fixed Window Limiter
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.User.Identity?.IsAuthenticated == true
@@ -85,9 +108,26 @@ public static class ServiceCollectionExtensions
                     {
                         AutoReplenishment = true,
                         PermitLimit = configuration.GetValue<int>("RateLimiting:PermitLimit", 100),
-                        QueueLimit = configuration.GetValue<int>("RateLimiting:QueueLimit", 2),
+                        QueueLimit = configuration.GetValue<int>("RateLimiting:QueueLimit", 0),
                         Window = TimeSpan.FromSeconds(configuration.GetValue<int>("RateLimiting:WindowInSeconds", 60))
                     }));
+
+            // Policy for Authentication (Sliding Window)
+            options.AddSlidingWindowLimiter("AuthLimit", opt =>
+            {
+                opt.PermitLimit = configuration.GetValue<int>("RateLimiting:AuthPermitLimit", 5);
+                opt.Window = TimeSpan.FromSeconds(configuration.GetValue<int>("RateLimiting:AuthWindowInSeconds", 10));
+                opt.SegmentsPerWindow = 2;
+                opt.QueueLimit = 0;
+            });
+
+            // Policy for Expensive Operations (Fixed Window)
+            options.AddFixedWindowLimiter("ExpensiveLimit", opt =>
+            {
+                opt.PermitLimit = configuration.GetValue<int>("RateLimiting:ExpensivePermitLimit", 3);
+                opt.Window = TimeSpan.FromSeconds(configuration.GetValue<int>("RateLimiting:ExpensiveWindowInSeconds", 30));
+                opt.QueueLimit = 0;
+            });
         });
 
         // Add Swagger
@@ -137,6 +177,7 @@ public static class ServiceCollectionExtensions
             {
                 options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
             });
         services.AddEndpointsApiExplorer();
 

@@ -2,6 +2,7 @@ using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Constants;
@@ -45,6 +46,7 @@ public class ProductsController : BaseApiController<TblProduct, ProductDto, Crea
     public override Task<IActionResult> Create([FromBody] RequestDTO<CreateProductDto> request) => base.Create(request);
 
     [HttpPost("import")]
+    [EnableRateLimiting("ExpensiveLimit")]
     [Authorize(Roles = "admin,Admin")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Import(IFormFile file)
@@ -66,8 +68,7 @@ public class ProductsController : BaseApiController<TblProduct, ProductDto, Crea
     [AllowAnonymous]
     public IActionResult GetTemplate()
     {
-        var csv = "Name,Price,CategoryCode,StockQuantity,Code,Description,Color,Size,Material,Voltage,Power,Weight,CostPrice\nSample Product,100000,CAT001,10,,Description here,Red,L,Cotton,220V,100W,0.5,80000";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-        return File(bytes, "text/csv", "products_template.csv");
+        var bytes = VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.ProductImportDto>();
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "products_template.xlsx");
     }
 }

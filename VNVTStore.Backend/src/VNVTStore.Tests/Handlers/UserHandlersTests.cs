@@ -1,23 +1,31 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
 using AutoMapper;
 using Moq;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Users.Commands;
 using VNVTStore.Application.Users.Handlers;
-using VNVTStore.Domain.Entities;
-using VNVTStore.Domain.Interfaces;
 using VNVTStore.Application.Users.Queries;
 using VNVTStore.Application.DTOs;
-using Xunit;
+using VNVTStore.Domain.Entities;
+using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Enums;
+using VNVTStore.Infrastructure.Persistence;
+using VNVTStore.Infrastructure.Persistence.Repositories;
+using VNVTStore.Tests.Common;
 
 namespace VNVTStore.Tests.Handlers;
 
-public class UserHandlersTests
+public class UserHandlersTests : IDisposable
 {
-    private readonly Mock<IRepository<TblUser>> _mockUserRepo;
-    private readonly Mock<IRepository<TblOrder>> _mockOrderRepo;
+    private readonly ApplicationDbContext _context;
+    private readonly IRepository<TblUser> _repository;
+    private readonly IRepository<TblOrder> _orderRepository;
     private readonly Mock<IPasswordHasher> _mockPasswordHasher;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IMapper> _mockMapper;
@@ -26,21 +34,29 @@ public class UserHandlersTests
 
     public UserHandlersTests()
     {
-        _mockUserRepo = new Mock<IRepository<TblUser>>();
-        _mockOrderRepo = new Mock<IRepository<TblOrder>>();
+        _context = TestDbContextFactory.Create();
+        _repository = new Repository<TblUser>(_context);
+        _orderRepository = new Repository<TblOrder>(_context);
+        
         _mockPasswordHasher = new Mock<IPasswordHasher>();
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockMapper = new Mock<IMapper>();
         _mockDapperContext = new Mock<IDapperContext>();
 
         _handler = new UserHandlers(
-            _mockUserRepo.Object,
-            _mockOrderRepo.Object,
+            _repository,
+            _orderRepository,
             _mockPasswordHasher.Object,
             _mockUnitOfWork.Object,
             _mockMapper.Object,
             _mockDapperContext.Object
         );
+    }
+
+    public void Dispose()
+    {
+        _context.Database.EnsureDeleted();
+        _context.Dispose();
     }
 
     [Fact]
@@ -53,10 +69,10 @@ public class UserHandlersTests
         var hashedOld = "hashed_old";
         var hashedNew = "hashed_new";
 
-        var user = TblUser.Create("testuser", "test@example.com", hashedOld, "Test User", VNVTStore.Domain.Enums.UserRole.Customer);
-        // Simulate existing user
-        _mockUserRepo.Setup(r => r.GetByCodeAsync(userCode, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        var user = TblUser.Create("testuser", "test@example.com", hashedOld, "Test User", UserRole.Customer);
+        user.Code = userCode;
+        await _context.TblUsers.AddAsync(user);
+        await _context.SaveChangesAsync();
 
         // Simulate password validation success
         _mockPasswordHasher.Setup(h => h.Verify(currentPassword, hashedOld))
@@ -72,8 +88,9 @@ public class UserHandlersTests
         // Assert
         Assert.True(result.IsSuccess);
         
-        // Verify user password was updated
-        _mockUserRepo.Verify(r => r.Update(It.Is<TblUser>(u => u.PasswordHash == hashedNew)), Times.Once);
+        // Verify user password was updated in DB
+        var updatedUser = await _context.TblUsers.FirstAsync(u => u.Code == userCode);
+        Assert.Equal(hashedNew, updatedUser.PasswordHash);
         _mockUnitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -82,8 +99,6 @@ public class UserHandlersTests
     {
         // Arrange
         var userCode = "U999";
-        _mockUserRepo.Setup(r => r.GetByCodeAsync(userCode, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TblUser)null);
 
         var command = new ChangePasswordCommand(userCode, "any", "any");
 
@@ -92,7 +107,7 @@ public class UserHandlersTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Equal("NotFound", result.Error.Code); // Assuming Error.NotFound uses this naming
+        Assert.Equal("NotFound", result.Error.Code);
     }
 
     [Fact]
@@ -103,9 +118,10 @@ public class UserHandlersTests
         var currentPassword = "WrongPassword";
         var realHash = "real_hash";
         
-        var user = TblUser.Create("test", "test@test.com", realHash, "Test", VNVTStore.Domain.Enums.UserRole.Customer);
-        _mockUserRepo.Setup(r => r.GetByCodeAsync(userCode, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        var user = TblUser.Create("test", "test@test.com", realHash, "Test", UserRole.Customer);
+        user.Code = userCode;
+        await _context.TblUsers.AddAsync(user);
+        await _context.SaveChangesAsync();
 
         _mockPasswordHasher.Setup(h => h.Verify(currentPassword, realHash))
             .Returns(false);
@@ -125,11 +141,12 @@ public class UserHandlersTests
     {
         // Arrange
         var userCode = "U123";
-        var user = TblUser.Create("test", "test@test.com", "hash", "Old Name", VNVTStore.Domain.Enums.UserRole.Customer);
-        _mockUserRepo.Setup(r => r.GetByCodeAsync(userCode, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+        var user = TblUser.Create("test", "test@test.com", "hash", "Old Name", UserRole.Customer);
+        user.Code = userCode;
+        await _context.TblUsers.AddAsync(user);
+        await _context.SaveChangesAsync();
         
-        var command = new UpdateProfileCommand(userCode, "New Name", "0909000000", "new@test.com");
+        var command = new UpdateProfileCommand(userCode, "New Name", "0909000000", "new@test.com", null);
 
         _mockMapper.Setup(m => m.Map<UserDto>(It.IsAny<TblUser>()))
             .Returns(new UserDto { FullName = "New Name" });
@@ -140,17 +157,16 @@ public class UserHandlersTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("New Name", result.Value.FullName);
-        _mockUserRepo.Verify(r => r.Update(It.Is<TblUser>(u => u.FullName == "New Name")), Times.Once);
+        
+        // Verify DB update
+        var updatedUser = await _context.TblUsers.FirstAsync(u => u.Code == userCode);
+        Assert.Equal("New Name", updatedUser.FullName);
     }
 
     [Fact]
     public async Task UpdateProfile_ShouldReturnFailure_WhenUserNotFound()
     {
-        // Arrange
-        _mockUserRepo.Setup(r => r.GetByCodeAsync("U999", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TblUser)null);
-        
-        var command = new UpdateProfileCommand("U999", "Name", "0909", "email");
+        var command = new UpdateProfileCommand("U999", "Name", "0909", "email", null);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -165,12 +181,12 @@ public class UserHandlersTests
     {
         // Arrange
         var userCode = "U123";
-        var user = TblUser.Create("test", "test@test.com", "hash", "Test Name", VNVTStore.Domain.Enums.UserRole.Customer);
+        var user = TblUser.Create("test", "test@test.com", "hash", "Test Name", UserRole.Customer);
+        user.Code = userCode;
+        await _context.TblUsers.AddAsync(user);
+        await _context.SaveChangesAsync();
         
-        _mockUserRepo.Setup(r => r.GetByCodeAsync(userCode, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
-        
-        _mockMapper.Setup(m => m.Map<UserDto>(user))
+        _mockMapper.Setup(m => m.Map<UserDto>(It.IsAny<TblUser>()))
             .Returns(new UserDto { Code = userCode, FullName = "Test Name" });
 
         var query = new GetUserProfileQuery(userCode);
@@ -186,10 +202,6 @@ public class UserHandlersTests
     [Fact]
     public async Task GetUserProfile_ShouldReturnFailure_WhenUserDoesNotExist()
     {
-        // Arrange
-        _mockUserRepo.Setup(r => r.GetByCodeAsync("U999", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TblUser)null);
-
         var query = new GetUserProfileQuery("U999");
 
         // Act

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
@@ -11,11 +12,13 @@ public class LocalImageUploadService : IImageUploadService
 {
     private readonly IWebHostEnvironment _env;
     private readonly IApplicationDbContext _context;
+    private readonly ILogger<LocalImageUploadService> _logger;
 
-    public LocalImageUploadService(IWebHostEnvironment env, IApplicationDbContext context)
+    public LocalImageUploadService(IWebHostEnvironment env, IApplicationDbContext context, ILogger<LocalImageUploadService> logger)
     {
         _env = env;
         _context = context;
+        _logger = logger;
     }
 
     public async Task<Result<FileDto>> UploadImageAsync(Stream imageStream, string fileName, string folder = "products")
@@ -88,7 +91,7 @@ public class LocalImageUploadService : IImageUploadService
         catch (Exception ex)
         {
             var innerMessage = ex.InnerException?.Message ?? "";
-            Console.WriteLine($"[Error] Upload failed: {ex} {innerMessage}");
+            _logger.LogError(ex, "[UploadImageAsync] Error: Upload failed: {Message}", ex.InnerException?.Message ?? ex.Message);
             return Result.Failure<FileDto>(Error.Validation($"Failed to upload image: {ex.Message} {innerMessage}"));
         }
     }
@@ -165,7 +168,7 @@ public class LocalImageUploadService : IImageUploadService
         }
         catch (Exception ex)
         {
-             Console.WriteLine($"[Error] Base64 Upload failed: {ex}");
+             _logger.LogError(ex, "[UploadBase64Async] Error: Base64 Upload failed");
              return Result.Failure<FileDto>(Error.Validation($"Failed to upload base64 image: {ex.Message}"));
         }
     }

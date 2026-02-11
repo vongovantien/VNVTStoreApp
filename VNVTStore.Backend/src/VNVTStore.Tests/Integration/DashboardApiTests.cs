@@ -9,7 +9,7 @@ namespace VNVTStore.Tests.Integration;
 
 public class DashboardApiTests : ApiTestBase
 {
-    public DashboardApiTests(WebApplicationFactory<Program> factory) : base(factory) { }
+    public DashboardApiTests(CustomWebApplicationFactory<Program> factory) : base(factory) { }
 
     [Fact]
     public async Task GetStats_ReturnsSuccessOrAuth()

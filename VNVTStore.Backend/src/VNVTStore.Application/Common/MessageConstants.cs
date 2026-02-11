@@ -58,6 +58,8 @@ public static class MessageConstants
     public const string CouponNotActive = "Coupon.NotActive";
     public const string CouponExpired = "Coupon.Expired";
     public const string CouponLimitReached = "Coupon.LimitReached";
+    public const string CouponNotFound = "Coupon.NotFound";
+    public const string CouponMinOrderAmountNotMet = "Coupon.MinOrderAmountNotMet";
     public const string CategoryHasProducts = "Category.HasProducts";
 
     public const string NotificationNewOrder = "Notification.NewOrder";
@@ -115,6 +117,8 @@ public static class MessageConstants
             [CouponNotActive] = "Mã giảm giá không hoạt động",
             [CouponExpired] = "Mã giảm giá đã hết hạn hoặc chưa bắt đầu",
             [CouponLimitReached] = "Mã giảm giá đã hết lượt sử dụng",
+            [CouponNotFound] = "Không tìm thấy mã giảm giá",
+    [CouponMinOrderAmountNotMet] = "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng mã này",
             [CategoryHasProducts] = "Không thể xóa danh mục '{0}' vì đang có {1} sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.",
             [NotificationNewOrder] = "Đơn hàng mới: {0}",
             [NotificationSystemBroadcast] = "Thông báo hệ thống: {0}",
@@ -168,6 +172,8 @@ public static class MessageConstants
             [CouponNotActive] = "Coupon is not active",
             [CouponExpired] = "Coupon has expired or not yet started",
             [CouponLimitReached] = "Coupon usage limit reached",
+            [CouponNotFound] = "Coupon not found",
+    [CouponMinOrderAmountNotMet] = "Minimum order amount for this coupon not reached",
             [CategoryHasProducts] = "Cannot delete category '{0}' because it has {1} products. Please move products to another category first.",
             [NotificationNewOrder] = "New Order: {0}",
             [NotificationSystemBroadcast] = "System Notification: {0}",

@@ -5,18 +5,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '@/services/orderService';
 import { SearchCondition } from '@/services/baseService';
 
+import { ORDER_LIST_FIELDS } from '@/constants/fieldConstants';
+
 export function useOrders(params?: {
     pageIndex?: number;
     pageSize?: number;
     status?: string;
+    fields?: string[];
 }) {
+    const { fields = ORDER_LIST_FIELDS } = params || {};
     return useQuery({
         queryKey: ['orders', params],
         queryFn: () => orderService.search({
             pageIndex: params?.pageIndex || 1,
             pageSize: params?.pageSize || 10,
             search: params?.status,
-            searchField: params?.status ? 'status' : undefined
+            searchField: params?.status ? 'status' : undefined,
+            fields: fields || ORDER_LIST_FIELDS
         }),
         select: (response) => {
             const pageSize = params?.pageSize || 10;
@@ -41,7 +46,9 @@ export function useAdminOrders(params?: {
     pageIndex?: number;
     pageSize?: number;
     filters?: Record<string, unknown>;
+    fields?: string[];
 }) {
+    const { fields = ORDER_LIST_FIELDS } = params || {};
     const searchFilters: { field: string; value: string; operator?: SearchCondition }[] = [];
     const searchTerm = params?.filters?.search as string;
 
@@ -61,7 +68,8 @@ export function useAdminOrders(params?: {
             pageSize: params?.pageSize || 10,
             search: searchTerm,
             searchField: 'all', // Backend will search across default fields if not specified
-            filters: searchFilters.length > 0 ? searchFilters : undefined
+            filters: searchFilters.length > 0 ? searchFilters : undefined,
+            fields: fields || ORDER_LIST_FIELDS
         }),
         select: (response) => {
             const pageSize = params?.pageSize || 10;
@@ -87,7 +95,7 @@ export function useUpdateOrderStatus() {
 
     return useMutation({
         mutationFn: ({ code, status }: { code: string; status: string }) =>
-            orderService.update(code, { status }),
+            orderService.updateStatus(code, status),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['orders'] });
             queryClient.invalidateQueries({ queryKey: ['admin-orders'] });

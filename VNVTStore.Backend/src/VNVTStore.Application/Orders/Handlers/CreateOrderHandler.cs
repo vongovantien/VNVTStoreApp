@@ -7,6 +7,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
@@ -33,6 +34,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
     private readonly IApplicationDbContext _context;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<CreateOrderHandler> _logger;
 
     public CreateOrderHandler(
         IRepository<TblOrder> orderRepository,
@@ -48,7 +50,8 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
         INotificationService notificationService,
         IApplicationDbContext context,
         IEmailService emailService,
-        IConfiguration configuration) : base(orderRepository, unitOfWork, mapper, dapperContext)
+        IConfiguration configuration,
+        ILogger<CreateOrderHandler> logger) : base(orderRepository, unitOfWork, mapper, dapperContext)
     {
         _cartService = cartService;
         _productRepository = productRepository;
@@ -60,6 +63,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
         _context = context;
         _emailService = emailService;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -75,18 +79,21 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
 
             List<ProcessableOrderItem> itemsToProcess = new();
             
-            if (!string.IsNullOrEmpty(request.userCode))
+            if (!string.IsNullOrEmpty(userCode))
             {
+                // Console.WriteLine($"[HANDLER] Processing userCode: '{userCode}'");
                 var cart = await _cartService.GetOrCreateCartAsync(userCode, cancellationToken);
+                // Console.WriteLine($"[HANDLER] Cart: {(cart == null ? "null" : cart.TblCartItems.Count.ToString())} items");
+
                 if (cart == null || !cart.TblCartItems.Any())
                 {
                     await _unitOfWork.RollbackTransactionAsync(cancellationToken); 
-                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CartEmpty));
+                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CartEmpty, Array.Empty<object>()));
                 }
 
                 var productCodes = cart.TblCartItems.Select(c => c.ProductCode).Distinct().ToList();
                 var files = await _context.TblFiles
-                    .Where(f => productCodes.Contains(f.MasterCode) && f.MasterType == "Product")
+                    .Where(f => f.MasterCode != null && productCodes.Contains(f.MasterCode) && f.MasterType == AppConstants.MasterTypes.Product)
                     .ToListAsync(cancellationToken);
                 var fileMap = files
                     .GroupBy(f => f.MasterCode)
@@ -107,18 +114,31 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                 if (request.dto.Items == null || !request.dto.Items.Any())
                 {
                      await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                     return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CartEmpty));
+                     return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CartEmpty, Array.Empty<object>()));
                 }
 
-                foreach(var dtoItem in request.dto.Items)
+                // Batch load products to avoid N+1 query
+                var productCodes = request.dto.Items
+                    .Where(i => !string.IsNullOrEmpty(i.ProductCode))
+                    .Select(i => i.ProductCode!)
+                    .Distinct()
+                    .ToList();
+
+                var products = await _productRepository.AsQueryable()
+                    .Where(p => productCodes.Contains(p.Code))
+                    .ToDictionaryAsync(p => p.Code, cancellationToken);
+
+                // Batch load files for all products
+                var fileMap = await _context.TblFiles
+                    .Where(f => f.MasterCode != null && productCodes.Contains(f.MasterCode) && f.MasterType == AppConstants.MasterTypes.Product)
+                    .GroupBy(f => f.MasterCode)
+                    .Select(g => new { Code = g.Key, Path = g.First().Path })
+                    .ToDictionaryAsync(x => x.Code!, x => x.Path, cancellationToken);
+
+                foreach (var dtoItem in request.dto.Items)
                 {
                      if (string.IsNullOrEmpty(dtoItem.ProductCode)) continue;
-                     
-                     var product = await _productRepository.AsQueryable()
-                         .FirstOrDefaultAsync(p => p.Code == dtoItem.ProductCode, cancellationToken);
-                     if (product == null) continue;
-
-                     var file = await _context.TblFiles.FirstOrDefaultAsync(f => f.MasterCode == product.Code && f.MasterType == "Product", cancellationToken);
+                     if (!products.TryGetValue(dtoItem.ProductCode, out var product)) continue;
 
                      itemsToProcess.Add(new ProcessableOrderItem(
                          product.Code,
@@ -126,7 +146,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                          dtoItem.Quantity,
                          dtoItem.Size,
                          dtoItem.Color,
-                         file?.Path
+                         fileMap.GetValueOrDefault(product.Code)
                      ));
                 }
             }
@@ -161,15 +181,73 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                 ));
             }
 
-            decimal shippingFee = _shippingStrategy.CalculateShippingFee(totalAmount);
 
+            decimal discountAmount = 0;
+            if (!string.IsNullOrEmpty(request.dto.CouponCode))
+            {
+                var coupon = await _context.TblCoupons
+                    .Include(c => c.PromotionCodeNavigation)
+                    .FirstOrDefaultAsync(c => c.Code == request.dto.CouponCode, cancellationToken);
+
+                if (coupon == null)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponNotFound, Array.Empty<object>()));
+                }
+
+                if (!coupon.IsActive || coupon.PromotionCodeNavigation == null || !coupon.PromotionCodeNavigation.IsActive)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponNotActive, Array.Empty<object>()));
+                }
+
+                var promo = coupon.PromotionCodeNavigation;
+                if (DateTime.UtcNow < promo.StartDate || DateTime.UtcNow > promo.EndDate)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponExpired, Array.Empty<object>()));
+                }
+
+                if (promo.UsageLimit.HasValue && (coupon.UsageCount ?? 0) >= promo.UsageLimit.Value)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponLimitReached, Array.Empty<object>()));
+                }
+
+                if (promo.MinOrderAmount.HasValue && totalAmount < promo.MinOrderAmount.Value)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponMinOrderAmountNotMet, Array.Empty<object>()));
+                }
+
+                // Discount calculation
+                if (promo.DiscountType == "Percentage")
+                {
+                    discountAmount = (totalAmount * promo.DiscountValue) / 100;
+                    if (promo.MaxDiscountAmount.HasValue && discountAmount > promo.MaxDiscountAmount.Value)
+                        discountAmount = promo.MaxDiscountAmount.Value;
+                }
+                else // Fixed
+                {
+                    discountAmount = promo.DiscountValue;
+                }
+
+                if (discountAmount > totalAmount) discountAmount = totalAmount;
+
+                coupon.UsageCount = (coupon.UsageCount ?? 0) + 1;
+                _context.TblCoupons.Update(coupon);
+            }
+
+            decimal shippingFee = _shippingStrategy.CalculateShippingFee(totalAmount - discountAmount);
+
+            TblAddress? orderAddress = null;
             string addressCode = request.dto.AddressCode;
             if (string.IsNullOrEmpty(addressCode))
             {
                  if (!string.IsNullOrEmpty(request.dto.Address))
                  {
                      var receiverInfo = $"Receiver: {request.dto.FullName}, Phone: {request.dto.Phone}";
-                     var addressParts = new List<string> { request.dto.Address, request.dto.Ward, request.dto.District };
+                     var addressParts = new List<string?> { request.dto.Address, request.dto.Ward, request.dto.District }.Where(x => !string.IsNullOrEmpty(x)).Cast<string>().ToList();
                      var baseAddress = string.Join(", ", addressParts.Where(s => !string.IsNullOrEmpty(s)));
                      var fullAddressLine = $"{baseAddress} | {receiverInfo}";
                      if (!string.IsNullOrEmpty(request.dto.Note)) fullAddressLine += $" | Note: {request.dto.Note}";
@@ -187,6 +265,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                      var newAddress = addressBuilder.Build();
                      await _addressRepository.AddAsync(newAddress, cancellationToken);
                      addressCode = newAddress.Code;
+                     orderAddress = newAddress;
                  }
                  else
                  {
@@ -194,15 +273,25 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                       return Result.Failure<OrderDto>(Error.Validation("Address is required"));
                  }
             }
+            else
+            {
+                orderAddress = await _addressRepository.GetByCodeAsync(addressCode, cancellationToken);
+            }
 
             var order = TblOrder.Create(
                 userCode,
                 addressCode,
                 totalAmount,
                 shippingFee,
-                0, 
+                discountAmount, 
                 request.dto.CouponCode
             );
+            
+            // Assign navigation property for DTO mapping
+            if (orderAddress != null)
+            {
+                 order.AddressCodeNavigation = orderAddress;
+            }
 
             foreach (var oi in orderItems)
             {
@@ -220,7 +309,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                  var user = await _userRepository.GetByCodeAsync(userCode, cancellationToken);
                  if (user != null)
                  {
-                      int points = (int)(totalAmount / 10000);
+                      int points = (int)((totalAmount - discountAmount) / 10000);
                       if (points > 0)
                       {
                             user.AddLoyaltyPoints(points);
@@ -235,7 +324,6 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
 
             var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
             var verifyLink = $"{frontendUrl}/verify-order?token={token}";
-            var emailBody = $"<h3>Thank you for your order!</h3><p>Order Code: <b>{order.Code}</b></p><p>Please verify your order by clicking the link below:</p><a href='{verifyLink}'>Verify Order</a>";
             
             var userEmail = (await _userRepository.GetByCodeAsync(userCode, cancellationToken))?.Email;
             if (string.IsNullOrEmpty(userEmail) || userEmail == "guest@vnvtstore.com")
@@ -247,12 +335,28 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             { 
                  try 
                  {
-                    await _emailService.SendEmailAsync(userEmail, $"Verify your order {order.Code}", emailBody, true);
+                    var emailBody = $"<h3>Thank you for your order!</h3><p>Order Code: <b>{order.Code}</b></p><p>Please verify your order by clicking the link below:</p><a href='{verifyLink}'>Verify Order</a>";
+                    await _emailService.SendEmailAsync(userEmail, $"Order Confirmation - {order.Code}", emailBody, true);
                  }
                  catch (Exception ex)
                  {
-                    Console.WriteLine($"Failed to send email: {ex.Message}");
+                    _logger.LogError(ex, "[Handle] error: Failed to send email to {Email}", userEmail);
                  }
+            }
+
+            // Send admin notification
+            var adminEmail = _configuration["EmailSettings:AdminEmail"];
+            if (!string.IsNullOrEmpty(adminEmail))
+            {
+                try
+                {
+                    var adminEmailBody = $"A new order has been placed. <br/> Order Code: <b>{order.Code}</b> <br/> Total: <b>{order.FinalAmount:N0} VND</b>";
+                    await _emailService.SendEmailAsync(adminEmail, $"New Order Received - {order.Code}", adminEmailBody, true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send admin notification email to {AdminEmail}", adminEmail);
+                }
             }
 
             await _notificationService.BroadcastLocalizedAsync(MessageConstants.NotificationNewOrder, order.Code);

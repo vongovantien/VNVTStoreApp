@@ -1,9 +1,11 @@
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Constants;
 using VNVTStore.Application.DTOs;
+using Serilog;
 
 namespace VNVTStore.API.Controllers;
 
@@ -36,7 +38,7 @@ public abstract class BaseApiController : ControllerBase
         // Debug log
         if (result.Value != null)
         {
-             Console.WriteLine($"[API Debug] Result Type: {typeof(T).Name}. Data: {Newtonsoft.Json.JsonConvert.SerializeObject(result.Value)}");
+             Log.Debug("[HandleResult] Result Type: {TypeName}. Data: {Data}", typeof(T).Name, Newtonsoft.Json.JsonConvert.SerializeObject(result.Value));
         }
 
         successMessage ??= MessageConstants.Get(MessageConstants.Success);
@@ -79,7 +81,7 @@ public abstract class BaseApiController : ControllerBase
     protected IActionResult HandleError(Error error)
     {
         // Debug log
-        Console.WriteLine($"[API Error Debug] Code: {error.Code}. Message: {error.Message}");
+        Log.Warning("[HandleError] Code: {ErrorCode}. Message: {ErrorMessage}", error.Code, error.Message);
 
         // Translate message key to human-readable message
         var message = error.Message != null ? MessageConstants.Get(error.Message) : null;
@@ -153,7 +155,7 @@ public abstract class BaseApiController<TEntity, TResponse, TCreateDto, TUpdateD
             }
         }
 
-        var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, null, request.SortDTO, request.Searching, request.Fields));
+        var result = await Mediator.Send(CreatePagedQuery(pageIndex, pageSize, request.SortDTO, request.Searching, request.Fields));
         return HandleResult(result);
     }
 
@@ -205,8 +207,8 @@ public abstract class BaseApiController<TEntity, TResponse, TCreateDto, TUpdateD
     }
 
     // Default implementations of factory methods
-    protected virtual IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, string? search, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
-        => new GetPagedQuery<TResponse>(pageIndex, pageSize, search, sort, filters, fields);
+    protected virtual IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
+        => new GetPagedQuery<TResponse> { PageIndex = pageIndex, PageSize = pageSize, SortDTO = sort, Searching = filters, Fields = fields };
 
     protected virtual IRequest<Result<TResponse>> CreateGetByCodeQuery(string code, bool includeChildren)
         => new GetByCodeQuery<TResponse>(code, includeChildren);

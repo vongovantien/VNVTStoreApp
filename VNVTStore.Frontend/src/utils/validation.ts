@@ -3,8 +3,7 @@
  */
 
 export const validationRules = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    required: (value: any) => {
+    required: (value: unknown) => {
         if (value === null || value === undefined || value === '') return false;
         if (Array.isArray(value) && value.length === 0) return false;
         return true;
@@ -31,8 +30,7 @@ export interface ValidationErrors {
     [key: string]: string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const validateForm = (data: Record<string, any>, schema: { [key: string]: { rules: ((v: any) => boolean)[], messages: string[] } }): ValidationErrors => {
+export const validateForm = (data: Record<string, unknown>, schema: { [key: string]: { rules: ((v: unknown) => boolean)[], messages: string[] } }): ValidationErrors => {
     const errors: ValidationErrors = {};
 
     Object.keys(schema).forEach(field => {

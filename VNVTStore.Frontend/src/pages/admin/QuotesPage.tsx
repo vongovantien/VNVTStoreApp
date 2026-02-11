@@ -274,7 +274,7 @@ export const QuotesPage = () => {
         size="sm"
         footer={
           <div className="flex gap-3 justify-end">
-            <Button variant="outline" onClick={() => setShowQuoteModal(false)}>
+            <Button variant="ghost" onClick={() => setShowQuoteModal(false)}>
               {t('admin.actions.cancel')}
             </Button>
             <Button

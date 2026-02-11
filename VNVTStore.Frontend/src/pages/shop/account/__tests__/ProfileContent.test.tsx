@@ -4,13 +4,17 @@ import ProfileContent from '../ProfileContent';
 import { userService } from '@/services/userService';
 
 // Mock dependencies
-vi.mock('@/services/userService', () => ({
-  userService: {
+vi.mock('@/services/userService', () => {
+  const mockService = {
     getProfile: vi.fn(),
     updateProfile: vi.fn(),
     changePassword: vi.fn(),
-  },
-}));
+  };
+  return {
+    userService: mockService,
+    default: mockService,
+  };
+});
 
 vi.mock('@/store', () => ({
   useToast: () => ({
@@ -30,7 +34,7 @@ describe('ProfileContent Component', () => {
     vi.clearAllMocks();
     
     // Default mock response for getProfile
-    (userService.getProfile as unknown as { mockResolvedValue: (v: unknown) => void }).mockResolvedValue({
+    (userService.getProfile as unknown as Mock).mockResolvedValue({
       success: true,
       data: {
         fullName: 'Test User',
@@ -38,6 +42,10 @@ describe('ProfileContent Component', () => {
         phone: '0909090909',
       },
     });
+
+    // Default mock for changePassword and updateProfile
+    (userService.changePassword as unknown as Mock).mockResolvedValue({ success: true });
+    (userService.updateProfile as unknown as Mock).mockResolvedValue({ success: true });
   });
 
   describe('Profile Information', () => {
@@ -74,6 +82,9 @@ describe('ProfileContent Component', () => {
     it('shows validation error for mismatched passwords', async () => {
       render(<ProfileContent />);
 
+      // Wait for profile data to load first
+      await waitFor(() => screen.getByDisplayValue('Test User'));
+
       const newPassInput = screen.getByPlaceholderText('common.placeholders.newPassword');
       const confirmPassInput = screen.getByPlaceholderText('common.placeholders.confirmPassword');
       const currentPassInput = screen.getByPlaceholderText('common.placeholders.currentPassword');
@@ -95,6 +106,9 @@ describe('ProfileContent Component', () => {
       (userService.changePassword as unknown as { mockResolvedValue: (v: unknown) => void }).mockResolvedValue({ success: true });
       
       render(<ProfileContent />);
+
+      // Wait for profile data to load first
+      await waitFor(() => screen.getByDisplayValue('Test User'));
 
       const currentPassInput = screen.getByPlaceholderText('common.placeholders.currentPassword');
       const newPassInput = screen.getByPlaceholderText('common.placeholders.newPassword');
@@ -121,6 +135,9 @@ describe('ProfileContent Component', () => {
        vi.mocked(userService.changePassword).mockRejectedValue(mockError);
        render(<ProfileContent />);
        
+       // Wait for profile data to load first
+       await waitFor(() => screen.getByDisplayValue('Test User'));
+       
        const currentPassInput = screen.getByPlaceholderText('common.placeholders.currentPassword');
        const newPassInput = screen.getByPlaceholderText('common.placeholders.newPassword');
        const confirmPassInput = screen.getByPlaceholderText('common.placeholders.confirmPassword');
@@ -134,8 +151,6 @@ describe('ProfileContent Component', () => {
 
        await waitFor(() => {
          expect(userService.changePassword).toHaveBeenCalled();
-         // Check if toast.error was called (mocked in beforeEach logic implicitly or explicit setup)
-         // Note: We need to ensure useToast mock is correct.
        });
     });
 
@@ -143,6 +158,9 @@ describe('ProfileContent Component', () => {
         // Slow response
         (userService.changePassword as unknown as Mock).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
         render(<ProfileContent />);
+        
+        // Wait for profile data to load first
+        await waitFor(() => screen.getByDisplayValue('Test User'));
         
         const currentPassInput = screen.getByPlaceholderText('common.placeholders.currentPassword');
         const newPassInput = screen.getByPlaceholderText('common.placeholders.newPassword');
@@ -154,7 +172,6 @@ describe('ProfileContent Component', () => {
         
         const saveButton = screen.getAllByText('common.save')[1];
         fireEvent.click(saveButton);
-        
         
         await waitFor(() => expect(saveButton).toBeDisabled());
         

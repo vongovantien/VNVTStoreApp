@@ -7,7 +7,6 @@ import { useAuthStore, useToast } from '@/store';
 import { UserRole, UserStatus } from '@/types';
 import { authService } from '@/services/authService';
 import { AuthLayout } from '@/layouts/AuthLayout';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createSchemas } from '@/utils/schemas';
@@ -101,9 +100,12 @@ export const LoginPage = () => {
             role: (user.role as UserRole) || UserRole.Customer,
             status: UserStatus.Active,
             createdAt: new Date().toISOString(),
+            permissions: user.permissions,
+            menus: user.menus
           },
           token,
-          refreshToken
+          refreshToken,
+          user.menus
         );
 
         toast.success(t('messages.loginSuccess'));
@@ -147,10 +149,13 @@ export const LoginPage = () => {
             role: (userData.role as UserRole) || UserRole.Customer,
             status: UserStatus.Active,
             createdAt: new Date().toISOString(),
-            avatar: userData.avatar
+            avatar: userData.avatar,
+            permissions: userData.permissions,
+            menus: userData.menus
           },
           accessToken,
-          refreshToken
+          refreshToken,
+          userData.menus
         );
 
         toast.success(t('messages.loginSuccess'));
@@ -165,7 +170,8 @@ export const LoginPage = () => {
       }
     } catch (err: unknown) {
       console.error(`${provider} login error:`, err);
-      const isPopupClosed = err instanceof Error && (err as any).code === 'auth/popup-closed-by-user';
+      const firebaseError = err as { code?: string };
+      const isPopupClosed = firebaseError.code === 'auth/popup-closed-by-user';
       if (!isPopupClosed) {
         toast.error(t('messages.error'));
         setError(t('messages.error'));

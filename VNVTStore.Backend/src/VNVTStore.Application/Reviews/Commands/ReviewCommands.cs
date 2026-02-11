@@ -5,3 +5,4 @@ namespace VNVTStore.Application.Reviews.Commands;
 
 public record ApproveReviewCommand(string Code) : IRequest<Result>;
 public record RejectReviewCommand(string Code) : IRequest<Result>;
+public record ReplyReviewCommand(string Code, string Reply) : IRequest<Result>;

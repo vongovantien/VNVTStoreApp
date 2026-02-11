@@ -4,7 +4,7 @@
 */
 
 import { createEntityService, API_ENDPOINTS } from './baseService';
-import apiClient from './api';
+import apiClient, { ApiResponse } from './api';
 
 // ============ Types ============
 export interface ProductImageDto {
@@ -170,6 +170,20 @@ export const productService = {
             }
         }
         return response.data || { total: 0, outOfStock: 0, lowStock: 0 };
+    },
+
+    import: async (file: File): Promise<ApiResponse<number>> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return apiClient.post(`${API_ENDPOINTS.PRODUCTS.BASE}/import`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+
+    getTemplate: (): string => {
+        return `${API_ENDPOINTS.PRODUCTS.BASE}/template`;
     }
 };
 
@@ -184,6 +198,20 @@ export const categoryService = {
             return { total: 0, main: 0, active: 0 }
         }
         return response.data || { total: 0, main: 0, active: 0 };
+    },
+
+    import: async (file: File): Promise<ApiResponse<number>> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return apiClient.post(`${API_ENDPOINTS.CATEGORIES.BASE}/import`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+
+    getTemplate: (): string => {
+        return `${API_ENDPOINTS.CATEGORIES.BASE}/template`;
     }
 };
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { BaseForm, FieldGroup } from '@/components/common';
-import { useProducts } from '@/hooks';
+import { useProducts, useCategories } from '@/hooks';
 import { PaginationDefaults } from '@/constants';
 import { UseFormReturn } from 'react-hook-form';
 import { Product } from '@/types';
@@ -41,8 +41,22 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
   isLoading
 }) => {
   const { t } = useTranslation();
-  const { data: productsData } = useProducts({ pageSize: 100, pageIndex: PaginationDefaults.PAGE_INDEX });
+  
+  // State for product filtering
+  const [selectedCategory, setSelectedCategory] = React.useState<string>('all');
+  const [productSearch, setProductSearch] = React.useState<string>('');
+
+  // Fetch data
+  const { data: productsData } = useProducts({ 
+    pageSize: 1000, 
+    pageIndex: 1,
+    category: selectedCategory === 'all' ? undefined : selectedCategory,
+    search: productSearch || undefined
+  });
   const products = productsData?.products || [];
+
+  const { data: categoriesData } = useCategories({ enabled: true });
+  const categories = categoriesData || [];
 
   const defaultValues: PromotionFormData = React.useMemo(() => ({
     code: initialData?.code || '',
@@ -94,7 +108,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
                         <label className="text-sm font-bold text-primary">{t('common.fields.startDate')}</label>
                         <input 
                             type="date" 
-                            className="w-full px-4 py-2 text-sm border border-border-color rounded-xl focus:outline-none focus:ring-4 focus:ring-accent-primary/5 bg-primary transition-all text-primary"
+                            className="w-full px-4 py-2 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/20 bg-primary transition-all text-primary"
                             value={(form.watch('startDate') as Date)?.toISOString().split('T')[0]}
                             onChange={(e) => form.setValue('startDate', new Date(e.target.value))}
                         />
@@ -111,7 +125,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
                         <label className="text-sm font-bold text-primary">{t('common.fields.endDate')}</label>
                         <input 
                             type="date" 
-                            className="w-full px-4 py-2 text-sm border border-border-color rounded-xl focus:outline-none focus:ring-4 focus:ring-accent-primary/5 bg-primary transition-all text-primary"
+                            className="w-full px-4 py-2 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/20 bg-primary transition-all text-primary"
                             value={(form.watch('endDate') as Date)?.toISOString().split('T')[0]}
                             onChange={(e) => form.setValue('endDate', new Date(e.target.value))}
                         />
@@ -140,28 +154,56 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
                     };
 
                     return (
-                        <div className="space-y-2">
-                           <div className="h-48 overflow-y-auto border border-border-color rounded-xl p-3 bg-slate-50 dark:bg-slate-900/50">
+                        <div className="space-y-4">
+                            {/* Filtering row */}
+                            <div className="flex flex-wrap gap-3 p-3 bg-bg-secondary rounded-xl border border-border">
+                                <div className="flex-1 min-w-[200px]">
+                                    <input 
+                                        type="text"
+                                        placeholder={t('common.placeholders.search')}
+                                        className="w-full px-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20"
+                                        value={productSearch}
+                                        onChange={(e) => setProductSearch(e.target.value)}
+                                    />
+                                </div>
+                                <select 
+                                    className="px-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 bg-primary min-w-[150px]"
+                                    value={selectedCategory}
+                                    onChange={(e) => setSelectedCategory(e.target.value)}
+                                >
+                                    <option value="all">{t('common.allCategories')}</option>
+                                    {categories.map((cat: any) => (
+                                        <option key={cat.code} value={cat.code}>{cat.name}</option>
+                                    ))}
+                                </select>
+                                <div className="ml-auto text-xs font-medium text-text-secondary flex items-center bg-bg-primary px-3 rounded-lg border border-border">
+                                    {t('common.selected')}: <span className="text-accent ml-1">{selectedCodes.length}</span>
+                                </div>
+                            </div>
+
+                            <div className="h-64 overflow-y-auto border border-border rounded-xl p-3 bg-bg-secondary custom-scrollbar">
                                 {products.length === 0 ? (
-                                    <p className="text-tertiary text-sm text-center p-4">{t('messages.noProductsAvailable')}</p>
+                                    <p className="text-text-tertiary text-sm text-center p-4">{t('messages.noProductsAvailable')}</p>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                         {products.map((p: Product) => (
-                                            <label key={p.code} className="flex items-center gap-2 text-sm p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-border-color shadow-sm shadow-transparent hover:shadow-gray-100">
+                                            <label key={p.code} className="flex items-center gap-2 text-sm p-2 hover:bg-bg-primary rounded-lg cursor-pointer transition-colors border border-transparent hover:border-border shadow-sm group">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedCodes.includes(p.code)}
                                                     onChange={() => toggleProduct(p.code)}
-                                                    className="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4"
+                                                    className="rounded border-border text-accent focus:ring-accent w-4 h-4"
                                                 />
-                                                <span className="truncate font-medium">{p.name}</span>
-                                                <span className="text-xs text-tertiary ml-auto">{p.code}</span>
+                                                <div className="flex flex-col min-w-0 flex-1">
+                                                    <span className="truncate font-semibold group-hover:text-accent transition-colors">{p.name}</span>
+                                                    <span className="text-[10px] text-text-tertiary">{p.code}</span>
+                                                </div>
                                             </label>
                                         ))}
                                     </div>
                                 )}
                             </div>
-                            <p className="text-xs text-tertiary italic">{t('messages.selectProductsInfo')}</p>
+                            <p className="text-xs text-text-tertiary italic">{t('messages.selectProductsInfo')}</p>
                         </div>
                     );
                 }
@@ -172,13 +214,6 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
 
   return (
     <div className="w-full">
-        <div className="mb-6">
-            <h1 className="text-2xl font-bold text-primary">
-                {initialData?.code ? t('admin.titles.promotionEdit') : t('admin.titles.promotionAdd')}
-            </h1>
-            <p className="text-sm text-secondary">{t('admin.subtitles.promotions')}</p>
-        </div>
-
         <BaseForm<PromotionFormData>
             schema={promotionSchema}
             defaultValues={defaultValues}
@@ -188,6 +223,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             isLoading={isLoading}
             submitLabel={t('common.save')}
             className="max-w-4xl"
+            layout="tabs"
         />
     </div>
   );

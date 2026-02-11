@@ -7,7 +7,7 @@ public class BannerDto : IBaseDto
     public string? Content { get; set; }
     public string? LinkUrl { get; set; }
     public string? LinkText { get; set; }
-    public string? ImageUrl { get; set; } // Added
+    public string? ImageURL { get; set; } // Added
     public bool IsActive { get; set; }
     public int Priority { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -20,7 +20,7 @@ public class CreateBannerDto
     public string? Content { get; set; }
     public string? LinkUrl { get; set; }
     public string? LinkText { get; set; }
-    public string? ImageUrl { get; set; } // Added
+    public string? ImageURL { get; set; } // Added
     public bool IsActive { get; set; } = true;
     public int Priority { get; set; } = 0;
 }
@@ -31,7 +31,7 @@ public class UpdateBannerDto
     public string? Content { get; set; }
     public string? LinkUrl { get; set; }
     public string? LinkText { get; set; }
-    public string? ImageUrl { get; set; } // Added
+    public string? ImageURL { get; set; } // Added
     public bool? IsActive { get; set; }
     public int? Priority { get; set; }
 }

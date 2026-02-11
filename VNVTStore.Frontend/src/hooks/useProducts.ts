@@ -9,7 +9,7 @@ import { Product, ProductDetail, ProductUnit, ProductVariant } from '@/types';
 import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest, type ProductDto, type ProductImageDto } from '@/services/productService';
 import { SearchCondition } from '@/services/baseService';
 import { getImageUrl } from '@/utils/format';
-import { CATEGORY_LIST_FIELDS } from '@/constants/fieldConstants';
+import { CATEGORY_LIST_FIELDS, PRODUCT_LIST_FIELDS, PRODUCT_DETAIL_FIELDS } from '@/constants/fieldConstants';
 
 // ============ Query Keys ============
 export const productKeys = {
@@ -18,9 +18,75 @@ export const productKeys = {
     list: (params: Record<string, unknown>) => [...productKeys.lists(), params] as const,
     details: () => [...productKeys.all, 'detail'] as const,
     detail: (code: string) => [...productKeys.details(), code] as const,
+    stats: () => [...productKeys.all, 'stats'] as const,
     categories: ['categories'] as const,
 };
 
+// ============ Helper Functions ============
+
+/**
+ * Extract product images from DTO (handles multiple casing variations)
+ */
+function getProductImages(item: ProductDto | Record<string, unknown>): ProductImageDto[] | undefined {
+    const dto = item as ProductDto;
+    const record = item as Record<string, unknown>;
+    return (dto.productImages || record.ProductImages || record.product_images) as ProductImageDto[] | undefined;
+}
+
+/**
+ * Maps ProductDto to Frontend Product model
+ * Centralized mapping to avoid duplication (DRY principle)
+ */
+function mapProductDtoToProduct(item: ProductDto, options?: { includeDetails?: boolean }): Product {
+    const images = getProductImages(item);
+    const primaryImg = images?.find((img: ProductImageDto) => img.isPrimary) || images?.[0];
+
+    const baseProduct: Product = {
+        code: item.code,
+        name: item.name,
+        slug: item.code,
+        description: item.description || '',
+        price: item.price,
+        image: getImageUrl(primaryImg?.imageURL),
+        images: images?.map((img: ProductImageDto) => getImageUrl(img.imageURL)) || [],
+        productImages: images || [],
+        category: item.categoryName || '',
+        categoryCode: item.categoryCode || '',
+        stock: item.stockQuantity || 0,
+        // Attributes
+        color: item.color,
+        power: item.power,
+        voltage: item.voltage,
+        material: item.material,
+        size: item.size,
+        // Default values
+        brand: item.brand || 'VNVT',
+        rating: 5,
+        reviewCount: 0,
+        isFeatured: item.isFeatured || false,
+        isNew: item.isNew ?? true,
+        createdAt: item.createdAt || new Date().toISOString()
+    };
+
+    // Add detail-specific fields when fetching single product
+    if (options?.includeDetails) {
+        return {
+            ...baseProduct,
+            wholesalePrice: item.wholesalePrice,
+            costPrice: item.costPrice,
+            stockQuantity: item.stockQuantity,
+            countryOfOrigin: item.countryOfOrigin,
+            baseUnit: item.baseUnit,
+            binLocation: item.binLocation,
+            details: (item.details as unknown as ProductDetail[]) || [],
+            productUnits: (item.productUnits as unknown as ProductUnit[]) || [],
+            variants: (item.variants as unknown as ProductVariant[]) || [],
+            originalPrice: item.price * 1.2,
+        };
+    }
+
+    return baseProduct;
+}
 
 // ============ Query Hooks ============
 
@@ -73,7 +139,7 @@ export function useCategoriesList(params: {
     isActive?: string; // 'true' | 'false'
     fields?: string[];  // Selective columns to fetch
 }) {
-    const { fields, ...searchParams } = params;
+    const { fields = CATEGORY_LIST_FIELDS, ...searchParams } = params;
 
     // Build filters
     const filters: { field: string; value: string; operator?: SearchCondition }[] = [];
@@ -141,7 +207,7 @@ export function useProducts(params: {
     ids?: string[];
     fields?: string[];  // Selective columns to fetch (reduces data transfer)
 }) {
-    const { enabled = true, fields, ...searchParams } = params;
+    const { enabled = true, fields = PRODUCT_LIST_FIELDS, ...searchParams } = params;
 
     // Build filters dynamically
     const filters: { field: string; value: string | string[] | number | number[] | boolean; operator?: SearchCondition }[] = [];
@@ -245,41 +311,10 @@ export function useProducts(params: {
                 // Deduplicate items based on code to prevent UI duplication issues
                 const uniqueItems = Array.from(new Map((response.data.items || []).map(item => [item.code, item])).values());
 
-                // Map ProductDto to Frontend Product model
-                const products: Product[] = uniqueItems.map((rawItem: ProductDto | Record<string, unknown>) => {
-                    const item = rawItem as ProductDto;
-                    const images = (item.productImages || (item as unknown as Record<string, unknown>).ProductImages || (item as unknown as Record<string, unknown>).product_images) as ProductImageDto[] | undefined;
-                    const primaryImg = images?.find((img: ProductImageDto) => img.isPrimary) || images?.[0];
-                    const mainImage = getImageUrl(primaryImg?.imageURL);
-
-                    return {
-                        code: item.code,
-                        name: item.name,
-                        slug: item.code, // Use code as slug for now
-                        description: item.description || '',
-                        price: item.price,
-                        image: mainImage,
-                        images: images?.map((img: ProductImageDto) => getImageUrl(img.imageURL)) || [],
-                        // Pass raw DTO for form management
-                        productImages: images || [],
-                        category: item.categoryName || '',
-                        categoryCode: item.categoryCode || '',
-                        stock: item.stockQuantity || 0,
-                        // Attributes
-                        color: item.color,
-                        power: item.power,
-                        voltage: item.voltage,
-                        material: item.material,
-                        size: item.size,
-                        // Mock/Default values for missing backend fields
-                        brand: 'VNVT',
-                        rating: 5,
-                        reviewCount: 0,
-                        isFeatured: false,
-                        isNew: true,
-                        createdAt: item.createdAt || new Date().toISOString()
-                    };
-                });
+                // Map ProductDto to Frontend Product model using helper
+                const products: Product[] = uniqueItems.map((rawItem) =>
+                    mapProductDtoToProduct(rawItem as ProductDto)
+                );
 
                 return {
                     products,
@@ -314,45 +349,8 @@ export function useProduct(code: string) {
         enabled: !!code,
         select: (response): Product | null => {
             if (response.success && response.data) {
-                const item = response.data as ProductDto;
-                const images = (item.productImages || (item as unknown as Record<string, unknown>).ProductImages || (item as unknown as Record<string, unknown>).product_images) as ProductImageDto[] | undefined;
-                const primaryImg = images?.find((img: ProductImageDto) => img.isPrimary) || images?.[0];
-
-                // Map ProductDto to Frontend Product model
-                return {
-                    code: item.code,
-                    name: item.name,
-                    slug: item.code,
-                    description: item.description || '',
-                    price: item.price,
-                    wholesalePrice: item.wholesalePrice,
-                    costPrice: item.costPrice,
-                    image: getImageUrl(primaryImg?.imageURL),
-                    images: images?.map((img: ProductImageDto) => getImageUrl(img.imageURL)) || [],
-                    productImages: images || [],
-                    category: item.categoryName || '',
-                    categoryCode: item.categoryCode || '',
-                    stock: item.stockQuantity || 0,
-                    stockQuantity: item.stockQuantity,
-                    color: item.color,
-                    power: item.power,
-                    voltage: item.voltage,
-                    material: item.material,
-                    size: item.size,
-                    countryOfOrigin: item.countryOfOrigin,
-                    baseUnit: item.baseUnit,
-                    binLocation: item.binLocation,
-                    details: (item.details as unknown as ProductDetail[]) || [],
-                    productUnits: (item.productUnits as unknown as ProductUnit[]) || [],
-                    variants: (item.variants as unknown as ProductVariant[]) || [],
-                    brand: item.brand || 'VNVT',
-                    rating: 5,
-                    reviewCount: 0,
-                    isFeatured: item.isFeatured || false,
-                    isNew: item.isNew ?? true,
-                    originalPrice: item.price * 1.2,
-                    createdAt: item.createdAt || new Date().toISOString()
-                };
+                // Map ProductDto to Frontend Product model using helper with details
+                return mapProductDtoToProduct(response.data as ProductDto, { includeDetails: true });
             }
             return null;
         }

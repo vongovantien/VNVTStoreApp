@@ -102,6 +102,13 @@ export const orderService = {
             return { total: 0, pending: 0, shipping: 0, delivered: 0 }
         }
         return response.data || { total: 0, pending: 0, shipping: 0, delivered: 0 };
+    },
+    updateStatus: async (code: string, status: string) => {
+        const response = await apiClient.put<OrderDto>(`${API_ENDPOINTS.ORDERS.BASE}/${code}/status`, { status });
+        if (!response.success) {
+            throw new Error(response.message || 'Update status failed');
+        }
+        return response;
     }
 };
 

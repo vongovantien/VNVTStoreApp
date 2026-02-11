@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Package, Calendar, ChevronRight, MapPin, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import SharedImage from '@/components/common/Image';
-import { Button, Badge, Modal } from '@/components/ui';
+import { Button, Modal } from '@/components/ui';
 import { formatDate, formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { orderService, type OrderDto, type OrderItemDto } from '@/services/orderService';
 import ReviewForm from '@/components/reviews/ReviewForm';

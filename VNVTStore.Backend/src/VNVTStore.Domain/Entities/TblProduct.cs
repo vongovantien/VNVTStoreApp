@@ -125,10 +125,11 @@ public partial class TblProduct : IEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateFromImport(string name, decimal price, int? stock, string? categoryCode, string? description, bool? isActive, string? supplierCode, string? brandCode)
+    public void UpdateFromImport(string name, decimal price, decimal? wholesalePrice, int? stock, string? categoryCode, string? description, bool? isActive, string? supplierCode, string? brandCode)
     {
         Name = name;
         Price = price;
+        WholesalePrice = wholesalePrice;
         StockQuantity = stock;
         CategoryCode = categoryCode;
         Description = description;

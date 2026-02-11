@@ -50,14 +50,14 @@ public class ImportProductsHandler : BaseHandler<TblProduct>,
                 if (product != null)
                 {
                     var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
-                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, supplierCode, dto.BrandCode);
+                    product.UpdateFromImport(dto.Name, dto.Price, dto.WholesalePrice, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, supplierCode, dto.BrandCode);
                     _repository.Update(product);
                 }
                 else
                 {
                     var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
                     product = TblProduct.Create(dto.Name, dto.Price, dto.WholesalePrice, dto.StockQuantity ?? 0, dto.CategoryCode, null, supplierCode, dto.BrandCode, dto.BaseUnit);
-                    product.UpdateFromImport(dto.Name, dto.Price, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, supplierCode, dto.BrandCode);
+                    product.UpdateFromImport(dto.Name, dto.Price, dto.WholesalePrice, dto.StockQuantity, dto.CategoryCode, dto.Description, dto.IsActive, supplierCode, dto.BrandCode);
                     await _repository.AddAsync(product, cancellationToken);
                 }
                 importedCount++;

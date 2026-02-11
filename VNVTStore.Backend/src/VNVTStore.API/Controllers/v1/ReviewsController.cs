@@ -77,7 +77,7 @@ public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateR
         [FromQuery] string? search = null,
         [FromQuery] bool? isApproved = null)
     {
-        var result = await Mediator.Send(new GetAllReviewsQuery(pageIndex, pageSize, search, isApproved));
+        var result = await Mediator.Send(new GetAllReviewsQuery(pageIndex, pageSize, isApproved));
         return HandleResult(result);
     }
 
@@ -101,5 +101,23 @@ public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateR
     {
         var result = await Mediator.Send(new RejectReviewCommand(code));
         return HandleDelete(result);
+    }
+
+    /// <summary>
+    /// Reply to a review (Admin)
+    /// </summary>
+    [HttpPost("{code}/reply")]
+    [Authorize(Roles = "admin,Admin")]
+    public async Task<IActionResult> ReplyReview(string code, [FromBody] string? reply)
+    {
+        if (string.IsNullOrWhiteSpace(reply))
+            return BadRequest(ApiResponse<string>.Fail(MessageConstants.Get(MessageConstants.BadRequest)));
+
+        var result = await Mediator.Send(new ReplyReviewCommand(code, reply));
+        
+        if (result.IsFailure)
+             return HandleError(result.Error!);
+             
+        return Ok(ApiResponse<object>.Ok(null, MessageConstants.Get(MessageConstants.Updated)));
     }
 }

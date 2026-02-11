@@ -28,7 +28,7 @@ export const ComparePage = () => {
     );
   }
 
-  const specs = ['Thương hiệu', 'Danh mục', 'Đánh giá', 'Tình trạng'];
+
 
   return (
     <div className="min-h-screen bg-secondary">

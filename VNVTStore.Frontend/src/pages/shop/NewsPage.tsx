@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Calendar, User, ArrowRight } from 'lucide-react';
+import { Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui';
 import SharedImage from '@/components/common/Image';
 
 const newsItems = [
@@ -42,7 +41,7 @@ const newsItems = [
 ];
 
 export const NewsPage = () => {
-    const { t } = useTranslation();
+    useTranslation();
     const [displayCount, setDisplayCount] = useState(4); // Start with 4 items
 
     const handleLoadMore = () => {

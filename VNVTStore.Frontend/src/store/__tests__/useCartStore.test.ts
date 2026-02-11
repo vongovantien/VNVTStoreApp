@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCartStore, useAuthStore } from '../index';
-import { cartService } from '@/services';
+import { cartService } from '@/services'; // Ensure this path is correct or use relative ../../services
+import { Product } from '@/types';
 
 // Mock cartService
 vi.mock('@/services', () => ({
@@ -67,7 +68,7 @@ describe('useCartStore', () => {
         const { result } = renderHook(() => useCartStore());
 
         await act(async () => {
-            await result.current.addItem(mockProduct as any, 1);
+            await result.current.addItem(mockProduct as unknown as Product, 1);
         });
 
         expect(cartService.addToCart).toHaveBeenCalledWith(expect.objectContaining({ productCode: 'P1', quantity: 1 }));
@@ -75,7 +76,7 @@ describe('useCartStore', () => {
 
     it('addItem should update local state when NOT authenticated (Guest)', async () => {
         // isAuthenticated false
-        const mockProduct = { code: 'P1', name: 'Test', price: 100, image: 'img.jpg' } as any;
+        const mockProduct = { code: 'P1', name: 'Test', price: 100, image: 'img.jpg' } as unknown as Product;
 
         const { result } = renderHook(() => useCartStore());
 

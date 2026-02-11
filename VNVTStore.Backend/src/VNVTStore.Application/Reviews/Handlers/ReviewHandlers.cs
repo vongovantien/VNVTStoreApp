@@ -21,6 +21,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     IRequestHandler<GetByCodeQuery<ReviewDto>, Result<ReviewDto>>,
     IRequestHandler<ApproveReviewCommand, Result>,
     IRequestHandler<RejectReviewCommand, Result>,
+    IRequestHandler<ReplyReviewCommand, Result>,
     IRequestHandler<GetAllReviewsQuery, Result<PagedResult<ReviewDto>>>
 {
     private readonly IRepository<TblOrderItem> _orderItemRepository;
@@ -40,10 +41,11 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result<ReviewDto>> Handle(CreateCommand<CreateReviewDto, ReviewDto> request, CancellationToken cancellationToken)
     {
-        string? productCode = request.Dto.ProductCode;
+        string? productCode = string.IsNullOrEmpty(request.Dto.ProductCode) ? null : request.Dto.ProductCode;
+        string? orderItemCode = string.IsNullOrEmpty(request.Dto.OrderItemCode) ? null : request.Dto.OrderItemCode;
         
         // If order item is provided, validate and link
-        if (!string.IsNullOrEmpty(request.Dto.OrderItemCode))
+        if (!string.IsNullOrEmpty(orderItemCode))
         {
             var orderItem = await _orderItemRepository.AsQueryable()
                 .Include(oi => oi.OrderCodeNavigation)
@@ -62,7 +64,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
         // Check if already reviewed (by Either ProductCode or OrderItemCode)
         var existingReview = await _repository.FindAsync(
-            r => (request.Dto.OrderItemCode != null && r.OrderItemCode == request.Dto.OrderItemCode) || 
+            r => (orderItemCode != null && r.OrderItemCode == orderItemCode) || 
                  (productCode != null && r.ProductCode == productCode && r.UserCode == request.Dto.UserCode),
             cancellationToken);
 
@@ -74,9 +76,10 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             cancellationToken,
             r => {
                 r.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
-                r.IsApproved = false; 
+                r.IsApproved = true; // Auto-approve
                 r.CreatedAt = DateTime.Now;
                 r.ProductCode = productCode;
+                r.OrderItemCode = orderItemCode;
             });
     }
 
@@ -114,17 +117,23 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
     public async Task<Result<PagedResult<ReviewDto>>> Handle(GetProductReviewsQuery request, CancellationToken cancellationToken)
     {
-        return await GetPagedAsync<ReviewDto>(
+        var searchFields = new List<SearchDTO>
+        {
+            new SearchDTO { SearchField = "ProductCode", SearchValue = request.ProductCode, SearchCondition = SearchCondition.Equal },
+            new SearchDTO { SearchField = "ParentCode", SearchValue = null, SearchCondition = SearchCondition.IsNull }
+        };
+
+        return await GetPagedDapperAsync<ReviewDto>(
             request.PageIndex,
             request.PageSize,
-            cancellationToken,
-            predicate: r => ((r.OrderItemCodeNavigation != null && r.OrderItemCodeNavigation.ProductCode == request.ProductCode) || 
-                             r.ProductCode == request.ProductCode) &&
-                            r.IsApproved == true,
-            includes: q => q.Include(r => r.UserCodeNavigation)
-                            .Include(r => r.OrderItemCodeNavigation)
-                            .ThenInclude(oi => oi!.ProductCodeNavigation),
-            orderBy: q => q.OrderByDescending(r => r.CreatedAt));
+            searchFields,
+            null, // Sort
+            new List<ReferenceTable> {
+                new ReferenceTable { TableName = "TblUser", AliasName = "User", ForeignKeyCol = "UserCode", ColumnName = "FullName" },
+                new ReferenceTable { TableName = "TblProduct", AliasName = "Product", ForeignKeyCol = "ProductCode", ColumnName = "Name", IsJoinThrough = "OrderItemCodeNavigation" }
+            },
+            null, // Fields
+            cancellationToken);
     }
 
     public async Task<Result<IEnumerable<ReviewDto>>> Handle(GetUserReviewsQuery request, CancellationToken cancellationToken)
@@ -145,7 +154,8 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             request.Code,
             VNVTStore.Application.Common.MessageConstants.Review,
             cancellationToken,
-            includes: q => q.Include(r => r.UserCodeNavigation));
+            includes: q => q.Include(r => r.UserCodeNavigation)
+                            .Include(r => r.InverseParentNavigation).ThenInclude(rp => rp.UserCodeNavigation));
     }
 
     public async Task<Result> Handle(ApproveReviewCommand request, CancellationToken cancellationToken)
@@ -174,21 +184,46 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         return Result.Success();
     }
 
+    public async Task<Result> Handle(ReplyReviewCommand request, CancellationToken cancellationToken)
+    {
+        var parentReview = await _repository.GetByCodeAsync(request.Code, cancellationToken);
+        if (parentReview == null)
+             return Result.Failure(Error.NotFound(VNVTStore.Application.Common.MessageConstants.Review, request.Code));
+
+        var userCode = _currentUser.UserCode;
+        if (string.IsNullOrEmpty(userCode))
+            return Result.Failure(Error.Unauthorized());
+
+        // Create a new review as a reply
+        var replyReview = new TblReview
+        {
+            Code = Guid.NewGuid().ToString("N").Substring(0, 10), // Or use sequence logic if possible
+            UserCode = userCode,
+            ParentCode = parentReview.Code,
+            ProductCode = parentReview.ProductCode, // Copy ProductCode from parent
+            Comment = request.Reply,
+            Rating = 0, // Replies usually don't have separate ratings
+            IsApproved = true, // Admin replies or trusted user replies can be auto-approved
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            IsActive = true,
+            ModifiedType = "ADD"
+        };
+        
+        await _repository.AddAsync(replyReview, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
+
     public async Task<Result<PagedResult<ReviewDto>>> Handle(GetAllReviewsQuery request, CancellationToken cancellationToken)
     {
-        var searchFields = request.Searching ?? new List<SearchDTO>();
-
-        if (!string.IsNullOrEmpty(request.Search))
-        {
-            // Search across Comment, User FullName, and Product Name
-            searchFields.Add(new SearchDTO { SearchField = "Comment", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-            searchFields.Add(new SearchDTO { SearchField = "UserCodeNavigation.FullName", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-            searchFields.Add(new SearchDTO { SearchField = "OrderItemCodeNavigation.ProductCodeNavigation.Name", SearchValue = request.Search, SearchCondition = SearchCondition.Contains, GroupID = 1, CombineCondition = "OR" });
-        }
+        var searching = request.Searching ?? new List<SearchDTO>();
 
         if (request.IsApproved.HasValue)
         {
-            searchFields.Add(new SearchDTO { SearchField = "IsApproved", SearchValue = request.IsApproved.Value, SearchCondition = SearchCondition.Equal });
+            searching.Add(new SearchDTO { SearchField = "IsApproved", SearchValue = request.IsApproved.Value, SearchCondition = SearchCondition.Equal });
         }
 
         var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
@@ -199,7 +234,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         return await GetPagedDapperAsync<ReviewDto>(
             request.PageIndex,
             request.PageSize,
-            searchFields,
+            searching,
             sortDTO,
             new List<ReferenceTable> {
                 new ReferenceTable { TableName = "TblUser", AliasName = "User", ForeignKeyCol = "UserCode", ColumnName = "FullName" },

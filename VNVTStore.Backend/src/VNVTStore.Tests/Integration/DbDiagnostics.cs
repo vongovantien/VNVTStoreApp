@@ -8,7 +8,7 @@ namespace VNVTStore.Tests.Integration;
 
 public class DbDiagnostics
 {
-    [Fact]
+    [Fact(Skip = "Remote DB not available")]
     public async Task CheckDatabaseCounts()
     {
         var connectionString = "Host=ep-shiny-hill-a1z2i02j.ap-southeast-1.aws.neon.tech;Database=saleapp;Username=saleapp_owner;Password=yp8tDSnX6vjF;SSL Mode=Require";

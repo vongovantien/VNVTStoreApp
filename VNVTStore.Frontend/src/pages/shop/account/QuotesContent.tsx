@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FileText, Calendar, ChevronRight, Phone } from 'lucide-react';
 import SharedImage from '@/components/common/Image';
-import { Button, Badge } from '@/components/ui';
 import { formatDate, formatCurrency } from '@/utils/format';
 import { quoteService, type QuoteDto } from '@/services/quoteService';
 // import { QuoteRequest } from '@/types'; // Remove or unused
@@ -78,7 +76,7 @@ const QuotesContent = () => {
             <div className="flex-1 min-w-0">
               <p className="text-base font-medium truncate text-color-primary">{quote.productName}</p>
               <p className="text-sm text-tertiary">{t('common.fields.quantity')}: {quote.quantity}</p>
-              {quote.note && <p className="text-sm text-secondary italic">" {quote.note} "</p>}
+              {quote.note && <p className="text-sm text-secondary italic">&quot; {quote.note} &quot;</p>}
             </div>
           </div>
 

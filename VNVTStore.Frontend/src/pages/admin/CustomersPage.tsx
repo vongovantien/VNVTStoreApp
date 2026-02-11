@@ -4,13 +4,14 @@ import { Mail, Phone, Users, AlertTriangle, Key } from 'lucide-react';
 import { Button, Modal, Badge, ConfirmDialog, Input, Select, Switch } from '@/components/ui';
 import { useToast } from '@/store';
 import { formatDate } from '@/utils/format';
-import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, type EntityService } from '@/hooks';
 import { customerService, type CustomerDto, type CreateCustomerRequest, type UpdateCustomerRequest } from '@/services';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { PaginationDefaults, SortDirection } from '@/constants';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
+import { USER_LIST_FIELDS } from '@/constants/fieldConstants';
 
 export const CustomersPage = () => {
   const { t } = useTranslation();
@@ -35,7 +36,8 @@ export const CustomersPage = () => {
       sortDesc: sortDir === SortDirection.DESC,
       filters: Object.entries(filters).map(([field, value]) => ({ field, value })),
       search: filters.search,
-      searchField: filters.search ? 'fullName' : undefined
+      searchField: filters.search ? 'fullName' : undefined,
+      fields: USER_LIST_FIELDS
     })
   });
 
@@ -247,17 +249,7 @@ export const CustomersPage = () => {
       className: 'text-center',
       headerClassName: 'text-center'
     },
-    {
-      id: 'isActive',
-      header: t('common.fields.status'),
-      accessor: (customer) => (
-        <Badge color={customer.isActive ? 'success' : 'secondary'}>
-          {customer.isActive ? t('admin.status.active') : t('admin.status.inactive')}
-        </Badge>
-      ),
-      className: 'text-center',
-      headerClassName: 'text-center'
-    },
+    CommonColumns.createStatusColumn(t),
     {
       id: 'isEmailVerified',
       header: t('common.fields.emailVerified', 'Email Verified'),
@@ -322,6 +314,7 @@ export const CustomersPage = () => {
         onEdit={handleOpenEdit}
         onDelete={confirmDelete}
         onAdd={handleOpenCreate}
+        onRefresh={refetch}
         initialFilters={{ role: 'customer' }}
         renderRowActions={(customer) => (
             <button
@@ -528,7 +521,7 @@ export const CustomersPage = () => {
                 </div>
 
             <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={closeForm}>
+                <Button type="button" variant="ghost" onClick={closeForm}>
                     {t('common.cancel')}
                 </Button>
                 <Button type="submit" isLoading={isSubmitting}>
@@ -576,7 +569,7 @@ export const CustomersPage = () => {
                 isRequired
             />
             <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setResettingCustomer(null)}>{t('common.cancel')}</Button>
+                <Button variant="ghost" onClick={() => setResettingCustomer(null)}>{t('common.cancel')}</Button>
                 <Button onClick={confirmResetPassword} disabled={!newPassword}>{t('common.update')}</Button>
             </div>
         </div>

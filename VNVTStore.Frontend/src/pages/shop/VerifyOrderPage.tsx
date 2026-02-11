@@ -31,9 +31,10 @@ const VerifyOrderPage = () => {
                     setStatus('error');
                     setMessage(res.message || t('verifyOrder.failed') || 'Xác thực thất bại');
                 }
-            } catch (error: any) {
+            } catch (error) {
                 setStatus('error');
-                setMessage(error.message || t('verifyOrder.error') || 'Có lỗi xảy ra khi xác thực');
+                const err = error as Error;
+                setMessage(err.message || t('verifyOrder.error') || 'Có lỗi xảy ra khi xác thực');
             }
         };
 

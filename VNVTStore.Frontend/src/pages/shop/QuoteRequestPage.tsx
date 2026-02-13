@@ -8,8 +8,15 @@ import SharedImage from '@/components/common/Image';
 import { quoteService } from '@/services';
 import { useProduct } from '@/hooks';
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const QuoteRequestPage = () => {
   const { t } = useTranslation();
+  
+  useSEO({
+    title: 'Yêu cầu báo giá',
+    noindex: true,
+  });
   const { productId } = useParams<{ productId: string }>();
   const { data: product, isLoading: loading } = useProduct(productId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);

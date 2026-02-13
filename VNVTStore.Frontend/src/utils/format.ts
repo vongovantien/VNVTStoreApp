@@ -1,10 +1,11 @@
 /**
- * Format currency in Vietnamese Dong
+ * Format currency with locale and currency options
  */
-export const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('vi-VN', {
+export const formatCurrency = (amount: number, options?: { locale?: string; currency?: string }): string => {
+    return new Intl.NumberFormat(options?.locale || 'vi-VN', {
         style: 'currency',
-        currency: 'VND',
+        currency: options?.currency || 'VND',
+        minimumFractionDigits: options?.currency === 'USD' ? 2 : 0,
     }).format(amount);
 };
 

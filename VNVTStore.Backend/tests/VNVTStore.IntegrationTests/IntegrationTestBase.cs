@@ -35,7 +35,7 @@ public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFa
         return scope.ServiceProvider.GetRequiredService<T>();
     }
 
-    protected async Task AuthenticateAsync(string username = "admin", string password = "password")
+    protected async Task AuthenticateAsync(string username = "admin", string password = "Admin@123")
     {
         var loginRequest = new 
         { 
@@ -45,6 +45,12 @@ public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFa
 
         var response = await _client.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
         
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[DEBUG] Login failed for {username}. Status: {response.StatusCode}. Error: {errorContent}");
+        }
+
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadFromJsonAsync<ApiResponse<AuthResponseDto>>();

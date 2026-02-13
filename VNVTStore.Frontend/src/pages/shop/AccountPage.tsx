@@ -10,6 +10,8 @@ const OrdersContent = lazy(() => import('./account/OrdersContent'));
 const OrderDetailPage = lazy(() => import('./account/OrderDetailPage'));
 
 const AddressesContent = lazy(() => import('./account/AddressesContent'));
+const WishlistContent = lazy(() => import('./account/WishlistContent'));
+const CouponsContent = lazy(() => import('./account/CouponsContent'));
 const NotificationsContent = lazy(() => import('./account/OtherContent').then(module => ({ default: module.NotificationsContent })));
 const SettingsContent = lazy(() => import('./account/OtherContent').then(module => ({ default: module.SettingsContent })));
 
@@ -22,8 +24,8 @@ const ContentLoader = () => (
 // ============ Main Account Page ============
 export const AccountPage = () => {
   return (
-    <div className="min-h-screen bg-secondary">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+      <div className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           <AccountSidebar />
           
@@ -35,7 +37,8 @@ export const AccountPage = () => {
                 <Route path="orders" element={<OrdersContent />} />
                 <Route path="orders/:id" element={<OrderDetailPage />} />
 
-                <Route path="wishlist" element={<Navigate to="/wishlist" replace />} />
+                <Route path="wishlist" element={<WishlistContent />} />
+                <Route path="coupons" element={<CouponsContent />} />
                 <Route path="addresses" element={<AddressesContent />} />
                 <Route path="notifications" element={<NotificationsContent />} />
                 <Route path="settings" element={<SettingsContent />} />

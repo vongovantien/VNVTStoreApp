@@ -1,20 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText } from 'lucide-react';
+import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText, Ticket, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button, Input, Select, Modal } from '@/components/ui';
 import CustomImage from '@/components/common/Image';
-import { useCartStore, useAuthStore, useToast } from '@/store'; // Consolidated import
+import { useCartStore, useAuthStore, useToast } from '@/store';
+import { CouponSelector } from '@/components/common';
 import { formatCurrency } from '@/utils/format';
 import { orderService, type CreateOrderRequest } from '@/services/orderService';
 import { paymentService } from '@/services/paymentService';
 import { PaymentMethod } from '@/constants';
 import { useCheckoutStore } from '@/store/checkoutStore';
 import { REGEX } from '@/constants/regex';
+import { userService, type AddressDto } from '@/services/userService';
+import { Badge } from '@/components/ui';
+
+import { useSEO } from '@/hooks/useSEO';
 
 export const CheckoutPage = () => {
   const { t } = useTranslation();
+  
+  useSEO({
+    title: 'Thanh toán',
+    noindex: true,
+  });
   const navigate = useNavigate();
   const toast = useToast();
   const { items, getTotal, clearCart, fetchCart } = useCartStore();
@@ -30,7 +40,20 @@ export const CheckoutPage = () => {
   } = useCheckoutStore();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isGuestCheckout, setIsGuestCheckout] = useState(true); // Default to true to unblock testing
+  const [isGuestCheckout, setIsGuestCheckout] = useState(true); 
+  const [showCouponSelector, setShowCouponSelector] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<AddressDto[]>([]);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      userService.getMyAddresses().then(res => {
+        if (res.success && res.data) {
+          setSavedAddresses(res.data as unknown as AddressDto[]);
+        }
+      });
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated && !isGuestCheckout) {
@@ -277,9 +300,51 @@ export const CheckoutPage = () => {
             {step === 1 && (
               <div className="bg-primary rounded-xl p-6">
                 <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <Truck size={24} />
-                  {t('checkout.shippingInfo')}
-                </h2>
+                   <Truck size={24} />
+                   {t('checkout.shippingInfo')}
+                 </h2>
+
+                 {isAuthenticated && savedAddresses.length > 0 && (
+                   <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-2xl">
+                     <div className="flex justify-between items-center">
+                       <div className="flex items-center gap-3">
+                         <MapPin className="text-indigo-600" size={20} />
+                         <div>
+                           <p className="font-bold text-sm text-primary">{t('checkout.useSavedAddress', 'Sử dụng địa chỉ đã lưu')}</p>
+                           <p className="text-xs text-tertiary">{t('checkout.savedAddressesCount', 'Bạn có {{count}} địa chỉ đã lưu', { count: savedAddresses.length })}</p>
+                         </div>
+                       </div>
+                       <Button size="sm" variant="outline" onClick={() => setShowAddressModal(true)}>
+                         {t('common.select', 'Chọn')}
+                       </Button>
+                     </div>
+                   </div>
+                 )}
+
+                 {/* Guest Banner */}
+                 {!isAuthenticated && isGuestCheckout && (
+                   <div className="mb-6 overflow-hidden relative group bg-gradient-to-br from-amber-400/10 to-orange-500/10 border border-amber-500/20 rounded-2xl p-6">
+                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                       <Ticket size={80} className="rotate-12" />
+                     </div>
+                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+                       <div>
+                         <h3 className="text-lg font-black text-amber-900 dark:text-amber-400 mb-1 flex items-center gap-2">
+                           {t('home.registerMember', 'Đăng ký thành viên')}
+                           <Badge color="error" className="animate-pulse">{t('common.new', 'Mới')}</Badge>
+                         </h3>
+                         <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
+                           {t('checkout.guestBannerText', 'Đăng ký ngay để nhận 50.000đ và tích điểm cho đơn hàng này!')}
+                         </p>
+                       </div>
+                       <Link to="/register" state={{ from: '/checkout' }}>
+                         <Button size="sm" className="bg-amber-500 hover:bg-amber-600 border-none shadow-lg shadow-amber-500/20">
+                           {t('auth.registerNow', 'Đăng ký ngay')}
+                         </Button>
+                       </Link>
+                     </div>
+                   </div>
+                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
@@ -527,22 +592,60 @@ export const CheckoutPage = () => {
               <div className="space-y-2">
                 {/* Voucher Input */}
                 <div className="flex gap-2">
-                  <Input
-                    placeholder={t('checkout.voucherPlaceholder') || 'Mã giảm giá'}
-                    value={voucherCode}
-                    onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                    className="flex-1"
-                  />
+                  <div className="relative flex-1">
+                    <Input
+                      placeholder={t('checkout.voucherPlaceholder') || 'Mã giảm giá'}
+                      value={voucherCode}
+                      onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                      className="w-full"
+                    />
+                    <button 
+                      onClick={() => setShowCouponSelector(true)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600 hover:text-indigo-700 font-bold text-xs"
+                    >
+                      {t('checkout.viewCoupons', 'Danh sách')}
+                    </button>
+                  </div>
                   <Button size="sm" onClick={handleApplyVoucher} disabled={!voucherCode || !!appliedVoucher}>
                     {t('common.apply')}
                   </Button>
                 </div>
                 {appliedVoucher && (
-                  <div className="flex justify-between text-success text-sm items-center bg-success/10 p-2 rounded">
-                    <span>Voucher: <strong>{appliedVoucher.code}</strong></span>
-                    <button onClick={() => { setAppliedVoucher(null); setVoucherCode(''); }} className="text-secondary hover:text-error">✕</button>
-                  </div>
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 p-3 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-emerald-600">
+                          <Ticket size={16} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">{t('checkout.appliedVoucher', 'Mã áp dụng')}</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">{appliedVoucher.code}</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => { setAppliedVoucher(null); setVoucherCode(''); }} 
+                        className="p-1 hover:bg-emerald-100 rounded-full text-slate-400 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </motion.div>
                 )}
+
+                {/* Coupon Selector Modal */}
+                <CouponSelector 
+                  isOpen={showCouponSelector}
+                  onClose={() => setShowCouponSelector(false)}
+                  currentSubtotal={subtotal}
+                  onSelect={(code) => {
+                    setVoucherCode(code);
+                    setShowCouponSelector(false);
+                    // Automatically trigger apply after selection
+                    setTimeout(() => handleApplyVoucher(), 100);
+                  }}
+                />
 
                 <div className="flex justify-between mt-4">
                   <span className="text-secondary">{t('cart.subtotal')}</span>
@@ -607,6 +710,50 @@ export const CheckoutPage = () => {
             <li>Tích điểm thành viên</li>
             <li>Lưu địa chỉ giao hàng</li>
           </ul>
+        </div>
+      </Modal>
+
+      {/* Address Selection Modal */}
+      <Modal
+        isOpen={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        title={t('checkout.selectAddress', 'Chọn địa chỉ giao hàng')}
+        size="xl"
+      >
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          {savedAddresses.map((addr) => (
+            <div 
+              key={addr.code}
+              className="p-4 border-2 border-secondary/5 rounded-2xl hover:border-indigo-500/50 hover:bg-indigo-50/10 cursor-pointer transition-all group"
+              onClick={() => {
+                setFormData({
+                  fullName: addr.fullName || user?.fullName || '',
+                  phone: addr.phone || user?.phone || '',
+                  email: user?.email || '',
+                  address: addr.addressLine,
+                  city: addr.city,
+                  district: addr.state || '',
+                  ward: addr.postalCode || '',
+                });
+                setShowAddressModal(false);
+              }}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-primary">{addr.fullName || user?.fullName}</span>
+                  {addr.isDefault && <Badge color="success" className="text-[10px] uppercase">{t('common.default')}</Badge>}
+                  {addr.category && <Badge variant="outline" className="text-[10px] uppercase">{addr.category}</Badge>}
+                </div>
+                <div className="text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChevronRight size={18} />
+                </div>
+              </div>
+              <p className="text-sm text-secondary mb-1">{addr.phone || user?.phone}</p>
+              <p className="text-sm text-tertiary leading-relaxed">
+                {addr.addressLine}{addr.city ? `, ${addr.city}` : ''}
+              </p>
+            </div>
+          ))}
         </div>
       </Modal>
     </div>

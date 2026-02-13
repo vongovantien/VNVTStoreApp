@@ -2,11 +2,15 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag, ArrowRight, Truck, Info, Zap } from 'lucide-react';
 import { Button } from '@/components/ui';
 import SharedImage from '@/components/common/Image';
 import { useCartStore, useUIStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
+import { cn } from '@/utils/cn';
+import { useProducts } from '@/hooks/useProducts';
+
+const FREE_SHIPPING_THRESHOLD = 2000000; // 2 million VND
 
 export const CartDrawer = memo(() => {
   const { t } = useTranslation();
@@ -60,7 +64,35 @@ export const CartDrawer = memo(() => {
                 </Button>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                {/* Feature 4: Free Shipping Meter */}
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+                   <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                         <Truck size={14} />
+                         {total >= FREE_SHIPPING_THRESHOLD ? 'Bạn được Miễn phí vận chuyển!' : `Mua thêm ${formatCurrency(FREE_SHIPPING_THRESHOLD - total)} để được Freeship`}
+                      </span>
+                      <span className="text-[10px] font-bold text-indigo-500">{Math.min(100, Math.round((total / FREE_SHIPPING_THRESHOLD) * 100))}%</span>
+                   </div>
+                   <div className="h-2 w-full bg-white dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, (total / FREE_SHIPPING_THRESHOLD) * 100)}%` }}
+                        className={cn("h-full transition-all duration-500", total >= FREE_SHIPPING_THRESHOLD ? "bg-emerald-500" : "bg-indigo-500")}
+                      />
+                   </div>
+                </div>
+
+                {/* Feature 6: Wholesale Prompt */}
+                {items.some(i => i.product.wholesalePrice) && (
+                   <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-800 flex items-start gap-3">
+                      <Zap size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Ưu đãi giá sỉ!</p>
+                        <p className="text-[10px] text-amber-600 dark:text-amber-400">Mua từ 10 sản phẩm cùng loại để nhận giá sỉ cực tốt.</p>
+                      </div>
+                   </div>
+                )}
                 {items.map((item) => (
                   <motion.div
                     key={item.code}
@@ -139,6 +171,26 @@ export const CartDrawer = memo(() => {
                     </div>
                   </motion.div>
                 ))}
+
+                {/* Feature 10: Cross-sell Recommendations */}
+                <div className="pt-4 border-t">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-tertiary mb-3 flex items-center gap-2">
+                    <Info size={14} />
+                    {t('cart.recommendations', 'Thường được mua cùng')}
+                  </h4>
+                  <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                     {/* Mocked recommendations or fetch via hook */}
+                     {[1,2,3].map(i => (
+                       <div key={i} className="min-w-[120px] bg-secondary rounded-xl p-2 shrink-0 border border-transparent hover:border-indigo-200 transition-colors cursor-pointer">
+                          <div className="aspect-square bg-white rounded-lg mb-2 overflow-hidden">
+                             <img src={`https://picsum.photos/seed/${i+10}/200`} className="w-full h-full object-cover" />
+                          </div>
+                          <p className="text-[10px] font-bold line-clamp-1">Sản phẩm gợi ý #{i}</p>
+                          <p className="text-[10px] text-indigo-600 font-bold">{formatCurrency(150000)}</p>
+                       </div>
+                     ))}
+                  </div>
+                </div>
               </div>
             )}
 

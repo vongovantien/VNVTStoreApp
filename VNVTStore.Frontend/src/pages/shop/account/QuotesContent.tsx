@@ -44,12 +44,12 @@ const QuotesContent = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">{t('account.quotes')}</h2>
+      <h2 className="text-xl font-bold">{t('common.account.quotes')}</h2>
 
       {quotes.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-secondary mb-4">{t('account.noQuotes')}</p>
-          <Link to="/products" className="text-primary hover:underline">{t('account.viewProductsToQuote')}</Link>
+          <p className="text-secondary mb-4">{t('common.account.noQuotes')}</p>
+          <Link to="/products" className="text-primary hover:underline">{t('common.account.viewProductsToQuote')}</Link>
         </div>
       )}
 

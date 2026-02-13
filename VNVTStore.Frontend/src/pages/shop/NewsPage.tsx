@@ -40,9 +40,17 @@ const newsItems = [
     },
 ];
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const NewsPage = () => {
     useTranslation();
     const [displayCount, setDisplayCount] = useState(4); // Start with 4 items
+
+    useSEO({
+        title: 'Tin tức & Bài viết',
+        description: 'Cập nhật những thông tin mới nhất, hướng dẫn sử dụng và mẹo vặt về đồ gia dụng từ VNVT Store.',
+        canonicalPath: '/news',
+    });
 
     const handleLoadMore = () => {
         setDisplayCount(prev => prev + 4);

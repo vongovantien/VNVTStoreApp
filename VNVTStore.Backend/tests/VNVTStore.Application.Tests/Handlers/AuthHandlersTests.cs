@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -29,6 +29,8 @@ public class AuthHandlersTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IEmailService> _emailServiceMock;
+    private readonly Mock<ICurrentUser> _currentUserServiceMock;
+    private readonly Mock<IDapperContext> _dapperContextMock;
 
     public AuthHandlersTests()
     {
@@ -38,6 +40,8 @@ public class AuthHandlersTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _mapperMock = new Mock<IMapper>();
         _emailServiceMock = new Mock<IEmailService>();
+        _currentUserServiceMock = new Mock<ICurrentUser>();
+        _dapperContextMock = new Mock<IDapperContext>();
     }
 
     [Fact]
@@ -65,7 +69,7 @@ public class AuthHandlersTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal("test@example.com", result.Value.Email);
+        Assert.Equal("test@example.com", result.Value!.Email);
         _userRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TblUser>(), It.IsAny<CancellationToken>()), Times.Once);
         _emailServiceMock.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
     }
@@ -91,7 +95,7 @@ public class AuthHandlersTests
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal("Conflict", result.Error.Code);
+        Assert.Equal("Conflict", result.Error!.Code);
     }
 
     [Fact]
@@ -124,7 +128,7 @@ public class AuthHandlersTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("token", result.Value.Token);
+        Assert.Equal("token", result.Value!.Token);
         _userRepositoryMock.Verify(x => x.Update(It.IsAny<TblUser>()), Times.AtLeastOnce);
     }
 
@@ -155,7 +159,102 @@ public class AuthHandlersTests
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal("Validation", result.Error.Code);
+        Assert.Equal("Validation", result.Error!.Code);
+    }
+
+    [Fact]
+    public async Task Handle_Impersonate_Success_ShouldReturnToken()
+    {
+        // Arrange
+        var adminCode = "ADMIN001";
+        var targetCode = "USER001";
+        var command = new ImpersonateCommand(targetCode);
+        var handler = new ImpersonateCommandHandler(
+            _userRepositoryMock.Object,
+            _jwtServiceMock.Object,
+            _unitOfWorkMock.Object,
+            _mapperMock.Object,
+            _currentUserServiceMock.Object
+        );
+
+        var adminUser = TblUser.Create("admin", "admin@vnvt.com", "hash", "Admin", UserRole.Admin);
+        adminUser.GetType().GetProperty("Code")?.SetValue(adminUser, adminCode);
+
+        var targetUser = TblUser.Create("customer", "customer@vnvt.com", "hash", "Customer", UserRole.Customer);
+        targetUser.GetType().GetProperty("Code")?.SetValue(targetUser, targetCode);
+
+        _currentUserServiceMock.Setup(x => x.UserCode).Returns(adminCode);
+        
+        // FindAsync for admin role check
+        _userRepositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblUser, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(adminUser);
+
+        // Where for target user
+        var users = new List<TblUser> { targetUser };
+        _userRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<TblUser, bool>>>()))
+            .Returns(CreateMockDbSet(users).Object);
+
+        _jwtServiceMock.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>(), It.IsAny<IEnumerable<string>>(), It.IsAny<IEnumerable<string>>())).Returns("impersonated_token");
+        _jwtServiceMock.Setup(x => x.GenerateRefreshToken()).Returns("new_refresh_token");
+        _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<TblUser>())).Returns(new UserDto { Code = targetCode });
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal("impersonated_token", result.Value!.Token);
+        _userRepositoryMock.Verify(x => x.Update(targetUser), Times.Once);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_Impersonate_Forbidden_WhenNotAdmin_ShouldReturnFailure()
+    {
+        // Arrange
+        var nonAdminCode = "USER002";
+        var command = new ImpersonateCommand("USER001");
+        var handler = new ImpersonateCommandHandler(_userRepositoryMock.Object, _jwtServiceMock.Object, _unitOfWorkMock.Object, _mapperMock.Object, _currentUserServiceMock.Object);
+
+        var nonAdminUser = TblUser.Create("user", "user@vnvt.com", "hash", "User", UserRole.Customer);
+        _currentUserServiceMock.Setup(x => x.UserCode).Returns(nonAdminCode);
+        _userRepositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblUser, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(nonAdminUser);
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Forbidden", result.Error!.Code);
+    }
+
+    [Fact]
+    public async Task Handle_Impersonate_Forbidden_ImpersonatingAdmin_ShouldReturnFailure()
+    {
+        // Arrange
+        var adminCode = "ADMIN001";
+        var targetAdminCode = "ADMIN002";
+        var command = new ImpersonateCommand(targetAdminCode);
+        var handler = new ImpersonateCommandHandler(_userRepositoryMock.Object, _jwtServiceMock.Object, _unitOfWorkMock.Object, _mapperMock.Object, _currentUserServiceMock.Object);
+
+        var adminUser = TblUser.Create("admin", "admin@vnvt.com", "hash", "Admin", UserRole.Admin);
+        var targetAdmin = TblUser.Create("target_admin", "admin2@vnvt.com", "hash", "Admin 2", UserRole.Admin);
+
+        _currentUserServiceMock.Setup(x => x.UserCode).Returns(adminCode);
+        _userRepositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblUser, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(adminUser);
+
+        var users = new List<TblUser> { targetAdmin };
+        _userRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<TblUser, bool>>>()))
+            .Returns(CreateMockDbSet(users).Object);
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Validation", result.Error!.Code);
     }
 
     private static Mock<DbSet<T>> CreateMockDbSet<T>(List<T> sourceList) where T : class

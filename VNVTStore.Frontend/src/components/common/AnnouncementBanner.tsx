@@ -1,7 +1,9 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const AnnouncementBanner = () => {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(true);
 
   if (!isVisible) return null;
@@ -36,7 +38,7 @@ export const AnnouncementBanner = () => {
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <p className="text-sm leading-6 text-gray-900">
-          <strong className="font-semibold">Khuyến mãi cực hot 2026</strong>
+          <strong className="font-semibold">{t('home.announcement.title')}</strong>
           <svg
             viewBox="0 0 2 2"
             aria-hidden="true"
@@ -44,13 +46,13 @@ export const AnnouncementBanner = () => {
           >
             <circle r="1" cx="1" cy="1" />
           </svg>
-          Giảm giá tới 50% cho tất cả sản phẩm.
+          {t('home.announcement.description')}
         </p>
         <a
           href="/shop"
           className="flex-none rounded-full bg-gray-900 px-3.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
         >
-          Mua ngay <span aria-hidden="true">&rarr;</span>
+          {t('common.buyNow')} <span aria-hidden="true">&rarr;</span>
         </a>
       </div>
 
@@ -60,7 +62,7 @@ export const AnnouncementBanner = () => {
           className="-m-3 p-3 focus-visible:outline-offset-[-4px]"
           onClick={() => setIsVisible(false)}
         >
-          <span className="sr-only">Dismiss</span>
+          <span className="sr-only">{t('common.dismiss')}</span>
           <X className="h-5 w-5 text-gray-900" aria-hidden="true" />
         </button>
       </div>

@@ -29,6 +29,8 @@ import { useBrands } from '@/hooks/useBrands';
 
 
 import { SectionHeader } from '@/components/common/SectionHeader';
+import { RecentlyViewed } from '@/components/common/RecentlyViewed';
+import { useSEO, useOrganizationSchema } from '@/hooks/useSEO';
 
 // ============ Component ============
 
@@ -36,6 +38,15 @@ import { SectionHeader } from '@/components/common/SectionHeader';
 export const HomePage = () => {
   const { t } = useTranslation();
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // SEO
+  useSEO({
+    title: 'Trang chủ',
+    description: 'VNVT Store - Hệ thống cửa hàng đồ gia dụng cao cấp, chính hãng. Miễn phí vận chuyển toàn quốc, bảo hành 12-24 tháng.',
+    canonicalPath: '/',
+    keywords: 'đồ gia dụng, vnvt store, thiết bị nhà bếp, điện gia dụng, chính hãng, mua sắm trực tuyến',
+  });
+  useOrganizationSchema();
 
   // Fetch products from API
   const { data: productsData, isLoading } = useProducts({
@@ -461,6 +472,9 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Recently Viewed */}
+      <RecentlyViewed />
 
       {/* Brand Partners */}
       <section className="py-12 bg-secondary">

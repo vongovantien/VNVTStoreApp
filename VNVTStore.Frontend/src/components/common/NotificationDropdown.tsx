@@ -78,7 +78,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                   {notifications.map((note, idx) => (
                     <div 
                       key={idx} 
-                      className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group"
+                      className="px-4 py-3 hover:bg-tertiary transition-colors cursor-pointer group"
                       onClick={() => handleNotificationClick(note)}
                     >
                       <div className="flex gap-3">

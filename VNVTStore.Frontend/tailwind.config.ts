@@ -15,6 +15,7 @@ export default {
                     primary: 'var(--bg-primary)',
                     secondary: 'var(--bg-secondary)',
                     tertiary: 'var(--bg-tertiary)',
+                    hover: 'var(--bg-hover)',
                 },
                 text: {
                     primary: 'var(--text-primary)',

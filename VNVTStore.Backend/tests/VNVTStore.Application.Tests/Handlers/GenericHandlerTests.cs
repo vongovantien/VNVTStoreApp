@@ -63,7 +63,7 @@ public class GenericHandlerTests
         
         // Assert
         command.Dto.Should().NotBeNull();
-        command.Dto.Name.Should().Be("Test Product");
+        command.Dto!.Name.Should().Be("Test Product");
         command.Dto.Price.Should().Be(100);
     }
 
@@ -80,7 +80,7 @@ public class GenericHandlerTests
         // Assert
         command.Code.Should().Be(code);
         command.Dto.Should().NotBeNull();
-        command.Dto.Name.Should().Be("Updated Product");
+        command.Dto!.Name.Should().Be("Updated Product");
     }
 
     [Fact]

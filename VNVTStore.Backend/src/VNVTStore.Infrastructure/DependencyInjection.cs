@@ -36,12 +36,23 @@ public static class DependencyInjection
         // Add Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
+        // Ideally we pass IWebHostEnvironment but for now checking config or defaulting
+        var useMock = configuration.GetValue<bool>("EmailSettings:UseMock", false);
+        
+        if (useMock)
+        {
+            services.AddScoped<IImageUploadService, MockImageUploadService>();
+        }
+        else
+        {
+            services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
+        }
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICouponService, CouponService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IPricingService, PricingService>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddTransient<INotificationService, NotificationService>();
         
         // Add Caching - Use Redis if configured, otherwise Memory cache

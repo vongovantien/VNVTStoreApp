@@ -11,6 +11,7 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Dapper;
+using System.Data;
 
 namespace VNVTStore.Application.Banners.Handlers;
 
@@ -199,7 +200,7 @@ public class GetBannersHandler : BaseHandler<TblBanner>,
             var bannerCodes = result.Value.Items.Select(p => p.Code).ToList();
             
             var sql = "SELECT * FROM \"TblFile\" WHERE \"MasterCode\" = ANY(@Codes) AND \"MasterType\" ILIKE 'Banner'";
-            var files = (await connection.QueryAsync<TblFile>(sql, new { Codes = bannerCodes.ToArray() })).ToList();
+            var files = (await SqlMapper.QueryAsync<TblFile>(connection, sql, new { Codes = bannerCodes.ToArray() })).ToList();
             
             var fileMap = files
                 .GroupBy(f => f.MasterCode)
@@ -246,7 +247,7 @@ public class GetBannerByCodeHandler : BaseHandler<TblBanner>,
         
         using var connection = _dapperContext.CreateConnection();
         var sql = "SELECT \"Path\" FROM \"TblFile\" WHERE \"MasterCode\" = @Code AND \"MasterType\" ILIKE 'Banner' LIMIT 1";
-        var path = await connection.QueryFirstOrDefaultAsync<string>(sql, new { Code = request.Code });
+        var path = await SqlMapper.QueryFirstOrDefaultAsync<string>(connection, sql, new { Code = request.Code });
         
         if (!string.IsNullOrEmpty(path))
         {

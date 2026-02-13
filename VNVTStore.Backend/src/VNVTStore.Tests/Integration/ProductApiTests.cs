@@ -48,7 +48,7 @@ public class ProductApiTests : ApiTestBase
             
             if (isAdmin)
             {
-                user.UpdateRole("ADMIN");
+                user.UpdateRoleEnum(UserRole.Admin);
             }
             userRepo.Update(user);
             await scope.ServiceProvider.GetRequiredService<IUnitOfWork>().CommitAsync();
@@ -109,21 +109,10 @@ public class ProductApiTests : ApiTestBase
             // Act
             var response = await Client.PostAsJsonAsync("/api/v1/products", new RequestDTO<CreateProductDto> { PostObject = productDto });
             
-            if (response.StatusCode != HttpStatusCode.OK) {
-                 var errorContent = await response.Content.ReadAsStringAsync();
-                 throw new Exception($"API ERROR: {response.StatusCode} - {errorContent}");
-            }
-
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<ProductDto>>();
-            
-            if (result != null && !result.Success)
-            {
-                 throw new Exception($"API LOGIC ERROR: {result.Message}");
-            }
-
             Assert.NotNull(result);
             Assert.True(result!.Success);
             Assert.NotNull(result.Data);

@@ -6,7 +6,6 @@ using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Application.MappingProfiles;
 
-using VNVTStore.Application.Mappings.Resolvers;
 
 /// <summary>
 /// AutoMapper Mapping Profile - dùng entities mới với Tbl prefix
@@ -17,12 +16,12 @@ public class MappingProfile : Profile
     {
         // User mappings
         CreateMap<TblUser, UserDto>()
-            .ForMember(d => d.Role, opt => opt.MapFrom(s => s.Role.ToString()))
-            .ForMember(d => d.RoleName, opt => opt.MapFrom(s => s.RoleCodeNavigation != null ? s.RoleCodeNavigation.Name : null))
-            .ForMember(d => d.Permissions, opt => opt.MapFrom(s => s.RoleCodeNavigation != null 
-                ? s.RoleCodeNavigation.TblRolePermissions.Select(rp => rp.PermissionCode).ToList() 
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
+            .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.RoleCodeNavigation != null ? src.RoleCodeNavigation.Name : ""))
+            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.RoleCodeNavigation != null 
+                ? src.RoleCodeNavigation.TblRolePermissions.Select(rp => rp.PermissionCode).ToList() 
                 : new List<string>()))
-            .ForMember(d => d.Avatar, opt => opt.MapFrom(s => s.AvatarUrl));
+            .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.AvatarUrl));
         CreateMap<CreateUserDto, TblUser>().ConstructUsing(s => TblUser.Create(s.Username, s.Email, "", s.FullName, UserRole.Customer));
 
         // Banner mappings
@@ -95,7 +94,7 @@ public class MappingProfile : Profile
         // CreateMap<TblProductImage, ProductImageDto>().ReverseMap(); // Removed
 
         CreateMap<TblCategory, CategoryDto>()
-            .ForMember(dest => dest.ImageURL, opt => opt.MapFrom<ImageUrlResolver, string?>(src => src.ImageURL))
+            .ForMember(dest => dest.ImageUrl, opt => opt.Ignore())
             .ReverseMap();
 
         // Order mappings
@@ -121,7 +120,8 @@ public class MappingProfile : Profile
 
         // Review mappings
         CreateMap<TblReview, ReviewDto>()
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserCodeNavigation != null ? src.UserCodeNavigation.Username : null))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserCodeNavigation != null ? src.UserCodeNavigation.FullName : null))
+            .ForMember(dest => dest.UserAvatar, opt => opt.MapFrom(src => src.UserCodeNavigation != null ? src.UserCodeNavigation.AvatarUrl : null))
             .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.OrderItemCodeNavigation != null && src.OrderItemCodeNavigation.ProductCodeNavigation != null ? src.OrderItemCodeNavigation.ProductCodeNavigation.Name : null))
             .ForMember(dest => dest.ProductCode, opt => opt.MapFrom(src => src.OrderItemCodeNavigation != null ? src.OrderItemCodeNavigation.ProductCode : null))
             .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.InverseParentNavigation))
@@ -192,5 +192,8 @@ public class MappingProfile : Profile
     CreateMap<CreateSupplierDto, TblSupplier>();
     CreateMap<UpdateSupplierDto, TblSupplier>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+        // AuditLog mappings
+        CreateMap<TblAuditLog, AuditLogDto>().ReverseMap();
     }
 }

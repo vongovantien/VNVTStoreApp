@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, Phone, Users, AlertTriangle, Key } from 'lucide-react';
+import { Mail, Phone, Users, AlertTriangle, Key, LogIn } from 'lucide-react';
 import { Button, Modal, Badge, ConfirmDialog, Input, Select, Switch } from '@/components/ui';
-import { useToast } from '@/store';
+import { useToast, useAuthStore } from '@/store';
 import { formatDate } from '@/utils/format';
 import { DataTable, type DataTableColumn, CommonColumns } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
@@ -317,6 +317,26 @@ export const CustomersPage = () => {
         onRefresh={refetch}
         initialFilters={{ role: 'customer' }}
         renderRowActions={(customer) => (
+          <div className="flex items-center gap-1">
+            <button
+              className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+              title={t('admin.actions.loginAs', 'Login As')}
+              onClick={async (e) => {
+                e.stopPropagation();
+                if (window.confirm(t('messages.confirmImpersonate', { name: customer.fullName || customer.username }) || `Login as ${customer.fullName || customer.username}?`)) {
+                  try {
+                    const { impersonate } = useAuthStore.getState();
+                    await impersonate(customer.code);
+                    toast.success(t('messages.impersonateSuccess', 'Switched to user session'));
+                    window.location.href = '/'; // Redirect to shop home
+                  } catch (err) {
+                    toast.error(t('messages.error'));
+                  }
+                }
+              }}
+            >
+              <LogIn size={18} />
+            </button>
             <button
               className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
               title={t('admin.actions.resetPassword')}
@@ -324,6 +344,7 @@ export const CustomersPage = () => {
             >
               <Key size={18} />
             </button>
+          </div>
         )}
 
         // Sorting

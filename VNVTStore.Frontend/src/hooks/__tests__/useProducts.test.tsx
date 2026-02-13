@@ -83,6 +83,28 @@ describe('useProducts hook', () => {
         expect(result.current.data?.products).toHaveLength(0);
         expect(result.current.data?.totalItems).toBe(0);
     });
+    it('handles inStockOnly filter correctly', async () => {
+        vi.mocked(productService.search).mockResolvedValue({
+             success: true,
+             data: { items: [], totalItems: 0 }
+        });
+
+        const { result } = renderHook(() => useProducts({ pageIndex: 1, pageSize: 10, inStockOnly: true }), {
+            wrapper: createWrapper()
+        });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(productService.search).toHaveBeenCalledWith(expect.objectContaining({
+            filters: expect.arrayContaining([
+                expect.objectContaining({
+                    field: 'StockQuantity',
+                    value: 0,
+                    operator: 3 // SearchCondition.GreaterThan
+                })
+            ])
+        }));
+    });
 });
 
 describe('useProduct hook', () => {

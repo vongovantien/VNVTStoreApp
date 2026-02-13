@@ -1,14 +1,17 @@
 import { useEffect } from 'react';
-import { useCartStore } from '@/store';
+import { useCartStore, useUIStore } from '@/store';
 import { Outlet } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { QuickViewModal } from '@/components/common';
 import { CartDrawer } from '@/components/common/CartDrawer';
 import { ChatWidget } from '@/components/common/ChatWidget';
 import { AnnouncementBanner } from '@/components/common/AnnouncementBanner';
+import { FloatingContact } from '@/components/common/FloatingContact';
 
 export const ShopLayout = () => {
   const { fetchCart } = useCartStore();
+  const { quickViewProduct, setQuickViewProduct } = useUIStore();
 
   useEffect(() => {
     fetchCart();
@@ -23,7 +26,12 @@ export const ShopLayout = () => {
       </main>
       <Footer />
       <CartDrawer />
-      <ChatWidget />
+      <FloatingContact />
+      <QuickViewModal
+        product={quickViewProduct}
+        isOpen={!!quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+      />
     </div>
   );
 };

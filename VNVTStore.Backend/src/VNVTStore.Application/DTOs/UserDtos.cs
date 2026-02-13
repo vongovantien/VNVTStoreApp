@@ -18,6 +18,9 @@ public class UserDto : IBaseDto
     public DateTime? LastLogin { get; set; }
     public string? Token { get; set; }
     public string? Avatar { get; set; }
+    public int LoyaltyPoints { get; set; }
+    public decimal DebtLimit { get; set; }
+    public decimal CurrentDebt { get; set; }
     public List<string> Permissions { get; set; } = new();
     public List<string> Menus { get; set; } = new();
 }

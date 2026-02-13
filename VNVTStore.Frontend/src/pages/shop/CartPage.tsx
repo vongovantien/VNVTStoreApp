@@ -7,8 +7,15 @@ import SharedImage from '@/components/common/Image';
 import { useCartStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const CartPage = () => {
   const { t } = useTranslation();
+  
+  useSEO({
+    title: 'Giỏ hàng',
+    noindex: true,
+  });
   const { items, removeItem, updateQuantity, getTotal, clearCart, isLoading } = useCartStore();
   const total = getTotal();
   const shippingFee = total >= 500000 ? 0 : 30000;
@@ -99,14 +106,14 @@ export const CartPage = () => {
                   <div className="flex items-center border rounded-lg">
                     <button
                       onClick={() => updateQuantity(item.code, Math.max(1, item.quantity - 1))}
-                      className="p-2 hover:bg-secondary transition-colors"
+                      className="p-2 hover:bg-hover transition-colors"
                     >
                       <Minus size={16} />
                     </button>
                     <span className="w-12 text-center font-medium">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.code, item.quantity + 1)}
-                      className="p-2 hover:bg-secondary transition-colors"
+                      className="p-2 hover:bg-hover transition-colors"
                     >
                       <Plus size={16} />
                     </button>

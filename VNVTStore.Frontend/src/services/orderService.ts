@@ -93,6 +93,10 @@ export const orderService = {
         }
         return response;
     },
+    getByCode: async (code: string) => {
+        const response = await apiClient.get<OrderDto>(`${API_ENDPOINTS.ORDERS.BASE}/${code}`);
+        return response;
+    },
     verify: async (token: string) => {
         return await apiClient.get<string>(`${API_ENDPOINTS.ORDERS.BASE}/verify`, { params: { token } });
     },

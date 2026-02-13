@@ -45,6 +45,20 @@ export interface Product {
     productUnits?: ProductUnit[];
     tags?: ProductTag[];
     variants?: ProductVariant[];
+    promotionEndDate?: string;
+    soldCount?: number; // New
+    promotionOriginalQuantity?: number; // New
+    isTrending?: boolean; // New
+    isBestseller?: boolean; // New
+    videoURL?: string; // New
+    wholesaleTiers?: { minQuantity: number; price: number }[]; // New
+    warrantyInfo?: string; // New
+    currencyCode?: string; // New
+    estimatedDeliveryDays?: number; // New
+    promoLabel?: string; // New: Feature 31
+    abandonedCartRecoveryEnabled?: boolean; // New: Feature 32
+    frequentlyBoughtTogether?: string[]; // New: Feature 33
+    videoReviews?: { user: string; videoUrl: string }[]; // New: Feature 40
 }
 
 export enum ProductDetailType {
@@ -150,6 +164,9 @@ export interface User {
     permissions?: string[];
     menus?: string[];
     addresses?: Address[];
+    loyaltyPoints?: number;
+    debtLimit?: number;
+    currentDebt?: number;
     status: UserStatus;
     createdAt: string;
 }

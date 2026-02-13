@@ -28,21 +28,23 @@ public class AuthApiTests : ApiTestBase
         // Act
         var response = await Client.PostAsJsonAsync("/api/v1/auth/register", request);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<UserDto>>();
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
-        Assert.True(result.Success);
-        Assert.False(result.Data.IsEmailVerified);
-        
-        // Verify in DB
-        using var scope = Factory.Services.CreateScope();
-        var repo = scope.ServiceProvider.GetRequiredService<IRepository<TblUser>>();
-        var user = await repo.FindAsync(u => u.Email == request.Email);
-        Assert.NotNull(user);
-        Assert.False(user.IsEmailVerified);
-        Assert.NotNull(user.EmailVerificationToken);
-    }
+ 
+         // Assert
+         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+         Assert.NotNull(result);
+         Assert.True(result.Success);
+         Assert.False(result.Data.IsEmailVerified);
+         
+         // Verify in DB
+         using var scope = Factory.Services.CreateScope();
+         var repo = scope.ServiceProvider.GetRequiredService<IRepository<TblUser>>();
+         
+         var user = await repo.FindAsync(u => u.Email == request.Email);
+         
+         Assert.NotNull(user);
+         Assert.False(user.IsEmailVerified);
+         Assert.NotNull(user.EmailVerificationToken);
+     }
 
     [Fact]
     public async Task VerifyEmail_WithValidToken_ShouldActivateUser()

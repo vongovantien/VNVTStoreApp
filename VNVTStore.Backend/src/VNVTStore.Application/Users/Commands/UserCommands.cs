@@ -17,3 +17,7 @@ public record ChangePasswordCommand(
     string currentPassword,
     string newPassword
 ) : IRequest<Result<bool>>;
+
+public record DeleteAccountCommand(
+    string userCode
+) : IRequest<Result<bool>>;

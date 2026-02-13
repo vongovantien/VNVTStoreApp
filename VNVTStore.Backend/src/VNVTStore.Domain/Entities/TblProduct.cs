@@ -36,8 +36,10 @@ public partial class TblProduct : IEntity
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
-
     public string? ModifiedType { get; set; }
+    
+    public decimal Rating { get; private set; }
+    public int ReviewCount { get; private set; }
 
     public string? SupplierCode { get; private set; }
 
@@ -136,6 +138,13 @@ public partial class TblProduct : IEntity
         if (isActive.HasValue) IsActive = isActive.Value;
         SupplierCode = supplierCode;
         BrandCode = brandCode;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateRating(decimal rating, int reviewCount)
+    {
+        Rating = rating;
+        ReviewCount = reviewCount;
         UpdatedAt = DateTime.UtcNow;
     }
 }

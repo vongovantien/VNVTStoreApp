@@ -10,15 +10,15 @@ export const NotificationsContent = () => {
         <div className="bg-primary rounded-xl p-6 border shadow-sm h-full min-h-[400px]">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <Bell className="text-primary" size={24} />
-                {t('account.myNotifications')}
+                {t('common.account.myNotifications')}
             </h2>
             
             <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-4">
                     <Bell className="text-tertiary" size={40} />
                 </div>
-                <h3 className="text-lg font-semibold text-primary">{t('account.noNotifications')}</h3>
-                <p className="text-secondary mt-1">{t('account.checkBackLater')}</p>
+                <h3 className="text-lg font-semibold text-primary">{t('common.account.noNotifications')}</h3>
+                <p className="text-secondary mt-1">{t('common.account.checkBackLater')}</p>
             </div>
         </div>
     );
@@ -69,7 +69,7 @@ export const SettingsContent = () => {
             }
             // Dark mode toggle would go here if implemented globally
             
-            toast.success(t('settings.updateSuccess'));
+            toast.success(t('common.account.settingsPage.updateSuccess'));
             setLoading(false);
         }, 800);
     };
@@ -77,25 +77,25 @@ export const SettingsContent = () => {
     return (
         <div className="space-y-6">
             <div className="bg-primary rounded-xl p-6 border shadow-sm">
-                <h2 className="text-xl font-bold mb-6">{t('account.settings')}</h2>
+                <h2 className="text-xl font-bold mb-6">{t('common.account.settings')}</h2>
                 
                 <div className="space-y-8">
                     {/* Notifications Group */}
                     <div>
                         <h3 className="font-semibold mb-4 text-primary flex items-center gap-2">
-                            <Bell size={18} /> {t('settings.notifications')}
+                            <Bell size={18} /> {t('common.account.settingsPage.notifications')}
                         </h3>
                         <div className="space-y-4 bg-secondary/50 p-4 rounded-xl border border-secondary/20">
                             <Switch
-                                label={t('settings.orderNotif')}
-                                description={t('settings.orderNotifDesc')}
+                                label={t('common.account.settingsPage.orderNotif')}
+                                description={t('common.account.settingsPage.orderNotifDesc')}
                                 checked={settings.orderNotif}
                                 onChange={(v) => setSettings(s => ({ ...s, orderNotif: v }))}
                             />
                             <div className="h-px bg-secondary/10" />
                             <Switch
-                                label={t('settings.promoNotif')}
-                                description={t('settings.promoNotifDesc')}
+                                label={t('common.account.settingsPage.promoNotif')}
+                                description={t('common.account.settingsPage.promoNotifDesc')}
                                 checked={settings.emailNotif}
                                 onChange={(v) => setSettings(s => ({ ...s, emailNotif: v }))}
                             />
@@ -105,26 +105,20 @@ export const SettingsContent = () => {
                     {/* App Preferences */}
                     <div>
                         <h3 className="font-semibold mb-4 text-primary flex items-center gap-2">
-                            <Globe size={18} /> {t('settings.preferences')}
+                            <Globe size={18} /> {t('common.account.settingsPage.preferences')}
                         </h3>
                         <div className="space-y-4 bg-secondary/50 p-4 rounded-xl border border-secondary/20">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">{t('settings.language')}</p>
-                                    <p className="text-xs text-secondary">{t('settings.languageDesc')}</p>
+                                    <p className="font-medium">{t('common.account.settingsPage.language')}</p>
+                                    <p className="text-xs text-secondary">{t('common.account.settingsPage.languageDesc')}</p>
                                 </div>
                                 <div className="flex gap-2">
                                     <button 
                                         onClick={() => setSettings(s => ({ ...s, language: 'vi' }))}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${settings.language === 'vi' ? 'bg-primary text-white shadow-sm' : 'bg-secondary text-secondary hover:bg-secondary/80'}`}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${settings.language === 'vi' ? 'bg-primary text-white shadow-sm' : 'bg-secondary text-secondary hover:bg-hover'}`}
                                     >
-                                        {t('settings.vietnamese')}
-                                    </button>
-                                    <button 
-                                        onClick={() => setSettings(s => ({ ...s, language: 'en' }))}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${settings.language === 'en' ? 'bg-primary text-white shadow-sm' : 'bg-secondary text-secondary hover:bg-secondary/80'}`}
-                                    >
-                                        {t('settings.english')}
+                                        {t('common.account.settingsPage.english')}
                                     </button>
                                 </div>
                             </div>
@@ -133,7 +127,7 @@ export const SettingsContent = () => {
 
                     <div className="flex justify-end pt-4">
                         <Button onClick={handleSave} isLoading={loading}>
-                            {t('settings.saveChanges')}
+                            {t('common.account.settingsPage.saveChanges')}
                         </Button>
                     </div>
                 </div>

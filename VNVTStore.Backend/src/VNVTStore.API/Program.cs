@@ -54,15 +54,25 @@ try
                 json = json.Replace("\\\\n", "\\n"); // Handle double escaped if any
             }
 
-            FirebaseApp.Create(new AppOptions()
+            if (builder.Environment.EnvironmentName != "Testing")
             {
-                Credential = GoogleCredential.FromJson(json)
-            });
-            Log.Information("[Firebase] Firebase Admin SDK initialized successfully.");
+                if (FirebaseApp.DefaultInstance == null)
+                {
+                    FirebaseApp.Create(new AppOptions()
+                    {
+                        Credential = GoogleCredential.FromJson(json)
+                    });
+                    Log.Information("[Firebase] Firebase Admin SDK initialized successfully.");
+                }
+            }
+            else
+            {
+                Log.Information("[Firebase] Skipping Firebase initialization in Testing environment.");
+            }
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "[Firebase] Failed to initialize Firebase Admin SDK. Exception: {Message}", ex.Message);
+            Log.Warning(ex, "[Firebase] Failed to initialize Firebase Admin SDK. This can be ignored if you are running migrations.");
         }
     }
     else

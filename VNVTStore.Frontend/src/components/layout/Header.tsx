@@ -19,14 +19,17 @@ import {
   LayoutDashboard,
   Package,
   LogOut,
+  Loader2,
+  ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast } from '@/store';
-import { NotificationDropdown } from '@/components/common';
+import { NotificationDropdown, UserMenu } from '@/components/common';
 import { type SignalRNotification } from '@/services/signalrService';
-import { useClickOutside, useSignalR } from '@/hooks';
-import { useCategories } from '@/hooks/useProducts';
+import { useClickOutside, useSignalR, useDebounce } from '@/hooks';
+import { useCategories, useProducts } from '@/hooks/useProducts';
+import { formatCurrency } from '@/utils/format';
 
 export const Header = memo(() => {
   const { t, i18n } = useTranslation();
@@ -41,6 +44,18 @@ export const Header = memo(() => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const searchRef = useClickOutside<HTMLDivElement>(() => setShowSearchResults(false));
+
+  const { data: searchData, isLoading: isSearching } = useProducts({
+    search: debouncedSearch,
+    pageSize: 5,
+    enabled: !!debouncedSearch && showSearchResults
+  });
+
+  const searchResults = searchData?.products || [];
 
   const handleLogoutClick = () => {
     setShowUserMenu(false);
@@ -66,7 +81,7 @@ export const Header = memo(() => {
   const wishlistCount = useWishlistStore((state) => state.items.length);
   const compareCount = useCompareStore((state) => state.items.length);
   const { theme, toggleTheme, setCartOpen } = useUIStore();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, adminToken, stopImpersonating } = useAuthStore();
   const { addNotification } = useNotificationStore();
 
   const { info } = useToast();
@@ -79,13 +94,13 @@ export const Header = memo(() => {
     const unsubscribeOrder = on('ReceiveOrderNotification', (data: string | SignalRNotification) => {
         const msg = typeof data === 'string' ? data : (data as SignalRNotification).Message || '';
         addNotification(msg);
-        info(`${t('common.newOrder')}: ${msg}`);
+        info(`${t('common.messages.newOrder')}: ${msg}`);
     });
     
     const unsubscribeQuote = on('ReceiveQuoteNotification', (data: string | unknown) => {
          const msg = typeof data === 'string' ? data : (data as { Message?: string }).Message || '';
          addNotification(msg);
-         info(`${t('common.newQuote') || 'New Quote'}: ${msg}`);
+         info(`${t('common.messages.newQuote')}: ${msg}`);
     });
 
     return () => {
@@ -129,6 +144,24 @@ export const Header = memo(() => {
 
   return (
     <>
+      {adminToken && (
+        <div className="bg-amber-500 text-white py-1.5 px-4 text-center text-sm font-bold flex items-center justify-center gap-4 animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2">
+            <ShieldAlert size={16} />
+            <span>{t('admin.impersonatingMessage', 'You are logged in as {{name}}', { name: user?.fullName || user?.username })}</span>
+          </div>
+          <button 
+            onClick={() => {
+                if (window.confirm(t('common.messages.confirmStopImpersonate'))) {
+                    stopImpersonating();
+                }
+            }}
+            className="bg-white/20 hover:bg-white/30 px-3 py-0.5 rounded-full transition-colors text-xs backdrop-blur-sm border border-white/30"
+          >
+            {t('admin.actions.stopImpersonation', 'Stop Impersonating')}
+          </button>
+        </div>
+      )}
       <header className="bg-primary transition-colors duration-200 relative z-[101]">
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-slate-300 text-xs py-2">
@@ -166,23 +199,101 @@ export const Header = memo(() => {
           </Link>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-8 hidden md:block">
-            <div className="flex items-center bg-tertiary border border-transparent focus-within:border-indigo-500 rounded-full pl-4 pr-1 py-1 transition-all duration-200">
-              <Search size={20} className="text-secondary" />
-              <div className="flex-1 ml-3 mr-2">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('header.searchPlaceholder')}
-                  className="w-full !bg-transparent text-sm outline-none text-primary placeholder:text-tertiary !border-0 !ring-0 !shadow-none focus:ring-0"
-                />
+          <div className="flex-1 max-w-xl mx-8 hidden md:block relative">
+            <form onSubmit={handleSearch} className="relative z-50">
+              <div className="flex items-center bg-tertiary border border-transparent focus-within:border-indigo-500 rounded-full pl-4 pr-1 py-1 transition-all duration-200">
+                <Search size={20} className="text-secondary" />
+                <div className="flex-1 ml-3 mr-2">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowSearchResults(true)}
+                    placeholder={t('header.searchPlaceholder')}
+                    className="w-full !bg-transparent text-sm outline-none text-primary placeholder:text-tertiary !border-0 !ring-0 !shadow-none focus:ring-0"
+                  />
+                </div>
+                {searchQuery && (
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchQuery('')}
+                    className="p-1 hover:bg-hover rounded-full mr-2 text-slate-400"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+                <Button type="submit" rounded size="sm" className="px-6 h-9 shrink-0">
+                  {t('common.search')}
+                </Button>
               </div>
-              <Button type="submit" rounded size="sm" className="px-6 h-9 shrink-0">
-                {t('common.search')}
-              </Button>
-            </div>
-          </form>
+            </form>
+
+            {/* Live Search Results Popover */}
+            <AnimatePresence>
+              {showSearchResults && debouncedSearch && (
+                <motion.div
+                  ref={searchRef}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-40"
+                >
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      {t('header.searchMatches', 'Kết quả tìm kiếm')}
+                    </span>
+                    {isSearching && <Loader2 size={14} className="animate-spin text-indigo-500" />}
+                  </div>
+
+                  <div className="max-h-[400px] overflow-y-auto py-2">
+                    {searchResults.length > 0 ? (
+                      <>
+                        {searchResults.map((p) => (
+                          <Link
+                            key={p.code}
+                            to={`/product/${p.code}`}
+                            onClick={() => setShowSearchResults(false)}
+                            className="flex items-center gap-4 px-4 py-3 hover:bg-hover transition-colors group"
+                          >
+                            <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex-shrink-0">
+                              <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 transition-colors">
+                                {p.name}
+                              </h4>
+                              <p className="text-xs text-slate-400 truncate">{p.category}</p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-bold text-slate-900 dark:text-white">
+                                {p.price > 0 ? formatCurrency(p.price) : t('product.contact')}
+                              </div>
+                              {p.price > 0 && p.originalPrice && p.originalPrice > p.price && (
+                                <div className="text-[10px] text-slate-400 line-through">
+                                  {formatCurrency(p.originalPrice)}
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                        <Link
+                          to={`/search?search=${encodeURIComponent(debouncedSearch)}`}
+                          onClick={() => setShowSearchResults(false)}
+                          className="block text-center py-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border-t border-slate-100 dark:border-slate-700 mt-2"
+                        >
+                          {t('header.viewAllResults', 'Xem tất cả kết quả cho "{{query}}"', { query: debouncedSearch })}
+                        </Link>
+                      </>
+                    ) : !isSearching ? (
+                      <div className="p-8 text-center text-slate-400 text-sm">
+                        {t('header.noResults', 'Không tìm thấy sản phẩm nào')}
+                      </div>
+                    ) : null}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Actions */}
           <div className="flex items-center gap-1">
@@ -213,7 +324,7 @@ export const Header = memo(() => {
                       'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                       (i18n.language || 'vi').startsWith('vi')
                         ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                        : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
+                        : 'hover:bg-hover text-gray-700 dark:text-gray-200'
                     )}
                   >
                     <span className="text-xs font-semibold uppercase text-tertiary">VN</span> Tiếng Việt
@@ -224,7 +335,7 @@ export const Header = memo(() => {
                       'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                       (i18n.language || 'en').startsWith('en')
                         ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                        : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200'
+                        : 'hover:bg-hover text-gray-700 dark:text-gray-200'
                     )}
                   >
                     <span className="text-xs font-semibold uppercase text-tertiary">US</span> English
@@ -280,67 +391,44 @@ export const Header = memo(() => {
               )}
             </Button>
 
-            {/* User Menu */}
-            <div className="relative hidden lg:block z-20" ref={userMenuRef}>
-              <Button variant="ghost" size="sm" onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2">
-                {user?.avatar ? (
-                  <img src={user.avatar} alt={user.fullName} className="w-6 h-6 rounded-full object-cover border" />
-                ) : (
-                  <User size={20} />
-                )}
-                <ChevronDown size={14} />
-              </Button>
-              <AnimatePresence>
-                {showUserMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full right-0 mt-2 bg-primary rounded-lg shadow-xl border p-2 min-w-[200px] z-50"
-                  >
-                    {isAuthenticated ? (
-                      <>
-                        <div className="px-4 py-2 border-b mb-2">
-                          <p className="font-bold text-sm truncate">{user?.fullName || 'User'}</p>
-                          <p className="text-xs text-secondary truncate">{user?.email}</p>
-                        </div>
-                        {user?.role === 'Admin' && (
-                           <Link to="/admin" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                            <LayoutDashboard size={16} className="text-tertiary" />
-                            {t('common.adminDashboard') || 'Admin Dashboard'}
-                          </Link>
-                        )}
-                        <Link to="/account" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                          <User size={16} className="text-tertiary" />
-                          {t('account.title')}
-                        </Link>
-                        <Link to="/account/orders" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                          <Package size={16} className="text-tertiary" />
-                          {t('account.orders')}
-                        </Link>
-                        <hr className="my-2" />
-                        <button
-                          onClick={handleLogoutClick}
-                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                        >
-                          <LogOut size={16} />
-                          {t('common.logout')}
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <Link to="/login" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                          {t('common.login')}
-                        </Link>
-                        <Link to="/register" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md transition-colors">
-                          {t('common.register')}
-                        </Link>
-                      </>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* User Menu / Auth Buttons */}
+            {isAuthenticated ? (
+              <UserMenu 
+                className="hidden lg:block z-20"
+                onLogout={handleLogoutClick}
+                items={[
+                  ...(user?.role === 'Admin' ? [{
+                    label: t('common.adminDashboard') || 'Admin Dashboard',
+                    icon: LayoutDashboard,
+                    link: '/admin',
+                    className: 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                  }] : []),
+                  {
+                    label: t('common.account.title'),
+                    icon: User,
+                    link: '/account'
+                  },
+                  {
+                    label: t('common.account.orders'),
+                    icon: Package,
+                    link: '/account/orders'
+                  }
+                ]}
+              />
+            ) : (
+              <div className="hidden lg:flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="font-semibold">
+                    {t('common.login')}
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm" className="px-6 font-semibold shadow-lg shadow-indigo-200 dark:shadow-none">
+                    {t('common.register')}
+                  </Button>
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setMobileMenuOpen(true)}>
@@ -478,13 +566,13 @@ export const Header = memo(() => {
                     { path: '/promotions', label: 'header.promotions' },
                     { path: '/wishlist', label: 'common.wishlist' },
                     { path: '/compare', label: 'common.compare' },
-                     { path: '/account', label: 'account.title' },
+                     { path: '/account', label: 'common.account.title' },
                   ].map((link) => (
                     <Link
                       key={link.path}
                       to={link.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block px-4 py-3 font-medium hover:bg-secondary rounded-lg transition-colors"
+                      className="block px-4 py-3 font-medium hover:bg-hover rounded-lg transition-colors"
                     >
                       {t(link.label)}
                     </Link>
@@ -500,7 +588,7 @@ export const Header = memo(() => {
                     <Link
                       key={category.code}
                       to={`/products?category=${category.code}`}
-                      className="block px-4 py-2 hover:bg-secondary/50 transition-colors rounded-lg"
+                      className="block px-4 py-2 hover:bg-hover transition-colors rounded-lg"
                       onClick={() => setShowCategories(false)}
                     >
                       {category.name}
@@ -521,10 +609,10 @@ export const Header = memo(() => {
                     </Button>
                   ) : (
                     <>
-                      <Button fullWidth onClick={() => { setMobileMenuOpen(false); window.location.href = '/login'; }}>
+                      <Button fullWidth onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}>
                         {t('common.login')}
                       </Button>
-                      <Button fullWidth variant="outline" onClick={() => { setMobileMenuOpen(false); window.location.href = '/register'; }}>
+                      <Button fullWidth variant="outline" onClick={() => { setMobileMenuOpen(false); navigate('/register'); }}>
                         {t('common.register')}
                       </Button>
                     </>
@@ -541,7 +629,7 @@ export const Header = memo(() => {
         onClose={() => setShowLogoutConfirm(false)}
         onConfirm={confirmLogout}
         title={t('common.logout')}
-        message={t('messages.logoutConfirmMessage') || 'Are you sure you want to log out?'}
+        message={t('common.messages.logoutConfirmMessage') || 'Are you sure you want to log out?'}
         confirmText={t('common.logout')}
         cancelText={t('common.cancel')}
       />

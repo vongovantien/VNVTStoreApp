@@ -83,6 +83,20 @@ public class UsersController : BaseApiController
         var result = await Mediator.Send(command);
         return HandleResult(result, MessageConstants.Get(MessageConstants.PasswordChanged));
     }
+
+    /// <summary>
+    /// Xóa tài khoản (Vô hiệu hóa)
+    /// </summary>
+    [HttpDelete("delete-account")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        var userCode = _currentUser.UserCode;
+        if (string.IsNullOrEmpty(userCode)) return Unauthorized();
+
+        var result = await Mediator.Send(new DeleteAccountCommand(userCode!));
+        return HandleResult(result, "Account deactivated successfully");
+    }
 }
 
 public record UpdateProfileRequest(string? fullName, string? phone, string? email, string? avatarUrl = null);

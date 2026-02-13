@@ -108,7 +108,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({
                 </thead>
                 <tbody>
                   {product.variants.map((v, idx) => (
-                    <tr key={idx} className="border-b border-slate-50 hover:bg-secondary/20">
+                    <tr key={idx} className="hover:bg-hover transition-colors">
                       <td className="px-4 py-3 font-medium text-primary">{v.sku}</td>
                       <td className="px-4 py-3 text-secondary">{v.attributes}</td>
                       <td className="px-4 py-3 text-right font-bold text-error">{formatCurrency(v.price)}</td>
@@ -142,7 +142,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({
                     alt={`${product.name} gallery ${idx + 1}`} 
                     className="w-full h-full object-contain transition-transform group-hover:scale-110" 
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-hover transition-colors" />
                 </div>
               ))
             ) : (

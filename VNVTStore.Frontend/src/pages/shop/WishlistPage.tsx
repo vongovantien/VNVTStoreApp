@@ -6,8 +6,15 @@ import { Button } from '@/components/ui';
 import { ProductCard } from '@/components/common/ProductCard';
 import { useWishlistStore, useCartStore } from '@/store';
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const WishlistPage = () => {
   const { t } = useTranslation();
+  
+  useSEO({
+    title: 'Danh sách yêu thích',
+    noindex: true,
+  });
   const { items, clearWishlist } = useWishlistStore();
   const addToCart = useCartStore((state) => state.addItem);
 

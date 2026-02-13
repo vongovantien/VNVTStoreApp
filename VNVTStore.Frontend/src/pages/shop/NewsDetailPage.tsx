@@ -37,9 +37,19 @@ const newsItems = [
     },
 ];
 
+import { useSEO } from '@/hooks/useSEO';
+
 const NewsDetailPage = () => {
     const { id } = useParams();
     const item = newsItems.find(n => n.id === Number(id));
+
+    useSEO({
+        title: item?.title || 'Tin tức',
+        description: item?.content?.substring(0, 160) || 'Chi tiết bài viết tại VNVT Store',
+        ogImage: item?.image,
+        ogType: 'article',
+        canonicalPath: item ? `/news/${id}` : undefined,
+    });
 
     if (!item) {
         return (

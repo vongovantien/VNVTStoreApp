@@ -1,0 +1,19 @@
+{
+  "name": "VNVT Store - Đồ Gia Dụng Cao Cấp",
+  "short_name": "VNVT Store",
+  "description": "Hệ thống cửa hàng đồ gia dụng cao cấp, chính hãng. Miễn phí vận chuyển toàn quốc.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait-primary",
+  "lang": "vi",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

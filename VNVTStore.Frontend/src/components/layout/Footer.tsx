@@ -13,6 +13,7 @@ import {
   Truck,
   Shield,
   HeadphonesIcon,
+  RefreshCw,
   Wallet,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -28,42 +29,42 @@ export const Footer = memo(() => {
   const features = [
     { icon: Truck, title: t('footer.features.shipping'), desc: t('footer.features.shippingDesc') },
     { icon: Shield, title: t('footer.features.warranty'), desc: t('footer.features.warrantyDesc') },
-    { icon: CreditCard, title: t('footer.features.returns'), desc: t('footer.features.returnsDesc') },
+    { icon: RefreshCw, title: t('footer.features.returns'), desc: t('footer.features.returnsDesc') },
     { icon: HeadphonesIcon, title: t('footer.features.support'), desc: t('footer.features.supportDesc') },
   ];
 
   const aboutLinks = [
-    { label: t('header.about') || 'Giới thiệu', path: '/about' },
-    { label: t('header.news') || 'Tin tức', path: '/news' },
-    { label: t('header.promotions') || 'Khuyến mãi', path: '/promotions' },
-    { label: t('header.contact') || 'Liên hệ', path: '/contact' },
+    { label: t('header.about'), path: '/about' },
+    { label: t('header.news'), path: '/news' },
+    { label: t('header.promotions'), path: '/promotions' },
+    { label: t('header.contact'), path: '/contact' },
   ];
 
   const supportLinks = [
-    { label: t('header.trackOrder') || 'Tra cứu đơn hàng', path: '/tracking' },
-    { label: t('header.support') || 'Hỗ trợ', path: '/support' },
-    { label: t('common.products') || 'Sản phẩm', path: '/products' },
-    { label: 'FAQ', path: '/support' },
+    { label: t('header.trackOrder'), path: '/tracking' },
+    { label: t('header.support'), path: '/support' },
+    { label: t('common.products'), path: '/products' },
+    { label: t('common.faq'), path: '/support' },
   ];
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
-      toast.error(t('messages.enterEmail') || 'Vui lòng nhập email');
+      toast.error(t('common.messages.enterEmail'));
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error(t('messages.invalidEmail') || 'Email không hợp lệ');
+      toast.error(t('validation.invalidEmail'));
       return;
     }
 
     setIsSubscribing(true);
     // Simulate API call
     setTimeout(() => {
-      toast.success(t('messages.subscribeSuccess') || 'Đăng ký nhận tin thành công!');
+      toast.success(t('common.messages.subscribeSuccess') || t('messages.subscribeSuccess'));
       setEmail('');
       setIsSubscribing(false);
     }, 1000);
@@ -110,15 +111,15 @@ export const Footer = memo(() => {
               <div className="space-y-2 mb-6">
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin size={16} className="text-indigo-400" />
-                  <span>123 Nguyễn Huệ, Q.1, TP.HCM</span>
+                  <span>{t('shared.address')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Phone size={16} className="text-indigo-400" />
-                  <span>1900 123 456</span>
+                  <span>{t('shared.hotline')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Mail size={16} className="text-indigo-400" />
-                  <span>contact@vnvtstore.com</span>
+                  <span>{t('shared.email')}</span>
                 </div>
               </div>
 
@@ -141,7 +142,7 @@ export const Footer = memo(() => {
                   </a>
                 ))}
                 <a href="https://zalo.me" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-500 transition-colors">
-                  <span className="text-xs font-bold">Zalo</span>
+                  <span className="text-xs font-bold">{t('shared.chatZalo')}</span>
                 </a>
               </div>
             </div>
@@ -237,15 +238,15 @@ export const Footer = memo(() => {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-white/10 transition-colors"
-              title="Đổi giao diện"
+              title={t('common.toggleTheme') || 'Toggle Theme'}
             >
-              <span className="text-xl">{theme === 'dark' ? '☀️' : '�'}</span>
+              <span className="text-xl">{theme === 'dark' ? '☀️' : '🌙'}</span>
             </button>
             <Link to="/about" className="text-sm text-gray-500 hover:text-white transition-colors">
-              {t('header.about') || 'Về chúng tôi'}
+              {t('header.about')}
             </Link>
             <Link to="/support" className="text-sm text-gray-500 hover:text-white transition-colors">
-              {t('header.support') || 'Hỗ trợ'}
+              {t('header.support')}
             </Link>
           </div>
         </div>

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using VNVTStore.Infrastructure.Persistence;
+using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.Tests.Integration;
 
@@ -13,6 +14,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
             var descriptor = services.SingleOrDefault(
@@ -43,9 +45,15 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 
                 db.Database.EnsureCreated();
                 
-                // Seed if needed, but TestDbContextFactory logic handles unit test seeding.
-                // For integration tests, we might want similar seeding.
-                // But let's start with empty DB schema.
+                // Seed Roles
+                if (!db.TblRoles.Any())
+                {
+                    db.TblRoles.AddRange(
+                        new TblRole { Code = "ADMIN", Name = "Admin" },
+                        new TblRole { Code = "CUSTOMER", Name = "Customer" }
+                    );
+                    db.SaveChanges();
+                }
             }
         });
     }

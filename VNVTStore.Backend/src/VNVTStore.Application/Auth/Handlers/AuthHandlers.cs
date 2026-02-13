@@ -198,16 +198,25 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
             return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
         }
         
-        var permissions = user.RoleCodeNavigation?.TblRolePermissions
-            .Where(rp => rp.PermissionCodeNavigation != null)
-            .Select(rp => rp.PermissionCodeNavigation!.Name)
-            .ToList() ?? new List<string>();
+        var permissions = new List<string>();
+        if (user.RoleCodeNavigation?.TblRolePermissions != null)
+        {
+            permissions = user.RoleCodeNavigation.TblRolePermissions
+                .Where(rp => rp.PermissionCodeNavigation != null)
+                .Select(rp => rp.PermissionCodeNavigation!.Name)
+                .ToList();
+        }
             
-        var menus = user.RoleCodeNavigation?.TblRoleMenus
-            .Where(rm => rm.MenuCodeNavigation != null)
-            .Select(rm => rm.MenuCodeNavigation!.Code)
-            .ToList() ?? new List<string>();
+        var menus = new List<string>();
+        if (user.RoleCodeNavigation?.TblRoleMenus != null)
+        {
+            menus = user.RoleCodeNavigation.TblRoleMenus
+                .Where(rm => rm.MenuCodeNavigation != null)
+                .Select(rm => rm.MenuCodeNavigation!.Code)
+                .ToList();
+        }
 
+        Console.WriteLine($"DEBUG: LoginHandler - User: {user.Username}, Role: {user.Role}, RoleCode: {user.RoleCode}");
         var token = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, permissions, menus);
         var refreshToken = _jwtService.GenerateRefreshToken();
         
@@ -222,6 +231,97 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
             Token = token,
             RefreshToken = refreshToken,
             User = _mapper.Map<UserDto>(user)
+        };
+        
+        responseDto.User.Permissions = permissions;
+        responseDto.User.Menus = menus;
+
+        return Result.Success(responseDto);
+    }
+}
+
+public class ImpersonateCommandHandler : IRequestHandler<ImpersonateCommand, Result<AuthResponseDto>>
+{
+    private readonly IRepository<TblUser> _repository;
+    private readonly IJwtService _jwtService;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUserService;
+
+    public ImpersonateCommandHandler(
+        IRepository<TblUser> repository,
+        IJwtService jwtService,
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        ICurrentUser currentUserService)
+    {
+        _repository = repository;
+        _jwtService = jwtService;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result<AuthResponseDto>> Handle(ImpersonateCommand request, CancellationToken cancellationToken)
+    {
+        // 1. Authorization check: Only Admin can impersonate
+        // Ideally, we check this via [Authorize(Roles = "Admin")] on the controller,
+        // but adding an extra check here for defense-in-depth.
+        var currentUserCode = _currentUserService.UserCode;
+        var adminUser = await _repository.FindAsync(u => u.Code == currentUserCode, cancellationToken);
+        
+        if (adminUser == null || adminUser.Role != UserRole.Admin)
+        {
+            return Result.Failure<AuthResponseDto>(Error.Forbidden("Only administrators can impersonate users."));
+        }
+
+        // 2. Find target user (Try Code first, then Username)
+        var targetUser = await _repository.Where(u => u.Code == request.targetUserCode || u.Username == request.targetUserCode)
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRolePermissions)
+                    .ThenInclude(rp => rp.PermissionCodeNavigation)
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRoleMenus)
+                    .ThenInclude(rm => rm.MenuCodeNavigation)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (targetUser == null)
+        {
+            return Result.Failure<AuthResponseDto>(Error.NotFound("Target user not found."));
+        }
+
+        // 3. Prevent impersonating other admins (security policy)
+        if (targetUser.Role == UserRole.Admin)
+        {
+            return Result.Failure<AuthResponseDto>(Error.Validation("Cannot impersonate another administrator."));
+        }
+
+        // 4. Generate token for target user
+        var permissions = targetUser.RoleCodeNavigation?.TblRolePermissions
+            .Where(rp => rp.PermissionCodeNavigation != null)
+            .Select(rp => rp.PermissionCodeNavigation!.Name)
+            .ToList() ?? new List<string>();
+            
+        var menus = targetUser.RoleCodeNavigation?.TblRoleMenus
+            .Where(rm => rm.MenuCodeNavigation != null)
+            .Select(rm => rm.MenuCodeNavigation!.Code)
+            .ToList() ?? new List<string>();
+
+        var token = _jwtService.GenerateToken(targetUser.Code, targetUser.Username, targetUser.Email, targetUser.Role, permissions, menus);
+        var refreshToken = _jwtService.GenerateRefreshToken();
+        
+        // Note: We don't necessarily want to update target user's LastLogin during impersonation 
+        // to avoid skewing analytics, but we MUST set a valid refresh token.
+        targetUser.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(1)); // Shorter expiry for impersonation tokens
+        
+        _repository.Update(targetUser);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        var responseDto = new AuthResponseDto
+        {
+            Token = token,
+            RefreshToken = refreshToken,
+            User = _mapper.Map<UserDto>(targetUser)
         };
         
         responseDto.User.Permissions = permissions;

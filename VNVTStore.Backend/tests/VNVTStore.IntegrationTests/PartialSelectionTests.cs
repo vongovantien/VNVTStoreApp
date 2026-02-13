@@ -67,7 +67,7 @@ public class PartialSelectionTests : IntegrationTestBase
 
         // 5. Verify Child Collection
         item.ProductImages.Should().NotBeNullOrEmpty();
-        var image = item.ProductImages.First();
+        var image = item.ProductImages!.First();
         
         // ImageURL should be populated
         image.ImageURL.Should().NotBeNullOrEmpty();

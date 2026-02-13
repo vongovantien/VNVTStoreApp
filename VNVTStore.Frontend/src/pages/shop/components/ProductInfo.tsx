@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Phone, Minus, Plus, ShoppingCart, Heart, Scale, Share2, Star } from 'lucide-react';
+import { Phone, Minus, Plus, ShoppingCart, Heart, Scale, Share2, Star, Zap } from 'lucide-react';
 import { Button, Badge, type BadgeColor } from '@/components/ui';
+import { useToast } from '@/store';
 import { formatCurrency } from '@/utils/format';
 import { ProductLogistics } from './ProductLogistics';
 import type { Product } from '@/types';
@@ -14,6 +16,7 @@ interface ProductInfoProps {
   quantity: number;
   setQuantity: (q: number) => void;
   handleAddToCart: () => void;
+  handleBuyNow: () => void;
   isAddingToCart: boolean;
   isWishlisted: boolean;
   handleWishlistToggle: () => void;
@@ -28,6 +31,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   quantity,
   setQuantity,
   handleAddToCart,
+  handleBuyNow,
   isAddingToCart,
   isWishlisted,
   handleWishlistToggle,
@@ -35,6 +39,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   handleCompareToggle,
 }) => {
   const { t } = useTranslation();
+  const { success } = useToast();
 
   // Stars renderer
   const renderStars = useMemo(() => {
@@ -78,30 +83,70 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         </span>
       </div>
 
-      {/* Price */}
-      <div className="py-4 border-y">
+      {/* Price & Urgency */}
+      <div className="py-6 border-y bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl px-6">
         {hasFixedPrice ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-error">{formatCurrency(product.price)}</span>
+              <span className="text-4xl font-black text-rose-600 dark:text-rose-500 tracking-tight">
+                {formatCurrency(product.price)}
+              </span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-xl text-tertiary line-through">
+                <span className="text-xl text-slate-400 line-through font-medium">
                   {formatCurrency(product.originalPrice)}
                 </span>
               )}
             </div>
+            
+            {/* Sale Progress Bar (Mocked Logic) */}
+            {product.discount && product.discount > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <span className="flex items-center gap-1.5 text-rose-600">
+                    <Zap size={14} className="fill-current" />
+                    {t('product.flashSale', 'Siêu ưu đãi kết thúc sau')}
+                  </span>
+                  <span className="text-slate-900 dark:text-slate-200">23:54:12</span>
+                </div>
+                <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: '75%' }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-rose-500 to-amber-500 rounded-full"
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-400 font-bold uppercase">
+                  <span>{t('product.itemsSold', 'Đã bán: 15')}</span>
+                  <span>{t('product.itemsRemaining', 'Còn lại: 5')}</span>
+                </div>
+              </div>
+            )}
+
             {product.wholesalePrice && (
-              <div className="flex items-center gap-2 text-sm text-secondary">
-                <Badge color="secondary" className="font-normal">{t('product.wholesalePrice', 'Giá sỉ')}</Badge>
-                <span className="font-bold">{formatCurrency(product.wholesalePrice)}</span>
+              <div className="flex items-center gap-2 text-sm text-secondary pt-2 border-t border-slate-100 dark:border-slate-700">
+                <Badge color="secondary" className="font-semibold uppercase tracking-tighter">{t('product.wholesalePrice', 'Giá sỉ')}</Badge>
+                <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(product.wholesalePrice)}</span>
                 <span className="text-[11px] opacity-70">({t('product.contactForBestPrice', 'Liên hệ để nhận ưu đãi tốt nhất')})</span>
               </div>
             )}
+
+            {/* Stock Urgency Alert */}
+            {(product.stockQuantity ?? product.stock) > 0 && (product.stockQuantity ?? product.stock) <= 10 && (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-3 py-2 rounded-lg border border-rose-100 dark:border-rose-900/30 text-xs font-bold"
+              >
+                <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
+                {t('product.lowStockAlert', 'Chỉ còn {{count}} sản phẩm trong kho - Đặt ngay!', { count: product.stockQuantity ?? product.stock })}
+              </motion.div>
+            )}
           </div>
         ) : (
-          <div className="flex items-center gap-3">
-            <Phone className="text-primary" />
-            <span className="text-xl font-semibold text-primary">{t('product.contactForPrice')}</span>
+          <div className="flex items-center gap-3 py-2">
+            <Phone className="text-indigo-600" />
+            <span className="text-2xl font-bold text-slate-900 dark:text-white">{t('product.contactForPrice')}</span>
           </div>
         )}
       </div>
@@ -131,7 +176,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
           <div className="flex items-center border rounded-lg bg-white">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="p-3 hover:bg-secondary transition-colors"
+              className="p-3 hover:bg-hover transition-colors"
             >
               <Minus size={18} />
             </button>
@@ -139,23 +184,34 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             <button
               onClick={() => setQuantity(Math.min(product.stockQuantity ?? product.stock, quantity + 1))}
               disabled={quantity >= (product.stockQuantity ?? product.stock)}
-              className={`p-3 transition-colors ${quantity >= (product.stockQuantity ?? product.stock) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary'}`}
+              className={`p-3 transition-colors ${quantity >= (product.stockQuantity ?? product.stock) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-hover'}`}
             >
               <Plus size={18} />
             </button>
           </div>
 
-          {/* Add to Cart */}
-          <Button
-            size="lg"
-            className="flex-1 bg-slate-900 hover:bg-black text-white"
-            onClick={handleAddToCart}
-            disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
-            isLoading={isAddingToCart}
-            leftIcon={!isAddingToCart && <ShoppingCart size={20} />}
-          >
-            {t('product.addToCart')}
-          </Button>
+          {/* Actions */}
+          <div className="flex-1 flex flex-col sm:flex-row gap-3">
+            <Button
+              size="lg"
+              variant="outline"
+              className="flex-1 border-slate-900 text-slate-900 hover:bg-hover"
+              onClick={handleAddToCart}
+              disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
+              isLoading={isAddingToCart}
+              leftIcon={!isAddingToCart && <ShoppingCart size={20} />}
+            >
+              {t('product.addToCart')}
+            </Button>
+            <Button
+              size="lg"
+              className="flex-1 bg-slate-900 hover:bg-black text-white"
+              onClick={handleBuyNow}
+              disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
+            >
+              {t('product.buyNow', 'Mua ngay')}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -184,7 +240,22 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         >
           {t('product.compare')}
         </Button>
-        <Button variant="ghost" leftIcon={<Share2 size={18} />}>
+        <Button 
+          variant="ghost" 
+          leftIcon={<Share2 size={18} />}
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: product.name,
+                text: product.description,
+                url: window.location.href,
+              }).catch(() => {});
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              success(t('common.copiedToClipboard', 'Đã sao chép liên kết'));
+            }
+          }}
+        >
           {t('product.share')}
         </Button>
       </div>

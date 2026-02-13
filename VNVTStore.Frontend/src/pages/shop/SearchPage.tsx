@@ -13,6 +13,9 @@ import { ProductSkeleton } from '@/components/common/ProductSkeleton';
 import { Button } from '@/components/ui';
 import { useDebounce, useProducts } from '@/hooks';
 
+import { useSEO } from '@/hooks/useSEO';
+
+
 const SearchPage = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,6 +24,13 @@ const SearchPage = () => {
   const pageSize = 12;
 
   const searchQuery = searchParams.get('search') || '';
+
+  useSEO({
+    title: searchQuery ? `Tìm kiếm: ${searchQuery}` : 'Tìm kiếm sản phẩm',
+    description: 'Tìm kiếm sản phẩm tại VNVT Store',
+    noindex: true,
+  });
+
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const {
@@ -81,13 +91,13 @@ const SearchPage = () => {
               <div className="flex border rounded-xl overflow-hidden shrink-0">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-3 transition-colors ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'bg-primary hover:bg-secondary'}`}
+                  className={`p-3 transition-colors ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'bg-primary hover:bg-hover'}`}
                 >
                   <Grid size={20} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-3 transition-colors ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-primary hover:bg-secondary'}`}
+                  className={`p-3 transition-colors ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-primary hover:bg-hover'}`}
                 >
                   <List size={20} />
                 </button>

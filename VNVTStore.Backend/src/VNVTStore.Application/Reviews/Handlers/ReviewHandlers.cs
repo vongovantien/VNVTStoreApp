@@ -9,6 +9,8 @@ using VNVTStore.Application.Reviews.Commands;
 using VNVTStore.Application.Reviews.Queries;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using Dapper;
+using System.Data;
 
 namespace VNVTStore.Application.Reviews.Handlers;
 
@@ -25,18 +27,47 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     IRequestHandler<GetAllReviewsQuery, Result<PagedResult<ReviewDto>>>
 {
     private readonly IRepository<TblOrderItem> _orderItemRepository;
+    private readonly IRepository<TblProduct> _productRepository;
+    private readonly IRepository<TblOrder> _orderRepository;
     private readonly ICurrentUser _currentUser;
+    private readonly IBaseUrlService _baseUrlService;
 
     public ReviewHandlers(
         IRepository<TblReview> reviewRepository,
         IRepository<TblOrderItem> orderItemRepository,
+        IRepository<TblProduct> productRepository,
+        IRepository<TblOrder> orderRepository,
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        IDapperContext dapperContext) : base(reviewRepository, unitOfWork, mapper, dapperContext)
+        IDapperContext dapperContext,
+        IBaseUrlService baseUrlService) : base(reviewRepository, unitOfWork, mapper, dapperContext)
     {
         _orderItemRepository = orderItemRepository;
+        _productRepository = productRepository;
+        _orderRepository = orderRepository;
         _currentUser = currentUser;
+        _baseUrlService = baseUrlService;
+    }
+
+    private async Task UpdateProductRatingAsync(string productCode, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(productCode)) return;
+
+        var reviews = await _repository.AsQueryable()
+            .Where(r => r.ProductCode == productCode && r.IsApproved == true && r.IsActive == true)
+            .ToListAsync(cancellationToken);
+
+        var count = reviews.Count;
+        var avgRating = count > 0 ? (decimal)reviews.Average(r => r.Rating ?? 0) : 0;
+
+        var product = await _productRepository.GetByCodeAsync(productCode, cancellationToken);
+        if (product != null)
+        {
+            product.UpdateRating(Math.Round(avgRating, 2), count);
+            _productRepository.Update(product);
+            await _unitOfWork.CommitAsync(cancellationToken);
+        }
     }
 
     public async Task<Result<ReviewDto>> Handle(CreateCommand<CreateReviewDto, ReviewDto> request, CancellationToken cancellationToken)
@@ -47,14 +78,15 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         // If order item is provided, validate and link
         if (!string.IsNullOrEmpty(orderItemCode))
         {
-            var orderItem = await _orderItemRepository.AsQueryable()
-                .Include(oi => oi.OrderCodeNavigation)
-                .FirstOrDefaultAsync(oi => oi.Code == request.Dto.OrderItemCode, cancellationToken);
+            var orderItem = await _orderItemRepository.GetByCodeAsync(orderItemCode, cancellationToken);
 
             if (orderItem == null)
-                return Result.Failure<ReviewDto>(Error.NotFound(VNVTStore.Application.Common.MessageConstants.OrderItem, request.Dto.OrderItemCode));
+                return Result.Failure<ReviewDto>(Error.NotFound(VNVTStore.Application.Common.MessageConstants.OrderItem, orderItemCode));
 
-            if (orderItem.OrderCodeNavigation != null && orderItem.OrderCodeNavigation.UserCode != request.Dto.UserCode)
+            // Check if user owns the order
+            var order = await _orderRepository.GetByCodeAsync(orderItem.OrderCode, cancellationToken);
+
+            if (order != null && order.UserCode != request.Dto.UserCode)
             {
                 return Result.Failure<ReviewDto>(Error.Forbidden(VNVTStore.Application.Common.MessageConstants.Forbidden));
             }
@@ -71,16 +103,23 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         if (existingReview != null)
             return Result.Failure<ReviewDto>(Error.Conflict(VNVTStore.Application.Common.MessageConstants.ReviewAlreadyExists));
 
-        return await CreateAsync<CreateReviewDto, ReviewDto>(
+        var result = await CreateAsync<CreateReviewDto, ReviewDto>(
             request.Dto,
             cancellationToken,
             r => {
                 r.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
                 r.IsApproved = true; // Auto-approve
-                r.CreatedAt = DateTime.Now;
+                r.CreatedAt = DateTime.UtcNow;
                 r.ProductCode = productCode;
                 r.OrderItemCode = orderItemCode;
             });
+
+        if (result.IsSuccess && !string.IsNullOrEmpty(productCode))
+        {
+            await UpdateProductRatingAsync(productCode, cancellationToken);
+        }
+
+        return result;
     }
 
     public async Task<Result<ReviewDto>> Handle(UpdateCommand<UpdateReviewDto, ReviewDto> request, CancellationToken cancellationToken)
@@ -109,10 +148,32 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         var userCode = _currentUser.UserCode;
         var isAdmin = _currentUser.IsAdmin;
 
-        if (review.UserCode != userCode && !isAdmin)
-            return Result.Failure(Error.Forbidden("Cannot delete another user's review"));
+        var productCode = review.ProductCode;
+        var result = await DeleteAsync(request.Code, VNVTStore.Application.Common.MessageConstants.Review, cancellationToken, softDelete: false);
+        
+        if (result.IsSuccess && !string.IsNullOrEmpty(productCode))
+        {
+            await UpdateProductRatingAsync(productCode, cancellationToken);
+        }
 
-        return await DeleteAsync(request.Code, VNVTStore.Application.Common.MessageConstants.Review, cancellationToken, softDelete: false);
+        return result;
+    }
+
+    private void TransformAvatars(IEnumerable<ReviewDto>? reviews)
+    {
+        if (reviews == null) return;
+        var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
+        foreach (var review in reviews)
+        {
+            if (!string.IsNullOrEmpty(review.UserAvatar))
+            {
+                review.UserAvatar = review.UserAvatar.StartsWith("http") ? review.UserAvatar : $"{baseUrl}/{review.UserAvatar.TrimStart('/')}";
+            }
+            if (review.Replies != null && review.Replies.Any())
+            {
+                TransformAvatars(review.Replies);
+            }
+        }
     }
 
     public async Task<Result<PagedResult<ReviewDto>>> Handle(GetProductReviewsQuery request, CancellationToken cancellationToken)
@@ -123,39 +184,97 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             new SearchDTO { SearchField = "ParentCode", SearchValue = null, SearchCondition = SearchCondition.IsNull }
         };
 
-        return await GetPagedDapperAsync<ReviewDto>(
+        var result = await GetPagedDapperAsync<ReviewDto>(
             request.PageIndex,
             request.PageSize,
             searchFields,
             null, // Sort
             new List<ReferenceTable> {
-                new ReferenceTable { TableName = "TblUser", AliasName = "User", ForeignKeyCol = "UserCode", ColumnName = "FullName" },
-                new ReferenceTable { TableName = "TblProduct", AliasName = "Product", ForeignKeyCol = "ProductCode", ColumnName = "Name", IsJoinThrough = "OrderItemCodeNavigation" }
+                new ReferenceTable { TableName = "TblUser", AliasName = "UserName", ForeignKeyCol = "UserCode", ColumnName = "FullName" },
+                new ReferenceTable { TableName = "TblUser", AliasName = "UserAvatar", ForeignKeyCol = "UserCode", ColumnName = "AvatarUrl" },
+                new ReferenceTable { TableName = "TblProduct", AliasName = "ProductName", ForeignKeyCol = "ProductCode", ColumnName = "Name", IsJoinThrough = "OrderItemCodeNavigation" }
             },
-            null, // Fields
+            request.Fields,
             cancellationToken);
+
+        if (result.IsSuccess && result.Value.Items.Any())
+        {
+            var parentCodes = result.Value.Items.Select(r => r.Code).ToList();
+            var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
+            
+            using var connection = _dapperContext.CreateConnection();
+            var replySql = @"
+                SELECT r.*, u.""FullName"" as ""UserName"", u.""AvatarUrl"" as ""UserAvatar""
+                FROM ""TblReview"" r
+                LEFT JOIN ""TblUser"" u ON r.""UserCode"" = u.""Code""
+                WHERE r.""ParentCode"" = ANY(@Codes) AND r.""IsActive"" = true
+                ORDER BY r.""CreatedAt"" ASC";
+                
+            var replies = (await SqlMapper.QueryAsync<dynamic>(connection, replySql, new { Codes = parentCodes.ToArray() })).ToList();
+            
+            var replyMap = replies.GroupBy(r => (string)r.ParentCode).ToDictionary(
+                g => g.Key,
+                g => g.Select(r => {
+                    var avatarPath = (string?)(r.UserAvatar ?? "");
+                    var avatarUrl = string.IsNullOrEmpty(avatarPath) ? null : 
+                                   (avatarPath.StartsWith("http") ? avatarPath : $"{baseUrl}/{avatarPath.TrimStart('/')}");
+                    return new ReviewDto {
+                        Code = (string)r.Code,
+                        UserCode = (string)r.UserCode,
+                        UserName = (string)r.UserName,
+                        UserAvatar = avatarUrl,
+                        Comment = (string)r.Comment,
+                        Rating = (int)(r.Rating ?? 0),
+                        CreatedAt = (DateTime?)r.CreatedAt,
+                        ParentCode = (string)r.ParentCode
+                    };
+                }).ToList()
+            );
+
+            foreach (var review in result.Value.Items)
+            {
+                if (replyMap.TryGetValue(review.Code, out var reviewReplies))
+                {
+                    review.Replies = reviewReplies;
+                }
+            }
+
+            TransformAvatars(result.Value.Items);
+        }
+
+        return result;
     }
 
     public async Task<Result<IEnumerable<ReviewDto>>> Handle(GetUserReviewsQuery request, CancellationToken cancellationToken)
     {
         var reviews = await _repository.AsQueryable()
             .Where(r => r.UserCode == request.UserCode)
+            .Include(r => r.UserCodeNavigation)
             .Include(r => r.OrderItemCodeNavigation)
             .ThenInclude(oi => oi!.ProductCodeNavigation)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return Result.Success(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
+        var dtos = _mapper.Map<IEnumerable<ReviewDto>>(reviews);
+        TransformAvatars(dtos);
+        return Result.Success(dtos);
     }
 
     public async Task<Result<ReviewDto>> Handle(GetByCodeQuery<ReviewDto> request, CancellationToken cancellationToken)
     {
-        return await GetByCodeAsync<ReviewDto>(
+        var result = await GetByCodeAsync<ReviewDto>(
             request.Code,
             VNVTStore.Application.Common.MessageConstants.Review,
             cancellationToken,
             includes: q => q.Include(r => r.UserCodeNavigation)
                             .Include(r => r.InverseParentNavigation).ThenInclude(rp => rp.UserCodeNavigation));
+
+        if (result.IsSuccess && result.Value != null)
+        {
+            TransformAvatars(new[] { result.Value });
+        }
+
+        return result;
     }
 
     public async Task<Result> Handle(ApproveReviewCommand request, CancellationToken cancellationToken)
@@ -167,6 +286,11 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         review.IsApproved = true;
         _repository.Update(review);
         await _unitOfWork.CommitAsync(cancellationToken);
+
+        if (!string.IsNullOrEmpty(review.ProductCode))
+        {
+            await UpdateProductRatingAsync(review.ProductCode, cancellationToken);
+        }
 
         return Result.Success();
     }
@@ -180,6 +304,11 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         review.IsApproved = false;
         _repository.Update(review);
         await _unitOfWork.CommitAsync(cancellationToken);
+
+        if (!string.IsNullOrEmpty(review.ProductCode))
+        {
+            await UpdateProductRatingAsync(review.ProductCode, cancellationToken);
+        }
 
         return Result.Success();
     }
@@ -231,16 +360,24 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         // Since we need complex nested Joins (User and Product), we'll use EF-based search or Dapper with explicit Joins.
         // For reviews, we likely want to see everything in Admin, but the user specifically asked for isActive == true for public APIs.
         
-        return await GetPagedDapperAsync<ReviewDto>(
+        var result = await GetPagedDapperAsync<ReviewDto>(
             request.PageIndex,
             request.PageSize,
             searching,
             sortDTO,
             new List<ReferenceTable> {
-                new ReferenceTable { TableName = "TblUser", AliasName = "User", ForeignKeyCol = "UserCode", ColumnName = "FullName" },
-                new ReferenceTable { TableName = "TblProduct", AliasName = "Product", ForeignKeyCol = "ProductCode", ColumnName = "Name", IsJoinThrough = "OrderItemCodeNavigation" }
+                new ReferenceTable { TableName = "TblUser", AliasName = "UserName", ForeignKeyCol = "UserCode", ColumnName = "FullName" },
+                new ReferenceTable { TableName = "TblUser", AliasName = "UserAvatar", ForeignKeyCol = "UserCode", ColumnName = "AvatarUrl" },
+                new ReferenceTable { TableName = "TblProduct", AliasName = "ProductName", ForeignKeyCol = "ProductCode", ColumnName = "Name", IsJoinThrough = "OrderItemCodeNavigation" }
             },
             request.Fields,
             cancellationToken);
+
+        if (result.IsSuccess && result.Value.Items.Any())
+        {
+            TransformAvatars(result.Value.Items);
+        }
+
+        return result;
     }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Npgsql;
 using Dapper;
 
-string connectionString = "Host=localhost;Database=shoppingdb;Username=postgres;Password=password";
+string connectionString = "Host=localhost;Database=shoppingdb;Username=postgres;Password=postgres";
 
 Console.WriteLine("Starting diagnostics...");
 using var connection = new NpgsqlConnection(connectionString);

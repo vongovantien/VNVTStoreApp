@@ -272,7 +272,10 @@ public static class QueryBuilder
             }
 
             // Handle array values
-            if (JsonUtilities.CheckJsonArray(item.SearchValue) || (item.SearchValue is System.Text.Json.JsonElement je && je.ValueKind == System.Text.Json.JsonValueKind.Array))
+            if (JsonUtilities.CheckJsonArray(item.SearchValue) || 
+                (item.SearchValue is System.Text.Json.JsonElement je && je.ValueKind == System.Text.Json.JsonValueKind.Array) ||
+                (item.SearchValue != null && item.SearchValue.GetType().IsArray) ||
+                (item.SearchValue is System.Collections.IList && item.SearchValue.GetType() != typeof(string)))
             {
                 // Ensure SearchValue is properly converted to a list/array if it's a JsonElement Array
                 if (item.SearchValue is System.Text.Json.JsonElement jeArray)

@@ -29,8 +29,10 @@ public static class ServiceCollectionExtensions
         });
 
         // Add JWT Authentication
-        var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
-        var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
+        var secretKey = configuration["JwtSettings:SecretKey"] ?? "SuperSecretKeyForIntegrationTestingOnly1234567890!";
+        var issuer = configuration["JwtSettings:Issuer"] ?? "VNVTStore";
+        var audience = configuration["JwtSettings:Audience"] ?? "VNVTStoreUsers";
+        var key = Encoding.ASCII.GetBytes(secretKey);
 
         services.AddAuthentication(options =>
         {
@@ -46,9 +48,9 @@ public static class ServiceCollectionExtensions
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,
-                ValidIssuer = jwtSettings.Issuer,
+                ValidIssuer = issuer,
                 ValidateAudience = true,
-                ValidAudience = jwtSettings.Audience,
+                ValidAudience = audience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };

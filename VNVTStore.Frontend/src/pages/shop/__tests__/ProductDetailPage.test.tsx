@@ -3,7 +3,7 @@ import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import ProductDetailPage from '../ProductDetailPage';
-import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';
+import { useCartStore, useWishlistStore, useCompareStore, useRecentStore, usePriceAlertStore, useToast } from '@/store';
 import { useProduct, useProducts } from '@/hooks';
 
 // Mock dependencies
@@ -11,6 +11,8 @@ vi.mock('@/store', () => ({
   useCartStore: vi.fn(),
   useWishlistStore: vi.fn(),
   useCompareStore: vi.fn(),
+  useRecentStore: vi.fn(),
+  usePriceAlertStore: vi.fn(),
   useToast: vi.fn(),
 }));
 
@@ -33,11 +35,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, defaultValue?: string) => defaultValue || key,
-  }),
-}));
+// Using global i18n mock from setup.ts
 
 
 vi.mock('@/components/common/ProductCard', () => ({
@@ -54,6 +52,35 @@ vi.mock('@/components/reviews/ReviewsList', () => ({
 
 vi.mock('@/components/reviews/ProductReviewButton', () => ({
   ProductReviewButton: () => <button>Review</button>,
+}));
+
+vi.mock('@/components/common/RecentlyViewed', () => ({
+  RecentlyViewed: () => <div data-testid="recently-viewed">RecentlyViewed</div>,
+}));
+
+vi.mock('@/components/common/StickyCartBar', () => ({
+  StickyCartBar: () => <div data-testid="sticky-cart-bar">StickyCartBar</div>,
+}));
+
+vi.mock('@/components/common', () => ({
+  UpsellSection: () => <div data-testid="upsell-section">UpsellSection</div>,
+}));
+
+vi.mock('../components/ProductInfo', () => ({
+  ProductInfo: ({ product, handleAddToCart }: { product: any, handleAddToCart: () => void }) => (
+    <div>
+      <h1>{product.name}</h1>
+      <button onClick={handleAddToCart}>product.addToCart</button>
+    </div>
+  ),
+}));
+
+vi.mock('../components/ProductTabs', () => ({
+  ProductTabs: () => <div>ProductTabs</div>,
+}));
+
+vi.mock('@/components/common/ImageGallery', () => ({
+  ImageGallery: () => <div>ImageGallery</div>,
 }));
 
 describe('ProductDetailPage', () => {
@@ -123,6 +150,27 @@ describe('ProductDetailPage', () => {
       data: mockProduct,
       isLoading: false,
       isError: false
+    });
+    
+    vi.mocked(useProducts).mockReturnValue({
+      data: { products: [] }
+    });
+
+    const mockRecentState = {
+      addToRecent: vi.fn(),
+    };
+
+    vi.mocked(useRecentStore).mockImplementation((selector: unknown) => {
+       return typeof selector === 'function' ? selector(mockRecentState) : mockRecentState;
+    });
+
+    const mockPriceAlertState = {
+      toggleAlert: vi.fn(),
+      isWatched: () => false,
+    };
+
+    vi.mocked(usePriceAlertStore).mockImplementation((selector: unknown) => {
+       return typeof selector === 'function' ? selector(mockPriceAlertState) : mockPriceAlertState;
     });
 
     vi.mocked(useProducts).mockReturnValue({

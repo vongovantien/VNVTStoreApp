@@ -31,12 +31,15 @@ export const createSchemas = (t: TFunction) => {
     // 1. Base Fragments (reusing zField)
     const baseUserFields = {
         fullName: zField.required(t),
-        email: zField.email(t),
-        phone: zField.phone(t),
+        email: z.string(), // Disable validation to allow existing invalid emails
+        phone: zField.phone(t), // Kept for reference, overridden in userBaseSchema
     };
 
     // 2. Base Objects
-    const userBaseSchema = z.object(baseUserFields);
+    const userBaseSchema = z.object({
+        ...baseUserFields,
+        phone: z.string(), // Disable validation completely to unblock user
+    });
 
     const authBaseSchema = z.object({
         email: zField.email(t),
@@ -83,6 +86,8 @@ export const createSchemas = (t: TFunction) => {
     });
 
     const contactSchema = userBaseSchema.extend({
+        email: zField.email(t),
+        phone: zField.phone(t),
         subject: zField.required(t),
         message: zField.required(t),
     });

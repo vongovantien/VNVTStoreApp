@@ -39,5 +39,6 @@ public interface IApplicationDbContext
     DbSet<TblSystemConfig> TblSystemConfigs { get; }
     DbSet<TblMenu> TblMenus { get; }
     DbSet<TblRoleMenu> TblRoleMenus { get; }
+    DbSet<TblAuditLog> TblAuditLogs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

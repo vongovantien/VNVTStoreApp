@@ -8,8 +8,16 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { useToast } from '@/store';
 import { useState } from 'react';
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const PromotionsPage = () => {
     const { t } = useTranslation();
+    
+    useSEO({
+        title: 'Khuyến mãi',
+        description: 'Tổng hợp các chương trình khuyến mãi, mã giảm giá, voucher mới nhất tại VNVT Store. Cập nhật hàng ngày.',
+        canonicalPath: '/promotions',
+    });
     const toast = useToast();
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
 

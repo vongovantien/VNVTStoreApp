@@ -53,9 +53,9 @@ public static class DependencyInjection
 
 
         // Register Generic Handlers for entities
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblBrand, BrandDto, CreateBrandDto, UpdateBrandDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblSupplier, SupplierDto, CreateSupplierDto, UpdateSupplierDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblCategory, CategoryDto, CreateCategoryDto, UpdateCategoryDto>();
+        // services.AddGenericHandler<VNVTStore.Domain.Entities.TblBrand, BrandDto, CreateBrandDto, UpdateBrandDto>();
+        // services.AddGenericHandler<VNVTStore.Domain.Entities.TblSupplier, SupplierDto, CreateSupplierDto, UpdateSupplierDto>();
+        // services.AddGenericHandler<VNVTStore.Domain.Entities.TblCategory, CategoryDto, CreateCategoryDto, UpdateCategoryDto>();
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblBanner, BannerDto, CreateBannerDto, UpdateBannerDto>();
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblUnit, CatalogUnitDto, CreateCatalogUnitDto, UpdateCatalogUnitDto>();
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblTag, TagDto, CreateTagDto, UpdateTagDto>();
@@ -77,6 +77,35 @@ public static class DependencyInjection
         services.AddScoped<IRequestHandler<GetByCodeQuery<BannerDto>, Result<BannerDto>>, VNVTStore.Application.Banners.Handlers.GetBannerByCodeHandler>();
         services.AddScoped<IRequestHandler<CreateCommand<CreateBannerDto, BannerDto>, Result<BannerDto>>, VNVTStore.Application.Banners.Handlers.CreateBannerHandler>();
         services.AddScoped<IRequestHandler<UpdateCommand<UpdateBannerDto, BannerDto>, Result<BannerDto>>, VNVTStore.Application.Banners.Handlers.UpdateBannerHandler>();
+
+        // Brand Specialized Handlers
+        services.AddScoped<IRequestHandler<CreateCommand<CreateBrandDto, BrandDto>, Result<BrandDto>>, VNVTStore.Application.Brands.Handlers.BrandHandlers>();
+        services.AddScoped<IRequestHandler<UpdateCommand<UpdateBrandDto, BrandDto>, Result<BrandDto>>, VNVTStore.Application.Brands.Handlers.BrandHandlers>();
+        services.AddScoped<IRequestHandler<DeleteCommand<TblBrand>, Result>, VNVTStore.Application.Brands.Handlers.BrandHandlers>();
+        services.AddScoped<IRequestHandler<GetByCodeQuery<BrandDto>, Result<BrandDto>>, VNVTStore.Application.Brands.Handlers.BrandHandlers>();
+        services.AddScoped<IRequestHandler<GetPagedQuery<BrandDto>, Result<PagedResult<BrandDto>>>, VNVTStore.Application.Brands.Handlers.BrandHandlers>();
+        services.AddScoped<IRequestHandler<DeleteMultipleCommand<TblBrand>, Result>, VNVTStore.Application.Brands.Handlers.BrandHandlers>();
+        services.AddScoped<IRequestHandler<GetStatsQuery<TblBrand>, Result<EntityStatsDto>>, VNVTStore.Application.Brands.Handlers.BrandHandlers>();
+
+        // Supplier Specialized Handlers
+        services.AddScoped<IRequestHandler<CreateCommand<CreateSupplierDto, SupplierDto>, Result<SupplierDto>>, VNVTStore.Application.Suppliers.Handlers.SupplierHandlers>();
+        services.AddScoped<IRequestHandler<UpdateCommand<UpdateSupplierDto, SupplierDto>, Result<SupplierDto>>, VNVTStore.Application.Suppliers.Handlers.SupplierHandlers>();
+        services.AddScoped<IRequestHandler<DeleteCommand<TblSupplier>, Result>, VNVTStore.Application.Suppliers.Handlers.SupplierHandlers>();
+        services.AddScoped<IRequestHandler<GetByCodeQuery<SupplierDto>, Result<SupplierDto>>, VNVTStore.Application.Suppliers.Handlers.SupplierHandlers>();
+        services.AddScoped<IRequestHandler<GetPagedQuery<SupplierDto>, Result<PagedResult<SupplierDto>>>, VNVTStore.Application.Suppliers.Handlers.SupplierHandlers>();
+        services.AddScoped<IRequestHandler<DeleteMultipleCommand<TblSupplier>, Result>, VNVTStore.Application.Suppliers.Handlers.SupplierHandlers>();
+        services.AddScoped<IRequestHandler<GetStatsQuery<TblSupplier>, Result<EntityStatsDto>>, VNVTStore.Application.Suppliers.Handlers.SupplierHandlers>();
+
+        // Category Specialized Handlers (Note: GetPaged is handled by GetCategoriesHandler, but we register CRUD here)
+        // We override Generic Handler for CRUD, but GetPaged might conflict if we register both?
+        // Method 1: Register CategoryHandlers for CRUD + GetByCode + Stats
+        // Method 2: Let GetCategoriesHandler keep GetPaged.
+        services.AddScoped<IRequestHandler<CreateCommand<CreateCategoryDto, CategoryDto>, Result<CategoryDto>>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
+        services.AddScoped<IRequestHandler<UpdateCommand<UpdateCategoryDto, CategoryDto>, Result<CategoryDto>>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
+        services.AddScoped<IRequestHandler<DeleteCommand<TblCategory>, Result>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
+        services.AddScoped<IRequestHandler<GetByCodeQuery<CategoryDto>, Result<CategoryDto>>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
+        services.AddScoped<IRequestHandler<DeleteMultipleCommand<TblCategory>, Result>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
+        services.AddScoped<IRequestHandler<GetStatsQuery<TblCategory>, Result<EntityStatsDto>>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
 
         return services;
     }

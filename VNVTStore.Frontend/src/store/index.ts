@@ -2,8 +2,9 @@ import { create, StoreApi } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { UserRole } from '@/types';
 import type { Product, CartItem, User } from '@/types';
-import { cartService } from '@/services';
+import { cartService, authService } from '@/services';
 import { injectStore, AuthState } from '@/services/api';
+import { useRecentStore } from './recentStore';
 
 // ============ Helpers ============
 /**
@@ -14,10 +15,15 @@ const getTabId = () => {
     if (typeof window === 'undefined') return 'server';
     let tabId = sessionStorage.getItem('vnvt-tab-id');
     if (!tabId) {
-        tabId = Math.random().toString(36).substring(2, 11);
+        tabId = Math.random().toString(36).substring(2, 9);
         sessionStorage.setItem('vnvt-tab-id', tabId);
     }
     return tabId;
+};
+
+const getStorageKey = (name: string) => {
+    const tabId = getTabId();
+    return `${name}-${tabId}`;
 };
 
 /**
@@ -25,30 +31,21 @@ const getTabId = () => {
  */
 const createTabStorage = () => ({
     getItem: (name: string) => {
-        const tabId = getTabId();
-        const tabKey = `${name}-${tabId}`;
-        // Try tab-specific first, then fallback to shared (for migration/compatibility)
-        return sessionStorage.getItem(tabKey) || localStorage.getItem(tabKey) ||
-            sessionStorage.getItem(name) || localStorage.getItem(name);
+        const key = getStorageKey(name);
+        return localStorage.getItem(key) || sessionStorage.getItem(key) || localStorage.getItem(name) || sessionStorage.getItem(name);
     },
     setItem: (name: string, value: string) => {
-        const tabId = getTabId();
-        const tabKey = `${name}-${tabId}`;
+        const key = getStorageKey(name);
         const isRemember = localStorage.getItem('vnvt-remember') === 'true';
-
-        if (isRemember && name.includes('auth')) {
-            localStorage.setItem(tabKey, value);
-            sessionStorage.removeItem(tabKey);
+        if (isRemember) {
+            localStorage.setItem(key, value);
+            sessionStorage.removeItem(key);
         } else {
-            sessionStorage.setItem(tabKey, value);
-            localStorage.removeItem(tabKey);
+            sessionStorage.setItem(key, value);
+            localStorage.removeItem(key);
         }
     },
     removeItem: (name: string) => {
-        const tabId = getTabId();
-        const tabKey = `${name}-${tabId}`;
-        sessionStorage.removeItem(tabKey);
-        localStorage.removeItem(tabKey);
         sessionStorage.removeItem(name);
         localStorage.removeItem(name);
     },
@@ -229,29 +226,21 @@ export const useCartStore = create<CartState>()(
 
 const authStorage = {
     getItem: (name: string) => {
-        const tabId = getTabId();
-        const tabKey = `${name}-${tabId}`;
-        return localStorage.getItem(tabKey) || sessionStorage.getItem(tabKey) ||
-            localStorage.getItem(name) || sessionStorage.getItem(name);
+        const key = getStorageKey(name);
+        return localStorage.getItem(key) || sessionStorage.getItem(key) || localStorage.getItem(name) || sessionStorage.getItem(name);
     },
     setItem: (name: string, value: string) => {
-        const tabId = getTabId();
-        const tabKey = `${name}-${tabId}`;
+        const key = getStorageKey(name);
         const isRemember = localStorage.getItem('vnvt-remember') === 'true';
-
         if (isRemember) {
-            localStorage.setItem(tabKey, value);
-            sessionStorage.removeItem(tabKey);
+            localStorage.setItem(key, value);
+            sessionStorage.removeItem(key);
         } else {
-            sessionStorage.setItem(tabKey, value);
-            localStorage.removeItem(tabKey);
+            sessionStorage.setItem(key, value);
+            localStorage.removeItem(key);
         }
     },
     removeItem: (name: string) => {
-        const tabId = getTabId();
-        const tabKey = `${name}-${tabId}`;
-        localStorage.removeItem(tabKey);
-        sessionStorage.removeItem(tabKey);
         localStorage.removeItem(name);
         sessionStorage.removeItem(name);
     },
@@ -264,6 +253,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             token: null,
             refreshToken: null,
+            adminToken: null,
             permissions: [],
             menus: [],
             login: async (user: User, token?: string, refreshToken?: string, menus?: string[]) => {
@@ -291,12 +281,63 @@ export const useAuthStore = create<AuthState>()(
                 } else {
                     await fetchCart();
                 }
+
+                // Merge recently viewed products
+                const { viewedProducts, mergeRecent } = useRecentStore.getState();
+                if (viewedProducts.length > 0) {
+                    mergeRecent(viewedProducts);
+                }
             },
             logout: () => set({ user: null, isAuthenticated: false, token: null, refreshToken: null }),
             updateUser: (userData: Partial<User>) => {
                 const currentUser = get().user;
                 if (currentUser) {
                     set({ user: { ...currentUser, ...userData } as User });
+                }
+            },
+            impersonate: async (userCode: string) => {
+                const currentToken = get().token;
+                const isAdmin = get().user?.role === UserRole.Admin;
+
+                // Only allow if current user is an admin or we already have an adminToken stored
+                if (!isAdmin && !get().adminToken) return;
+
+                const res = await authService.impersonate(userCode);
+                if (res.success && res.data) {
+                    const { user, token, refreshToken } = res.data;
+                    set({
+                        user: user as unknown as User,
+                        token,
+                        refreshToken: refreshToken || null,
+                        adminToken: get().adminToken || currentToken, // Save admin token if not already saved
+                        isAuthenticated: true,
+                        permissions: user.permissions || [],
+                        menus: user.menus || []
+                    });
+                }
+            },
+            stopImpersonating: () => {
+                const { adminToken } = get();
+                if (adminToken) {
+                    // To fully recover admin state, we might need a "Back to Admin" API call 
+                    // or just reload/re-fetch admin profile using the token.
+                    // For now, simpler: clear impersonation and force a refresh or just logout.
+                    // Actually, if we have the token, we can just logout and the user can re-login,
+                    // OR we try to restore the admin session if we were smart about storing it.
+
+                    // Simple approach: Logout everything to be safe
+                    set({
+                        user: null,
+                        isAuthenticated: false,
+                        token: null,
+                        refreshToken: null,
+                        adminToken: null,
+                        permissions: [],
+                        menus: []
+                    });
+
+                    // Optional: redirect to login
+                    window.location.href = '/login';
                 }
             },
             setTokens: (token: string, refreshToken: string) => set({ token, refreshToken }),
@@ -367,6 +408,8 @@ export const useWishlistStore = create<WishlistState>()(
 interface CompareState {
     items: Product[];
     maxItems: number;
+    isOpen: boolean;
+    setIsOpen: (open: boolean) => void;
     addItem: (product: Product) => void;
     removeItem: (productId: string) => void;
     isInCompare: (productId: string) => boolean;
@@ -378,6 +421,8 @@ export const useCompareStore = create<CompareState>()(
         (set, get) => ({
             items: [],
             maxItems: 3,
+            isOpen: false,
+            setIsOpen: (open) => set({ isOpen: open }),
             addItem: (product) => {
                 set((state) => {
                     if (state.items.length >= state.maxItems) {
@@ -414,10 +459,12 @@ interface UIState {
     sidebarOpen: boolean;
     searchOpen: boolean;
     cartOpen: boolean;
+    quickViewProduct: Product | null;
     toggleTheme: () => void;
     setSidebarOpen: (open: boolean) => void;
     setSearchOpen: (open: boolean) => void;
     setCartOpen: (open: boolean) => void;
+    setQuickViewProduct: (product: Product | null) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -427,6 +474,7 @@ export const useUIStore = create<UIState>()(
             sidebarOpen: true,
             searchOpen: false,
             cartOpen: false,
+            quickViewProduct: null,
             toggleTheme: () => {
                 const newTheme = get().theme === 'light' ? 'dark' : 'light';
                 document.documentElement.setAttribute('data-theme', newTheme);
@@ -440,6 +488,7 @@ export const useUIStore = create<UIState>()(
             setSidebarOpen: (open) => set({ sidebarOpen: open }),
             setSearchOpen: (open) => set({ searchOpen: open }),
             setCartOpen: (open) => set({ cartOpen: open }),
+            setQuickViewProduct: (product) => set({ quickViewProduct: product }),
         }),
         {
             name: 'vnvt-ui',
@@ -497,7 +546,35 @@ export const useNotificationStore = create<NotificationState>()(
     )
 );
 
+// ============ Price Alert Store ============
+interface PriceAlertState {
+    watchlist: string[]; // List of product codes
+    toggleAlert: (productCode: string) => void;
+    isWatched: (productCode: string) => boolean;
+}
+
+export const usePriceAlertStore = create<PriceAlertState>()(
+    persist(
+        (set, get) => ({
+            watchlist: [],
+            toggleAlert: (code) => {
+                set((state) => ({
+                    watchlist: state.watchlist.includes(code)
+                        ? state.watchlist.filter((c) => c !== code)
+                        : [...state.watchlist, code],
+                }));
+            },
+            isWatched: (code) => get().watchlist.includes(code),
+        }),
+        {
+            name: 'vnvt-price-alerts',
+            storage: createJSONStorage(() => localStorage),
+        }
+    )
+);
+
 // Re-export toast store
 export { useToastStore, useToast } from './toastStore';
 export type { Toast, ToastType } from './toastStore';
 export * from './useSettings';
+export * from './recentStore';

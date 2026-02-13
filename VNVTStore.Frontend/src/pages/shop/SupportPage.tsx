@@ -8,8 +8,16 @@ import {
 import { Button } from '@/components/ui';
 import { Link } from 'react-router-dom';
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const SupportPage = () => {
     const { t } = useTranslation();
+    
+    useSEO({
+        title: 'Hỗ trợ khách hàng',
+        description: 'Trung tâm hỗ trợ khách hàng VNVT Store. Giải đáp thắc mắc về đơn hàng, thanh toán, vận chuyển và chính sách đổi trả.',
+        canonicalPath: '/support',
+    });
     const [openFaq, setOpenFaq] = useState<number | null>(0);
 
     const supportCategories = [

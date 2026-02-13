@@ -2,8 +2,8 @@
  * Common Regex Patterns
  */
 export const REGEX = {
-    // Vietnam phone number: starts with 03, 05, 07, 08, 09 followed by 8 digits
-    PHONE: /^(0[3|5|7|8|9])([0-9]{8})$/,
+    // Vietnam phone number: allow 10-11 digits starting with 0
+    PHONE: /^(0)([0-9]{9,10})$/,
 
     // Simple phone number: 10 to 11 digits
     PHONE_SIMPLE: /^[0-9]{10,11}$/,

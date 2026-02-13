@@ -4,6 +4,7 @@ import { debounce, throttle } from 'lodash-es';
 // Re-export product hooks
 export {
     useProducts,
+    useInfiniteProducts,
     useProduct,
     useCreateProduct,
     useUpdateProduct,

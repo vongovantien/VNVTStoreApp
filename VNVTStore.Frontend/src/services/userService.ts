@@ -75,6 +75,7 @@ export const userService = {
     getProfile: () => apiClient.get<UserProfileDto>(`${API_ENDPOINTS.USERS.BASE}/profile`),
     updateProfile: (data: UpdateProfileRequest) => apiClient.put<UserProfileDto>(`${API_ENDPOINTS.USERS.BASE}/profile`, data),
     changePassword: (data: ChangePasswordRequest) => apiClient.post<boolean>(`${API_ENDPOINTS.USERS.BASE}/change-password`, data),
+    deleteAccount: () => apiClient.delete<boolean>(`${API_ENDPOINTS.USERS.BASE}/delete-account`),
     getMyAddresses: async () => {
         const res = await apiClient.post<PagedResult<AddressDto>>(`${API_ENDPOINTS.ADDRESSES.BASE}/search`, { PageIndex: 1, PageSize: 100 });
         return { ...res, data: res.data?.items || [] };

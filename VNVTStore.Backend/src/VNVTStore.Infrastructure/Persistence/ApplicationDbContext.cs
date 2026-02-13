@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -70,6 +70,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblSupplier> TblSuppliers { get; set; }
     public virtual DbSet<TblMenu> TblMenus { get; set; }
     public virtual DbSet<TblRoleMenu> TblRoleMenus { get; set; }
+    public virtual DbSet<TblAuditLog> TblAuditLogs { get; set; }
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<DateTime>()
@@ -98,7 +99,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblBanner");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -131,7 +132,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             
             entity.Property(e => e.Category).HasColumnName("Category").HasMaxLength(50);
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code).HasMaxLength(100)
                     .HasDefaultValueSql("('ADR'::text || lpad((nextval('address_code_seq'::regclass))::text, 6, '0'::text))");
@@ -144,7 +145,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.City).HasMaxLength(50);
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Country)
                     .HasMaxLength(50)
@@ -182,7 +183,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.UserCode, "idx_cart_user");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -213,7 +214,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblCartItem");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -253,7 +254,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblCategory");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -263,9 +264,6 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             {
                 entity.Property(e => e.Code).HasMaxLength(100);
             }
-            entity.Property(e => e.ImageURL)
-                .HasMaxLength(255)
-                .HasColumnName("ImageURL");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.ParentCode).HasMaxLength(100);
@@ -292,7 +290,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblCoupon");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -327,7 +325,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.Status, "idx_order_status");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -346,7 +344,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.OrderDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Status)
                     .HasMaxLength(20)
@@ -389,7 +387,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblOrderItem");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -432,7 +430,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.OrderCode, "TblPayment_OrderCode_key").IsUnique();
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -448,7 +446,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.PaymentDate)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Status)
                     .HasMaxLength(20)
@@ -485,7 +483,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.Name, "idx_product_name");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -509,6 +507,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.Property(e => e.StockQuantity).HasDefaultValue(0);
             entity.Property(e => e.WholesalePrice).HasPrecision(15, 2);
+            entity.Property(e => e.Rating).HasPrecision(3, 2).HasDefaultValue(0);
+            entity.Property(e => e.ReviewCount).HasDefaultValue(0);
             entity.Property(e => e.BrandCode).HasMaxLength(50);
             entity.Property(e => e.BaseUnit).HasMaxLength(50);
             entity.Property(e => e.BinLocation).HasMaxLength(100);
@@ -546,7 +546,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => new { e.ProductCode, e.PromotionCode }, "TblProductPromotion_ProductCode_PromotionCode_key").IsUnique();
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -582,7 +582,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblPromotion");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -615,7 +615,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblReview");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -662,7 +662,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             entity.HasKey(e => e.Code).HasName("TblNews_pkey");
             entity.ToTable("TblNews");
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -715,7 +715,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblQuote");
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -728,7 +728,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Status)
                     .HasMaxLength(20)
@@ -761,7 +761,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.Username, "TblUser_Username_key").IsUnique();
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -778,7 +778,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(15);
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Role)
                     .HasMaxLength(20)
@@ -794,7 +794,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Username).HasMaxLength(50);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.ModifiedType).HasDefaultValue("Add");
-            entity.Property(e => e.AvatarUrl).HasMaxLength(1000);
+            entity.Property(e => e.AvatarUrl).HasMaxLength(1000).UsePropertyAccessMode(PropertyAccessMode.Field);
             entity.Property(e => e.RoleCode).HasMaxLength(50);
 
             entity.HasOne(d => d.RoleCodeNavigation).WithMany(p => p.TblUsers)
@@ -812,7 +812,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.MasterCode, "idx_file_mastercode"); // Add Index
 
-            if (Database.IsNpgsql())
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
             {
                 entity.Property(e => e.Code)
                     .HasMaxLength(100)
@@ -838,7 +838,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
-        if (Database.IsNpgsql())
+        if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
         {
             modelBuilder.HasSequence("address_code_seq");
             modelBuilder.HasSequence("cart_code_seq");
@@ -858,6 +858,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             modelBuilder.HasSequence("banner_code_seq");
             modelBuilder.HasSequence("file_code_seq");
             modelBuilder.HasSequence("news_code_seq");
+            modelBuilder.HasSequence("auditlog_code_seq");
         }
 
         // Brand Configuration
@@ -1147,6 +1148,34 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.MenuCode)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("TblRoleMenu_MenuCode_fkey");
+        });
+
+        modelBuilder.Entity<TblAuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblAuditLog_pkey");
+            entity.ToTable("TblAuditLog");
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('LOG'::text || lpad((nextval('auditlog_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
+            entity.Property(e => e.Action).HasMaxLength(100);
+            entity.Property(e => e.Target).HasMaxLength(255);
+            entity.Property(e => e.IpAddress).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+
+            entity.HasOne(d => d.UserCodeNavigation).WithMany()
+                .HasForeignKey(d => d.UserCode)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("TblAuditLog_UserCode_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

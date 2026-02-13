@@ -63,8 +63,8 @@ public class ExceptionHandlingMiddleware
             ),
             _ => (
                 HttpStatusCode.InternalServerError,
-                env.IsDevelopment() 
-                    ? $"{exception.Message} | Inner: {exception.InnerException?.Message}" 
+                env.IsDevelopment()
+                    ? $"{exception.Message} | Inner: {exception.InnerException?.Message} | Trace: {exception.StackTrace}"
                     : "An internal server error occurred"
             )
         };

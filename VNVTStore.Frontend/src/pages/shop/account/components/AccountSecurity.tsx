@@ -11,48 +11,81 @@ const AccountSecurity = ({ onPasswordChange, onTwoFactorSetup }: AccountSecurity
   const { t } = useTranslation();
 
   return (
-     <section className="bg-primary rounded-xl p-6 border shadow-sm border-secondary/10">
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-primary">
-        <Shield className="text-accent" size={24} />
-        {t('common.account.security')}
-      </h2>
-
-      <div className="space-y-6">
-        {/* Password */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-lg bg-secondary/30 border border-secondary/10">
-          <div className="flex gap-4">
-            <div className="bg-primary p-3 rounded-full shadow-sm text-accent">
-              <Key size={20} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-primary">{t('common.account.changePassword')}</h3>
-              <p className="text-sm text-secondary">{t('common.hints.leaveBlankKeepCurrent') || 'Cập nhật mật khẩu để bảo vệ tài khoản tốt hơn'}</p>
-            </div>
+     <section className="bg-primary rounded-2xl p-8 border border-secondary/10 shadow-md animate-fade-in delay-75">
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-secondary/5">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-accent/10 rounded-lg text-accent">
+            <Shield size={22} />
           </div>
-          <Button variant="outline" onClick={onPasswordChange}>
-            {t('common.account.changePassword')}
-          </Button>
+          <div>
+            <h2 className="text-2xl font-bold text-primary tracking-tight">{t('common.account.security')}</h2>
+            <p className="text-sm text-tertiary mt-1">{t('common.account.securitySubtitle') || 'Bảo mật tài khoản của bạn'}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Password Card */}
+        <div className="group relative p-6 rounded-2xl bg-bg-secondary border border-secondary/5 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 overflow-hidden">
+          <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Key size={80} />
+          </div>
+          
+          <div className="flex flex-col h-full space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary rounded-xl shadow-sm border border-secondary/5 text-accent">
+                <Key size={20} />
+              </div>
+              <h3 className="font-bold text-primary text-lg">{t('common.account.changePassword')}</h3>
+            </div>
+            
+            <p className="text-sm text-secondary flex-1 leading-relaxed">
+              {t('common.hints.leaveBlankKeepCurrent') || 'Cập nhật mật khẩu định kỳ để nâng cao tính bảo mật cho tài khoản của bạn.'}
+            </p>
+            
+            <Button 
+              variant="outline" 
+              onClick={onPasswordChange}
+              fullWidth
+              className="mt-4 border-secondary/20 hover:border-accent hover:text-accent group-hover:bg-accent/5 transition-all text-sm font-semibold"
+            >
+              {t('common.account.changePassword')}
+            </Button>
+          </div>
         </div>
 
-        {/* 2FA */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-lg bg-secondary/30 border border-secondary/10">
-          <div className="flex gap-4">
-            <div className="bg-primary p-3 rounded-full shadow-sm text-accent">
-              <Smartphone size={20} />
-            </div>
-            <div>
+        {/* 2FA Card */}
+        <div className="group relative p-6 rounded-2xl bg-bg-secondary border border-secondary/5 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 overflow-hidden">
+           <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Smartphone size={80} />
+          </div>
+
+          <div className="flex flex-col h-full space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary rounded-xl shadow-sm border border-secondary/5 text-accent">
+                <Smartphone size={20} />
+              </div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-primary">{t('common.account.twoFactor')}</h3>
-                <span className="px-2 py-0.5 text-[10px] font-bold bg-secondary/50 text-secondary rounded-full uppercase">
+                <h3 className="font-bold text-primary text-lg">{t('common.account.twoFactor')}</h3>
+                <span className="px-2 py-0.5 text-[9px] font-extrabold bg-tertiary/20 text-tertiary border border-tertiary/10 rounded-full uppercase tracking-tighter">
                    {t('common.account.notActivated')}
                 </span>
               </div>
-              <p className="text-sm text-secondary">{t('common.account.twoFactorDesc')}</p>
             </div>
+            
+            <p className="text-sm text-secondary flex-1 leading-relaxed">
+              {t('common.account.twoFactorDesc') || 'Thêm một lớp bảo mật bằng cách yêu cầu mã xác thực từ điện thoại của bạn.'}
+            </p>
+            
+            <Button 
+              variant="outline" 
+              onClick={onTwoFactorSetup}
+              fullWidth
+              className="mt-4 border-secondary/20 hover:border-accent hover:text-accent group-hover:bg-accent/5 transition-all text-sm font-semibold"
+            >
+              {t('common.account.setupTwoFactor')}
+            </Button>
           </div>
-          <Button variant="ghost" onClick={onTwoFactorSetup}>
-            {t('common.account.setupTwoFactor')}
-          </Button>
         </div>
       </div>
     </section>

@@ -7,9 +7,16 @@ import { orderService, type OrderDto } from '@/services/orderService';
 import { formatCurrency } from '@/utils/format';
 import CustomImage from '@/components/common/Image';
 
+import { useSEO } from '@/hooks/useSEO';
+
 const OrderSuccessPage = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
   const { t } = useTranslation();
+  
+  useSEO({
+    title: 'Đặt hàng thành công',
+    noindex: true,
+  });
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const orderCode = searchParams.get('code');

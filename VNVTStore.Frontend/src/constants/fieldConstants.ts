@@ -63,7 +63,7 @@ export const CATEGORY_LIST_FIELDS = [
     ...COMMON_FIELDS,
     'Name',
     'Description',
-    'ImageURL',
+    'Files',
     'ParentCode',
     'ParentName',
 ];
@@ -102,7 +102,7 @@ export const COUPON_LIST_FIELDS = [
 export const BANNER_LIST_FIELDS = [
     ...COMMON_FIELDS,
     'Title',
-    'ImageURL',
+    'ImageUrl',
     'Link',
     'Position',
 ];

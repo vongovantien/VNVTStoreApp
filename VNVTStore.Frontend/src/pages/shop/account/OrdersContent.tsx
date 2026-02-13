@@ -38,13 +38,13 @@ const OrdersContent = () => {
     // Optionally refresh orders if needed (e.g. to hide review button if functionality added later) or show success toast
   };
 
-  if (loading) return <div>{t('common.loading')}</div>;
+  if (loading) return <div className="p-8 text-center text-secondary">{t('common.loading')}</div>;
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">{t('account.orders')}</h2>
+      <h2 className="text-xl font-bold">{t('common.account.orders')}</h2>
 
-      {orders.length === 0 && <p className="text-secondary">{t('review.no_orders')}</p>}
+      {orders.length === 0 && <p className="text-secondary">{t('common.account.noOrders')}</p>}
 
       {orders.map((order) => (
         <div key={order.code} className="bg-primary rounded-xl p-4 border border-secondary/20">
@@ -82,7 +82,7 @@ const OrdersContent = () => {
                             leftIcon={<Star size={12}/>}
                             onClick={() => setSelectedItem(item)}
                         >
-                            {t('review.write')}
+                            {t('common.account.writeReview')}
                         </Button>
                       )}
                   </div>
@@ -103,7 +103,7 @@ const OrdersContent = () => {
       <Modal
         isOpen={!!selectedItem}
         onClose={() => setSelectedItem(null)}
-        title={t('review.write_review')}
+        title={t('common.account.writeReview')}
         size="lg"
       >
         {selectedItem && user && (

@@ -25,10 +25,13 @@ public class ReviewHandlerTests
 {
     private readonly Mock<IRepository<TblReview>> _reviewRepoMock;
     private readonly Mock<IRepository<TblOrderItem>> _orderItemRepoMock;
+    private readonly Mock<IRepository<TblProduct>> _productRepoMock;
+    private readonly Mock<IRepository<TblOrder>> _orderRepository;
     private readonly Mock<ICurrentUser> _currentUserMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IDapperContext> _dapperContextMock;
+    private readonly Mock<IBaseUrlService> _baseUrlServiceMock;
 
     private readonly ReviewHandlers _handler;
     private readonly List<TblReview> _reviewsDatabase;
@@ -37,10 +40,16 @@ public class ReviewHandlerTests
     {
         _reviewRepoMock = new Mock<IRepository<TblReview>>();
         _orderItemRepoMock = new Mock<IRepository<TblOrderItem>>();
+        _productRepoMock = new Mock<IRepository<TblProduct>>();
+        _orderRepository = new Mock<IRepository<TblOrder>>();
         _currentUserMock = new Mock<ICurrentUser>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _mapperMock = new Mock<IMapper>();
         _dapperContextMock = new Mock<IDapperContext>();
+        _baseUrlServiceMock = new Mock<IBaseUrlService>();
+        _baseUrlServiceMock.Setup(x => x.GetBaseUrl()).Returns("http://test-api.com");
+
+        var orderRepoMock = new Mock<IRepository<TblOrder>>();
 
         _reviewsDatabase = new List<TblReview>();
 
@@ -49,9 +58,41 @@ public class ReviewHandlerTests
             .Callback<TblReview, CancellationToken>((r, _) => _reviewsDatabase.Add(r))
             .Returns(Task.CompletedTask);
 
+        _reviewRepoMock.Setup(x => x.AsQueryable())
+            .Returns(CreateMockDbSet(_reviewsDatabase).Object);
+
         _reviewRepoMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblReview, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Expression<Func<TblReview, bool>> predicate, CancellationToken _) => 
                 _reviewsDatabase.AsQueryable().FirstOrDefault(predicate));
+
+        _productRepoMock.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string code, CancellationToken _) => 
+            {
+                var p = TblProduct.Create("Test Product", 100m, null, 10, "CAT1", null, "SUP1");
+                SetPrivateProperty(p, "Code", code);
+                return p;
+            });
+
+        _orderItemRepoMock.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string code, CancellationToken _) => 
+            {
+                var item = TblOrderItem.Create("PROD001", "Test", null, 1, 10, null, null);
+                SetPrivateProperty(item, "Code", code);
+                // Set private OrderCode using reflection since it's private set
+                SetPrivateProperty(item, "OrderCode", "ORDER001");
+                return item;
+            });
+
+        _orderRepository.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string code, CancellationToken _) => 
+            {
+                var order = TblOrder.Create("USER001", "ADDR001", 10m, 0, 0, null);
+                SetPrivateProperty(order, "Code", code);
+                return order;
+            });
+
+        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
 
         // Setup Mapper
         _mapperMock.Setup(x => x.Map<ReviewDto>(It.IsAny<TblReview>()))
@@ -66,22 +107,29 @@ public class ReviewHandlerTests
             });
 
         _mapperMock.Setup(x => x.Map<TblReview>(It.IsAny<CreateReviewDto>()))
-            .Returns((CreateReviewDto d) => new TblReview
+            .Returns((CreateReviewDto d) => 
             {
-                Rating = d.Rating,
-                Comment = d.Comment,
-                UserCode = d.UserCode,
-                ProductCode = d.ProductCode,
-                OrderItemCode = d.OrderItemCode
+                var r = new TblReview
+                {
+                    Rating = d.Rating,
+                    Comment = d.Comment,
+                    UserCode = d.UserCode,
+                    ProductCode = d.ProductCode,
+                    OrderItemCode = d.OrderItemCode
+                };
+                return r;
             });
 
         _handler = new ReviewHandlers(
             _reviewRepoMock.Object,
             _orderItemRepoMock.Object,
+            _productRepoMock.Object,
+            _orderRepository.Object,
             _currentUserMock.Object,
             _unitOfWorkMock.Object,
             _mapperMock.Object,
-            _dapperContextMock.Object
+            _dapperContextMock.Object,
+            _baseUrlServiceMock.Object
         );
     }
 
@@ -113,10 +161,15 @@ public class ReviewHandlerTests
         SetPrivateProperty(orderItem, nameof(TblOrderItem.Code), "OI001");
         
         var order = TblOrder.Create("USER001", "ADDR001", 10m, 0, 0, null);
+        SetPrivateProperty(order, nameof(TblOrder.Code), "ORD001");
+        SetPrivateProperty(orderItem, "OrderCode", "ORD001");
         SetPrivateProperty(orderItem, nameof(TblOrderItem.OrderCodeNavigation), order);
         
-        var orderItems = new List<TblOrderItem> { orderItem };
-        _orderItemRepoMock.Setup(x => x.AsQueryable()).Returns(CreateMockDbSet(orderItems).Object);
+        _orderItemRepoMock.Setup(x => x.GetByCodeAsync("OI001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(orderItem);
+
+        _orderRepository.Setup(x => x.GetByCodeAsync(order.Code, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
 
         var dto = new CreateReviewDto
         {
@@ -170,10 +223,15 @@ public class ReviewHandlerTests
         SetPrivateProperty(orderItem, nameof(TblOrderItem.Code), "OI001");
         
         var order = TblOrder.Create("OTHER_USER", "ADDR001", 10m, 0, 0, null);
+        SetPrivateProperty(order, nameof(TblOrder.Code), "ORD001");
+        SetPrivateProperty(orderItem, "OrderCode", "ORD001");
         SetPrivateProperty(orderItem, nameof(TblOrderItem.OrderCodeNavigation), order);
 
-        var orderItems = new List<TblOrderItem> { orderItem };
-        _orderItemRepoMock.Setup(x => x.AsQueryable()).Returns(CreateMockDbSet(orderItems).Object);
+        _orderItemRepoMock.Setup(x => x.GetByCodeAsync("OI001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(orderItem);
+
+        _orderRepository.Setup(x => x.GetByCodeAsync(order.Code, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
 
         var dto = new CreateReviewDto
         {

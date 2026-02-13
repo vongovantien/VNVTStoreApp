@@ -30,3 +30,7 @@ public record ResetPasswordCommand(
     string token,
     string newPassword
 ) : IRequest<Result<bool>>;
+
+public record ImpersonateCommand(
+    string targetUserCode
+) : IRequest<Result<AuthResponseDto>>;

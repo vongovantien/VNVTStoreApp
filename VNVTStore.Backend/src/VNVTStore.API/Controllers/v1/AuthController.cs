@@ -119,6 +119,20 @@ public class AuthController : BaseApiController
         var result = await Mediator.Send(command);
         return HandleResult(result, MessageConstants.Get(MessageConstants.LoginSuccess));
     }
+
+    /// <summary>
+    /// Đăng nhập dưới quyền người dùng khác (Chỉ dành cho Admin)
+    /// </summary>
+    /// <param name="userCode">Mã người dùng muốn đăng nhập</param>
+    [HttpPost("impersonate/{userCode}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Impersonate(string userCode)
+    {
+        var command = new ImpersonateCommand(userCode);
+        var result = await Mediator.Send(command);
+        return HandleResult(result, "Impersonation successful");
+    }
 }
 
 public record ForgotPasswordRequest(string Email);

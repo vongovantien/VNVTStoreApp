@@ -6,8 +6,15 @@ import { Button } from '@/components/ui';
 import { orderService } from '@/services/orderService';
 import { PageLoader } from '@/components/common/PageLoader';
 
+import { useSEO } from '@/hooks/useSEO';
+
 const VerifyOrderPage = () => {
     const { t } = useTranslation();
+    
+    useSEO({
+        title: 'Xác thực đơn hàng',
+        noindex: true,
+    });
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
     

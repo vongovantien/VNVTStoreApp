@@ -15,8 +15,7 @@ public partial class TblCategory : IEntity
 
     public string? ParentCode { get; set; }
 
-    [Column("ImageURL")]
-    public string? ImageURL { get; set; }
+
 
     public bool IsActive { get; set; } = true;
 

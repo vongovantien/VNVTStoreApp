@@ -24,6 +24,7 @@ export const Loading: React.FC<LoadingProps> = ({
     const spinner = (
         <div className="flex flex-col items-center justify-center gap-3">
             <div 
+                role="status"
                 className={cn(
                     "rounded-full border-indigo-600 border-t-transparent animate-spin",
                     sizeClasses[size],

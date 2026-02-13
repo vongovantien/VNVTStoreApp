@@ -229,7 +229,7 @@ export const LazySelect = forwardRef<HTMLDivElement, LazySelectProps>(
                                                 onClick={() => handleSelect(option.value)}
                                                 className={cn(
                                                     'w-full px-4 py-2 text-sm text-left flex items-center gap-2',
-                                                    'hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors',
+                                                    'hover:bg-tertiary transition-colors',
                                                     value === option.value && 'bg-accent-primary/10 text-accent-primary'
                                                 )}
                                             >

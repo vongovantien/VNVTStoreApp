@@ -119,11 +119,18 @@ export interface UpdateProductRequest extends Partial<CreateProductRequest> {
 }
 
 // ============ Category Types ============
+export interface CategoryFileDto {
+    code: string;
+    path: string;
+    isActive?: boolean;
+}
+
 export interface CategoryDto {
     code: string;
     name: string;
     description?: string;
     imageURL?: string;
+    files?: CategoryFileDto[];
     parentCode?: string | null;
     isActive?: boolean;
 }

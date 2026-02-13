@@ -3,7 +3,7 @@ import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import ProductCard from '../ProductCard';
-import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';
+import { useCartStore, useWishlistStore, useCompareStore, usePriceAlertStore, useUIStore, useToast } from '@/store';
 import { Product } from '@/types';
 
 // Mock dependencies
@@ -11,9 +11,10 @@ vi.mock('@/store', () => ({
   useCartStore: vi.fn(),
   useWishlistStore: vi.fn(),
   useCompareStore: vi.fn(),
+  usePriceAlertStore: vi.fn(),
+  useUIStore: vi.fn(),
   useToast: vi.fn(),
 }));
-
 // Local i18n mock removed to use global mock from setup.ts
 
 const mockProduct: Product = {
@@ -53,6 +54,13 @@ describe('ProductCard', () => {
         removeItem: mockRemoveFromCompare,
         isInCompare: (code: string) => code === 'COMP001',
     });
+    vi.mocked(usePriceAlertStore).mockReturnValue({
+        toggleAlert: vi.fn(),
+        isWatched: () => false,
+    });
+    vi.mocked(useUIStore).mockReturnValue({
+        setQuickViewProduct: vi.fn(),
+    });
     vi.mocked(useToast).mockReturnValue({
         success: mockToastSuccess,
         error: vi.fn()
@@ -78,8 +86,8 @@ describe('ProductCard', () => {
       </BrowserRouter>
     );
     
-    // The button text is translated 'product.addToCart'
-    const addToCartBtn = screen.getByRole('button', { name: /add to cart/i });
+    // The button name in our mock will be the default text passed to t()
+    const addToCartBtn = screen.getByRole('button', { name: /Thêm giỏ/i });
     fireEvent.click(addToCartBtn);
 
     await waitFor(() => {
@@ -100,5 +108,47 @@ describe('ProductCard', () => {
 
     // Initial mock returns false for isInWishlist('P001')
     expect(mockAddToWishlist).toHaveBeenCalledWith(mockProduct);
+  });
+
+  it('renders wholesale pricing when available', () => {
+    const productWithWholesale: Product = {
+      ...mockProduct,
+      wholesaleTiers: [
+        { minQuantity: 10, price: 90000 },
+        { minQuantity: 50, price: 80000 }
+      ]
+    };
+
+    render(
+      <BrowserRouter>
+        <ProductCard product={productWithWholesale} />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText(/Bán sỉ/i)).toBeInTheDocument();
+    expect(screen.getByText(/≥ 10 cái/i)).toBeInTheDocument();
+  });
+
+  it('renders shipping urgency banner', () => {
+    render(
+      <BrowserRouter>
+        <ProductCard product={mockProduct} />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText(/Đặt trong/i)).toBeInTheDocument();
+  });
+
+  it('triggers compare toggle', () => {
+    render(
+      <BrowserRouter>
+        <ProductCard product={mockProduct} />
+      </BrowserRouter>
+    );
+
+    // Using title because it's a small icon button
+    const compareBtns = screen.getAllByTitle(/Compare/i);
+    fireEvent.click(compareBtns[0]);
+    expect(mockAddToCompare).toHaveBeenCalledWith(mockProduct);
   });
 });

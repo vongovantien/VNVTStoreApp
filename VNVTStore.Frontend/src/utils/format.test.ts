@@ -18,6 +18,12 @@ describe('formatCurrency', () => {
     it('formats large numbers', () => {
         expect(formatCurrency(1000000000)).toMatch(/1\.000\.000\.000|1,000,000,000/);
     });
+
+    it('formats USD correctly', () => {
+        expect(formatCurrency(100, { currency: 'USD' })).toContain('$');
+        // Match 1.50 or 1,50 flexibly
+        expect(formatCurrency(1.5, { currency: 'USD' })).toMatch(/1[.,]5/);
+    });
 });
 
 describe('slugify - Strict Vietnamese Support', () => {

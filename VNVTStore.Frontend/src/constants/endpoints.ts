@@ -132,6 +132,13 @@ export const API_ENDPOINTS = {
         BY_CODE: (code: string) => `/roles/${code}`,
         PERMISSIONS: '/roles/permissions',
     },
+
+    // Audit Logs
+    AUDIT_LOGS: {
+        BASE: '/auditlogs',
+        SEARCH: '/auditlogs/search',
+    },
+
     PERMISSIONS: {
         BASE: '/permissions',
         SEARCH: '/permissions/search',

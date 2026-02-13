@@ -106,6 +106,6 @@ public class ComplexPricingAndDebtTests
         // Limit is 1,000,000
         var result = await _debtService.CheckDebtLimitAsync("USR_RETAIL", 1500000);
         result.IsSuccess.Should().BeFalse();
-        result.Error.Code.Should().Be("DebtLimitExceeded");
+        result.Error!.Code.Should().Be("DebtLimitExceeded");
     }
 }

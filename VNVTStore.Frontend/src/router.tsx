@@ -434,7 +434,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'audit',
+            path: 'audit-logs',
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminAudit />

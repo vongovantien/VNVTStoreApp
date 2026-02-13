@@ -24,6 +24,8 @@ namespace VNVTStore.Infrastructure.Migrations
 
             modelBuilder.HasSequence("address_code_seq");
 
+            modelBuilder.HasSequence("auditlog_code_seq");
+
             modelBuilder.HasSequence("banner_code_seq");
 
             modelBuilder.HasSequence("cart_code_seq");
@@ -136,6 +138,73 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.HasIndex(new[] { "UserCode" }, "idx_address_user");
 
                     b.ToTable("TblAddress", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblAuditLog", b =>
+                {
+                    b.Property<string>("Code")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("Code")
+                        .HasDefaultValueSql("('LOG'::text || lpad((nextval('auditlog_code_seq'::regclass))::text, 6, '0'::text))");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("Action");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedAt")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Detail")
+                        .HasColumnType("text")
+                        .HasColumnName("Detail");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("IpAddress");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("IsActive");
+
+                    b.Property<string>("ModifiedType")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("ADD")
+                        .HasColumnName("ModifiedType");
+
+                    b.Property<string>("Target")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("Target");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UpdatedAt")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("UserCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UserCode");
+
+                    b.HasKey("Code")
+                        .HasName("TblAuditLog_pkey");
+
+                    b.HasIndex("UserCode");
+
+                    b.ToTable("TblAuditLog", (string)null);
                 });
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblBanner", b =>
@@ -358,10 +427,6 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("ImageURL")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("ImageURL");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -1009,6 +1074,17 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
+
+                    b.Property<decimal>("Rating")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<int>("ReviewCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<int?>("StockQuantity")
                         .ValueGeneratedOnAdd()
@@ -1961,6 +2037,17 @@ namespace VNVTStore.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("TblAddress_UserCode_fkey");
+
+                    b.Navigation("UserCodeNavigation");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblAuditLog", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblUser", "UserCodeNavigation")
+                        .WithMany()
+                        .HasForeignKey("UserCode")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("TblAuditLog_UserCode_fkey");
 
                     b.Navigation("UserCodeNavigation");
                 });

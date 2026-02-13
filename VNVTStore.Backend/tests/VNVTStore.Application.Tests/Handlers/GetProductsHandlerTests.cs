@@ -204,4 +204,38 @@ public class GetProductsHandlerTests
         Assert.NotNull(fileQuery);
         Assert.Contains("ANY(@Codes)", fileQuery);
     }
+
+    [Fact]
+    public void QueryBuilder_ShouldGenerateInClause_ForMultiSelectCategory()
+    {
+        // Arrange - Simulate Frontend sending multi-select category filter
+        var filters = new List<SearchDTO>
+        {
+            new SearchDTO 
+            { 
+                SearchField = "CategoryCode", 
+                SearchValue = new[] { "CAT1", "CAT2" }, // Array for IN
+                SearchCondition = SearchCondition.In 
+            }
+        };
+
+        // Act - Build parameterized query directly using QueryBuilder
+        var result = VNVTStore.Application.Common.Helpers.QueryBuilder.BuildRawQueryPagingParameterized(
+            pageSize: 10,
+            pageIndex: 1,
+            rootTbl: "TblProduct",
+            refTblList: null,
+            searchFieldList: filters,
+            sortDTO: new SortDTO { SortBy = "CreatedAt", Sort = "DESC" },
+            fields: new List<string> { "Code", "Name" }
+        );
+
+        // Assert - Verify SQL contains IN clause (Postgres ANY syntax)
+        Assert.NotNull(result);
+        Assert.NotNull(result.Sql);
+        Assert.Contains("\"CategoryCode\" = ANY(@p", result.Sql);
+        
+        // Verify parameters contain the array values
+        Assert.NotNull(result.Parameters);
+    }
 }

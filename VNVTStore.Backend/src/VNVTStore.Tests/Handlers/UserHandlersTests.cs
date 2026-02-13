@@ -30,6 +30,7 @@ public class UserHandlersTests : IDisposable
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IDapperContext> _mockDapperContext;
+    private readonly Mock<IFileService> _mockFileService;
     private readonly UserHandlers _handler;
 
     public UserHandlersTests()
@@ -42,6 +43,7 @@ public class UserHandlersTests : IDisposable
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockMapper = new Mock<IMapper>();
         _mockDapperContext = new Mock<IDapperContext>();
+        _mockFileService = new Mock<IFileService>();
 
         _handler = new UserHandlers(
             _repository,
@@ -49,7 +51,8 @@ public class UserHandlersTests : IDisposable
             _mockPasswordHasher.Object,
             _mockUnitOfWork.Object,
             _mockMapper.Object,
-            _mockDapperContext.Object
+            _mockDapperContext.Object,
+            _mockFileService.Object
         );
     }
 

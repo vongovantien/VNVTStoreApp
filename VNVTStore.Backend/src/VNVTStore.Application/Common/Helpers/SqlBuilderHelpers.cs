@@ -36,6 +36,10 @@ public static class SqlBuilderHelpers
     public static string NormalizeFieldName(string field)
     {
         if (string.IsNullOrEmpty(field)) return field;
+        
+        // If it looks like snake_case (contains underscore), preserve it (likely raw DB column name)
+        if (field.Contains('_')) return field;
+
         return char.IsLower(field[0]) 
             ? char.ToUpper(field[0]) + field.Substring(1) 
             : field;

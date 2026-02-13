@@ -4,9 +4,17 @@ import { motion } from 'framer-motion';
 import { Search, CheckCircle, Clock } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { useToast } from '@/store';
+import { orderService } from '@/services/orderService';
+
+import { useSEO } from '@/hooks/useSEO';
 
 export const TrackingPage = () => {
     const { t } = useTranslation();
+    
+    useSEO({
+        title: 'Tra cứu đơn hàng',
+        noindex: true,
+    });
     const toast = useToast();
     const [orderCode, setOrderCode] = useState('');
     const [orderInfo, setOrderInfo] = useState<null | {
@@ -17,31 +25,40 @@ export const TrackingPage = () => {
     }>(null);
     const [loading, setLoading] = useState(false);
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!orderCode.trim()) return;
 
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            if (orderCode.toUpperCase().startsWith('VN')) {
+        try {
+            const res = await orderService.getByCode(orderCode.trim());
+            if (res.success && res.data) {
+                const order = res.data;
+                const statuses = ['pending', 'confirmed', 'processing', 'shipping', 'delivered'];
+                const currentIndex = statuses.indexOf(order.status.toLowerCase());
+                
+                const steps = [
+                    { title: t('tracking.stepConfirmed'), time: order.orderDate, done: currentIndex >= 1 },
+                    { title: t('tracking.stepProcessing'), time: '', done: currentIndex >= 2 },
+                    { title: t('tracking.stepShipping'), time: '', done: currentIndex >= 3 },
+                    { title: t('tracking.stepDelivered'), time: '', done: currentIndex >= 4 },
+                ];
+
                 setOrderInfo({
-                    code: orderCode.toUpperCase(),
-                    status: 'shipping',
-                    date: '08/01/2026',
-                    steps: [
-                        { title: t('tracking.stepConfirmed'), time: '08/01 10:30', done: true },
-                        { title: t('tracking.stepProcessing'), time: '08/01 14:00', done: true },
-                        { title: t('tracking.stepShipping'), time: '09/01 08:00', done: true },
-                        { title: t('tracking.stepDelivered'), time: '', done: false },
-                    ]
+                    code: order.code,
+                    status: order.status,
+                    date: new Date(order.orderDate).toLocaleDateString(),
+                    steps
                 });
             } else {
-                toast.error(t('tracking.notFound'));
+                toast.error(t('tracking.notFound') || 'Không tìm thấy đơn hàng');
                 setOrderInfo(null);
             }
+        } catch (error) {
+            toast.error(t('common.error') || 'Có lỗi xảy ra');
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     return (

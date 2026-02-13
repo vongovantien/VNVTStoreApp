@@ -2,7 +2,14 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Award, Users, Heart, ShieldCheck, Truck } from 'lucide-react';
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const AboutPage = () => {
+    useSEO({
+        title: 'Giới thiệu',
+        description: 'VNVT Store - Hành trình 10 năm mang đến những sản phẩm gia dụng chất lượng cao, chính hãng cho hàng triệu gia đình Việt.',
+        canonicalPath: '/about',
+    });
     const { t } = useTranslation();
 
     const stats = [

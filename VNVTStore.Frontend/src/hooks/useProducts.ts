@@ -3,11 +3,11 @@
  * Provides data fetching and mutations for product operations
  */
 
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 
 import { Product, ProductDetail, ProductUnit, ProductVariant } from '@/types';
 import { productService, categoryService, type CreateProductRequest, type UpdateProductRequest, type ProductDto, type ProductImageDto } from '@/services/productService';
-import { SearchCondition } from '@/services/baseService';
+import { SearchCondition, type SearchParams } from '@/services/baseService';
 import { getImageUrl } from '@/utils/format';
 import { CATEGORY_LIST_FIELDS, PRODUCT_LIST_FIELDS, PRODUCT_DETAIL_FIELDS } from '@/constants/fieldConstants';
 
@@ -206,6 +206,7 @@ export function useProducts(params: {
     enabled?: boolean;
     ids?: string[];
     fields?: string[];  // Selective columns to fetch (reduces data transfer)
+    inStockOnly?: boolean; // Feature 4: filter out-of-stock products
 }) {
     const { enabled = true, fields = PRODUCT_LIST_FIELDS, ...searchParams } = params;
 
@@ -214,7 +215,7 @@ export function useProducts(params: {
 
     // 1. Generic/Dynamic params (excluding specific ones)
     Object.entries(searchParams).forEach(([key, value]) => {
-        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir', 'brands', 'minPrice', 'maxPrice', 'rating', 'category', 'ids', 'priceType'].includes(key)) return;
+        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir', 'brands', 'minPrice', 'maxPrice', 'rating', 'category', 'ids', 'priceType', 'inStockOnly'].includes(key)) return;
         if (value !== undefined && value !== null && value !== '') {
             filters.push({ field: key, value: String(value), operator: SearchCondition.Equal });
         }
@@ -278,6 +279,11 @@ export function useProducts(params: {
         filters.push({ field: 'rating', value: searchParams.rating, operator: SearchCondition.GreaterThanEqual });
     }
 
+    // 5. In-Stock Only (Feature 4)
+    if (searchParams.inStockOnly) {
+        filters.push({ field: 'StockQuantity', value: 0, operator: SearchCondition.GreaterThan });
+    }
+
 
     return useQuery({
         queryKey: productKeys.list({ ...searchParams, fields }),
@@ -336,6 +342,68 @@ export function useProducts(params: {
                 hasPreviousPage: false,
             };
         },
+    });
+}
+
+/**
+ * Hook for infinite scrolling products
+ */
+export function useInfiniteProducts(params: {
+    pageSize?: number;
+    search?: string;
+    sortField?: string;
+    sortDir?: 'asc' | 'desc';
+    category?: string;
+    brands?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    rating?: number;
+    priceType?: 'all' | 'fixed' | 'contact';
+    enabled?: boolean;
+    fields?: string[];
+    inStockOnly?: boolean;
+}) {
+    const { enabled = true, fields = PRODUCT_LIST_FIELDS, pageSize = 12, ...searchParams } = params;
+
+    return useInfiniteQuery({
+        queryKey: [...productKeys.lists(), 'infinite', { ...searchParams, fields, pageSize }],
+        queryFn: async ({ pageParam = 1 }) => {
+            // Build filters (logic similar to useProducts but reusable)
+            const filters: NonNullable<SearchParams['filters']> = [];
+            if (searchParams.category) {
+                if (searchParams.category.includes(',')) {
+                    filters.push({ field: 'CategoryCode', value: searchParams.category.split(','), operator: SearchCondition.In });
+                } else {
+                    filters.push({ field: 'CategoryCode', value: searchParams.category, operator: SearchCondition.Equal });
+                }
+            }
+            if (searchParams.brands?.length) filters.push({ field: 'brand', value: searchParams.brands, operator: SearchCondition.In });
+            if (searchParams.minPrice) filters.push({ field: 'price', value: searchParams.minPrice, operator: SearchCondition.GreaterThanEqual });
+            if (searchParams.maxPrice) filters.push({ field: 'price', value: searchParams.maxPrice, operator: SearchCondition.LessThanEqual });
+            if (searchParams.inStockOnly) filters.push({ field: 'StockQuantity', value: 0, operator: SearchCondition.GreaterThan });
+
+            const response = await productService.search({
+                pageIndex: pageParam,
+                pageSize,
+                search: searchParams.search,
+                sortBy: searchParams.sortField,
+                sortDesc: searchParams.sortDir === 'desc',
+                filters: filters.length > 0 ? filters : undefined,
+                fields,
+            });
+
+            if (response.success && response.data) {
+                return {
+                    products: (response.data.items || []).map(item => mapProductDtoToProduct(item as ProductDto)),
+                    nextPage: pageParam < Math.ceil(response.data.totalItems / pageSize) ? pageParam + 1 : undefined,
+                    totalItems: response.data.totalItems,
+                };
+            }
+            return { products: [], nextPage: undefined, totalItems: 0 };
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => lastPage.nextPage,
+        enabled,
     });
 }
 

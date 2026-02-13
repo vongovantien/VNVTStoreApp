@@ -1,4 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
+using Dapper;
+using System.IO;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
@@ -20,11 +24,14 @@ public class UserHandlers : BaseHandler<TblUser>,
     IRequestHandler<DeleteCommand<TblUser>, Result>,
     IRequestHandler<DeleteMultipleCommand<TblUser>, Result>,
     IRequestHandler<GetByCodeQuery<UserDto>, Result<UserDto>>,
+    IRequestHandler<UpdateCommand<UpdateUserDto, UserDto>, Result<UserDto>>,
     IRequestHandler<CreateCommand<CreateUserDto, UserDto>, Result<UserDto>>,
-    IRequestHandler<UpdateCommand<UpdateUserDto, UserDto>, Result<UserDto>>
+    IRequestHandler<DeleteAccountCommand, Result<bool>>
 {
     private readonly IPasswordHasher _passwordHasher;
     private readonly IRepository<TblOrder> _orderRepository;
+
+    private readonly IFileService _fileService;
 
     public UserHandlers(
         IRepository<TblUser> userRepository,
@@ -32,11 +39,13 @@ public class UserHandlers : BaseHandler<TblUser>,
         IPasswordHasher passwordHasher,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        IDapperContext dapperContext) : base(userRepository, unitOfWork, mapper, dapperContext)
+        IDapperContext dapperContext,
+        IFileService fileService) : base(userRepository, unitOfWork, mapper, dapperContext)
 
     {
         _passwordHasher = passwordHasher;
         _orderRepository = orderRepository;
+        _fileService = fileService;
     }
 
     public async Task<Result<UserDto>> Handle(GetByCodeQuery<UserDto> request, CancellationToken cancellationToken)
@@ -48,7 +57,6 @@ public class UserHandlers : BaseHandler<TblUser>,
     {
         return await GetByCodeAsync<UserDto>(request.userCode, MessageConstants.User, cancellationToken);
     }
-
 
     public async Task<Result<PagedResult<UserDto>>> Handle(GetPagedQuery<UserDto> request, CancellationToken cancellationToken)
     {
@@ -69,13 +77,33 @@ public class UserHandlers : BaseHandler<TblUser>,
         if (user == null)
             return Result.Failure<UserDto>(Error.NotFound(MessageConstants.User, request.userCode));
 
+        // Handle Avatar using IFileService (supports URL or Base64)
+        string? finalAvatarUrl = request.avatarUrl;
+        if (!string.IsNullOrEmpty(request.avatarUrl))
+        {
+            // Save to TblFile and get resulting URL/Path
+            var saveResult = await _fileService.SaveAndLinkImagesAsync(
+                request.userCode, 
+                "USER", // MasterType
+                new List<string> { request.avatarUrl! }, 
+                "avatars", 
+                cancellationToken);
+
+            if (saveResult.IsSuccess && saveResult.Value != null && saveResult.Value.Any())
+            {
+                finalAvatarUrl = saveResult.Value.First();
+            }
+        }
+
         // Update fields if provided
         // Use Domain Method for validation and encapsulation
+        Console.WriteLine($"[DEBUG] Updating profile for user: {request.userCode}. AvatarUrl: '{finalAvatarUrl}'");
         user.UpdateProfile(
             request.fullName, 
             request.phone, 
             request.email,
-            request.avatarUrl);
+            finalAvatarUrl);
+            
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
@@ -96,6 +124,24 @@ public class UserHandlers : BaseHandler<TblUser>,
         // Update password using Domain Method
         user.UpdatePassword(_passwordHasher.Hash(request.newPassword));
         
+        _repository.Update(user);
+        await _unitOfWork.CommitAsync(cancellationToken);
+
+        return Result.Success(true);
+    }
+
+    public async Task<Result<bool>> Handle(DeleteAccountCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _repository.GetByCodeAsync(request.userCode, cancellationToken);
+
+        if (user == null)
+            return Result.Failure<bool>(Error.NotFound(MessageConstants.User, request.userCode));
+
+        // Soft delete: Deactivate the account
+        user.IsActive = false;
+        user.ModifiedType = ModificationType.Delete.ToString();
+        user.UpdatedAt = DateTime.UtcNow;
+
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 

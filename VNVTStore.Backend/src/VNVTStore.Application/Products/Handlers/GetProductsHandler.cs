@@ -12,6 +12,7 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Dapper;
 using Serilog;
+using System.Data;
 using VNVTStore.Application.Common.Helpers;
 
 namespace VNVTStore.Application.Products.Handlers;
@@ -44,85 +45,52 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
 
         var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
 
+        // Ratings are now in TblProduct, so BaseHandler's GetPagedDapperAsync handles filtering/sorting/mapping automatically.
         var result = await GetPagedDapperAsync<ProductDto>(request.PageIndex, request.PageSize, searchFields, sortDTO, null, request.Fields, cancellationToken);
 
         if (result.IsSuccess && result.Value.Items.Any())
         {
-                using var connection = _dapperContext.CreateConnection();
-                if (connection.State != System.Data.ConnectionState.Open) connection.Open();
-                
-                var productCodes = result.Value.Items.Select(p => p.Code).ToList();
-
-            Log.Information("[Debug] GetProductsHandler manual image fetch for {Count} products. Codes: {Codes}", 
-                productCodes.Count, string.Join(",", productCodes));
-
-            var fileSql = "SELECT * FROM \"TblFile\" WHERE \"MasterCode\" = ANY(@Codes) AND \"MasterType\" ILIKE 'Product'";
-            var files = (await connection.QueryAsync<TblFile>(fileSql, new { Codes = productCodes.ToArray() })).ToList();
+            using var connection = _dapperContext.CreateConnection();
+            if (connection.State != System.Data.ConnectionState.Open) connection.Open();
             
-            Log.Information("[Debug] Found {Count} images in TblFile. First few MasterCodes: {Samples}", 
-                files.Count, string.Join(",", files.Take(5).Select(f => f.MasterCode)));
-
-            var fileGroups = files
-                .GroupBy(f => f.MasterCode)
-                .Where(g => g.Key != null)
-                .ToDictionary(g => g.Key!, g => g.ToList());
-            
+            var productCodes = result.Value.Items.Select(p => p.Code).ToList();
             var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
 
-            // 2. Fetch Ratings and Review Counts
-                var ratingSql = @"
-                    SELECT 
-                        COALESCE(""ProductCode"", (SELECT oi.""ProductCode"" FROM ""TblOrderItem"" oi WHERE oi.""Code"" = r.""OrderItemCode"")) as ProductCode, 
-                        AVG(CAST(""Rating"" AS DECIMAL)) as AverageRating, 
-                        COUNT(*) as ReviewCount
-                    FROM ""TblReview"" r
-                    WHERE (""ProductCode"" = ANY(@Codes) OR (SELECT oi.""ProductCode"" FROM ""TblOrderItem"" oi WHERE oi.""Code"" = r.""OrderItemCode"") = ANY(@Codes))
-                      AND ""IsApproved"" = true
-                    GROUP BY 1";
+            // Fetch Images efficiently
+            var imageSql = @"
+                SELECT ""MasterCode"", ""Path"", ""OriginalName"", ""Code""
+                FROM ""TblFile""
+                WHERE ""MasterCode"" = ANY(@Codes) AND ""MasterType"" = 'Product' AND ""IsActive"" = true";
                 
-                var ratings = (await connection.QueryAsync<dynamic>(ratingSql, new { Codes = productCodes.ToArray() })).ToList();
-                var ratingMap = ratings
-                    .Where(r => r.ProductCode != null)
-                    .ToDictionary(
-                        r => (string)r.ProductCode, 
-                        r => (AverageRating: r.AverageRating != null ? (decimal)r.AverageRating : 0m, ReviewCount: r.ReviewCount != null ? (int)r.ReviewCount : 0)
-                    );
-
-                foreach (var dto in result.Value.Items)
-                {
-                // Populate Images
-                if (fileGroups.TryGetValue(dto.Code, out var productFiles))
-                {
-                    dto.ProductImages = productFiles.Select(f => {
-                        var path = f.Path ?? "";
-                        var imgUrl = path.StartsWith("http") ? path : $"{baseUrl}/{path.TrimStart('/')}";
-                        return new ProductImageDto
-                        {
-                            Code = f.Code,
-                            ImageURL = imgUrl,
-                            AltText = f.OriginalName,
-                            IsPrimary = productFiles.IndexOf(f) == 0 
-                        };
-                    }).ToList();
-                }
-                else 
-                {
-                    dto.ProductImages = new List<ProductImageDto>();
-                }
-
-                // Populate Ratings
-                    if (ratingMap.TryGetValue(dto.Code, out var ratingInfo))
+            var files = (await SqlMapper.QueryAsync<dynamic>(connection, imageSql, new { Codes = productCodes.ToArray() })).ToList();
+            var imageMap = files.GroupBy(f => (string)f.MasterCode).ToDictionary(
+                g => g.Key, 
+                g => g.Select((f, index) => {
+                    var path = (string)(f.Path ?? "");
+                    var imgUrl = path.StartsWith("http") ? path : $"{baseUrl}/{path.TrimStart('/')}";
+                    return new ProductImageDto
                     {
-                        dto.AverageRating = ratingInfo.AverageRating;
-                        dto.ReviewCount = ratingInfo.ReviewCount;
-                    }
-                    else 
-                    {
-                        dto.AverageRating = 0;
-                        dto.ReviewCount = 0;
-                    }
+                        Code = (string)f.Code,
+                        ImageURL = imgUrl,
+                        AltText = (string)f.OriginalName,
+                        IsPrimary = index == 0
+                    };
+                }).ToList()
+            );
+
+            // Populate DTOs
+            foreach (var product in result.Value.Items)
+            {
+                if (imageMap.TryGetValue(product.Code, out var productImages))
+                {
+                    product.ProductImages = productImages;
+                }
+                else
+                {
+                    product.ProductImages = new List<ProductImageDto>();
                 }
             }
+        }
 
         return result;
     }

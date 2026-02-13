@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ProductDetailType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,12 +9,16 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { ProductCard } from '@/components/common/ProductCard';
-import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';
+import { RecentlyViewed } from '@/components/common/RecentlyViewed';
+import { StickyCartBar } from '@/components/common/StickyCartBar';
+import { UpsellSection } from '@/components/common';
+import { useCartStore, useWishlistStore, useCompareStore, useToast, useRecentStore } from '@/store';
 import { useProduct, useProducts } from '@/hooks';
 
 import { ImageGallery } from '@/components/common/ImageGallery';
 import { ProductInfo } from './components/ProductInfo';
 import { ProductTabs } from './components/ProductTabs';
+import { useSEO, useProductSchema, useBreadcrumbSchema } from '@/hooks/useSEO';
 
 // ============ Product Detail Page ============
 export const ProductDetailPage = () => {
@@ -32,9 +36,45 @@ export const ProductDetailPage = () => {
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
   const { addItem: addToCompare, isInCompare } = useCompareStore();
   const { success, error: toastError } = useToast();
+  const addToRecent = useRecentStore((state) => state.addToRecent);
 
   // Fetch product from API
   const { data: product, isLoading, isError, error } = useProduct(id || '');
+
+  // Add to recent viewed
+  useEffect(() => {
+    if (product) {
+      addToRecent(product);
+    }
+  }, [product, addToRecent]);
+
+  // SEO — Dynamic title, description, Open Graph, and Product Schema
+  useSEO({
+    title: product?.name || 'Chi tiết sản phẩm',
+    description: product?.description?.substring(0, 160) || `Mua ${product?.name || 'sản phẩm'} chính hãng tại VNVT Store. Giá tốt, bảo hành, giao hàng toàn quốc.`,
+    canonicalPath: product ? `/product/${id}` : undefined,
+    ogImage: product?.image,
+    ogType: 'product',
+    keywords: product ? `${product.name}, ${product.brand || ''}, ${product.category || ''}, VNVT Store` : undefined,
+  });
+  useProductSchema(product ? {
+    name: product.name,
+    description: product.description,
+    imageUrl: product.image,
+    price: product.price,
+    currency: 'VND',
+    brand: product.brand,
+    sku: product.code,
+    rating: product.averageRating || product.rating,
+    reviewCount: product.reviewCount,
+    availability: (product.stock > 0 || (product.stockQuantity ?? 0) > 0) ? 'InStock' : 'OutOfStock',
+  } : null);
+  useBreadcrumbSchema(product ? [
+    { name: 'Trang chủ', url: '/' },
+    { name: 'Sản phẩm', url: '/products' },
+    ...(product.category ? [{ name: product.category, url: `/products?category=${product.categoryCode}` }] : []),
+    { name: product.name, url: `/product/${id}` },
+  ] : []);
 
 
   // Fetch related products (same category)
@@ -86,6 +126,24 @@ export const ProductDetailPage = () => {
         }
     }
   }, [product, hasFixedPrice, quantity, addToCart, success, toastError, t]);
+
+  const navigate = useNavigate();
+
+  const handleBuyNow = useCallback(async () => {
+    if (product && hasFixedPrice) {
+      setIsAddingToCart(true);
+      try {
+        await addToCart(product, quantity);
+        success(t('product.addToCartSuccess') || 'Đã thêm vào giỏ hàng');
+        navigate('/checkout');
+      } catch (err) {
+        console.error(err);
+        toastError(t('product.addToCartError') || 'Có lỗi xảy ra');
+      } finally {
+        setIsAddingToCart(false);
+      }
+    }
+  }, [product, hasFixedPrice, quantity, addToCart, success, toastError, t, navigate]);
 
   const handleWishlistToggle = useCallback(() => {
     if (product) {
@@ -145,6 +203,13 @@ export const ProductDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-secondary">
+      <StickyCartBar 
+        product={product}
+        handleAddToCart={handleAddToCart}
+        handleBuyNow={handleBuyNow}
+        isAddingToCart={isAddingToCart}
+        hasFixedPrice={hasFixedPrice}
+      />
       {/* Breadcrumb */}
       <div className="bg-primary border-b py-3">
         <div className="container mx-auto px-4 flex items-center gap-2 text-sm flex-wrap">
@@ -184,6 +249,7 @@ export const ProductDetailPage = () => {
               quantity={quantity}
               setQuantity={setQuantity}
               handleAddToCart={handleAddToCart}
+              handleBuyNow={handleBuyNow}
               isAddingToCart={isAddingToCart}
               isWishlisted={isWishlisted}
               handleWishlistToggle={handleWishlistToggle}
@@ -208,7 +274,7 @@ export const ProductDetailPage = () => {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div>
+          <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">{t('product.relatedProducts')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((p) => (
@@ -217,7 +283,13 @@ export const ProductDetailPage = () => {
             </div>
           </div>
         )}
+
+        {/* Dynamic Upsell Section */}
+        <UpsellSection currentProduct={product} />
       </div>
+      
+      {/* Recently Viewed - Fixed placement outside main container */}
+      <RecentlyViewed />
     </div>
   );
 };

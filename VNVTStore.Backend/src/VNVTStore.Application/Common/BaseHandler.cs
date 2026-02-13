@@ -11,12 +11,12 @@ using VNVTStore.Domain.Interfaces;
 
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
+using System.Data;
 
 using Dapper;
 using VNVTStore.Application.Common.Helpers;
 using VNVTStore.Application.Common.Attributes;
 using VNVTStore.Application.Interfaces;
-using Newtonsoft.Json;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -406,7 +406,47 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
 
             sqlFields = fields.Where(f => !collectionProps.Contains(f)).ToList();
             
-            // If filtering results in empty list, we effectively select nothing? 
+            // Resolve column names from TEntity [Column] attributes
+            // This ensures logic works even if DTO property doesn't match DB Column exactly (e.g. ImageUrl vs image_url)
+            var entityType = typeof(TEntity);
+            var entityProps = entityType.GetProperties().ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+
+
+            // VALIDATION: Filter out fields that are NOT in TEntity AND NOT in ReferenceTables
+            // This prevents "column does not exist" errors if Frontend requests invalid fields (e.g. ImageURL on TblProduct)
+            var validFields = new List<string>();
+            var refTableAliases = referenceTables?.Select(r => r.AliasName).ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
+            
+            for (int i = 0; i < sqlFields.Count; i++)
+            {
+                var fieldName = sqlFields[i];
+                
+                // 1. Keep if it matches a Reference Table Alias (QueryBuilder handles these separately)
+                if (refTableAliases.Contains(fieldName))
+                {
+                    validFields.Add(fieldName);
+                    continue;
+                }
+
+                // 2. Keep if it matches an Entity Property (Resolve [Column] name if needed)
+                if (entityProps.TryGetValue(fieldName, out var prop))
+                {
+                    var columnAttr = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();
+                    if (columnAttr != null && !string.IsNullOrEmpty(columnAttr.Name))
+                    {
+                        validFields.Add(columnAttr.Name);
+                    }
+                    else
+                    {
+                        validFields.Add(fieldName);
+                    }
+                    continue;
+                }
+                
+                // 3. Drop if neither (Invalid Field)
+            }
+            sqlFields = validFields;
+
             // QueryBuilder handles empty fields as "SELECT *", so checking Empty is tricky.
             // But if user requested ONLY collection fields, we still need main entity ID at least?
             // Usually we assume if fields is empty after filtering, we fallback to specific columns or *?
@@ -429,7 +469,8 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         sw.Restart();
 
         // Execute with parameters
-        var dynamicResults = await connection.QueryAsync<dynamic>(
+        var dynamicResults = await SqlMapper.QueryAsync<dynamic>(
+            connection,
             queryResult.Sql, 
             queryResult.Parameters
         ).ConfigureAwait(false);
@@ -611,7 +652,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             var parameters = new { Codes = parentCodes.ToArray(), FilterValue = collAttr.FilterValue };
             
             // Execute with ConfigureAwait(false)
-            var children = await connection.QueryAsync<dynamic>(sql, parameters)
+            var children = await SqlMapper.QueryAsync<dynamic>(connection, sql, parameters)
                 .ConfigureAwait(false);
             
             // Performance Optimization: Direct Mapping for children instead of JSON

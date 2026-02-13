@@ -8,8 +8,11 @@ export interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
   refreshToken: string | null;
+  adminToken: string | null; // Used to return from impersonation
   login: (user: User, token?: string, refreshToken?: string, menus?: string[]) => Promise<void>;
   logout: () => void;
+  impersonate: (userCode: string) => Promise<void>;
+  stopImpersonating: () => void;
   updateUser: (userData: Partial<User>) => void;
   setTokens: (token: string, refreshToken: string) => void;
   permissions: string[];

@@ -31,7 +31,7 @@ const BlueItem = React.forwardRef<HTMLButtonElement, AdminToolbarAction>(({ icon
     disabled={disabled || !onClick}
     title={title}
     className={cn(
-      "p-2 hover:bg-blue-50 dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2",
+      "p-2 hover:bg-tertiary rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2",
       itemClassName
     )}
   >

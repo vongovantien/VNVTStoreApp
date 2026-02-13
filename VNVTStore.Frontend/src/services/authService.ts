@@ -98,6 +98,13 @@ export const authService = {
     async externalLogin(provider: string, token: string): Promise<ApiResponse<AuthResponseDto>> {
         return apiClient.post<AuthResponseDto>('/auth/external-login', { provider, token });
     },
+
+    /**
+     * Login as another user (Admin only)
+     */
+    async impersonate(userCode: string): Promise<ApiResponse<AuthResponseDto>> {
+        return apiClient.post<AuthResponseDto>(`/auth/impersonate/${userCode}`);
+    },
 };
 
 export default authService;

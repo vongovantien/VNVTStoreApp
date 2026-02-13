@@ -40,7 +40,7 @@ import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { ToastContainer } from '@/components/ui/Toast';
 import { useUIStore, useAuthStore, useToastStore, useNotificationStore } from '@/store';
-import { NotificationDropdown } from '@/components/common';
+import { NotificationDropdown, UserMenu } from '@/components/common';
 import { useSignalR } from '@/hooks/useSignalR';
 
 // Navigation items
@@ -91,6 +91,7 @@ const navGroups: NavGroup[] = [
     title: 'admin.sidebar.system',
     items: [
       { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings', code: 'SETTINGS' },
+      { path: '/admin/audit-logs', icon: FileText, label: 'admin.sidebar.auditLogs', code: 'AUDIT_LOGS' },
       { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles', code: 'ROLES' },
     ]
   }
@@ -102,7 +103,6 @@ export const AdminLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,12 +122,8 @@ export const AdminLayout = () => {
 
   // Refs for dropdowns
   const langBtnRef = useRef<HTMLButtonElement>(null);
-  const userBtnRef = useRef<HTMLButtonElement>(null);
-  const langDropdownRef = useRef<HTMLDivElement>(null);
-  const userDropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [langMenuPosition, setLangMenuPosition] = useState({ top: 0, left: 0 });
-  const [userMenuPosition, setUserMenuPosition] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     if (showLangMenu && langBtnRef.current) {
@@ -136,12 +132,6 @@ export const AdminLayout = () => {
     }
   }, [showLangMenu]);
 
-  useEffect(() => {
-    if (showUserMenu && userBtnRef.current) {
-      const rect = userBtnRef.current.getBoundingClientRect();
-      setUserMenuPosition({ top: rect.bottom + 8, left: rect.right - 200 });
-    }
-  }, [showUserMenu]);
 
   // SignalR Integration
   const { on, isConnected } = useSignalR();
@@ -220,33 +210,24 @@ export const AdminLayout = () => {
 
   const breadcrumbs = getBreadcrumbs();
 
-  // Click outside handler
+  // Click outside handler for language menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
 
-      // Language Menu
       if (showLangMenu &&
-        langBtnRef.current && !langBtnRef.current.contains(target) &&
-        langDropdownRef.current && !langDropdownRef.current.contains(target)) {
+        langBtnRef.current && !langBtnRef.current.contains(target)) {
         setShowLangMenu(false);
-      }
-
-      // User Menu
-      if (showUserMenu &&
-        userBtnRef.current && !userBtnRef.current.contains(target) &&
-        userDropdownRef.current && !userDropdownRef.current.contains(target)) {
-        setShowUserMenu(false);
       }
     };
 
-    if (showLangMenu || showUserMenu) {
+    if (showLangMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showLangMenu, showUserMenu]);
+  }, [showLangMenu]);
 
 
   if (!isAuthenticated || !user) {
@@ -456,7 +437,7 @@ export const AdminLayout = () => {
           <div className="flex items-center justify-between h-16 px-4 lg:px-6">
             {/* Mobile menu button */}
             <button
-              className="p-2 rounded-lg hover:bg-secondary lg:hidden"
+              className="p-2 rounded-lg hover:bg-hover lg:hidden"
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu size={24} />
@@ -523,7 +504,6 @@ export const AdminLayout = () => {
                 </Button>
                 {showLangMenu && createPortal(
                   <div
-                    ref={langDropdownRef}
                     className="fixed bg-primary rounded-lg shadow-xl border border-border p-1 min-w-[140px] z-[9999]"
                     style={{
                       top: langMenuPosition.top,
@@ -531,23 +511,23 @@ export const AdminLayout = () => {
                     }}
                   >
                     <button
-                      onClick={() => changeLanguage('vi')}
+                      onClick={() => { changeLanguage('vi'); setShowLangMenu(false); }}
                       className={cn(
                         'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                         i18n.language === 'vi'
                           ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                          : 'hover:bg-secondary text-primary'
+                          : 'hover:bg-hover text-primary'
                       )}
                     >
                       🇻🇳 Tiếng Việt
                     </button>
                     <button
-                      onClick={() => changeLanguage('en')}
+                      onClick={() => { changeLanguage('en'); setShowLangMenu(false); }}
                       className={cn(
                         'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
                         i18n.language === 'en'
                           ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                          : 'hover:bg-secondary text-primary'
+                          : 'hover:bg-hover text-primary'
                       )}
                     >
                       🇺🇸 English
@@ -579,68 +559,24 @@ export const AdminLayout = () => {
               </a>
 
               {/* User menu */}
-              <div className="relative ml-4 pl-4 border-l">
-                <button
-                  ref={userBtnRef}
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
-                    {user?.email?.charAt(0).toUpperCase() || 'A'}
-                  </div>
-                  <div className="hidden sm:block text-left">
-                    <p className="text-sm font-medium text-primary">{user?.email || 'Admin'}</p>
-                    <p className="text-xs text-tertiary">{user?.email || 'admin@example.com'}</p>
-                  </div>
-                  <ChevronDown size={16} className="hidden sm:block text-tertiary" />
-                </button>
-                {showUserMenu && createPortal(
-                  <div
-                    ref={userDropdownRef}
-                    className="fixed bg-primary rounded-lg shadow-xl border border-border py-2 min-w-[200px] z-[9999]"
-                    style={{
-                      top: userMenuPosition.top,
-                      left: userMenuPosition.left,
-                    }}
-                  >
-                    <div className="px-4 py-2 border-b border-border">
-                      <p className="text-xs text-tertiary">{t('admin.userMenu.signedInAs')}</p>
-                      <p className="text-sm font-medium text-primary truncate">{user?.email || 'admin@example.com'}</p>
-                    </div>
-                    <div className="py-1">
-                      <button
-                        onClick={() => { setShowUserMenu(false); navigate('/admin/settings'); }}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-secondary transition-colors"
-                      >
-                        <UserIcon size={16} />
-                        {t('admin.userMenu.accountSettings')}
-                      </button>
-                      <button
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-secondary transition-colors"
-                      >
-                        <HelpCircle size={16} />
-                        {t('admin.userMenu.support')}
-                      </button>
-                      <button
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-secondary hover:bg-secondary transition-colors"
-                      >
-                        <FileKey size={16} />
-                        {t('admin.userMenu.license')}
-                      </button>
-                    </div>
-                    <div className="border-t border-border py-1">
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-error hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                      >
-                        <LogOut size={16} />
-                        {t('admin.userMenu.signOut')}
-                      </button>
-                    </div>
-                  </div>,
-                  document.body
-                )}
-              </div>
+              <UserMenu 
+                onLogout={handleLogout}
+                items={[
+                  {
+                    label: t('admin.userMenu.accountSettings'),
+                    icon: UserIcon,
+                    link: '/admin/settings'
+                  },
+                  {
+                    label: t('admin.userMenu.support'),
+                    icon: HelpCircle
+                  },
+                  {
+                    label: t('admin.userMenu.license'),
+                    icon: FileKey
+                  }
+                ]}
+              />
             </div>
           </div>
         </header>

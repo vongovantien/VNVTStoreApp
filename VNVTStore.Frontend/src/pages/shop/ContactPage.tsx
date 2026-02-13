@@ -8,8 +8,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createSchemas } from '@/utils/schemas';
 
+import { useSEO } from '@/hooks/useSEO';
+
 export const ContactPage = () => {
     const { t } = useTranslation();
+    
+    useSEO({
+        title: 'Liên hệ',
+        description: 'Liên hệ với VNVT Store. Hotline: 1900 123 456. Email: contact@vnvtstore.com. Địa chỉ: 123 Nguyễn Huệ, Quận 1, TP.HCM.',
+        canonicalPath: '/contact',
+    });
     const { contactSchema } = createSchemas(t);
     type ContactFormData = z.infer<typeof contactSchema>;
     const toast = useToast();
@@ -134,14 +142,20 @@ export const ContactPage = () => {
                         </div>
 
                         {/* Map Placeholder */}
-                        <div className="bg-primary rounded-2xl overflow-hidden shadow-lg">
-                            <div className="h-64 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                                <div className="text-center">
-                                    <MapPin size={48} className="mx-auto mb-2 text-indigo-600" />
-                                    <p className="text-indigo-800 font-medium">Bản đồ</p>
-                                    <p className="text-indigo-600 text-sm">123 Nguyễn Huệ, Q.1, TP.HCM</p>
-                                </div>
-                            </div>
+                        {/* Google Map */}
+                        <div className="bg-primary rounded-2xl overflow-hidden shadow-lg h-80 relative group">
+                            <iframe 
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.424237106093!2d106.69875427599763!3d10.778782959146187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f48356f91cb%3A0x62952467d0186196!2sNotre%20Dame%20Cathedral%20of%20Saigon!5e0!3m2!1sen!2s!4v1707557123456!5m2!1sen!2s" 
+                                width="100%" 
+                                height="100%" 
+                                style={{ border: 0 }} 
+                                allowFullScreen 
+                                loading="lazy" 
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title="Store Location"
+                                className="grayscale hover:grayscale-0 transition-all duration-500"
+                            ></iframe>
+                             <div className="absolute inset-0 pointer-events-none border-4 border-primary/20 rounded-2xl shadow-inner"></div>
                         </div>
 
                         {/* Social Links */}
@@ -151,7 +165,7 @@ export const ContactPage = () => {
                                 {['Facebook', 'Zalo', 'Instagram', 'Youtube'].map((social) => (
                                     <button
                                         key={social}
-                                        className="px-4 py-2 bg-secondary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+                                        className="px-4 py-2 bg-secondary rounded-lg text-sm font-medium hover:bg-hover transition-colors"
                                     >
                                         {social}
                                     </button>

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -259,7 +259,6 @@ describe('ProductCard Shop Features', () => {
      * Strategy: Find all buttons, filter for the one that is absolute positioned.
      * `screen.getAllByRole('button')`
      */
-     const buttons = screen.getAllByRole('button');
      // The selection button should be one of them.
      // Let's just click the first one that matches the class signature if possible, or try to click them?
      // No, that's flaky.

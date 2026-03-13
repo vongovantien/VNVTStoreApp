@@ -125,7 +125,7 @@ public class AuthController : BaseApiController
     /// </summary>
     /// <param name="userCode">Mã người dùng muốn đăng nhập</param>
     [HttpPost("impersonate/{userCode}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Impersonate(string userCode)
     {

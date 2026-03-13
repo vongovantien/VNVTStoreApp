@@ -181,7 +181,7 @@ public static class DataSeeder
                     size: 50000,
                     path: $"https://picsum.photos/seed/{product.Code}/600/600",
                     masterCode: product.Code,
-                    masterType: "Product"
+                    masterType: "TblProduct"
                 );
                 context.TblFiles.Add(imageFile);
             }

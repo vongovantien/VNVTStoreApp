@@ -52,7 +52,7 @@ public class CategoryHandlers : BaseHandler<TblCategory>,
             {
                 var saveResult = await _fileService.SaveAndLinkImagesAsync(
                     entity.Code,
-                    "CATEGORY", 
+                    "TblCategory", 
                     new[] { request.Dto.ImageUrl },
                     "categories",
                     cancellationToken);
@@ -89,7 +89,7 @@ public class CategoryHandlers : BaseHandler<TblCategory>,
             {
                 var saveResult = await _fileService.SaveAndLinkImagesAsync(
                     entity.Code,
-                    "CATEGORY",
+                    "TblCategory",
                     new[] { request.Dto.ImageUrl },
                     "categories",
                     cancellationToken);
@@ -131,7 +131,7 @@ public class CategoryHandlers : BaseHandler<TblCategory>,
         var result = await DeleteAsync(request.Code, "Category", cancellationToken);
         if (result.IsSuccess)
         {
-            await _fileService.DeleteLinkedFilesAsync(request.Code, "CATEGORY", cancellationToken);
+            await _fileService.DeleteLinkedFilesAsync(request.Code, "TblCategory", cancellationToken);
         }
         return result;
     }
@@ -153,7 +153,7 @@ public class CategoryHandlers : BaseHandler<TblCategory>,
              using var connection = _dapperContext.CreateConnection();
              var files = await SqlMapper.QueryAsync<string>(
                 connection,
-                "SELECT \"Path\" FROM \"TblFile\" WHERE \"MasterCode\" = @Code AND \"MasterType\" = 'CATEGORY'", 
+                "SELECT \"Path\" FROM \"TblFile\" WHERE \"MasterCode\" = @Code AND \"MasterType\" = 'TblCategory'", 
                 new { Code = request.Code });
             
             if (files.Any())

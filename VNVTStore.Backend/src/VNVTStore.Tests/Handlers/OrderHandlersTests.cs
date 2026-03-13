@@ -46,6 +46,7 @@ public class OrderHandlersTests : IDisposable
     private readonly Mock<IEmailService> _mockEmailService;
     private readonly Mock<IConfiguration> _mockConfiguration;
     private readonly Mock<ILogger<CreateOrderHandler>> _mockLogger;
+    private readonly Mock<ILoyaltyService> _mockLoyaltyService;
     private readonly CreateOrderHandler _handler;
 
     public OrderHandlersTests()
@@ -71,6 +72,7 @@ public class OrderHandlersTests : IDisposable
         _mockEmailService = new Mock<IEmailService>();
         _mockConfiguration = new Mock<IConfiguration>();
         _mockLogger = new Mock<ILogger<CreateOrderHandler>>();
+        _mockLoyaltyService = new Mock<ILoyaltyService>();
 
         // Setup common returns
         _mockShippingStrategy.Setup(s => s.CalculateShippingFee(It.IsAny<decimal>())).Returns(30000);
@@ -91,6 +93,7 @@ public class OrderHandlersTests : IDisposable
             _context,
             _mockEmailService.Object,
             _mockConfiguration.Object,
+            _mockLoyaltyService.Object,
             _mockLogger.Object
         );
     }

@@ -11,7 +11,7 @@ interface ImportModalProps {
   onClose: () => void;
   onImport: (file: File) => Promise<void>;
   title: string;
-  templateUrl?: string;
+  templateUrl?: string | undefined;
 }
 
 export const ImportModal = ({

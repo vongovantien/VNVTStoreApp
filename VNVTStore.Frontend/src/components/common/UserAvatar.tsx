@@ -22,8 +22,9 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 }) => {
   const { user } = useAuthStore();
   
-  // Handle both lowercase 'avatar' and potentially PascalCase 'Avatar' from backend
-  const userAvatar = user?.avatar || (user as any)?.Avatar;
+  // Handle various property names from backend DTOs (avatar, Avatar, avatarUrl, AvatarUrl)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userAvatar = user?.avatar || (user as any)?.Avatar || (user as any)?.avatarUrl || (user as any)?.AvatarUrl;
   const currentAvatar = getImageUrl(avatarUrl || userAvatar);
   const currentName = fullName || user?.fullName;
   const currentEmail = email || user?.email;
@@ -47,11 +48,6 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   const initials = currentName?.charAt(0).toUpperCase() || currentEmail?.charAt(0).toUpperCase() || '?';
   const gradientIndex = initials.charCodeAt(0) % gradients.length;
   const gradient = gradients[gradientIndex];
-
-  // Debug log to trace what's happening
-  if (currentAvatar) {
-    console.log('[UserAvatar] Computed URL:', currentAvatar);
-  }
 
   const [hasError, setHasError] = React.useState(false);
 

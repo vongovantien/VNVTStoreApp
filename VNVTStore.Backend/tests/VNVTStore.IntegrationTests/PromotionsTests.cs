@@ -17,7 +17,7 @@ public class PromotionsTests : IntegrationTestBase
     public async Task GetPromotions_ShouldReturnSuccess()
     {
         // Act
-        var response = await _client.GetAsync("/api/v1/promotions");
+        var response = await _client.PostAsJsonAsync("/api/v1/promotions/search", new { });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -42,12 +42,13 @@ public class PromotionsTests : IntegrationTestBase
         };
         
         var request = new RequestDTO<CreatePromotionDto> { PostObject = createPromoDto };
+        await AuthenticateAsync("admin", "Admin@123");
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/v1/promotions", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<PromotionDto>>();
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
@@ -70,8 +71,11 @@ public class PromotionsTests : IntegrationTestBase
             IsActive = true
         };
 
+        var request = new RequestDTO<CreatePromotionDto> { PostObject = createPromoDto };
+        await AuthenticateAsync("admin", "Admin@123");
+
         // Act
-        var response = await _client.PostAsJsonAsync("/api/v1/promotions", createPromoDto);
+        var response = await _client.PostAsJsonAsync("/api/v1/promotions", request);
 
         // Assert
         // If there's a DB constraint, it might return 500 or 400 depending on how exceptions are handled

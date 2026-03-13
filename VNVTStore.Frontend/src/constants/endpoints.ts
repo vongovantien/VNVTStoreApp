@@ -142,7 +142,6 @@ export const API_ENDPOINTS = {
     PERMISSIONS: {
         BASE: '/permissions',
         SEARCH: '/permissions/search',
-        ALL: '/permissions/all',
     },
     MENUS: {
         BASE: '/menus',

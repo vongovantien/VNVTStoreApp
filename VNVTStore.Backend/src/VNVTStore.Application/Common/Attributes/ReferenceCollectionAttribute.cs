@@ -41,7 +41,7 @@ public class ReferenceCollectionAttribute : Attribute
         Type childDtoType,
         string childTableName, 
         string foreignKey, 
-        string parentKey,
+        string parentKey = "Code",
         string? filterColumn = null,
         string? filterValue = null)
     {

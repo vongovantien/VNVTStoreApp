@@ -8,16 +8,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, Clock, TrendingUp, X, ArrowRight } from 'lucide-react';
 import { useDebounce } from '@/hooks';
-import { productService } from '@/services/productService';
+import { productService, type ProductDto } from '@/services/productService';
 import CustomImage from '@/components/common/Image';
 
 const RECENT_SEARCHES_KEY = 'vnvt_recent_searches';
 const MAX_RECENT = 8;
-
-const TRENDING_TERMS = [
-  'điện thoại', 'laptop', 'tai nghe', 'sạc dự phòng',
-  'camera', 'máy tính bảng', 'đồng hồ', 'loa bluetooth'
-];
 
 interface SearchResult {
   code: string;
@@ -36,6 +31,7 @@ export const SearchAutocomplete = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [trendingTerms, setTrendingTerms] = useState<string[]>([]);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -44,12 +40,26 @@ export const SearchAutocomplete = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debouncedQuery = useDebounce(query, 300);
 
-  // Load recent searches from localStorage
+  // Load recent searches and trending terms
   useEffect(() => {
     try {
       const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
       if (stored) setRecentSearches(JSON.parse(stored));
     } catch { /* ignore */ }
+
+    // Fetch trending terms from backend
+    const fetchTrending = async () => {
+      try {
+        const res = await productService.getTrending(8);
+        if (res.success && res.data) {
+          setTrendingTerms(res.data.map((p: ProductDto) => p.name));
+        }
+      } catch {
+        // Fallback to minimal set if backend fails
+        setTrendingTerms(['điện thoại', 'laptop', 'tai nghe', 'sạc dự phòng']);
+      }
+    };
+    fetchTrending();
   }, []);
 
   // Save recent search
@@ -87,13 +97,15 @@ export const SearchAutocomplete = ({
     const fetchResults = async () => {
       setIsLoading(true);
       try {
-        const res = await productService.getProducts({
+        const res = await productService.search({
           pageIndex: 1,
           pageSize: 6,
-          searching: [{ searchField: 'Name', searchValue: debouncedQuery, searchCondition: 1 }],
+          search: debouncedQuery,
+          searchField: 'Name',
           fields: ['Code', 'Name', 'Price'],
         });
-        setResults(res.data?.map((p: any) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setResults(res.data?.items?.map((p: any) => ({
           code: p.code,
           name: p.name,
           imageUrl: p.imageUrl,
@@ -248,7 +260,7 @@ export const SearchAutocomplete = ({
                 <TrendingUp size={12} /> {t('search.trending', 'Xu hướng tìm kiếm')}
               </h4>
               <div className="flex flex-wrap gap-1.5 px-3 pb-2">
-                {TRENDING_TERMS.map((term) => (
+                {trendingTerms.map((term) => (
                   <button
                     key={term}
                     onClick={() => { setQuery(term); handleSubmit(term); }}

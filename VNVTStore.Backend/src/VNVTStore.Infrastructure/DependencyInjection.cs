@@ -54,6 +54,8 @@ public static class DependencyInjection
         services.AddScoped<IPricingService, PricingService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddTransient<INotificationService, NotificationService>();
+        services.AddScoped<ILoyaltyService, LoyaltyService>();
+        services.AddScoped<IPromotionEngine, PromotionEngine>();
         
         // Add Caching - Use Redis if configured, otherwise Memory cache
         services.AddMemoryCache();
@@ -97,6 +99,9 @@ public static class DependencyInjection
         }
         // Add JWT Settings
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+
+        // Autonomous Logic Hubs (Phase 9)
+        services.AddHostedService<LogicHubWorker>();
 
         return services;
     }

@@ -10,6 +10,13 @@ import getCroppedImg from '@/utils/cropImage';
 
 import { getImageUrl } from '@/utils/format';
 
+interface CropArea {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 interface AvatarUploadProps {
     currentAvatarUrl?: string;
     onUploadSuccess: (url: string) => void;
@@ -32,7 +39,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
     const [isCropping, setIsCropping] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +51,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         xl: 'w-40 h-40'
     };
 
-    const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+    const onCropComplete = useCallback((_croppedArea: CropArea, croppedAreaPixels: CropArea) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 

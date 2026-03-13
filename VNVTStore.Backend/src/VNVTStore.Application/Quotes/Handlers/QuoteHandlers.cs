@@ -12,6 +12,7 @@ using VNVTStore.Domain.Interfaces;
 namespace VNVTStore.Application.Quotes.Handlers;
 
 public class QuoteHandlers : BaseHandler<TblQuote>,
+    IRequestHandler<DeleteMultipleCommand<TblQuote>, Result>,
     IRequestHandler<CreateCommand<CreateQuoteDto, QuoteDto>, Result<QuoteDto>>,
     IRequestHandler<UpdateCommand<UpdateQuoteDto, QuoteDto>, Result<QuoteDto>>,
     IRequestHandler<DeleteCommand<TblQuote>, Result>,

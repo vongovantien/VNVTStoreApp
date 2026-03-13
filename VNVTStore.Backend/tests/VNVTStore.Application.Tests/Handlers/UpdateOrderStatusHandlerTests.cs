@@ -19,6 +19,7 @@ public class UpdateOrderStatusHandlerTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IDapperContext> _dapperContextMock;
+    private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly UpdateOrderStatusHandler _handler;
 
     public UpdateOrderStatusHandlerTests()
@@ -27,6 +28,7 @@ public class UpdateOrderStatusHandlerTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _mapperMock = new Mock<IMapper>();
         _dapperContextMock = new Mock<IDapperContext>();
+        _notificationServiceMock = new Mock<INotificationService>();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).Returns(Task.FromResult(1));
 
@@ -34,7 +36,8 @@ public class UpdateOrderStatusHandlerTests
             _orderRepoMock.Object,
             _unitOfWorkMock.Object,
             _mapperMock.Object,
-            _dapperContextMock.Object);
+            _dapperContextMock.Object,
+            _notificationServiceMock.Object);
     }
 
     [Fact]

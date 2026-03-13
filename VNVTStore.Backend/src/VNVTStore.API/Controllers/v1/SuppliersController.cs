@@ -10,7 +10,7 @@ namespace VNVTStore.API.Controllers.v1;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Roles = "admin,Admin")]
+[Authorize(Roles = nameof(UserRole.Admin))]
 public class SuppliersController : BaseApiController<TblSupplier, SupplierDto, CreateSupplierDto, UpdateSupplierDto>
 {
     public SuppliersController(IMediator mediator) : base(mediator)

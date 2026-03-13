@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Star, User } from 'lucide-react';
+import { useAuthStore } from '@/store';
+import { UserRole } from '@/types';
 import { reviewService, type ReviewDto } from '@/services/reviewService';
 import { formatDate } from '@/utils/format';
 import { Pagination } from '@/components/ui';
@@ -21,6 +23,8 @@ const ReviewItem = ({
   isReply?: boolean;
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === UserRole.Admin;
   
   return (
     <div className={`${isReply ? 'ml-8 mt-4' : 'bg-primary p-4 rounded-xl border border-secondary/20'} transition-all`}>
@@ -53,12 +57,14 @@ const ReviewItem = ({
       <div className={`${isReply ? 'pl-2 border-l-2 border-secondary/20' : 'pl-10'}`}>
          <p className="text-secondary mb-2 whitespace-pre-wrap">{review.comment}</p>
          
-         <button 
-           onClick={() => onReply?.(review)}
-           className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors"
-         >
-           {t('common.reply') || 'Reply'}
-         </button>
+         {isAdmin && (
+           <button 
+             onClick={() => onReply?.(review)}
+             className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors"
+           >
+             {t('common.reply') || 'Reply'}
+           </button>
+         )}
 
          {review.replies && review.replies.length > 0 && (
            <div className="space-y-4 pt-2">

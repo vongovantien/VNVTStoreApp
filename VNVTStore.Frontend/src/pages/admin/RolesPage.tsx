@@ -33,7 +33,7 @@ export const RolesPage = () => {
     } = useRoles({
         pageIndex: currentPage,
         pageSize,
-        search: searchQuery || undefined,
+        ...(searchQuery ? { search: searchQuery } : {}),
         sortBy: sortField,
         sortDesc: sortDir === SortDirection.DESC
     });
@@ -72,7 +72,7 @@ export const RolesPage = () => {
         try {
             await createMutation.mutateAsync({
                 name: data.name,
-                description: data.description,
+                ...(data.description ? { description: data.description } : {}),
                 isActive: data.isActive,
                 permissionCodes: data.permissionCodes,
                 menuCodes: data.menuCodes
@@ -89,7 +89,7 @@ export const RolesPage = () => {
                 id: editingRole.code,
                 data: {
                     name: data.name,
-                    description: data.description,
+                    ...(data.description ? { description: data.description } : {}),
                     isActive: data.isActive,
                     permissionCodes: data.permissionCodes,
                     menuCodes: data.menuCodes
@@ -171,10 +171,14 @@ export const RolesPage = () => {
 
     const roleInitialData = useMemo(() => editingRole ? {
         name: editingRole.name,
-        description: editingRole.description,
+        description: editingRole.description || undefined,
         isActive: editingRole.isActive,
-        permissionCodes: editingRole.permissions?.map(p => p.code) || [],
-        menuCodes: editingRole.menus?.map(m => m.code) || []
+        permissionCodes: editingRole.permissions?.map(p => 
+            typeof p === 'object' && p !== null && 'code' in p ? p.code : String(p)
+        ) || [],
+        menuCodes: editingRole.menus?.map(m => 
+            typeof m === 'object' && m !== null && 'code' in m ? m.code : String(m)
+        ) || []
     } : undefined, [editingRole]);
 
     return (
@@ -191,6 +195,8 @@ export const RolesPage = () => {
                 isLoading={isLoading}
                 isFetching={isFetching}
                 onAdd={() => openCreate()}
+                onEdit={openEdit}
+                onDelete={confirmDelete}
                 onRefresh={() => refetch()}
                 error={isError ? (error as Error) : null}
 

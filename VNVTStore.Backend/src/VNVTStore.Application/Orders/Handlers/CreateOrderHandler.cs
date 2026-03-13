@@ -22,6 +22,7 @@ using VNVTStore.Domain.Strategies;
 namespace VNVTStore.Application.Orders.Handlers;
 
 public class CreateOrderHandler : BaseHandler<TblOrder>,
+    IRequestHandler<DeleteMultipleCommand<TblOrder>, Result>,
     IRequestHandler<CreateOrderCommand, Result<OrderDto>>
 {
     private readonly ICartService _cartService;
@@ -34,6 +35,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
     private readonly IApplicationDbContext _context;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ILoyaltyService _loyaltyService;
     private readonly ILogger<CreateOrderHandler> _logger;
 
     public CreateOrderHandler(
@@ -51,6 +53,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
         IApplicationDbContext context,
         IEmailService emailService,
         IConfiguration configuration,
+        ILoyaltyService loyaltyService,
         ILogger<CreateOrderHandler> logger) : base(orderRepository, unitOfWork, mapper, dapperContext)
     {
         _cartService = cartService;
@@ -63,6 +66,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
         _context = context;
         _emailService = emailService;
         _configuration = configuration;
+        _loyaltyService = loyaltyService;
         _logger = logger;
     }
 
@@ -185,35 +189,57 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             decimal discountAmount = 0;
             if (!string.IsNullOrEmpty(request.dto.CouponCode))
             {
+                // 1. Tìm trong TblCoupon trước
                 var coupon = await _context.TblCoupons
                     .Include(c => c.PromotionCodeNavigation)
                     .FirstOrDefaultAsync(c => c.Code == request.dto.CouponCode, cancellationToken);
 
-                if (coupon == null)
+                TblPromotion? promo = null;
+
+                if (coupon != null)
                 {
-                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponNotFound, Array.Empty<object>()));
+                    // Coupon found → Validate coupon + linked promotion
+                    if (!coupon.IsActive || coupon.PromotionCodeNavigation == null || !coupon.PromotionCodeNavigation.IsActive)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponNotActive, Array.Empty<object>()));
+                    }
+
+                    promo = coupon.PromotionCodeNavigation;
+
+                    if (promo.UsageLimit.HasValue && (coupon.UsageCount ?? 0) >= promo.UsageLimit.Value)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponLimitReached, Array.Empty<object>()));
+                    }
+                }
+                else
+                {
+                    // 2. Coupon not found → Fallback: Tìm trực tiếp trong TblPromotion
+                    promo = await _context.TblPromotions
+                        .FirstOrDefaultAsync(p => p.Code == request.dto.CouponCode, cancellationToken);
+
+                    if (promo == null)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponNotFound, Array.Empty<object>()));
+                    }
+
+                    if (!promo.IsActive)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponNotActive, Array.Empty<object>()));
+                    }
                 }
 
-                if (!coupon.IsActive || coupon.PromotionCodeNavigation == null || !coupon.PromotionCodeNavigation.IsActive)
-                {
-                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponNotActive, Array.Empty<object>()));
-                }
-
-                var promo = coupon.PromotionCodeNavigation;
+                // Validate date range
                 if (DateTime.UtcNow < promo.StartDate || DateTime.UtcNow > promo.EndDate)
                 {
                     await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                     return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponExpired, Array.Empty<object>()));
                 }
 
-                if (promo.UsageLimit.HasValue && (coupon.UsageCount ?? 0) >= promo.UsageLimit.Value)
-                {
-                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.CouponLimitReached, Array.Empty<object>()));
-                }
-
+                // Validate min order amount
                 if (promo.MinOrderAmount.HasValue && totalAmount < promo.MinOrderAmount.Value)
                 {
                     await _unitOfWork.RollbackTransactionAsync(cancellationToken);
@@ -221,21 +247,25 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                 }
 
                 // Discount calculation
-                if (promo.DiscountType == "Percentage")
+                if (promo.DiscountType == "Percentage" || promo.DiscountType == "PERCENTAGE")
                 {
                     discountAmount = (totalAmount * promo.DiscountValue) / 100;
                     if (promo.MaxDiscountAmount.HasValue && discountAmount > promo.MaxDiscountAmount.Value)
                         discountAmount = promo.MaxDiscountAmount.Value;
                 }
-                else // Fixed
+                else // Fixed / AMOUNT
                 {
                     discountAmount = promo.DiscountValue;
                 }
 
                 if (discountAmount > totalAmount) discountAmount = totalAmount;
 
-                coupon.UsageCount = (coupon.UsageCount ?? 0) + 1;
-                _context.TblCoupons.Update(coupon);
+                // Update usage count
+                if (coupon != null)
+                {
+                    coupon.UsageCount = (coupon.UsageCount ?? 0) + 1;
+                    _context.TblCoupons.Update(coupon);
+                }
             }
 
             decimal shippingFee = _shippingStrategy.CalculateShippingFee(totalAmount - discountAmount);
@@ -306,16 +336,10 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
 
             if (!string.IsNullOrEmpty(request.userCode) && userCode != "USR_GUEST") 
             {
-                 var user = await _userRepository.GetByCodeAsync(userCode, cancellationToken);
-                 if (user != null)
+                 int points = await _loyaltyService.CalculatePointsForOrderAsync(totalAmount - discountAmount);
+                 if (points > 0)
                  {
-                      int points = (int)((totalAmount - discountAmount) / 10000);
-                      if (points > 0)
-                      {
-                            user.AddLoyaltyPoints(points);
-                            _userRepository.Update(user);
-                            await _unitOfWork.CommitAsync(cancellationToken);
-                      }
+                      await _loyaltyService.AddPointsToUserAsync(userCode, points);
                  }
             }
 
@@ -360,6 +384,15 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             }
 
             await _notificationService.BroadcastLocalizedAsync(MessageConstants.NotificationNewOrder, order.Code);
+
+            if (!string.IsNullOrEmpty(userCode) && userCode != "USR_GUEST")
+            {
+                 await _notificationService.SendToUserAsync(userCode, 
+                     "Order Placed", 
+                     $"Your order #{order.Code} has been placed successfully.", 
+                     "SUCCESS", 
+                     $"/account/orders/{order.Code}");
+            }
 
             return Result.Success(_mapper.Map<OrderDto>(order));
         }

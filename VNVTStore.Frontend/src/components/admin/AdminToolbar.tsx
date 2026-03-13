@@ -15,11 +15,11 @@ import { cn } from '@/utils/cn';
 
 interface AdminToolbarAction {
   icon: React.ReactNode;
-  onClick?: () => void;
-  title?: string;
-  disabled?: boolean;
-  className?: string;
-  label?: string; // Added label prop
+  onClick?: (() => void) | undefined;
+  title?: string | undefined;
+  disabled?: boolean | undefined;
+  className?: string | undefined;
+  label?: string | undefined;
 }
 
 // Specific styled versions based on screenshot (Blue icons)
@@ -44,22 +44,22 @@ const BlueItem = React.forwardRef<HTMLButtonElement, AdminToolbarAction>(({ icon
 BlueItem.displayName = "BlueItem";
 
 interface AdminToolbarProps {
-  onAdd?: () => void;
-  onViewDetails?: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onSearchClick?: () => void;
-  onRefresh?: () => void;
-  onImport?: () => void;
-  onExport?: () => void;
-  onReset?: () => void;
-  isSearchActive?: boolean;
-  isExporting?: boolean;
-  selectedCount?: number;
-  className?: string;
-  searchRef?: React.Ref<HTMLButtonElement>;
-  children?: React.ReactNode;
-  searchInput?: React.ReactNode;
+  onAdd?: (() => void) | undefined;
+  onViewDetails?: (() => void) | undefined;
+  onEdit?: (() => void) | undefined;
+  onDelete?: (() => void) | undefined;
+  onSearchClick?: (() => void) | undefined;
+  onRefresh?: (() => void) | undefined;
+  onImport?: (() => void) | undefined;
+  onExport?: (() => void) | undefined;
+  onReset?: (() => void) | undefined;
+  isSearchActive?: boolean | undefined;
+  isExporting?: boolean | undefined;
+  selectedCount?: number | undefined;
+  className?: string | undefined;
+  searchRef?: React.Ref<HTMLButtonElement> | undefined;
+  children?: React.ReactNode | undefined;
+  searchInput?: React.ReactNode | undefined;
 }
 
 export const AdminToolbar = ({

@@ -130,8 +130,7 @@ const SortIcon = ({ columnId, sortField, sortDir }: { columnId: string; sortFiel
 };
 
 // ============ DataTable Component ============
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DataTableInner<T extends Record<string, any>>({
+function DataTableInner<T extends Record<string, unknown>>({ // Changed from any to unknown
   columns,
   data,
   keyField,

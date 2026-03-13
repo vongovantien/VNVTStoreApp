@@ -9,9 +9,9 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, onClick, ...props }: any) => <div onClick={onClick} {...props}>{children}</div>,
+    div: ({ children, onClick, ...props }: { children: React.ReactNode; onClick?: () => void }) => <div onClick={onClick} {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock lucide-react

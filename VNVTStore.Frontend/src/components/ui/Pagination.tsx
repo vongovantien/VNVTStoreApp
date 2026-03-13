@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,9 +7,9 @@ export interface PaginationProps {
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange?: (size: number) => void;
-  pageSizeOptions?: number[];
-  isLoading?: boolean;
+  onPageSizeChange?: ((size: number) => void) | undefined;
+  pageSizeOptions?: number[] | undefined;
+  isLoading?: boolean | undefined;
 }
 
 const getPageNumbers = (currentPage: number, totalPages: number) => {

@@ -12,6 +12,7 @@ using VNVTStore.Domain.Interfaces;
 namespace VNVTStore.Application.Coupons.Handlers;
 
 public class CouponHandlers : BaseHandler<TblCoupon>,
+    IRequestHandler<DeleteMultipleCommand<TblCoupon>, Result>,
     IRequestHandler<ValidateCouponCommand, Result<CouponDto>>,
     IRequestHandler<GetByCodeQuery<CouponDto>, Result<CouponDto>>,
     IRequestHandler<CreateCommand<CreateCouponDto, CouponDto>, Result<CouponDto>>,

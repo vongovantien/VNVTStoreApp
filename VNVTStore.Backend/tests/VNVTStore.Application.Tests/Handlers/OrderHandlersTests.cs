@@ -33,6 +33,7 @@ public class OrderHandlersTests
     private readonly Mock<IApplicationDbContext> _contextMock;
     private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<IConfiguration> _configurationMock;
+    private readonly Mock<ILoyaltyService> _loyaltyServiceMock;
     private readonly Mock<ILogger<CreateOrderHandler>> _loggerMock;
     private readonly CreateOrderHandler _handler;
 
@@ -52,6 +53,7 @@ public class OrderHandlersTests
         _contextMock = new Mock<IApplicationDbContext>();
         _emailServiceMock = new Mock<IEmailService>();
         _configurationMock = new Mock<IConfiguration>();
+        _loyaltyServiceMock = new Mock<ILoyaltyService>();
         _loggerMock = new Mock<ILogger<CreateOrderHandler>>();
 
         // Setup UnitOfWork
@@ -74,6 +76,7 @@ public class OrderHandlersTests
             _contextMock.Object,
             _emailServiceMock.Object,
             _configurationMock.Object,
+            _loyaltyServiceMock.Object,
             _loggerMock.Object);
     }
 

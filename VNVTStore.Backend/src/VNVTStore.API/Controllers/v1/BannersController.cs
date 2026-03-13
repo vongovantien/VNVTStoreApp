@@ -21,14 +21,14 @@ public class BannersController : BaseApiController<TblBanner, BannerDto, CreateB
     }
 
     [HttpPost]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public override Task<IActionResult> Create([FromBody] RequestDTO<CreateBannerDto> request) => base.Create(request);
 
     [HttpPut("{code}")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public override Task<IActionResult> Update(string code, [FromBody] RequestDTO<UpdateBannerDto> request) => base.Update(code, request);
 
     [HttpDelete("{code}")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public override Task<IActionResult> Delete(string code) => base.Delete(code);
 }

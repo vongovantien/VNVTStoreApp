@@ -1,5 +1,6 @@
 ﻿using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -61,6 +62,10 @@ public partial class TblUser : IEntity
     public DateTime? ResetTokenExpiry { get; private set; }
 
     public string? AvatarUrl { get; private set; }
+
+    [Column("UserTier")]
+    [MaxLength(50)]
+    public string UserTier { get; private set; } = "NEW"; // NEW, LOYAL, VIP
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal DebtLimit { get; private set; } = 0; // Maximum allowed debt

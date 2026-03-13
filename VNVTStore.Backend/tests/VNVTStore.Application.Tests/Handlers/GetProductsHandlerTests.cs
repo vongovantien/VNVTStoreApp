@@ -70,8 +70,7 @@ public class GetProductsHandlerTests
             _mockRepository.Object,
             _mockUnitOfWork.Object,
             _mockMapper.Object,
-            _mockDapperContext.Object,
-            _mockBaseUrlService.Object
+            _mockDapperContext.Object
         );
     }
 
@@ -85,7 +84,7 @@ public class GetProductsHandlerTests
         { 
             PageIndex = 1, 
             PageSize = 10,
-            Fields = new List<string> { "Code", "Name" }
+            Fields = new List<string> { "Code", "Name", "ProductImages" }
         };
         
         // Capture SQL commands

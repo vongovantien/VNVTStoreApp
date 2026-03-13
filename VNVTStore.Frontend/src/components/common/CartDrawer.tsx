@@ -8,7 +8,7 @@ import SharedImage from '@/components/common/Image';
 import { useCartStore, useUIStore } from '@/store';
 import { formatCurrency } from '@/utils/format';
 import { cn } from '@/utils/cn';
-import { useProducts } from '@/hooks/useProducts';
+
 
 const FREE_SHIPPING_THRESHOLD = 2000000; // 2 million VND
 

@@ -81,7 +81,7 @@ public static class SqlBuilderHelpers
         
         if (!string.IsNullOrEmpty(filterColumn) && !string.IsNullOrEmpty(filterValue))
         {
-            sb.Append(" AND ").Append(targetAlias).Append(".\"").Append(filterColumn).Append("\" = '")
+            sb.Append(" AND ").Append(targetAlias).Append(".\"").Append(filterColumn).Append("\" ILIKE '")
               .Append(filterValue).Append('\'');
         }
         

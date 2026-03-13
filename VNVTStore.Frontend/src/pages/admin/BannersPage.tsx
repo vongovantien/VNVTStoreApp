@@ -5,7 +5,7 @@ import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner } from '@/hooks/useBanners';
 import { BannerForm, BannerFormData } from './forms/BannerForm';
-import { useToast } from '@/store';
+import { useToast, useAuthStore } from '@/store';
 import { bannerService, BannerDto } from '@/services/bannerService';
 import { formatDate } from '@/utils/format';
 import { AdminPageHeader } from '@/components/admin';
@@ -14,6 +14,11 @@ import { PaginationDefaults } from '@/constants';
 const BannersPage = () => {
   const { t } = useTranslation();
   const toast = useToast();
+  const { hasPermission } = useAuthStore();
+
+  const canCreate = hasPermission('BANNERS_CREATE');
+  const canUpdate = hasPermission('BANNERS_UPDATE');
+  const canDelete = hasPermission('BANNERS_DELETE');
 
   // State
   const [currentPage, setCurrentPage] = useState(PaginationDefaults.PAGE_INDEX);
@@ -166,7 +171,7 @@ const BannersPage = () => {
         subtitle="admin.subtitles.banners"
       />
 
-      <DataTable
+      <DataTable<BannerDto>
         columns={columns}
         data={banners}
         keyField="code"
@@ -205,12 +210,12 @@ const BannersPage = () => {
         onPageChange={setCurrentPage}
 
         // Actions
-        onAdd={() => { setEditingBanner(null); setIsFormOpen(true); }}
+        {...(canCreate ? { onAdd: () => { setEditingBanner(null); setIsFormOpen(true); } } : {})}
         onRefresh={() => refetch()}
         onView={(item) => setViewingBanner(item)}
-        onEdit={openEdit}
-        onDelete={(item) => setBannerToDelete(item)}
-        onBulkDelete={() => setShowBulkConfirm(true)}
+        {...(canUpdate ? { onEdit: openEdit } : {})}
+        {...(canDelete ? { onDelete: (item) => setBannerToDelete(item) } : {})}
+        {...(canDelete ? { onBulkDelete: () => setShowBulkConfirm(true) } : {})}
 
         // Selection
         selectedIds={selectedIds}
@@ -233,15 +238,17 @@ const BannersPage = () => {
         size="lg"
       >
         <BannerForm
-          initialData={editingBanner ? {
-            title: editingBanner.title,
-            content: editingBanner.content || '',
-            linkUrl: editingBanner.linkUrl || '',
-            linkText: editingBanner.linkText || '',
-            imageURL: editingBanner.imageURL || '',
-            priority: editingBanner.priority,
-            isActive: editingBanner.isActive
-          } : undefined}
+          {...(editingBanner ? {
+            initialData: {
+              title: editingBanner.title,
+              content: editingBanner.content || '',
+              linkUrl: editingBanner.linkUrl || '',
+              linkText: editingBanner.linkText || '',
+              imageURL: editingBanner.imageURL || '',
+              priority: editingBanner.priority,
+              isActive: editingBanner.isActive
+            }
+          } : {})}
           onSubmit={editingBanner ? handleUpdate : handleCreate}
           onCancel={() => setIsFormOpen(false)}
           isLoading={createMutation.isPending || updateMutation.isPending}

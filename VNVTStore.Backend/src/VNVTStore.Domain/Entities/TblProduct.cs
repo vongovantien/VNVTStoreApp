@@ -32,6 +32,8 @@ public partial class TblProduct : IEntity
     public string? CategoryCode { get; private set; }
 
     public bool IsActive { get; set; }
+    public bool? IsNew { get; set; }
+    public bool? IsFeatured { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
@@ -40,6 +42,7 @@ public partial class TblProduct : IEntity
     
     public decimal Rating { get; private set; }
     public int ReviewCount { get; private set; }
+    public int ViewCount { get; private set; }
 
     public string? SupplierCode { get; private set; }
 
@@ -69,7 +72,7 @@ public partial class TblProduct : IEntity
     public virtual ICollection<TblProductVariant> TblProductVariants { get; private set; } = new List<TblProductVariant>();
 
     public static TblProduct Create(string name, decimal price, decimal? wholesalePrice, int stock, string? categoryCode, decimal? costPrice, 
-        string? supplierCode, string? brandCode = null, string? baseUnit = null)
+        string? supplierCode, string? brandCode = null, string? baseUnit = null, bool? isNew = null, bool? isFeatured = null)
     {
          return new TblProduct
          {
@@ -84,13 +87,16 @@ public partial class TblProduct : IEntity
              BrandCode = brandCode,
              BaseUnit = baseUnit,
              IsActive = true,
+             IsNew = isNew,
+             IsFeatured = isFeatured,
              CreatedAt = DateTime.UtcNow,
              UpdatedAt = DateTime.UtcNow // Initialize UpdatedAt
          };
     }
 
     public void UpdateInfo(string name, decimal price, decimal? wholesalePrice, string? description, string? categoryCode, decimal? costPrice, int? stockQuantity,
-        string? supplierCode, string? brandCode, string? baseUnit, int? minStockLevel, string? binLocation, decimal? vatRate, string? countryOfOrigin)
+        string? supplierCode, string? brandCode, string? baseUnit, int? minStockLevel, string? binLocation, decimal? vatRate, string? countryOfOrigin, 
+        bool? isNew = null, bool? isFeatured = null)
     {
         Name = name;
         Price = price;
@@ -108,6 +114,10 @@ public partial class TblProduct : IEntity
         BinLocation = binLocation;
         VatRate = vatRate;
         CountryOfOrigin = countryOfOrigin;
+
+        if (isNew.HasValue) IsNew = isNew.Value;
+        if (isFeatured.HasValue) IsFeatured = isFeatured.Value;
+        else if (isFeatured == null) IsFeatured = null; // Allow setting back to null if needed, or keep existing logic
         
         UpdatedAt = DateTime.UtcNow;
     }
@@ -146,5 +156,11 @@ public partial class TblProduct : IEntity
         Rating = rating;
         ReviewCount = reviewCount;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void IncrementViewCount()
+    {
+        ViewCount++;
+        // We don't necessarily want to update UpdatedAt for every view to avoid noise
     }
 }

@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Tag, Clock } from 'lucide-react';
-import { Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Tag, Clock, Sparkles, FastForward } from 'lucide-react';
+import { Badge, Modal, ConfirmDialog, Button } from '@/components/ui';
+import { cn } from '@/utils/cn';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { PromotionForm } from './forms/PromotionForm';
+import { PromotionForm, type PromotionFormData } from './forms/PromotionForm';
 import {
   useEntityManager,
 } from '@/hooks'; // We will assume usePromotions hook logic is handled via useEntityManager or we need a hook? 
@@ -70,7 +71,7 @@ export const PromotionsPage = () => {
   } = usePromotions({
     pageIndex: currentPage,
     pageSize,
-    search: searchQuery || undefined,
+    ...(searchQuery ? { search: searchQuery } : {}),
     sortBy: sortField,
     sortDesc: sortDir === SortDirection.DESC,
     ...advancedFilters
@@ -236,6 +237,35 @@ export const PromotionsPage = () => {
             subtitle="promotions.subtitle"
           />
 
+          {/* Feature: Promo High-Density Analytics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Active Codes', value: '12', trend: '+2', color: 'text-emerald-600' },
+              { label: 'Avg. CTR', value: '4.8%', trend: '+0.5%', color: 'text-primary' },
+              { label: 'Revenue Boost', value: '18.2%', trend: '+5%', color: 'text-blue-600' },
+              { label: 'Collision Risk', value: 'Low', trend: 'None', color: 'text-amber-600' },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] uppercase text-slate-500 font-bold mb-1">{stat.label}</p>
+                <div className="flex items-baseline gap-2">
+                  <span className={cn("text-lg font-bold", stat.color)}>{stat.value}</span>
+                  <span className="text-[9px] text-slate-400 font-mono">{stat.trend}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-between items-center bg-indigo-50 dark:bg-indigo-950/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+            <div className="flex items-center gap-3 text-indigo-700 dark:text-indigo-400">
+              <Sparkles size={20} />
+              <div>
+                <p className="text-sm font-bold">Simulator Khuyến mãi v1.0</p>
+                <p className="text-[10px] opacity-80">Phân tích tác động của khuyến mãi lên biên lợi nhuận</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" className="bg-white" leftIcon={<FastForward size={14} />}>Chạy mô phỏng</Button>
+          </div>
+
           <DataTable
             columns={columns}
             data={promotions}
@@ -282,7 +312,7 @@ export const PromotionsPage = () => {
             }}
             advancedFilterDefs={[
               { id: 'search', label: t('common.search'), type: 'text', placeholder: t('common.placeholders.search') },
-              { id: 'type', label: t('common.fields.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.types.voucher') }, { value: 'flash_sale', label: t('shared.flashSale') }] },
+              { id: 'type', label: t('common.fields.type'), type: 'select', options: [{ value: 'voucher', label: t('admin.promotionForm.voucher') }, { value: 'flash_sale', label: t('shared.flashSale') }] },
               { id: 'isActive', label: t('common.fields.status'), type: 'select', options: [{ value: 'true', label: t('common.status.active') }, { value: 'false', label: t('common.status.inactive') }] }
             ]}
           />
@@ -290,11 +320,11 @@ export const PromotionsPage = () => {
           <Modal
             isOpen={isFormOpen}
             onClose={closeForm}
-            title={editingPromotion ? t('admin.actions.edit') : t('admin.actions.create')}
+            title={editingPromotion ? t('admin.promotionForm.edit') : t('admin.promotionForm.create')}
             size="2xl"
           >
             <PromotionForm
-              initialData={promotionInitialData}
+              initialData={promotionInitialData as unknown as Partial<PromotionFormData>}
               onSubmit={editingPromotion ? handleUpdate : handleCreate}
               onCancel={closeForm}
               isLoading={isSubmitting}

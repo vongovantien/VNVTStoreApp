@@ -38,6 +38,7 @@ try
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddApiServices(builder.Configuration);
     builder.Services.AddSignalR();
+    builder.Services.AddMemoryCache();
     builder.Services.AddHttpContextAccessor();
 
     // Initialize Firebase Admin SDK

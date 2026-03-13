@@ -1,5 +1,6 @@
 using MediatR;
 using VNVTStore.Application.Common;
+using VNVTStore.Application.Common.Interfaces;
 using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Application.Auth.Commands;
@@ -9,12 +10,20 @@ public record RegisterCommand(
     string email,
     string password,
     string? fullName
-) : IRequest<Result<UserDto>>;
+) : IRequest<Result<UserDto>>, IAuditableCommand
+{
+    public string? AuditAction => "REGISTER";
+    public string? AuditResourceId => username;
+}
 
 public record LoginCommand(
     string username,
     string password
-) : IRequest<Result<AuthResponseDto>>;
+) : IRequest<Result<AuthResponseDto>>, IAuditableCommand
+{
+    public string? AuditAction => "LOGIN";
+    public string? AuditResourceId => username;
+}
 
 public record VerifyEmailCommand(
     string email,
@@ -33,4 +42,8 @@ public record ResetPasswordCommand(
 
 public record ImpersonateCommand(
     string targetUserCode
-) : IRequest<Result<AuthResponseDto>>;
+) : IRequest<Result<AuthResponseDto>>, IAuditableCommand
+{
+    public string? AuditAction => "IMPERSONATE";
+    public string? AuditResourceId => targetUserCode;
+}

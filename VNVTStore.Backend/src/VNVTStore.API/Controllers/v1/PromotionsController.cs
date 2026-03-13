@@ -37,7 +37,7 @@ public class PromotionsController : BaseApiController<TblPromotion, PromotionDto
     }
     
     [HttpPost("import")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Import(IFormFile file)
     {

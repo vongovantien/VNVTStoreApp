@@ -70,7 +70,7 @@ public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateR
     }
 
     [HttpGet]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> GetAllReviews(
         [FromQuery] int pageIndex = AppConstants.Paging.DefaultPageNumber, 
         [FromQuery] int pageSize = AppConstants.Paging.DefaultPageSize, 
@@ -85,7 +85,7 @@ public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateR
     /// Approve a review (Admin)
     /// </summary>
     [HttpPost("{code}/approve")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> ApproveReview(string code)
     {
         var result = await Mediator.Send(new ApproveReviewCommand(code));
@@ -96,7 +96,7 @@ public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateR
     /// Reject a review (Admin)
     /// </summary>
     [HttpPost("{code}/reject")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> RejectReview(string code)
     {
         var result = await Mediator.Send(new RejectReviewCommand(code));
@@ -107,7 +107,7 @@ public class ReviewsController : BaseApiController<TblReview, ReviewDto, CreateR
     /// Reply to a review (Admin)
     /// </summary>
     [HttpPost("{code}/reply")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public async Task<IActionResult> ReplyReview(string code, [FromBody] string? reply)
     {
         if (string.IsNullOrWhiteSpace(reply))

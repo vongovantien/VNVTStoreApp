@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { userService } from '@/services/userService';
-import { useToast, useAuthStore, useToastStore } from '@/store';
+import { useToast, useAuthStore } from '@/store';
 import { Loading } from '@/components/ui';
+import { UserRole } from '@/types';
 import { ProfileForm, AccountSecurity, NotificationSettings, LoyaltySummary } from './components';
 import { type UpdateProfileData } from './components/ProfileForm';
 
 const ProfileContent = () => {
     const { t } = useTranslation();
-    const toast = useToast();
+    const { error, success, info } = useToast();
     const { user, updateUser } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
@@ -24,7 +25,7 @@ const ProfileContent = () => {
             try {
                 const res = await userService.getProfile();
                 if(res.success && res.data) {
-                    const avatarVal = res.data.avatar || (res.data as any).Avatar;
+                    const avatarVal = res.data.avatar || (res.data as { Avatar?: string }).Avatar;
                     const data = {
                         fullName: res.data.fullName || '',
                         email: res.data.email || '',
@@ -32,19 +33,23 @@ const ProfileContent = () => {
                         avatar: avatarVal || ''
                     };
                     setInitialData(data);
-                    // Update auth store user if needed
-                    updateUser(res.data as any);
+                    // Update auth store with normalized avatar
+                    updateUser({
+                        ...res.data,
+                        role: res.data.role as UserRole,
+                        ...(avatarVal ? { avatar: avatarVal } : {})
+                    });
                 }
-            } catch (error) {
-                console.error('Error fetching profile:', error);
+            } catch (err: unknown) {
+                console.error('Error fetching profile:', err);
+                error((err as Error).message || t('common.messages.fetchError'));
             } finally {
                 setPageLoading(false);
             }
         };
 
         fetchProfile();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); 
+    }, [t, error, updateUser]); 
 
     const handleSaveProfile = async (data: UpdateProfileData) => {
         setLoading(true);
@@ -53,13 +58,20 @@ const ProfileContent = () => {
                 fullName: data.fullName,
                 phone: data.phone,
                 email: data.email,
-                avatarUrl: data.avatarUrl
+                ...(data.avatarUrl ? { avatarUrl: data.avatarUrl } : {})
             });
 
             if (res.success && res.data) {
-                toast.success(t('common.messages.updateSuccess'));
-                updateUser(res.data as any);
-                const avatarVal = res.data.avatar || (res.data as any).Avatar;
+                success(t('common.messages.updateSuccess'));
+                
+                // Normalize avatar field before updating store
+                const avatarVal = res.data.avatar || (res.data as { Avatar?: string }).Avatar;
+                updateUser({
+                    ...res.data,
+                    role: res.data.role as UserRole,
+                    ...(avatarVal ? { avatar: avatarVal } : {})
+                });
+
                 setInitialData({
                     fullName: res.data.fullName || '',
                     email: res.data.email || '',
@@ -67,22 +79,22 @@ const ProfileContent = () => {
                     avatar: avatarVal || ''
                 });
             } else {
-                toast.error(res.message || t('common.messages.updateError'));
+                error(res.message || t('common.messages.updateError'));
             }
-        } catch (error) {
-            console.error('Error saving profile:', error);
-            toast.error(t('common.messages.updateError'));
+        } catch (err: unknown) {
+            console.error('Error saving profile:', err);
+            error((err as Error).message || t('common.messages.updateError'));
         } finally {
             setLoading(false);
         }
     };
 
     const handlePasswordChange = () => {
-        toast.info(t('common.messages.featureComingSoon'));
+        info(t('common.messages.featureComingSoon'));
     };
 
     const handleTwoFactorSetup = () => {
-        toast.info(t('common.messages.featureComingSoon'));
+        info(t('common.messages.featureComingSoon'));
     };
 
     const handleDeleteAccount = async () => {
@@ -91,16 +103,16 @@ const ProfileContent = () => {
         try {
             const res = await userService.deleteAccount();
             if (res.success) {
-                toast.success(t('profile.deleteAccount.success', 'Tài khoản đã được vô hiệu hóa.'));
+                success(t('profile.deleteAccount.success', 'Tài khoản đã được vô hiệu hóa.'));
                 // Logout user
                 useAuthStore.getState().logout();
                 window.location.href = '/';
             } else {
-                toast.error(res.message || t('profile.deleteAccount.error', 'Có lỗi xảy ra khi xóa tài khoản.'));
+                error(res.message || t('profile.deleteAccount.error', 'Có lỗi xảy ra khi xóa tài khoản.'));
             }
-        } catch (error) {
-            console.error('Error deleting account:', error);
-            toast.error(t('profile.deleteAccount.error', 'Có lỗi xảy ra khi xóa tài khoản.'));
+        } catch (err) {
+            console.error('Error deleting account:', err);
+            error(t('profile.deleteAccount.error', 'Có lỗi xảy ra khi xóa tài khoản.'));
         }
     };
 

@@ -13,7 +13,7 @@ using VNVTStore.Domain.Enums;
 namespace VNVTStore.API.Controllers.v1;
 
 [Authorize]
-public class UsersController : BaseApiController
+public class UsersController : BaseApiController<TblUser, UserDto, CreateUserDto, UpdateUserDto>
 {
     private readonly ICurrentUser _currentUser;
 
@@ -37,7 +37,7 @@ public class UsersController : BaseApiController
     }
 
     /// <summary>
-    /// Cập nhật thông tin cá nhân
+    /// Cập nhật profile (User tự cập nhật)
     /// </summary>
     [HttpPut("profile")]
     [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
@@ -96,6 +96,76 @@ public class UsersController : BaseApiController
 
         var result = await Mediator.Send(new DeleteAccountCommand(userCode!));
         return HandleResult(result, "Account deactivated successfully");
+    }
+
+    /// <summary>
+    /// Tìm kiếm và phân trang users (Admin only filter logic in base)
+    /// </summary>
+    [HttpPost("search")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<UserDto>>), StatusCodes.Status200OK)]
+    public override async Task<IActionResult> Search([FromBody] RequestDTO request)
+    {
+        return await base.Search(request);
+    }
+    /// <summary>
+    /// Tạo user mới (Admin only)
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status201Created)]
+    public override async Task<IActionResult> Create([FromBody] RequestDTO<CreateUserDto> request)
+    {
+        return await base.Create(request);
+    }
+
+    /// <summary>
+    /// Cập nhật user (Admin only)
+    /// </summary>
+    [HttpPut("{code}")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+    public override async Task<IActionResult> Update(string code, [FromBody] RequestDTO<UpdateUserDto> request)
+    {
+        return await base.Update(code, request);
+    }
+
+    /// <summary>
+    /// Xóa user (Admin only)
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var command = new DeleteCommand<TblUser>(id);
+        var result = await Mediator.Send(command);
+        return HandleDelete(result);
+    }
+
+    /// <summary>
+    /// Xóa nhiều users (Admin only)
+    /// </summary>
+    [HttpDelete("bulk")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeleteBulk([FromBody] List<string> ids)
+    {
+        var command = new DeleteMultipleCommand<TblUser>(ids);
+        var result = await Mediator.Send(command);
+        return HandleDelete(result);
+    }
+
+    /// <summary>
+    /// Lấy user theo code (Admin/Staff)
+    /// </summary>
+    [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Staff")]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetByCode(string id)
+    {
+        var query = new GetByCodeQuery<UserDto>(id);
+        var result = await Mediator.Send(query);
+        return HandleResult(result);
     }
 }
 

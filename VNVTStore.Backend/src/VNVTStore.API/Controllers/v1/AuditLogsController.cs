@@ -8,8 +8,8 @@ using VNVTStore.Application.Common;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[Authorize(Roles = "admin")]
-[Route("api/v1/[controller]")]
+[Authorize(Roles = nameof(UserRole.Admin))]
+[Route("api/v1/audit-logs")]
 public class AuditLogsController : BaseApiController<TblAuditLog, AuditLogDto, AuditLogDto, AuditLogDto>
 {
     private readonly IAuditLogService _auditLogService;

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createTabStorage } from './helpers';
 
 interface StoreSettings {
     general: {
@@ -83,6 +84,7 @@ export const useSettings = create<SettingsState>()(
         }),
         {
             name: 'vnvt-admin-settings',
+            storage: createJSONStorage(() => createTabStorage()),
         }
     )
 );

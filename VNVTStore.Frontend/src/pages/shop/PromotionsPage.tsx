@@ -22,13 +22,24 @@ export const PromotionsPage = () => {
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
     // Fetch Promotions
-    const { data: promotionsResponse, isLoading } = useQuery({
+    const { data: promotionsResponse, isLoading, isError, error } = useQuery({
         queryKey: ['promotions', 'active'],
-        queryFn: () => promotionService.getAll({}), // Fetch all, filtered below
+        queryFn: () => promotionService.getAll({}),
+        staleTime: 0,
+        refetchOnMount: 'always' as const,
     });
 
     // Handle data structure (ApiResponse wrapping)
     const allPromotions: Promotion[] = promotionsResponse?.data?.items || [];
+    
+    // Debug logging
+    if (isError) {
+        console.error('[PromotionsPage] Query error:', error);
+    }
+    if (promotionsResponse) {
+        console.log('[PromotionsPage] Response:', promotionsResponse);
+        console.log('[PromotionsPage] Items:', allPromotions);
+    }
 
     // Filter Active Only
     const activePromotions = allPromotions.filter(p => 

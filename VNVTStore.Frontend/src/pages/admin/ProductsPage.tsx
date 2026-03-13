@@ -79,10 +79,10 @@ export const ProductsPage = () => {
   } = useProducts({
     pageIndex: currentPage,
     pageSize,
-    search: searchQuery || undefined,
+    ...(searchQuery ? { search: searchQuery } : {}),
     sortField,
     sortDir,
-    fields: PRODUCT_LIST_FIELDS.length > 0 ? PRODUCT_LIST_FIELDS : undefined,  // Selective columns for list view
+    ...(PRODUCT_LIST_FIELDS.length > 0 ? { fields: PRODUCT_LIST_FIELDS } : {}),  // Selective columns for list view
     ...advancedFilters
   });
 
@@ -142,8 +142,30 @@ export const ProductsPage = () => {
 
   // Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const selectedToDelete = products.filter(p => selectedIds.has(p.code));
-  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [itemsToDelete, setItemsToDelete] = useState<Product[] | null>(null);
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (codes: string[]) => productService.deleteMultiple(codes),
+    onSuccess: () => {
+      toast.success(t('common.deleteSuccess'));
+      setItemsToDelete(null);
+      setSelectedIds(new Set());
+      refetch();
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || t('common.deleteError'));
+    }
+  });
+
+  const handleBulkDelete = (items: Product[]) => {
+    setItemsToDelete(items);
+  };
+
+  const confirmBulkDelete = () => {
+    if (itemsToDelete) {
+      bulkDeleteMutation.mutate(itemsToDelete.map(i => i.code));
+    }
+  };
 
   // View State
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
@@ -176,15 +198,15 @@ export const ProductsPage = () => {
     try {
       await createMutation.mutateAsync({
         name: data.name,
-        description: data.description,
+        ...(data.description ? { description: data.description } : {}),
         price: data.price,
         categoryCode: data.categoryCode,
         stockQuantity: data.stockQuantity,
-        costPrice: data.costPrice,
+        ...(data.costPrice !== undefined ? { costPrice: data.costPrice } : {}),
 
-        weight: data.weight,
-        supplierCode: data.supplierCode || undefined,
-        brandCode: data.brandCode || undefined,
+        ...(data.weight !== undefined ? { weight: data.weight } : {}),
+        ...(data.supplierCode ? { supplierCode: data.supplierCode } : {}),
+        ...(data.brandCode ? { brandCode: data.brandCode } : {}),
         color: data.color,
         power: data.power,
         voltage: data.voltage,
@@ -215,15 +237,15 @@ export const ProductsPage = () => {
         id: editingProduct.code, 
         data: {
           name: data.name,
-          description: data.description,
+          ...(data.description ? { description: data.description } : {}),
           price: data.price,
           categoryCode: data.categoryCode,
           stockQuantity: data.stockQuantity,
-          costPrice: data.costPrice,
+          ...(data.costPrice !== undefined ? { costPrice: data.costPrice } : {}),
 
-          weight: data.weight,
-          supplierCode: data.supplierCode || undefined,
-          brandCode: data.brandCode || undefined,
+          ...(data.weight !== undefined ? { weight: data.weight } : {}),
+          ...(data.supplierCode ? { supplierCode: data.supplierCode } : {}),
+          ...(data.brandCode ? { brandCode: data.brandCode } : {}),
           color: data.color,
           power: data.power,
           voltage: data.voltage,
@@ -251,24 +273,9 @@ export const ProductsPage = () => {
   const handleDelete = async () => {
     if (productToDelete) {
       deleteMutation.mutate(productToDelete.code);
-    } else if (selectedToDelete.length > 0) {
-      try {
-        await Promise.all(selectedToDelete.map(item => deleteMutation.mutateAsync(item.code)));
-        setSelectedIds(new Set()); // Clear selection
-        setShowBulkConfirm(false);
-        toast.success(t('common.deleteSuccess'));
-      } catch {
-        // Errors handled by mutation individually
-      }
     }
   };
 
-  // Override cancelDelete to clear local state too
-  const handleCancelDelete = () => {
-    cancelDelete(); // from hook
-    setShowBulkConfirm(false);
-    // Don't clear selection on cancel - user may want to keep their selection
-  };
 
 
 
@@ -315,6 +322,9 @@ export const ProductsPage = () => {
             data={products}
             keyField="code"
             enableSelection
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            onBulkDelete={handleBulkDelete}
             isLoading={isLoading}
             isFetching={isFetching}
             onAdd={() => openCreate()}
@@ -342,9 +352,6 @@ export const ProductsPage = () => {
             onView={handleOpenView}
             onEdit={(product) => { openEdit(product); }}
             onDelete={(product) => confirmDelete(product)}
-            onBulkDelete={() => setShowBulkConfirm(true)}
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
 
             // Search & Filters
             onSearch={setSearchQuery}
@@ -421,7 +428,7 @@ export const ProductsPage = () => {
             // Force unmount on close to reset form state
           >
             <ProductForm
-              initialData={productInitialData}
+              initialData={productInitialData as unknown as ProductFormData}
               onSubmit={editingProduct ? handleUpdate : handleCreate}
               onCancel={closeForm}
               isLoading={createMutation.isPending || updateMutation.isPending}
@@ -436,14 +443,27 @@ export const ProductsPage = () => {
       
       {/* Delete Confirmation */}
       <ConfirmDialog
-        isOpen={!!productToDelete || showBulkConfirm}
-        onClose={handleCancelDelete}
+        isOpen={!!productToDelete}
+        onClose={cancelDelete}
         onConfirm={handleDelete}
-        title={t('common.actions.delete')}
-        message={productToDelete ? t('messages.confirmDelete', { name: productToDelete.name }) : t('common.confirmDelete', { count: selectedToDelete.length })}
-        confirmText={t('common.delete')}
+        title={t('admin.actions.delete')}
+        message={t('messages.confirmDelete', { name: productToDelete?.name })}
+        confirmText={t('admin.actions.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
         isLoading={deleteMutation.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={!!itemsToDelete}
+        onClose={() => setItemsToDelete(null)}
+        onConfirm={confirmBulkDelete}
+        title={t('admin.actions.delete')}
+        message={t('messages.confirmDeleteCount', { count: itemsToDelete?.length || 0 })}
+        confirmText={t('admin.actions.delete')}
+        cancelText={t('common.cancel')}
+        variant="danger"
+        isLoading={bulkDeleteMutation.isPending}
       />
     </div>
   );

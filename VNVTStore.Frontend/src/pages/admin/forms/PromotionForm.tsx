@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { BaseForm, FieldGroup } from '@/components/common';
 import { useProducts, useCategories } from '@/hooks';
-import { PaginationDefaults } from '@/constants';
+
 import { UseFormReturn } from 'react-hook-form';
 import { Product } from '@/types';
+import { CategoryDto } from '@/services/productService';
 
 const promotionSchema = z.object({
   code: z.string().min(3),
@@ -21,11 +22,11 @@ const promotionSchema = z.object({
   isActive: z.boolean(),
   productCodes: z.array(z.string()).optional(),
 }).refine(data => data.endDate > data.startDate, {
-  message: "End date must be after start date",
+  message: "validation.endDateAfterStartDate",
   path: ["endDate"]
 });
 
-type PromotionFormData = z.infer<typeof promotionSchema>;
+export type PromotionFormData = z.infer<typeof promotionSchema>;
 
 interface PromotionFormProps {
   initialData?: Partial<PromotionFormData>;
@@ -50,8 +51,8 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
   const { data: productsData } = useProducts({ 
     pageSize: 1000, 
     pageIndex: 1,
-    category: selectedCategory === 'all' ? undefined : selectedCategory,
-    search: productSearch || undefined
+    ...(selectedCategory !== 'all' ? { category: selectedCategory } : {}),
+    ...(productSearch ? { search: productSearch } : {})
   });
   const products = productsData?.products || [];
 
@@ -74,7 +75,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
 
   const fieldGroups: FieldGroup[] = [
     {
-      title: t('admin.groups.basicInfo'),
+      title: t('admin.promotionForm.basicInfo'),
       fields: [
         { name: 'code', type: 'text', label: t('common.fields.code'), required: true, colSpan: 6, disabled: !!initialData?.code, placeholder: t('common.placeholders.enterCode') },
         { name: 'name', type: 'text', label: t('common.fields.name'), required: true, colSpan: 6, placeholder: t('common.placeholders.enterName') },
@@ -84,9 +85,9 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             label: t('common.fields.discountType'), 
             colSpan: 6,
             options: [
-                { value: 'PERCENTAGE', label: t('admin.promotions.percentage') },
-                { value: 'AMOUNT', label: t('admin.promotions.fixedAmount') },
-                { value: 'FIXED_PRICE', label: t('admin.promotions.fixedPrice') }
+                { value: 'PERCENTAGE', label: t('admin.promotionForm.percentage') },
+                { value: 'AMOUNT', label: t('admin.promotionForm.fixedAmount') },
+                { value: 'FIXED_PRICE', label: t('admin.promotionForm.fixedPrice') }
             ] 
         },
         { name: 'discountValue', type: 'number', label: t('common.fields.value'), required: true, colSpan: 6, placeholder: t('common.placeholders.enterValue') },
@@ -94,7 +95,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
       ]
     },
     {
-        title: t('admin.groups.limitsAndDates'),
+        title: t('admin.promotionForm.limitsAndDates'),
         fields: [
             { name: 'minOrderAmount', type: 'number', label: t('common.fields.minOrder'), colSpan: 6, placeholder: t('common.placeholders.enterPrice') },
             { name: 'maxDiscountAmount', type: 'number', label: t('common.fields.maxDiscount'), colSpan: 6, placeholder: t('common.placeholders.enterPrice') },
@@ -133,11 +134,11 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
                 )
             },
             { name: 'usageLimit', type: 'number', label: t('common.fields.usageLimit'), colSpan: 6, placeholder: t('common.placeholders.enterQuantity') },
-            { name: 'isActive', type: 'switch', label: t('common.fields.status'), description: t('admin.statusHint'), colSpan: 6 }
+            { name: 'isActive', type: 'switch', label: t('common.fields.status'), description: t('admin.promotionForm.statusHint'), colSpan: 6 }
         ]
     },
     {
-        title: t('admin.groups.applicableProducts'),
+        title: t('admin.promotionForm.applicableProducts'),
         fields: [
             {
                 name: 'productCodes',
@@ -172,7 +173,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
                                     onChange={(e) => setSelectedCategory(e.target.value)}
                                 >
                                     <option value="all">{t('common.allCategories')}</option>
-                                    {categories.map((cat: any) => (
+                                    {categories.map((cat: CategoryDto) => (
                                         <option key={cat.code} value={cat.code}>{cat.name}</option>
                                     ))}
                                 </select>
@@ -220,7 +221,7 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({
             fieldGroups={fieldGroups}
             onSubmit={onSubmit}
             onCancel={onCancel}
-            isLoading={isLoading}
+            isLoading={isLoading ?? false}
             submitLabel={t('common.save')}
             className="max-w-4xl"
             layout="tabs"

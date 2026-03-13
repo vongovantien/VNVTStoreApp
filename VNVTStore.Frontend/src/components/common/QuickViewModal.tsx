@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Scale, X, Minus, Plus, Eye, Star } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { Modal, Button, Badge } from '@/components/ui';
 import { useCartStore, useWishlistStore, useCompareStore, useToast } from '@/store';
 import { formatCurrency } from '@/utils/format';
@@ -116,6 +116,11 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
               {product.isNew && (
                 <Badge className="bg-red-500 text-white border-0 shadow-sm">
                   {t('product.new', 'New')}
+                </Badge>
+              )}
+              {product.isFeatured && (
+                <Badge className="bg-rose-600 text-white border-0 shadow-sm">
+                  {t('product.featured', 'HOT')}
                 </Badge>
               )}
               {product.discount && product.discount > 0 && (

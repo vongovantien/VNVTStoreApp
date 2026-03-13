@@ -45,7 +45,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
 
             var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
             var product = TblProduct.Create(dto.Name, dto.Price, dto.WholesalePrice, dto.StockQuantity ?? 0, dto.CategoryCode, dto.CostPrice, 
-                supplierCode, dto.BrandCode, dto.BaseUnit);
+                supplierCode, dto.BrandCode, dto.BaseUnit, dto.IsNew, dto.IsFeatured);
 
             if (dto.Details != null && dto.Details.Any())
             {
@@ -66,7 +66,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
             {
                 var saveImagesResult = await _fileService.SaveAndLinkImagesAsync(
                     product.Code, 
-                    "Product", 
+                    "TblProduct", 
                     dto.Images, 
                     "products", 
                     cancellationToken);
@@ -134,7 +134,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
             var productDto = _mapper.Map<ProductDto>(product);
             
             var finalFiles = await _context.TblFiles
-                .Where(f => f.MasterCode == product.Code && f.MasterType == "Product")
+                .Where(f => f.MasterCode == product.Code && f.MasterType == "TblProduct")
                 .ToListAsync(cancellationToken);
 
             var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');

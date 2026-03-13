@@ -67,7 +67,7 @@ vi.mock('@/components/common', () => ({
 }));
 
 vi.mock('../components/ProductInfo', () => ({
-  ProductInfo: ({ product, handleAddToCart }: { product: any, handleAddToCart: () => void }) => (
+  ProductInfo: ({ product, handleAddToCart }: { product: { name: string }, handleAddToCart: () => void }) => (
     <div>
       <h1>{product.name}</h1>
       <button onClick={handleAddToCart}>product.addToCart</button>
@@ -81,6 +81,10 @@ vi.mock('../components/ProductTabs', () => ({
 
 vi.mock('@/components/common/ImageGallery', () => ({
   ImageGallery: () => <div>ImageGallery</div>,
+}));
+
+vi.mock('../components/ProductQA', () => ({
+  ProductQA: () => <div data-testid="product-qa">ProductQA</div>,
 }));
 
 describe('ProductDetailPage', () => {

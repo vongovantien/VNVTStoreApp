@@ -6,6 +6,7 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Promotions.Handlers;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.Application.Tests.Handlers;
 
@@ -31,7 +32,7 @@ public class PromotionHandlersTests
         _promotionRepoMock.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((string code, CancellationToken _) => _promotionsDatabase.FirstOrDefault(p => p.Code == code));
 
-        _handler = new PromotionHandlers(_unitOfWorkMock.Object, _mapperMock.Object, _promotionRepoMock.Object);
+        _handler = new PromotionHandlers(_promotionRepoMock.Object, _unitOfWorkMock.Object, _mapperMock.Object, new Mock<IDapperContext>().Object);
     }
 
     [Fact]

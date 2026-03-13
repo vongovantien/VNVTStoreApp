@@ -31,7 +31,8 @@ public class AddressHandlersTests
             _addressRepositoryMock.Object,
             _currentUserMock.Object,
             _unitOfWorkMock.Object,
-            _mapperMock.Object
+            _mapperMock.Object,
+            new Mock<IDapperContext>().Object
         );
     }
 

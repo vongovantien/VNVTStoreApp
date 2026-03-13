@@ -28,24 +28,26 @@ public class ProductDto : IBaseDto
     public string? SupplierName { get; set; }
 
     public bool? IsActive { get; set; }
-    public bool IsNew { get; set; }
-    public bool IsFeatured { get; set; }
+    public bool? IsNew { get; set; }
+    public bool? IsFeatured { get; set; }
     public DateTime? CreatedAt { get; set; }
 
-    [ReferenceCollection(typeof(ProductDetailDto), "TblProductDetail", "ProductCode", "Code")]
-    public List<ProductDetailDto>? Details { get; set; }
+    [ReferenceCollection(typeof(ProductDetailDto), "TblProductDetail", "ProductCode")]
+    public List<ProductDetailDto> Details { get; set; } = new();
 
-    [ReferenceCollection(typeof(ProductImageDto), "TblFile", "MasterCode", "Code", "MasterType", "Product")]
-    public List<ProductImageDto>? ProductImages { get; set; }
+    [ReferenceCollection(typeof(ProductImageDto), "TblFile", "MasterCode", "Code", "MasterType", "TblProduct")]
+    public List<ProductImageDto> ProductImages { get; set; } = new();
 
-    [ReferenceCollection(typeof(UnitDto), "TblProductUnit", "ProductCode", "Code")]
-    public List<UnitDto>? ProductUnits { get; set; }
+    [ReferenceCollection(typeof(UnitDto), "TblProductUnit", "ProductCode")]
+    public List<UnitDto> ProductUnits { get; set; } = new();
 
-    [ReferenceCollection(typeof(ProductVariantDto), "TblProductVariant", "ProductCode", "Code")]
-    public List<ProductVariantDto>? Variants { get; set; }
+    [ReferenceCollection(typeof(ProductVariantDto), "TblProductVariant", "ProductCode")]
+    public List<ProductVariantDto> Variants { get; set; } = new();
 
     public decimal AverageRating { get; set; }
     public int ReviewCount { get; set; }
+    public int ViewCount { get; set; }
+    public int SoldCount24h { get; set; }
 }
 
 public class ProductDetailDto : IBaseDto
@@ -72,8 +74,8 @@ public class CreateProductDto
     public decimal? VatRate { get; set; }
     public string? CountryOfOrigin { get; set; }
     public string? SupplierCode { get; set; }
-    public bool IsNew { get; set; }
-    public bool IsFeatured { get; set; }
+    public bool? IsNew { get; set; }
+    public bool? IsFeatured { get; set; }
     public List<string>? Images { get; set; }
     public List<CreateProductDetailDto>? Details { get; set; }
     public List<CreateUnitDto>? ProductUnits { get; set; }

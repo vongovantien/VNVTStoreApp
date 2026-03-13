@@ -1,6 +1,8 @@
+using VNVTStore.Domain.Interfaces;
+
 namespace VNVTStore.Domain.Entities;
 
-public class TblMenu
+public class TblMenu : IEntity
 {
     public TblMenu()
     {
@@ -16,5 +18,15 @@ public class TblMenu
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
 
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public DateTime? CreatedAt { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public DateTime? UpdatedAt { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? ModifiedType { get; set; }
+
     public virtual ICollection<TblRoleMenu> TblRoleMenus { get; set; }
 }
+    

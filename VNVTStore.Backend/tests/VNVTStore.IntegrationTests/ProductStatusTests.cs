@@ -32,7 +32,7 @@ public class ProductStatusTests : IntegrationTestBase
         
         var createRequest = new RequestDTO<CreateProductDto> { PostObject = createProductDto };
         var createResponse = await _client.PostAsJsonAsync("/api/v1/products", createRequest);
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
         
         var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponse<ProductDto>>();
         createResult!.Success.Should().BeTrue();

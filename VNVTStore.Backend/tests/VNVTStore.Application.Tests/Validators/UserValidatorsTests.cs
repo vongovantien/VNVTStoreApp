@@ -22,7 +22,7 @@ public class UserValidatorsTests
         { 
             Username = "", 
             Email = "test@test.com",
-            Password = "password123"
+            Password = "Password@123"
         };
 
         // Act
@@ -40,7 +40,7 @@ public class UserValidatorsTests
         { 
             Username = "testuser", 
             Email = "invalid-email",
-            Password = "password123"
+            Password = "Password@123"
         };
 
         // Act
@@ -76,7 +76,7 @@ public class UserValidatorsTests
         { 
             Username = "testuser", 
             Email = "test@test.com",
-            Password = "password123"
+            Password = "Password@123"
         };
 
         // Act
@@ -94,7 +94,7 @@ public class UserValidatorsTests
         { 
             Username = "test@user!", 
             Email = "test@test.com",
-            Password = "password123"
+            Password = "Password@123"
         };
 
         // Act

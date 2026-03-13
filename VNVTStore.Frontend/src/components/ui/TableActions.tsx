@@ -1,13 +1,12 @@
-import React from 'react';
 import type { ReactNode } from 'react';
 import { Eye, Edit3, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface TableActionsProps {
-  onView?: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  customActions?: ReactNode;
+  onView?: (() => void) | undefined;
+  onEdit?: (() => void) | undefined;
+  onDelete?: (() => void) | undefined;
+  customActions?: ReactNode | undefined;
 }
 
 export const TableActions = ({ onView, onEdit, onDelete, customActions }: TableActionsProps) => {

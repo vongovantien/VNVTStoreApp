@@ -23,16 +23,8 @@ public class AuthApiTests : IntegrationTestBase
         // or just use the seeded "webuser".
         
         // Act
-        // Try Admin@123 first (matching DataSeeder)
         await AuthenticateAsync("admin", "Admin@123");
         var response = await _client.PostAsync($"/api/v1/auth/impersonate/{targetUserCode}", null);
-
-        if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
-        {
-            // Try fallback "password" (matching what some existing tests seem to use)
-            await AuthenticateAsync("admin", "password");
-            response = await _client.PostAsync($"/api/v1/auth/impersonate/{targetUserCode}", null);
-        }
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse<AuthResponseDto>>();

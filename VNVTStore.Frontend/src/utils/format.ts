@@ -105,15 +105,15 @@ export const getStatusColor = (status: string): string => {
  * Get order status text in Vietnamese
  */
 export const getStatusText = (status: string): string => {
-    const texts: Record<string, string> = {
-        pending: 'admin.status.pending',
-        confirmed: 'admin.status.confirmed',
-        processing: 'admin.status.processing',
-        shipping: 'admin.status.shipping',
-        delivered: 'admin.status.delivered',
-        cancelled: 'admin.status.cancelled',
+    const statusMap: Record<string, string> = {
+        pending: 'common.status.pending',
+        confirmed: 'common.status.confirmed',
+        processing: 'common.status.processing',
+        shipping: 'common.status.shipping',
+        delivered: 'common.status.delivered',
+        cancelled: 'common.status.cancelled',
     };
-    return texts[status] || status;
+    return statusMap[status] || status;
 };
 
 /**

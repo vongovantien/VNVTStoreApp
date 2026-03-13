@@ -9,11 +9,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    nav: ({ children, ...props }: any) => <nav {...props}>{children}</nav>,
-    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    div: ({ children, ...props }: { children: React.ReactNode }) => <div {...props}>{children}</div>,
+    nav: ({ children, ...props }: { children: React.ReactNode }) => <nav {...props}>{children}</nav>,
+    span: ({ children, ...props }: { children: React.ReactNode }) => <span {...props}>{children}</span>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock react-router-dom
@@ -25,19 +25,19 @@ vi.mock('react-router-dom', () => ({
 
 // Mock stores - items.length is used for badge count
 vi.mock('@/store', () => ({
-  useCartStore: vi.fn((selector: any) => selector({ items: [{ code: 'P1' }, { code: 'P2' }] })),
-  useWishlistStore: vi.fn((selector: any) => selector({ items: [] })),
+  useCartStore: vi.fn((selector: (state: { items: { code: string }[] }) => unknown) => selector({ items: [{ code: 'P1' }, { code: 'P2' }] })),
+  useWishlistStore: vi.fn((selector: (state: { items: { code: string }[] }) => unknown) => selector({ items: [] })),
 }));
 
 // Mock lucide-react
 vi.mock('lucide-react', () => ({
-  Home: (props: any) => <span {...props}>Home</span>,
-  Search: (props: any) => <span {...props}>Search</span>,
-  ShoppingCart: (props: any) => <span {...props}>Cart</span>,
-  Heart: (props: any) => <span {...props}>Heart</span>,
-  User: (props: any) => <span {...props}>User</span>,
-  Menu: (props: any) => <span {...props}>Menu</span>,
-  Grid3x3: (props: any) => <span {...props}>Grid</span>,
+  Home: (props: React.SVGProps<SVGSVGElement>) => <span {...(props as Record<string, unknown>)}>Home</span>,
+  Search: (props: React.SVGProps<SVGSVGElement>) => <span {...(props as Record<string, unknown>)}>Search</span>,
+  ShoppingCart: (props: React.SVGProps<SVGSVGElement>) => <span {...(props as Record<string, unknown>)}>Cart</span>,
+  Heart: (props: React.SVGProps<SVGSVGElement>) => <span {...(props as Record<string, unknown>)}>Heart</span>,
+  User: (props: React.SVGProps<SVGSVGElement>) => <span {...(props as Record<string, unknown>)}>User</span>,
+  Menu: (props: React.SVGProps<SVGSVGElement>) => <span {...(props as Record<string, unknown>)}>Menu</span>,
+  Grid3x3: (props: React.SVGProps<SVGSVGElement>) => <span {...(props as Record<string, unknown>)}>Grid</span>,
 }));
 
 import { MobileBottomNav } from '../MobileBottomNav';

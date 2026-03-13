@@ -22,7 +22,7 @@ namespace VNVTStore.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin,superadmin")] // Only admin can update
+        [Authorize(Roles = nameof(UserRole.Admin))] // Only admin can update
         public async Task<IActionResult> Update([FromBody] UpdateSystemConfigCommand command)
         {
             var result = await Mediator.Send(command);

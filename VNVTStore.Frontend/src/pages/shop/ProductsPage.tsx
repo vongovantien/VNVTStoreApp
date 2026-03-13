@@ -8,29 +8,28 @@ import {
   SlidersHorizontal,
   ChevronRight,
   Star,
-  AlertCircle,
   Search,
   X,
-  Heart,
-  ShoppingCart,
   History,
   Scale,
   CheckSquare,
   Package,
-  Mic,
-  Camera,
   ArrowUp,
-  Globe,
   ChevronDown,
   HelpCircle,
   Sparkles,
+  Mic,
+  Camera,
+  AlertCircle,
+  Heart,
+  ShoppingCart
 } from 'lucide-react';
-import { ProductCard } from '@/components/common/ProductCard';
+import ProductCard from '@/components/common/ProductCard';
 import { ProductSkeleton } from '@/components/common/ProductSkeleton';
 import { Button, Badge } from '@/components/ui';
-import { useDebounce, useProducts, useInfiniteProducts, useCategories, useIntersectionObserver } from '@/hooks';
+import { useInfiniteProducts, useCategories, useIntersectionObserver } from '@/hooks';
 import { cn } from '@/utils/cn';
-import { useCompareStore, useCartStore, useWishlistStore, useToast, useUIStore } from '@/store';
+import { useCompareStore, useCartStore, useWishlistStore, useToast } from '@/store';
 import { useRecentStore } from '@/store/recentStore';
 import { CompareTable } from '@/components/shop/CompareTable';
 import { formatCurrency } from '@/utils/format';
@@ -61,6 +60,12 @@ interface FilterSidebarProps {
   /** Feature 4: In-Stock Only filter */
   inStockOnly: boolean;
   onInStockOnlyChange: (val: boolean) => void;
+  /** Feature 31: Discount Filter */
+  selectedDiscount: number | null;
+  onDiscountChange: (val: number | null) => void;
+  /** Feature 36: New Arrivals Filter */
+  isNewArrivals: boolean;
+  onNewArrivalsChange: (val: boolean) => void;
 }
 
 const FilterSidebar = memo(({
@@ -83,6 +88,10 @@ const FilterSidebar = memo(({
   hasActiveFilters,
   inStockOnly,
   onInStockOnlyChange,
+  selectedDiscount,
+  onDiscountChange,
+  isNewArrivals,
+  onNewArrivalsChange,
 }: FilterSidebarProps) => {
   const { t } = useTranslation();
 
@@ -163,6 +172,58 @@ const FilterSidebar = memo(({
               inStockOnly ? 'left-5' : 'left-0.5'
             )} />
           </div>
+        </div>
+      </div>
+
+      {/* Feature 36: New Arrivals Toggle */}
+      <div className="mb-6">
+        <div
+          onClick={() => onNewArrivalsChange(!isNewArrivals)}
+          className="flex items-center justify-between cursor-pointer group p-2 rounded-lg hover:bg-hover transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-amber-500" />
+            <span className="text-sm font-medium text-secondary group-hover:text-primary">
+              {t('filter.newArrivals', 'Hàng mới về')}
+            </span>
+          </div>
+          <div className={cn(
+            'w-10 h-5 rounded-full relative transition-colors',
+            isNewArrivals ? 'bg-amber-500' : 'bg-slate-200'
+          )}>
+            <span className={cn(
+              'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all',
+              isNewArrivals ? 'left-5' : 'left-0.5'
+            )} />
+          </div>
+        </div>
+      </div>
+
+      {/* Feature 31: Filter by Discount Percentage */}
+      <div className="mb-6">
+        <h4 className="text-sm font-semibold mb-3">{t('filter.discount', 'Giảm giá')}</h4>
+        <div className="space-y-2">
+          {[10, 30, 50, 70].map((discount) => (
+            <div
+              key={discount}
+              onClick={() => onDiscountChange(selectedDiscount === discount ? null : discount)}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
+              <div
+                className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedDiscount === discount ? 'bg-orange-500 border-orange-500' : 'border-tertiary group-hover:border-orange-500'
+                  }`}
+              >
+                {selectedDiscount === discount && (
+                  <svg viewBox="0 0 12 9" className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 4L4.5 7.5L11 1" />
+                  </svg>
+                )}
+              </div>
+              <span className="text-sm text-secondary group-hover:text-primary transition-colors">
+                {t('filter.discountUp', 'Giảm từ {{count}}%', { count: discount })}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -331,7 +392,6 @@ export const ProductsPage = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(true);
   const [sortBy, setSortBy] = useState('newest');
-  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
   // SEO — dynamic title based on filters
@@ -359,6 +419,8 @@ export const ProductsPage = () => {
   const [priceType, setPriceType] = useState<'all' | 'fixed' | 'contact'>('all');
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string[]>>({});
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [isNewArrivals, setIsNewArrivals] = useState(false); // Feature 36
+  const [selectedDiscount, setSelectedDiscount] = useState<number | null>(null); // Feature 31
 
   // Feature 7: Bulk Selection Mode
   const [bulkMode, setBulkMode] = useState(false);
@@ -380,14 +442,7 @@ export const ProductsPage = () => {
 
   // Feature 30: Dynamic Currency Converter
   const [currency, setCurrency] = useState<'VND' | 'USD'>('VND');
-  const exchangeRate = 25000;
 
-  const formatPrice = useCallback((price: number) => {
-    if (currency === 'USD') {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price / exchangeRate);
-    }
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-  }, [currency]);
 
   const handleAttributeToggle = useCallback((attr: string, value: string) => {
     setSelectedAttributes((prev) => {
@@ -397,12 +452,10 @@ export const ProductsPage = () => {
         : [...current, value];
       return { ...prev, [attr]: next };
     });
-    setCurrentPage(1);
   }, []);
 
   const searchQuery = searchParams.get('search') || '';
   const categorySlug = searchParams.get('category') || '';
-  const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Map sortBy to API format
   const getSortConfig = () => {
@@ -433,7 +486,7 @@ export const ProductsPage = () => {
     error,
   } = useInfiniteProducts({
     pageSize,
-    search: debouncedSearch || undefined,
+    ...(searchQuery ? { search: searchQuery } : {}),
     sortField: sortConfig.field,
     sortDir: sortConfig.dir,
     category: categorySlug,
@@ -443,6 +496,7 @@ export const ProductsPage = () => {
     rating: selectedRating || undefined,
     priceType: priceType,
     inStockOnly: inStockOnly,
+    isNewArrivals: isNewArrivals, // Feature 36
   });
 
   const products = useMemo(() => {
@@ -450,7 +504,6 @@ export const ProductsPage = () => {
   }, [infiniteData]);
 
   // Total items from first page info
-  const totalItems = infiniteData?.pages[0]?.totalItems || 0;
 
   // Get unique brands from fetched products
   const brands = useMemo(() => {
@@ -514,12 +567,17 @@ export const ProductsPage = () => {
        // Since backend might ignore 'Rating', and data is mocked
        result = result.filter((p) => (p.rating || 0) >= selectedRating);
     }
+    
+    // Feature 31: Filter by Discount
+    if (selectedDiscount) {
+      result = result.filter((p) => (p.discount || 0) >= selectedDiscount);
+    }
 
     // Attribute filters
     Object.entries(selectedAttributes).forEach(([attr, values]) => {
       if (values.length > 0) {
         result = result.filter(p => {
-          const productValue = (p as any)[attr.toLowerCase()];
+          const productValue = (p as unknown as Record<string, string>)[attr.toLowerCase()];
           return productValue && values.includes(productValue);
         });
       }
@@ -533,10 +591,20 @@ export const ProductsPage = () => {
       case 'bestseller':
         result.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
         break;
+      case 'discount-desc': // Feature 39
+        result.sort((a, b) => (b.discount || 0) - (a.discount || 0));
+        break;
+      case 'shuffle': // Feature 40
+        // Use a deterministic shuffle for purity (Fisher-Yates with product codes as seed)
+        for (let i = result.length - 1; i > 0; i--) {
+          const j = Math.abs(result[i].code.split('').reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)) % (i + 1);
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+        break;
     }
 
     return result;
-  }, [products, selectedBrands, selectedRating, sortBy, selectedAttributes]);
+  }, [products, selectedBrands, selectedRating, sortBy, selectedAttributes, selectedDiscount]);
 
   // Feature 7: Bulk Selection Handlers
   const handleSelectToggle = useCallback((code: string) => {
@@ -626,6 +694,8 @@ export const ProductsPage = () => {
     setPriceType('all');
     setSelectedAttributes({});
     setInStockOnly(false);
+    setIsNewArrivals(false);
+    setSelectedDiscount(null);
     setSearchParams({});
   }, [setSearchParams]);
 
@@ -633,10 +703,13 @@ export const ProductsPage = () => {
     selectedCategories.length > 0 ||
     selectedBrands.length > 0 ||
     selectedRating !== null ||
+    selectedDiscount !== null ||
     priceType !== 'all' ||
     priceRange[0] > 0 ||
     priceRange[1] < 100000000 ||
-    inStockOnly;
+    priceRange[1] < 100000000 ||
+    inStockOnly ||
+    isNewArrivals;
 
   return (
     <div className="min-h-screen bg-secondary">
@@ -690,6 +763,10 @@ export const ProductsPage = () => {
                   hasActiveFilters={hasActiveFilters}
                   inStockOnly={inStockOnly}
                   onInStockOnlyChange={setInStockOnly}
+                  isNewArrivals={isNewArrivals}
+                  onNewArrivalsChange={setIsNewArrivals}
+                  selectedDiscount={selectedDiscount}
+                  onDiscountChange={setSelectedDiscount}
                 />
               </motion.div>
             )}
@@ -800,6 +877,8 @@ export const ProductsPage = () => {
                     <option value="price-desc">{t('filter.priceDesc')}</option>
                     <option value="rating">{t('filter.topRated')}</option>
                     <option value="bestseller">{t('filter.bestSeller')}</option>
+                    <option value="discount-desc">{t('filter.mostDiscounted', 'Giảm giá nhiều nhất')}</option>
+                    <option value="shuffle">{t('filter.shuffle', 'Ngẫu nhiên')}</option>
                   </select>
                   <ChevronDown size={16} className="absolute right-2 text-tertiary pointer-events-none" />
                 </div>
@@ -1137,15 +1216,15 @@ export const ProductsPage = () => {
       </AnimatePresence>
 
       {/* Feature 22: Interactive FAQ Section */}
-      <section className="mt-20 pt-12 border-t">
+      <section className="mt-20 pt-12 pb-20 border-t bg-slate-50/50">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+            <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg shadow-sm">
               <HelpCircle size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Câu hỏi thường gặp</h2>
-              <p className="text-secondary text-sm">Mọi thứ bạn cần biết về sản phẩm và dịch vụ của chúng tôi</p>
+              <h2 className="text-2xl font-bold text-slate-900">Câu hỏi thường gặp</h2>
+              <p className="text-slate-500 text-sm">Mọi thứ bạn cần biết về sản phẩm và dịch vụ của chúng tôi</p>
             </div>
           </div>
           <div className="space-y-4">
@@ -1171,13 +1250,13 @@ export const ProductsPage = () => {
 const FAQItem = ({ question, answer }: { question: string, answer: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="border rounded-xl bg-white overflow-hidden shadow-sm hover:border-indigo-200 transition-colors">
+    <div className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm hover:border-indigo-300 transition-all duration-300">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 flex justify-between items-center text-left font-medium text-slate-800"
+        className="w-full p-5 flex justify-between items-center text-left font-semibold text-slate-800 hover:bg-slate-50/50 transition-colors"
       >
         <span>{question}</span>
-        <ChevronDown size={18} className={cn("text-slate-400 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown size={20} className={cn("text-slate-400 transition-transform duration-300", isOpen && "rotate-180 text-indigo-600")} />
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -1185,7 +1264,8 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="px-4 pb-4 text-sm text-slate-600 leading-relaxed"
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="px-5 pb-6 pt-1 text-sm text-slate-600 leading-relaxed border-t border-slate-50"
           >
             {answer}
           </motion.div>

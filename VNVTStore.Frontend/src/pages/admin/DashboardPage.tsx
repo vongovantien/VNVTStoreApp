@@ -108,21 +108,21 @@ export const DashboardPage = () => {
             <StatCard
               title={t('admin.stats.revenue')}
               value={formatCurrency(stats.totalRevenue)}
-              change={stats.revenueChange}
+              change={stats.revenueChange ?? 0}
               icon={DollarSign}
               color="bg-gradient-to-r from-green-500 to-emerald-500"
             />
             <StatCard
               title={t('admin.stats.orders')}
               value={stats.totalOrders.toLocaleString()}
-              change={stats.ordersChange}
+              change={stats.ordersChange ?? 0}
               icon={ShoppingBag}
               color="bg-gradient-to-r from-blue-500 to-cyan-500"
             />
             <StatCard
               title={t('admin.stats.customers')}
               value={stats.totalCustomers.toLocaleString()}
-              change={stats.customersChange}
+              change={stats.customersChange ?? 0}
               icon={Users}
               color="bg-gradient-to-r from-purple-500 to-pink-500"
             />
@@ -142,7 +142,7 @@ export const DashboardPage = () => {
         <div className="lg:col-span-2 bg-primary rounded-xl p-6 shadow-sm border">
           <h2 className="font-bold mb-4">{t('admin.revenueChart')}</h2>
           <div className="h-64">
-            <RevenueChart data={stats.revenueChart} />
+            <RevenueChart data={stats.revenueChart ?? []} />
           </div>
         </div>
 
@@ -159,7 +159,7 @@ export const DashboardPage = () => {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{product.name}</p>
-                  <p className="text-sm text-tertiary">{product.sales} {t('admin.sold')}</p>
+                  <p className="text-sm text-tertiary">{t('admin.sold', { count: product.sales })}</p>
                 </div>
               </div>
             ))}

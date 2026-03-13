@@ -13,7 +13,8 @@ const navItems = [
   { icon: ShoppingCart, path: '/cart', label: 'common.cart', badge: 'cart' },
   { icon: Heart, path: '/wishlist', label: 'common.wishlist', badge: 'wishlist' },
   { icon: User, path: '/account', label: 'common.account' },
-] as const;
+  { icon: User, path: '/account', label: 'common.account' },
+];
 
 export const MobileBottomNav = () => {
   const { t } = useTranslation();
@@ -39,10 +40,10 @@ export const MobileBottomNav = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-xl border-t shadow-2xl lg:hidden safe-area-bottom">
       <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map(({ icon: Icon, path, label, badge }) => {
+        {navItems.map(({ icon: NavIcon, path, label, badge }) => {
           const isActive = location.pathname === path || 
             (path !== '/' && location.pathname.startsWith(path));
-          const count = getBadgeCount(badge as string);
+          const count = getBadgeCount(badge);
 
           return (
             <button
@@ -55,7 +56,7 @@ export const MobileBottomNav = () => {
               }`}
             >
               <div className="relative">
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
+                <NavIcon size={22} strokeWidth={isActive ? 2.5 : 1.5} />
                 {count > 0 && (
                   <span className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-error rounded-full px-1 animate-bounce">
                     {count > 99 ? '99+' : count}

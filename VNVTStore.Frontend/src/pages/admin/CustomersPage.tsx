@@ -12,8 +12,11 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { PaginationDefaults, SortDirection } from '@/constants';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 import { USER_LIST_FIELDS } from '@/constants/fieldConstants';
+import { REGEX } from '@/constants/regex';
 
-export const CustomersPage = () => {
+const isPasswordValid = (password: string) => !password || REGEX.PASSWORD.test(password);
+
+const CustomersPage = () => {
   const { t } = useTranslation();
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
   const [resettingCustomer, setResettingCustomer] = useState<CustomerDto | null>(null);
@@ -36,7 +39,7 @@ export const CustomersPage = () => {
       sortDesc: sortDir === SortDirection.DESC,
       filters: Object.entries(filters).map(([field, value]) => ({ field, value })),
       search: filters.search,
-      searchField: filters.search ? 'fullName' : undefined,
+      searchField: filters.search ? 'fullName' : '',
       fields: USER_LIST_FIELDS
     })
   });
@@ -98,6 +101,7 @@ export const CustomersPage = () => {
 
   const toast = useToast();
   // Bulk Delete State
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [itemsToDelete, setItemsToDelete] = useState<CustomerDto[] | null>(null);
 
   const bulkDeleteMutation = useMutation({
@@ -107,8 +111,8 @@ export const CustomersPage = () => {
       setItemsToDelete(null);
       refetch();
     },
-    onError: (err: Error) => {
-      toast.error(err.message || t('common.deleteError'));
+    onError: (err: unknown) => {
+      toast.error((err as Error).message || t('common.deleteError'));
     }
   });
 
@@ -171,7 +175,7 @@ export const CustomersPage = () => {
               phone: formData.phone,
               role: formData.role,
               isActive: formData.isActive,
-              password: formData.password || undefined
+              password: formData.password || ''
           });
       } else {
           createCustomer({
@@ -255,7 +259,7 @@ export const CustomersPage = () => {
       header: t('common.fields.emailVerified', 'Email Verified'),
       accessor: (customer) => (
         <Badge color={customer.isEmailVerified ? 'success' : 'error'} variant="outline">
-          {customer.isEmailVerified ? t('admin.status.verified') : t('admin.status.unactivated')}
+          {customer.isEmailVerified ? t('common.status.verified') : t('common.status.unactivated')}
         </Badge>
       ),
       className: 'text-center',
@@ -308,6 +312,9 @@ export const CustomersPage = () => {
         columns={columns}
         data={items}
         keyField="code"
+        enableSelection
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         isLoading={isLoading}
         onBulkDelete={handleBulkDelete}
         onView={(customer) => setSelectedCustomer(customer)}
@@ -329,7 +336,7 @@ export const CustomersPage = () => {
                     await impersonate(customer.code);
                     toast.success(t('messages.impersonateSuccess', 'Switched to user session'));
                     window.location.href = '/'; // Redirect to shop home
-                  } catch (err) {
+                  } catch {
                     toast.error(t('messages.error'));
                   }
                 }
@@ -423,9 +430,9 @@ export const CustomersPage = () => {
                 <p className="text-slate-500">{selectedCustomer.email}</p>
                 <div className="flex items-center gap-2 mt-1">
                     <Badge color={selectedCustomer.isActive ? 'success' : 'secondary'}>
-                    {selectedCustomer.isActive ? t('admin.status.active') : t('admin.status.inactive')}
+                    {selectedCustomer.isActive ? t('common.status.active') : t('common.status.inactive')}
                     </Badge>
-                     <Badge color={selectedCustomer.role === 'admin' ? 'error' : 'info'}>{selectedCustomer.role}</Badge>
+                     <Badge color={selectedCustomer.role === 'admin' ? 'error' : 'info'}>{t(`admin.types.${selectedCustomer.role.toLowerCase()}`, selectedCustomer.role)}</Badge>
                 </div>
               </div>
             </div>
@@ -473,13 +480,14 @@ export const CustomersPage = () => {
       <Modal
         isOpen={isFormOpen}
         onClose={closeForm}
-        title={editingCustomer ? t('admin.actions.edit') + ' ' + t('common.fields.customer') : t('admin.actions.create') + ' ' + t('common.fields.customer')}
+        title={editingCustomer ? t('common.actions.edit') + ' ' + t('common.fields.customer') : t('common.actions.create') + ' ' + t('common.fields.customer')}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
             {!editingCustomer && (
                 <Input
                     label={t('common.fields.username')}
+                    initialData={promotionInitialData}
                     value={formData.username}
                     onChange={e => setFormData({...formData, username: e.target.value})}
                     isRequired
@@ -523,14 +531,20 @@ export const CustomersPage = () => {
                 />
             </div>
 
-             <Input
-                label={editingCustomer ? t('common.fields.newPassword') : t('common.fields.password')}
-                type="password"
-                value={formData.password}
-                onChange={e => setFormData({...formData, password: e.target.value})}
-                isRequired={!editingCustomer}
-                placeholder={editingCustomer ? t('common.hints.leaveBlankKeepCurrent') : t('common.placeholders.enterPassword')}
-            />
+              <div className="space-y-1">
+                 <Input
+                    label={editingCustomer ? t('common.fields.newPassword') : t('common.fields.password')}
+                    type="password"
+                    value={formData.password}
+                    onChange={e => setFormData({...formData, password: e.target.value})}
+                    isRequired={!editingCustomer}
+                    placeholder={editingCustomer ? t('common.hints.leaveBlankKeepCurrent') : t('common.placeholders.enterPassword')}
+                    error={(formData.password && !isPasswordValid(formData.password)) ? t('validation.weakPassword') : ''}
+                />
+                <p className="text-xs text-gray-500 dark:text-slate-400 px-1">
+                    {t('common.hints.passwordRule')}
+                </p>
+              </div>
 
                 <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
                      <Switch
@@ -556,7 +570,7 @@ export const CustomersPage = () => {
       <ConfirmDialog
         isOpen={!!customerToDelete}
         onClose={cancelDelete}
-        title={t('admin.actions.delete')}
+        title={t('common.actions.delete')}
         message={t('messages.confirmDelete')}
         confirmText={t('common.delete')}
         onConfirm={() => customerToDelete && deleteCustomer(customerToDelete.code)}
@@ -568,7 +582,7 @@ export const CustomersPage = () => {
         isOpen={!!itemsToDelete}
         onClose={() => setItemsToDelete(null)}
         onConfirm={confirmBulkDelete}
-        title={t('admin.actions.delete')}
+        title={t('common.actions.delete')}
         message={t('common.confirmDelete', { count: itemsToDelete?.length || 0 })}
         confirmText={t('common.delete')}
         isLoading={bulkDeleteMutation.isPending}
@@ -577,21 +591,27 @@ export const CustomersPage = () => {
       <Modal
         isOpen={!!resettingCustomer}
         onClose={() => setResettingCustomer(null)}
-        title={t('admin.actions.resetPasswordTitle', { name: resettingCustomer?.fullName || resettingCustomer?.username })}
+        title={t('common.actions.resetPasswordTitle', { name: resettingCustomer?.fullName || resettingCustomer?.username })}
         size="sm"
       >
-        <div className="space-y-4">
-            <Input
-                label={t('common.fields.newPassword')}
-                type="password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                placeholder={t('common.placeholders.enterPassword')}
-                isRequired
-            />
+         <div className="space-y-4">
+            <div className="space-y-1">
+                <Input
+                    label={t('common.fields.newPassword')}
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder={t('common.placeholders.enterPassword')}
+                    isRequired
+                    error={(newPassword && !isPasswordValid(newPassword)) ? t('validation.weakPassword') : ''}
+                />
+                <p className="text-xs text-gray-500 dark:text-slate-400 px-1">
+                    {t('common.hints.passwordRule')}
+                </p>
+            </div>
             <div className="flex justify-end gap-3">
                 <Button variant="ghost" onClick={() => setResettingCustomer(null)}>{t('common.cancel')}</Button>
-                <Button onClick={confirmResetPassword} disabled={!newPassword}>{t('common.update')}</Button>
+                <Button onClick={confirmResetPassword} disabled={!newPassword || !isPasswordValid(newPassword)}>{t('common.update')}</Button>
             </div>
         </div>
       </Modal>

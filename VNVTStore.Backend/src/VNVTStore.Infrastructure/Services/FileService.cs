@@ -179,7 +179,7 @@ public class FileService : IFileService
     {
         // 1. Get all currently linked files
         var existingFiles = await _context.TblFiles
-            .Where(f => f.MasterCode == productCode && f.MasterType == "Product")
+            .Where(f => f.MasterCode == productCode && f.MasterType == "TblProduct")
             .ToListAsync(cancellationToken);
 
         var currentUrls = currentImageStrings.SelectMany(u =>
@@ -208,7 +208,7 @@ public class FileService : IFileService
         }
 
         // 3. Process new images
-        await SaveAndLinkImagesAsync(productCode, "Product", currentImageStrings, "products", cancellationToken);
+        await SaveAndLinkImagesAsync(productCode, "TblProduct", currentImageStrings, "products", cancellationToken);
 
         return Result.Success();
     }

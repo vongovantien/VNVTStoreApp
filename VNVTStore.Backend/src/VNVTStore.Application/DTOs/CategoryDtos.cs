@@ -12,7 +12,7 @@ public class CategoryDto : IBaseDto
     public string? ParentName { get; set; }
     public bool? IsActive { get; set; }
 
-    [ReferenceCollection(typeof(CategoryFileDto), "TblFile", "MasterCode", "Code", "MasterType", "Category")]
+    [ReferenceCollection(typeof(CategoryFileDto), "TblFile", "MasterCode", "Code", "MasterType", "TblCategory")]
     public List<CategoryFileDto>? Files { get; set; }
 }
 

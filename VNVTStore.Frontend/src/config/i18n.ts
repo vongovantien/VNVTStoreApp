@@ -8,10 +8,10 @@ import sharedTranslation from '@/locales/shared.json';
 
 const resources = {
     vi: {
-        translation: { ...viTranslation, shared: sharedTranslation }
+        translation: { ...viTranslation, shared: { ...viTranslation.shared, ...sharedTranslation } }
     },
     en: {
-        translation: { ...enTranslation, shared: sharedTranslation }
+        translation: { ...enTranslation, shared: { ...enTranslation.shared, ...sharedTranslation } }
     },
 };
 

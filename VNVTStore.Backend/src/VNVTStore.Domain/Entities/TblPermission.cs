@@ -14,8 +14,14 @@ public class TblPermission : IEntity
     public string Module { get; set; } = null!;
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     public DateTime? CreatedAt { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     public DateTime? UpdatedAt { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     public string? ModifiedType { get; set; }
 
     public virtual ICollection<TblRolePermission> TblRolePermissions { get; set; }

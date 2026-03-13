@@ -3,11 +3,14 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Phone, Minus, Plus, ShoppingCart, Heart, Scale, Share2, Star, Zap } from 'lucide-react';
-import { Button, Badge, type BadgeColor } from '@/components/ui';
+import { SocialProof } from '@/components/common/SocialProof';
+import { Button, Badge, Skeleton, type BadgeColor } from '@/components/ui';
 import { useToast } from '@/store';
 import { formatCurrency } from '@/utils/format';
 import { ProductLogistics } from './ProductLogistics';
 import type { Product } from '@/types';
+
+const PriceHistoryChart = React.lazy(() => import('@/features/product/components/PriceHistoryChart'));
 
 interface ProductInfoProps {
   product: Product;
@@ -41,6 +44,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   const { t } = useTranslation();
   const { success } = useToast();
 
+  // Use the handleBuyNow prop passed from the parent
+  const onBuyNowClick = () => {
+    handleBuyNow();
+  };
+
   // Stars renderer
   const renderStars = useMemo(() => {
     if (!product) return null;
@@ -59,6 +67,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Badges */}
       <div className="flex flex-wrap gap-2">
         {product.isNew && <Badge color="success">{t('product.new')}</Badge>}
+        {product.isFeatured && <Badge color="error">{t('product.featured', 'HOT')}</Badge>}
         {product.discount && product.discount > 0 && (
           <Badge color="error">-{product.discount}%</Badge>
         )}
@@ -83,11 +92,17 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         </span>
       </div>
 
+      <SocialProof 
+        productId={product.code} 
+        initialViewers={product.viewCount}
+        initialSold={product.soldCount24h}
+      />
+
       {/* Price & Urgency */}
       <div className="py-6 border-y bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl px-6">
         {hasFixedPrice ? (
           <div className="flex flex-col gap-4">
-            <div className="flex items-baseline gap-3">
+            <div className="flex items-baseline gap-3 relative">
               <span className="text-4xl font-black text-rose-600 dark:text-rose-500 tracking-tight">
                 {formatCurrency(product.price)}
               </span>
@@ -96,6 +111,10 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
                   {formatCurrency(product.originalPrice)}
                 </span>
               )}
+              
+              <React.Suspense fallback={<Skeleton className="w-24 h-6 rounded-full inline-block ml-2" />}>
+                 <PriceHistoryChart productId={product.code} currentPrice={product.price} />
+              </React.Suspense>
             </div>
             
             {/* Sale Progress Bar (Mocked Logic) */}
@@ -195,7 +214,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             <Button
               size="lg"
               variant="outline"
-              className="flex-1 border-slate-900 text-slate-900 hover:bg-hover"
+              className="flex-1 border-2 border-primary text-primary hover:bg-bg-tertiary hover:text-primary transition-colors"
               onClick={handleAddToCart}
               disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
               isLoading={isAddingToCart}
@@ -205,8 +224,8 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             </Button>
             <Button
               size="lg"
-              className="flex-1 bg-slate-900 hover:bg-black text-white"
-              onClick={handleBuyNow}
+              className="flex-1 bg-slate-900 hover:bg-black text-white hover:text-white"
+              onClick={onBuyNowClick}
               disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
             >
               {t('product.buyNow', 'Mua ngay')}

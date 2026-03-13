@@ -115,7 +115,7 @@ public abstract class BaseApiController : ControllerBase
     /// </summary>
     protected bool IsAdmin()
     {
-        return User.IsInRole("Admin");
+        return User.IsInRole(nameof(UserRole.Admin));
     }
 }
 
@@ -206,6 +206,16 @@ public abstract class BaseApiController<TEntity, TResponse, TCreateDto, TUpdateD
         return HandleDelete(result);
     }
 
+    /// <summary>
+    /// Generic Delete Multiple
+    /// </summary>
+    [HttpPost("delete-multiple")]
+    public virtual async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
+    {
+        var result = await Mediator.Send(CreateDeleteMultipleCommand(codes));
+        return HandleDelete(result);
+    }
+
     // Default implementations of factory methods
     protected virtual IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
         => new GetPagedQuery<TResponse> { PageIndex = pageIndex, PageSize = pageSize, SortDTO = sort, Searching = filters, Fields = fields };
@@ -221,6 +231,9 @@ public abstract class BaseApiController<TEntity, TResponse, TCreateDto, TUpdateD
 
     protected virtual IRequest<Result> CreateDeleteCommand(string code)
         => new DeleteCommand<TEntity>(code);
+    
+    protected virtual IRequest<Result> CreateDeleteMultipleCommand(List<string> codes)
+        => new DeleteMultipleCommand<TEntity>(codes);
     
     // Helper to get route values for CreatedAtAction
     protected virtual object GetRouteValues(TResponse? value)

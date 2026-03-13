@@ -319,11 +319,11 @@ export const OrdersPage = () => {
             label: t('common.fields.status'),
             type: 'select',
             options: [
-              { value: OrderStatus.PENDING, label: t('admin.status.pending') },
-              { value: OrderStatus.CONFIRMED, label: t('admin.status.confirmed') },
-              { value: OrderStatus.SHIPPING, label: t('admin.status.shipping') },
-              { value: OrderStatus.DELIVERED, label: t('admin.status.delivered') },
-              { value: OrderStatus.CANCELLED, label: t('admin.status.cancelled') },
+              { value: OrderStatus.PENDING, label: t('common.status.pending') },
+              { value: OrderStatus.CONFIRMED, label: t('common.status.confirmed') },
+              { value: OrderStatus.SHIPPING, label: t('common.status.shipping') },
+              { value: OrderStatus.DELIVERED, label: t('common.status.delivered') },
+              { value: OrderStatus.CANCELLED, label: t('common.status.cancelled') },
             ]
           },
           {
@@ -331,8 +331,8 @@ export const OrdersPage = () => {
             label: t('common.fields.payment'),
             type: 'select',
             options: [
-              { value: 'Completed', label: t('admin.status.paid') },
-              { value: 'Pending', label: t('admin.status.unpaid') },
+              { value: 'Completed', label: t('common.status.paid') },
+              { value: 'Pending', label: t('common.status.unpaid') },
             ]
           },
           {
@@ -386,17 +386,17 @@ export const OrdersPage = () => {
       <Modal
         isOpen={!!selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        title={`${t('admin.actions.view')} ${t('common.fields.orderCode')}: ${selectedOrder?.code}`}
+        title={`${t('common.actions.view')} ${t('common.fields.orderCode')}: ${selectedOrder?.code}`}
         size="lg"
         footer={
           selectedOrder && (
             <div className="flex justify-end gap-3">
               <Button variant="ghost" onClick={() => setSelectedOrder(null)}>{t('common.close')}</Button>
               {selectedOrder.status === OrderStatus.PENDING && (
-                <Button variant="primary" onClick={() => updateStatus(selectedOrder.code, OrderStatus.CONFIRMED)}>{t('admin.actions.confirmOrderFull')}</Button>
+                <Button variant="primary" onClick={() => updateStatus(selectedOrder.code, OrderStatus.CONFIRMED)}>{t('common.actions.confirmOrderFull')}</Button>
               )}
               {selectedOrder.status === OrderStatus.DELIVERED && (
-                <Button variant="outline" leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>{t('admin.actions.printInvoice')}</Button>
+                <Button variant="outline" leftIcon={<Printer size={16} />} onClick={handlePrintInvoice}>{t('common.actions.printInvoice')}</Button>
               )}
             </div>
           )

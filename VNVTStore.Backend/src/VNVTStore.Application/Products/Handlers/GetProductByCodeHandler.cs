@@ -19,7 +19,6 @@ namespace VNVTStore.Application.Products.Handlers;
 public class GetProductByCodeHandler : BaseHandler<TblProduct>,
     IRequestHandler<GetProductByCodeQuery, Result<ProductDto>>
 {
-    private readonly IBaseUrlService _baseUrlService;
     private readonly IApplicationDbContext _context;
 
     public GetProductByCodeHandler(
@@ -27,11 +26,9 @@ public class GetProductByCodeHandler : BaseHandler<TblProduct>,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IDapperContext dapperContext,
-        IBaseUrlService baseUrlService,
         IApplicationDbContext context)
         : base(repository, unitOfWork, mapper, dapperContext)
     {
-        _baseUrlService = baseUrlService;
         _context = context;
     }
 
@@ -60,22 +57,33 @@ public class GetProductByCodeHandler : BaseHandler<TblProduct>,
                 cancellationToken);
         }
 
+        if (result.IsSuccess)
+        {
+            // Update ViewCount
+            var product = await _context.TblProducts.FirstOrDefaultAsync(p => p.Code == request.Code, cancellationToken);
+            if (product != null)
+            {
+                // Increment ViewCount using EF Core (or Dapper if preferred for performance)
+                // Using a private setter so we might need a method or reflection if it's strictly private
+                // Actually, I just added it as public int ViewCount { get; private set; }
+                // Let's add an IncrementViewCount method to TblProduct for better encapsulation
+                product.IncrementViewCount();
+                await _context.SaveChangesAsync(cancellationToken);
+                result.Value.ViewCount = product.ViewCount;
+            }
+
+            // Calculate SoldCount24h
+            var last24h = DateTime.UtcNow.AddDays(-1);
+            var soldCount = await _context.TblOrderItems
+                .Where(oi => oi.ProductCode == request.Code && oi.CreatedAt >= last24h)
+                .SumAsync(oi => (int?)oi.Quantity, cancellationToken) ?? 0;
+            
+            result.Value.SoldCount24h = soldCount;
+        }
+
+        // ProductImages and other collections are automatically populated by BaseHandler.GetByCodeAsync
         if (result.IsSuccess && request.IncludeChildren)
         {
-            var files = await _context.TblFiles
-                .Where(f => f.MasterCode == request.Code && (f.MasterType == "Product" || f.MasterType == "PRODUCT"))
-                .ToListAsync(cancellationToken);
-            
-            var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
-            result.Value.ProductImages = files.Select(f => new ProductImageDto
-            {
-                 Code = f.Code,
-                 ImageURL = f.Path.StartsWith("http") ? f.Path : $"{baseUrl}/{f.Path.TrimStart('/')}",
-                 AltText = f.OriginalName,
-                 IsPrimary = files.IndexOf(f) == 0
-            }).ToList();
-
-            // 2. Aggregate Ratings
             var ratingData = await _context.TblReviews
                 .Where(r => (r.ProductCode == request.Code || (r.OrderItemCodeNavigation != null && r.OrderItemCodeNavigation.ProductCode == request.Code)) && r.IsApproved == true)
                 .GroupBy(r => 1)

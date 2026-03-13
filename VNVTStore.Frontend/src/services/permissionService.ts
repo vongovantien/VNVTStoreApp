@@ -1,7 +1,7 @@
 import { createEntityService } from './baseService';
 import { API_ENDPOINTS } from '@/constants';
 import { Permission } from '@/types';
-import apiClient, { ApiResponse, PagedResult } from './api';
+import { ApiResponse } from './api';
 
 export const permissionService = {
     ...createEntityService<Permission, Permission, Permission>({
@@ -9,21 +9,23 @@ export const permissionService = {
         resourceName: 'Permission'
     }),
     getAll: async (): Promise<ApiResponse<Permission[]>> => {
-        const response = await apiClient.get<PagedResult<Permission>>(API_ENDPOINTS.PERMISSIONS.ALL);
-        // The endpoint returns a PagedResult if using BaseApiController.GetAll custom implementation
-        // or just the direct array if we implemented it elsewhere.
-        // My implementation in PermissionsController uses GetPagedQuery.
+        const response = await permissionService.search({
+            pageIndex: 1,
+            pageSize: 1000
+        });
+
         if (response.success && response.data?.items) {
             return {
                 ...response,
                 data: response.data.items
             };
         }
+
         return {
-            success: response.success,
-            message: response.message,
+            success: false,
+            message: response.message || 'Failed to load permissions',
             data: [],
-            statusCode: response.statusCode
+            statusCode: response.statusCode || 500
         };
     }
 };

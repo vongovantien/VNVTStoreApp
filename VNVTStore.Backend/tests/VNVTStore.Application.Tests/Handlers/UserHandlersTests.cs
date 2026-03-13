@@ -113,6 +113,10 @@ public class UserHandlersTests
         _userRepositoryMock.Setup(x => x.GetByCodeAsync(userCode, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
+        _fileServiceMock.Setup(x => x.SaveAndLinkImagesAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<IEnumerable<string>>.Success(new List<string> { "avatars/avatar.jpg" }));
+
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<TblUser>()))
             .Returns(new UserDto { FullName = "New Name" });
 

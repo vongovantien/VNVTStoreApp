@@ -2,19 +2,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui';
-import SharedImage from '@/components/common/Image';
-import { ProductReviewButton } from '@/components/reviews/ProductReviewButton';
-import ReviewsList from '@/components/reviews/ReviewsList';
-import { ProductDetail, ProductDetailType } from '@/types';
-import { formatCurrency } from '@/utils/format';
+import { Button, Tabs } from '@/components/ui';
+import { ProductDetail } from '@/types';
 import type { Product } from '@/types';
-import { useReviewStore } from '@/store/reviewStore';
+import { ProductDescription } from './tabs/ProductDescription';
+import { ProductSpecs } from './tabs/ProductSpecs';
+import { ProductUnits } from './tabs/ProductUnits';
+import { ProductVariants } from './tabs/ProductVariants';
+import { ProductMediaGrid } from './tabs/ProductMediaGrid';
+import { ProductReviews } from './tabs/ProductReviews';
+import { ProductQA } from './ProductQA';
 
 interface ProductTabsProps {
   product: Product;
-  activeTab: 'description' | 'specs' | 'units' | 'variants' | 'images' | 'reviews';
-  setActiveTab: (tab: 'description' | 'specs' | 'units' | 'variants' | 'images' | 'reviews') => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
   images: string[];
   relations: ProductDetail[];
   setSelectedIndex: (index: number) => void;
@@ -35,147 +37,48 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({
   return (
     <>
       <div className="bg-primary rounded-xl p-6 mb-12">
-        <div className="flex border-b mb-6 overflow-x-auto">
-          {(['description', 'specs', 'units', 'variants', 'images', 'reviews'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-medium whitespace-nowrap transition-colors ${
-                activeTab === tab
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-secondary hover:text-primary'
-              }`}
-            >
-              {t(`product.tab.${tab}`)}
-            </button>
-          ))}
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs.List>
+                {(['description', 'specs', 'units', 'variants', 'images', 'reviews', 'qa'] as const).map((tab) => (
+                    <Tabs.Trigger key={tab} value={tab}>
+                        {t(`product.tab.${tab}`)}
+                    </Tabs.Trigger>
+                ))}
+            </Tabs.List>
 
-        {/* Tab Content */}
-        {activeTab === 'description' && (
-          <div className="prose max-w-none">
-            <p className="text-secondary leading-relaxed">{product.description}</p>
-          </div>
-        )}
+            <Tabs.Content value="description">
+                <ProductDescription product={product} />
+            </Tabs.Content>
+            
+            <Tabs.Content value="specs">
+                <ProductSpecs product={product} />
+            </Tabs.Content>
 
-        {activeTab === 'specs' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
-            {product.details?.filter(d => d.detailType === ProductDetailType.SPEC).length ? (
-              product.details.filter(d => d.detailType === ProductDetailType.SPEC).map((detail, idx) => (
-                <div key={idx} className="flex border-b border-slate-100 py-3 text-sm">
-                  <span className="w-1/2 font-medium text-secondary">{detail.specName}</span>
-                  <span className="flex-1 text-primary font-semibold">{detail.specValue}</span>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-2 text-center py-8 text-tertiary">
-                {t('product.noSpecs', 'Không có thông số kỹ thuật chi tiết.')}
-              </div>
-            )}
-          </div>
-        )}
+            <Tabs.Content value="units">
+                <ProductUnits product={product} />
+            </Tabs.Content>
 
-        {activeTab === 'units' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
-            {product.productUnits && product.productUnits.length ? (
-              product.productUnits.map((unit, idx) => (
-                <div key={idx} className="flex border-b border-slate-100 py-3 text-sm">
-                  <span className="w-1/2 font-medium text-secondary">{unit.unitName}</span>
-                  <span className="flex-1 text-primary font-semibold">
-                    {formatCurrency(unit.price)} (x{unit.conversionRate})
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-2 text-center py-8 text-tertiary">
-                {t('product.noUnits', 'Không có thông tin đơn vị tính.')}
-              </div>
-            )}
-          </div>
-        )}
+            <Tabs.Content value="variants">
+                <ProductVariants product={product} />
+            </Tabs.Content>
+            
+            <Tabs.Content value="images">
+                 <ProductMediaGrid 
+                    product={product} 
+                    images={images} 
+                    setSelectedIndex={setSelectedIndex} 
+                    setLightboxOpen={setLightboxOpen} 
+                />
+            </Tabs.Content>
 
-        {activeTab === 'variants' && (
-          <div className="overflow-x-auto">
-            {product.variants && product.variants.length ? (
-              <table className="w-full text-sm text-left">
-                <thead className="bg-secondary/50 text-tertiary font-medium">
-                  <tr>
-                    <th className="px-4 py-3 border-b">{t('common.fields.code')}</th>
-                    <th className="px-4 py-3 border-b">{t('common.fields.specs')}</th>
-                    <th className="px-4 py-3 border-b text-right">{t('common.fields.price')}</th>
-                    <th className="px-4 py-3 border-b text-right">{t('common.fields.stock')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {product.variants.map((v, idx) => (
-                    <tr key={idx} className="hover:bg-hover transition-colors">
-                      <td className="px-4 py-3 font-medium text-primary">{v.sku}</td>
-                      <td className="px-4 py-3 text-secondary">{v.attributes}</td>
-                      <td className="px-4 py-3 text-right font-bold text-error">{formatCurrency(v.price)}</td>
-                      <td className="px-4 py-3 text-right text-secondary">{v.stockQuantity}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="text-center py-8 text-tertiary">
-                {t('product.noVariants', 'Không có phiên bản nào cho sản phẩm này.')}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'images' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {images.length > 0 ? (
-              images.map((img, idx) => (
-                <div 
-                  key={idx} 
-                  className="aspect-square rounded-xl overflow-hidden border border-slate-100 bg-white group cursor-zoom-in relative"
-                  onClick={() => {
-                    setSelectedIndex(idx);
-                    setLightboxOpen(true);
-                  }}
-                >
-                  <SharedImage 
-                    src={img} 
-                    alt={`${product.name} gallery ${idx + 1}`} 
-                    className="w-full h-full object-contain transition-transform group-hover:scale-110" 
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-hover transition-colors" />
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-secondary bg-secondary/30 rounded-xl">
-                {t('product.noImages', 'Không có hình ảnh nào.')}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'reviews' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-4 rounded-xl">
-              <div>
-                <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-200">
-                  {t('review.shareExperience', 'Chia sẻ trải nghiệm của bạn')}
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {t('review.helpOthers', 'Đánh giá của bạn sẽ giúp người khác tham khảo')}
-                </p>
-              </div>
-              <ProductReviewButton
-                productCode={product.code}
-                productName={product.name}
-                productImage={product.images?.[0]}
-                onReviewSubmitted={() => {
-                  useReviewStore.getState().triggerRefresh();
-                }}
-              />
-            </div>
-            <ReviewsList productCode={product.code} />
-          </div>
-        )}
+            <Tabs.Content value="reviews">
+                <ProductReviews product={product} />
+            </Tabs.Content>
+            
+            <Tabs.Content value="qa">
+                <ProductQA productCode={product.code} />
+            </Tabs.Content>
+        </Tabs>
       </div>
 
       {/* Product Relations (Cross-selling) */}

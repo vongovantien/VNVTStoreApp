@@ -26,7 +26,7 @@ public class AuditLogsApiTests : IntegrationTestBase
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/v1/auditlogs/search", searchRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/audit-logs/search", searchRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -48,7 +48,7 @@ public class AuditLogsApiTests : IntegrationTestBase
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/v1/auditlogs/search", searchRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/audit-logs/search", searchRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);

@@ -31,6 +31,7 @@ public class AuthHandlersTests
     private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<ICurrentUser> _currentUserServiceMock;
     private readonly Mock<IDapperContext> _dapperContextMock;
+    private readonly Mock<Microsoft.Extensions.Configuration.IConfiguration> _configurationMock;
 
     public AuthHandlersTests()
     {
@@ -42,19 +43,21 @@ public class AuthHandlersTests
         _emailServiceMock = new Mock<IEmailService>();
         _currentUserServiceMock = new Mock<ICurrentUser>();
         _dapperContextMock = new Mock<IDapperContext>();
+        _configurationMock = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
     }
 
     [Fact]
     public async Task Handle_Register_Success_ShouldReturnUserDto()
     {
         // Arrange
-        var command = new RegisterCommand("newuser", "test@example.com", "password", "New User");
+        var command = new RegisterCommand("newuser", "test@example.com", "Password@123", "New User");
         var handler = new RegisterCommandHandler(
             _userRepositoryMock.Object, 
             _passwordHasherMock.Object, 
             _unitOfWorkMock.Object, 
             _mapperMock.Object, 
-            _emailServiceMock.Object
+            _emailServiceMock.Object,
+            _configurationMock.Object
         );
 
         _userRepositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblUser, bool>>>(), It.IsAny<CancellationToken>()))
@@ -78,13 +81,14 @@ public class AuthHandlersTests
     public async Task Handle_Register_Conflict_ShouldReturnFailure()
     {
         // Arrange
-        var command = new RegisterCommand("existing", "test@example.com", "password", "Name");
+        var command = new RegisterCommand("existing", "test@example.com", "Password@123", "Name");
         var handler = new RegisterCommandHandler(
             _userRepositoryMock.Object, 
             _passwordHasherMock.Object, 
             _unitOfWorkMock.Object, 
             _mapperMock.Object, 
-            _emailServiceMock.Object
+            _emailServiceMock.Object,
+            _configurationMock.Object
         );
 
         _userRepositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblUser, bool>>>(), It.IsAny<CancellationToken>()))
@@ -102,7 +106,7 @@ public class AuthHandlersTests
     public async Task Handle_Login_Success_ShouldReturnToken()
     {
         // Arrange
-        var command = new LoginCommand("user", "password");
+        var command = new LoginCommand("user", "Password@123");
         var handler = new LoginCommandHandler(
             _userRepositoryMock.Object,
             _passwordHasherMock.Object,
@@ -118,7 +122,7 @@ public class AuthHandlersTests
         _userRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<TblUser, bool>>>()))
             .Returns(mockDbSet.Object);
         
-        _passwordHasherMock.Setup(x => x.Verify("password", "hashed_password")).Returns(true);
+        _passwordHasherMock.Setup(x => x.Verify("Password@123", "hashed_password")).Returns(true);
         _jwtServiceMock.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>(), It.IsAny<IEnumerable<string>>(), It.IsAny<IEnumerable<string>>())).Returns("token");
         _jwtServiceMock.Setup(x => x.GenerateRefreshToken()).Returns("refresh_token");
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<TblUser>())).Returns(new UserDto { Username = "user" });

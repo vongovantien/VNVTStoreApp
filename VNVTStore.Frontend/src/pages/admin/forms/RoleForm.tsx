@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { Shield, Info, Menu as MenuIcon } from 'lucide-react';
 import { Button, Input, Textarea, Badge, Loading } from '@/components/ui';
 import { usePermissions, useMenus } from '@/hooks';
-import { Menu } from '@/types';
+import { Menu, Permission } from '@/types';
 
 export interface RoleFormData {
     name: string;
@@ -30,7 +30,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
     isEdit
 }) => {
     const { t } = useTranslation();
-    const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<RoleFormData>({
+    const { register, handleSubmit, formState: { errors }, setValue, control, reset } = useForm<RoleFormData>({
         defaultValues: initialData || {
             name: '',
             description: '',
@@ -40,8 +40,30 @@ export const RoleForm: React.FC<RoleFormProps> = ({
         }
     });
 
-    const selectedPermissionCodes = watch('permissionCodes');
-    const selectedMenuCodes = watch('menuCodes');
+    React.useEffect(() => {
+        if (initialData) {
+            reset(initialData);
+        } else {
+            reset({
+                name: '',
+                description: '',
+                isActive: true,
+                permissionCodes: [],
+                menuCodes: []
+            });
+        }
+    }, [initialData, reset]);
+
+    const selectedPermissionCodes = useWatch({
+        control,
+        name: 'permissionCodes',
+        defaultValue: initialData?.permissionCodes || []
+    });
+    const selectedMenuCodes = useWatch({
+        control,
+        name: 'menuCodes',
+        defaultValue: initialData?.menuCodes || []
+    });
     
     // Fetch all permissions
     const { data: permissionsResult, isLoading: isPermissionsLoading } = usePermissions();
@@ -146,7 +168,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                     <Input
                         label={t('common.fields.name')}
                         {...register('name', { required: t('validation.required') })}
-                        error={errors.name?.message}
+                        error={errors.name?.message || ''}
                         placeholder={t('rbac.roles.namePlaceholder')}
                     />
 
@@ -283,7 +305,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
                 <Button type="button" variant="ghost" onClick={onCancel} disabled={isLoading}>
                     {t('common.actions.cancel')}
                 </Button>
-                <Button type="submit" isLoading={isLoading}>
+                <Button type="submit" isLoading={!!isLoading}>
                     {isEdit ? t('common.actions.save') : t('common.actions.create')}
                 </Button>
             </div>

@@ -1,11 +1,13 @@
+import { useState } from 'react'; // Feature 12
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Minus, Plus, X, ShoppingBag, ArrowRight, Trash2 } from 'lucide-react';
+import { Minus, Plus, X, ShoppingBag, ArrowRight, Trash2, Gift, Scale, Truck, Ticket, Tag } from 'lucide-react'; // Added icons
 import { Button } from '@/components/ui';
+import { CouponSelector } from '@/components/common/CouponSelector';
 import SharedImage from '@/components/common/Image';
-import { useCartStore } from '@/store';
-import { formatCurrency } from '@/utils/format';
+import { useCartStore, useToast } from '@/store';
+import { formatCurrency, formatNumber } from '@/utils/format'; // Added formatNumber
 
 import { useSEO } from '@/hooks/useSEO';
 
@@ -16,10 +18,32 @@ export const CartPage = () => {
     title: 'Giỏ hàng',
     noindex: true,
   });
-  const { items, removeItem, updateQuantity, getTotal, clearCart, isLoading } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotal, clearCart, isLoading, coupon, discountAmount, applyCoupon, removeCoupon } = useCartStore();
+  const [isCouponDrawerOpen, setIsCouponDrawerOpen] = useState(false);
+  const { error, success } = useToast();
+  
+  // Feature 12: Gift Wrapping State
+  const [isGiftWrapped, setIsGiftWrapped] = useState(false);
+  const GIFT_WRAP_FEE = 20000;
+
   const total = getTotal();
   const shippingFee = total >= 500000 ? 0 : 30000;
-  const grandTotal = total + shippingFee;
+  
+  // Feature 15: Cart Weight Estimator (Mock 500g per item if missing)
+  const totalWeight = items.reduce((acc, item) => acc + ((item.product.weight || 0.5) * item.quantity), 0);
+  
+  const grandTotal = total + shippingFee + (isGiftWrapped ? GIFT_WRAP_FEE : 0) - discountAmount;
+  const freeShipProgress = Math.min((total / 500000) * 100, 100);
+
+  const handleApplyCoupon = async (code: string) => {
+      try {
+          await applyCoupon(code);
+          success(t('cart.couponApplied', 'Áp dụng mã giảm giá thành công'));
+          setIsCouponDrawerOpen(false);
+      } catch (err: unknown) {
+          error((err as Error).message || t('cart.couponError', 'Lỗi áp dụng mã giảm giá'));
+      }
+  };
 
   if (isLoading && items.length === 0) {
     return (
@@ -162,11 +186,72 @@ export const CartPage = () => {
                     {shippingFee === 0 ? t('cart.free') : formatCurrency(shippingFee)}
                   </span>
                 </div>
-                {total < 500000 && (
-                  <p className="text-xs text-tertiary">
-                    {t('cart.freeShippingNote', { amount: formatCurrency(500000 - total) })}
-                  </p>
+
+                {/* Feature 12: Gift Wrapping Toggle */}
+                <div className="flex items-center justify-between py-2 border-t border-dashed">
+                  <div className="flex items-center gap-2">
+                    <Gift size={16} className="text-indigo-500" />
+                    <label htmlFor="gift-wrap" className="text-sm cursor-pointer select-none text-secondary hover:text-primary">
+                      {t('cart.giftWrap', 'Gói quà (+20k)')}
+                    </label>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    id="gift-wrap" 
+                    checked={isGiftWrapped}
+                    onChange={(e) => setIsGiftWrapped(e.target.checked)}
+                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                </div>
+                {isGiftWrapped && (
+                  <div className="flex justify-between text-sm text-indigo-600">
+                    <span>{t('cart.giftWrapFee', 'Phí gói quà')}</span>
+                    <span>{formatCurrency(GIFT_WRAP_FEE)}</span>
+                  </div>
                 )}
+                
+                {/* Discount Row */}
+                {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-success font-medium py-2 border-t border-dashed border-success/30">
+                        <span className="flex items-center gap-1">
+                            <Tag size={14} />
+                            {t('cart.discount', 'Đã giảm')} ({coupon?.code})
+                        </span>
+                        <span>-{formatCurrency(discountAmount)}</span>
+                    </div>
+                )}
+
+                {/* Feature 15: Weight Estimator */}
+                <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+                   <div className="flex items-center gap-1">
+                     <Scale size={12} />
+                     <span>{t('cart.estimatedWeight', 'Ước tính trọng lượng')}:</span>
+                   </div>
+                   <span>{formatNumber(totalWeight)} kg</span>
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="font-medium text-secondary">{t('cart.freeShipProgress', 'Tiến độ Freeship')}</span>
+                    <span className="text-primary font-bold">{Math.round(freeShipProgress)}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${freeShipProgress}%` }}
+                      className={`h-full rounded-full ${freeShipProgress === 100 ? 'bg-success' : 'bg-primary'}`}
+                    />
+                  </div>
+                  {total < 500000 ? (
+                    <p className="text-xs text-tertiary mt-1">
+                      {t('cart.freeShippingNote', { amount: formatCurrency(500000 - total) })}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-success font-bold mt-1 flex items-center gap-1">
+                      <Truck size={12} /> {t('cart.freeShippingQualified', 'Đơn hàng đã được miễn phí vận chuyển!')}
+                    </p>
+                  )}
+                </div>
                 <hr />
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('cart.total')}</span>
@@ -174,18 +259,32 @@ export const CartPage = () => {
                 </div>
               </div>
 
-              {/* Coupon */}
+              {/* Coupon Selector */}
               <div className="mb-6">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder={t('cart.couponPlaceholder')}
-                    className="flex-1 px-4 py-2 border rounded-lg text-sm focus:outline-none focus:border-primary"
-                  />
-                  <Button variant="outline" size="sm">
-                    {t('cart.apply')}
-                  </Button>
-                </div>
+                {coupon ? (
+                     <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-lg p-3 flex justify-between items-center">
+                         <div className="flex items-center gap-2">
+                             <Ticket size={18} className="text-indigo-600" />
+                             <div>
+                                 <div className="font-bold text-indigo-700 dark:text-indigo-400 text-sm">{coupon.code}</div>
+                                 <div className="text-[10px] text-indigo-500">{t('cart.couponApplied')}</div>
+                             </div>
+                         </div>
+                         <button onClick={removeCoupon} className="text-slate-400 hover:text-rose-500 p-1">
+                             <X size={16} />
+                         </button>
+                     </div>
+                ) : (
+                    <Button 
+                        variant="outline" 
+                        fullWidth 
+                        leftIcon={<Ticket size={18} />}
+                        onClick={() => setIsCouponDrawerOpen(true)}
+                        className="border-dashed"
+                    >
+                        {t('cart.selectCoupon', 'Chọn hoặc nhập mã giảm giá')}
+                    </Button>
+                )}
               </div>
 
               <Link to="/checkout">
@@ -209,6 +308,13 @@ export const CartPage = () => {
           </div>
         </div>
       </div>
+      
+      <CouponSelector 
+        isOpen={isCouponDrawerOpen} 
+        onClose={() => setIsCouponDrawerOpen(false)} 
+        onSelect={handleApplyCoupon}
+        currentSubtotal={total}
+      />
     </div>
   );
 };

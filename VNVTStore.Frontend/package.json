@@ -21,6 +21,7 @@
     "@microsoft/signalr": "^10.0.0",
     "@tanstack/react-query": "^5.90.16",
     "axios": "^1.13.2",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
@@ -35,6 +36,7 @@
     "react-easy-crop": "^5.5.6",
     "react-hook-form": "^7.70.0",
     "react-i18next": "^16.5.1",
+    "react-quill-new": "^3.8.3",
     "react-router-dom": "^7.11.0",
     "recharts": "^3.6.0",
     "tailwind-merge": "^3.4.0",
@@ -76,6 +78,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
+    "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.16"
   },
   "lint-staged": {

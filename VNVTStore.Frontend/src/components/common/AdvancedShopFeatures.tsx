@@ -14,10 +14,10 @@
  * Feature #44: Verified Purchase Filter
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Download, Wrench, Tag, Star, Search, ShieldCheck, Filter, ArrowUpDown } from 'lucide-react';
+import { RefreshCw, Download, Wrench, Tag, Search, ShieldCheck, Filter, ArrowUpDown } from 'lucide-react';
 
 // ============ #75 Pull-to-Refresh ============
 export const usePullToRefresh = (onRefresh: () => Promise<void>) => {
@@ -76,16 +76,20 @@ export const PullToRefreshIndicator = ({ isRefreshing }: { isRefreshing: boolean
   </AnimatePresence>
 );
 
-// ============ #71 PWA Install Prompt ============
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 export const PWAInstallPrompt = () => {
   const { t } = useTranslation();
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       // Only show if not dismissed recently
       if (!sessionStorage.getItem('vnvt_pwa_dismissed')) {
         setShow(true);

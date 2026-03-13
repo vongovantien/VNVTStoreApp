@@ -20,13 +20,13 @@
  * #30: Saved Credit Card (display only, mock)
  */
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Gift, Users, Link2, Bell, FileText, RotateCcw, Wallet, 
-  Reply, Camera, ChevronRight, Printer, Zap, BookOpen,
-  CalendarDays, Package, RefreshCw, CreditCard, Cake,
+  Gift, Users, RotateCcw, Wallet, 
+  Reply, ChevronRight, Printer, Zap, BookOpen,
+  CalendarDays, Package, RefreshCw, Cake,
   Copy, Check, X
 } from 'lucide-react';
 
@@ -233,7 +233,7 @@ export const RecurringOrderToggle = ({
 
 // ============ #31 Birthday Rewards ============
 export const BirthdayReward = ({ birthday, couponCode }: { birthday?: string; couponCode?: string }) => {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   
   if (!couponCode) return null;

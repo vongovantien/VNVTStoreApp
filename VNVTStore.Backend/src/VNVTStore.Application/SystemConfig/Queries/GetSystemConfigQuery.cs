@@ -31,7 +31,20 @@ namespace VNVTStore.Application.SystemConfig.Queries
 
             if (config == null)
             {
-                return Result<SystemConfigDto>.Failure("Configuration not found");
+                // Feature: Default values for critical configurations if not yet defined in DB
+                if (request.ConfigKey == "FLASHSALE_TIMES")
+                {
+                    return Result<SystemConfigDto>.Success(new SystemConfigDto
+                    {
+                        ConfigKey = "FLASHSALE_TIMES",
+                        ConfigValue = "[{\"active\":true,\"label\":\"09:00\"},{\"active\":true,\"label\":\"12:00\"},{\"active\":true,\"label\":\"15:00\"},{\"active\":true,\"label\":\"18:00\"},{\"active\":true,\"label\":\"21:00\"}]",
+                        Description = "Default Flash Sale Schedule",
+                        IsActive = true,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
+
+                return Result<SystemConfigDto>.Failure(Error.NotFound("SystemConfig.NotFound", $"Configuration '{request.ConfigKey}' not found"));
             }
 
             var dto = new SystemConfigDto

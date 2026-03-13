@@ -12,12 +12,4 @@ public class PermissionsController : BaseApiController<TblPermission, Permission
     public PermissionsController(IMediator mediator) : base(mediator) { }
     
     // Usually permissions are read-only for the UI through this controller
-    
-    [HttpGet("all")]
-    [HasPermission(Permissions.Settings.ManageRoles)]
-    public async Task<IActionResult> GetAll()
-    {
-        var result = await Mediator.Send(new GetPagedQuery<PermissionDto>(PageSize: 1000));
-        return Ok(result);
-    }
 }

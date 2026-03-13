@@ -94,6 +94,7 @@ public class CreateBannerHandler : BaseHandler<TblBanner>,
 }
 
 public class UpdateBannerHandler : BaseHandler<TblBanner>,
+    IRequestHandler<DeleteMultipleCommand<TblBanner>, Result>,
     IRequestHandler<UpdateCommand<UpdateBannerDto, BannerDto>, Result<BannerDto>>
 {
     private readonly IFileService _fileService;

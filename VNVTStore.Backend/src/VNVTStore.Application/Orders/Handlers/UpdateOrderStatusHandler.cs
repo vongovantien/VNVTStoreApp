@@ -14,12 +14,16 @@ namespace VNVTStore.Application.Orders.Handlers;
 public class UpdateOrderStatusHandler : BaseHandler<TblOrder>, 
     IRequestHandler<UpdateOrderStatusCommand, Result<OrderDto>>
 {
+    private readonly INotificationService _notificationService;
+
     public UpdateOrderStatusHandler(
         IRepository<TblOrder> orderRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        IDapperContext dapperContext) : base(orderRepository, unitOfWork, mapper, dapperContext)
+        IDapperContext dapperContext,
+        INotificationService notificationService) : base(orderRepository, unitOfWork, mapper, dapperContext)
     {
+        _notificationService = notificationService;
     }
 
     public async Task<Result<OrderDto>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -32,6 +36,16 @@ public class UpdateOrderStatusHandler : BaseHandler<TblOrder>,
         _repository.Update(order);
         await _unitOfWork.CommitAsync(cancellationToken);
         
+        // Notify User
+        if (!string.IsNullOrEmpty(order.UserCode) && order.UserCode != "USR_GUEST")
+        {
+             await _notificationService.SendToUserAsync(order.UserCode, 
+                 "Order Status Updated", 
+                 $"Your order #{order.Code} status is now {request.status}.", 
+                 "INFO", 
+                 $"/account/orders/{order.Code}");
+        }
+
         return Result.Success(_mapper.Map<OrderDto>(order));
     }
 }

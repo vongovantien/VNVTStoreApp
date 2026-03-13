@@ -75,7 +75,7 @@ public class OrdersController : BaseApiController
     }
 
     [HttpGet("stats")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [ProducesResponseType(typeof(ApiResponse<OrderStatsDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOrderStats()
     {
@@ -140,7 +140,7 @@ public class OrdersController : BaseApiController
     }
 
     [HttpPut("{code}/status")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [ProducesResponseType(typeof(ApiResponse<OrderDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateOrderStatus(string code, [FromBody] UpdateOrderStatusDto dto)
     {

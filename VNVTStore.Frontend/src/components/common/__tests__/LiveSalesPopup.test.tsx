@@ -9,9 +9,9 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: { children: React.ReactNode }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { LiveSalesPopup } from '../LiveSalesPopup';
@@ -39,7 +39,7 @@ describe('LiveSalesPopup - Feature #50', () => {
     });
 
     // Should show a sale notification with customer name
-    const notification = screen.queryByText(/vừa mua/i) || screen.queryByText(/đã mua/i);
+    expect(screen.queryByText(/vừa mua/i) || screen.queryByText(/đã mua/i)).toBeTruthy();
     // Notification may or may not be visible depending on random timing
     // The component should at least not crash
   });

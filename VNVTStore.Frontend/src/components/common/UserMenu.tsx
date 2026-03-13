@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, LogOut, LucideIcon } from 'lucide-react';
+import { ChevronDown, LogOut, LucideIcon, Crown } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store';
 import { useClickOutside } from '@/hooks';
@@ -61,18 +61,63 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-3 bg-primary rounded-xl shadow-2xl border border-secondary/5 p-1 min-w-[240px] overflow-hidden"
+            className="absolute top-full right-0 mt-3 bg-primary rounded-xl shadow-2xl border border-secondary/5 p-1 min-w-[260px] overflow-hidden"
           >
             {/* Header Area */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-secondary/5 mb-1 bg-secondary/10">
-              <UserAvatar size="md" />
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm truncate text-primary">
-                  {user?.fullName || 'User'}
-                </p>
-                <p className="text-[11px] text-tertiary truncate font-medium">
-                  {user?.email}
-                </p>
+            <div className="flex flex-col gap-3 px-4 py-4 border-b border-secondary/5 mb-1 bg-secondary/10">
+              <div className="flex items-center gap-3">
+                <UserAvatar size="md" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm truncate text-primary">
+                    {user?.fullName || 'User'}
+                  </p>
+                  <p className="text-[11px] text-tertiary truncate font-medium">
+                    {user?.email}
+                  </p>
+                </div>
+                {/* Tier Badge */}
+                <div className={cn(
+                  "px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border",
+                  user?.userTier === 'VIP' ? "bg-amber-100 text-amber-600 border-amber-200" :
+                  user?.userTier === 'LOYAL' ? "bg-indigo-100 text-indigo-600 border-indigo-200" :
+                  "bg-slate-100 text-slate-600 border-slate-200"
+                )}>
+                  {user?.userTier || 'NEW'}
+                </div>
+              </div>
+
+              {/* Loyalty Points Card */}
+              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-xl p-3 border border-indigo-100 dark:border-indigo-900/50">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="p-1 bg-indigo-100 dark:bg-indigo-900/50 rounded-full text-indigo-600 dark:text-indigo-400">
+                        <Crown size={12} fill="currentColor" />
+                    </div>
+                    <span className="text-[10px] font-bold text-indigo-900 dark:text-indigo-100 uppercase tracking-tight">
+                        {t('common.loyaltyPoints')}
+                    </span>
+                  </div>
+                  <span className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                    {user?.loyaltyPoints?.toLocaleString() || 0}
+                  </span>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="relative w-full h-1.5 bg-indigo-200/50 dark:bg-indigo-900/50 rounded-full overflow-hidden mb-1.5">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(((user?.loyaltyPoints || 0) / 5000) * 100, 100)}%` }}
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                  />
+                </div>
+                
+                {user?.userTier !== 'VIP' && (
+                   <p className="text-[9px] font-medium text-indigo-600/70 dark:text-indigo-300/70 text-right">
+                     {t('common.pointsToNextTier', { 
+                       points: (user?.userTier === 'LOYAL' ? 5000 : 1000) - (user?.loyaltyPoints || 0) 
+                     })}
+                   </p>
+                )}
               </div>
             </div>
 

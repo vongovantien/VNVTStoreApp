@@ -23,21 +23,21 @@ const AdminAuditPage = () => {
   const columns = useMemo<DataTableColumn<AuditLog>[]>(() => [
     {
       id: 'timestamp',
-      header: t('admin.audit.timestamp'),
+      header: t('auditLog.createdAt'),
       accessor: (row) => new Date(row.timestamp).toLocaleString(),
       sortable: true,
       width: '180px'
     },
     {
       id: 'user',
-      header: t('admin.audit.user'),
+      header: t('auditLog.user'),
       accessor: 'user',
       sortable: true,
       width: '120px'
     },
     {
       id: 'action',
-      header: t('admin.audit.action'),
+      header: t('auditLog.action'),
       accessor: (row) => (
         <Badge color={row.action === 'Delete' ? 'error' : row.action === 'Create' ? 'success' : 'info'} variant="soft">
           {row.action}
@@ -48,19 +48,19 @@ const AdminAuditPage = () => {
     },
     {
       id: 'module',
-      header: t('admin.audit.module'),
+      header: t('auditLog.module'),
       accessor: 'module',
       sortable: true,
       width: '120px'
     },
     {
         id: 'details',
-        header: t('admin.audit.details'),
+        header: t('auditLog.details'),
         accessor: 'details'
     },
     {
         id: 'status',
-        header: t('admin.audit.status'),
+        header: t('auditLog.status'),
         accessor: (row) => (
             <span className={row.status === 'success' ? 'text-green-600' : 'text-red-600'}>
                 {row.status}
@@ -71,16 +71,16 @@ const AdminAuditPage = () => {
   ], [t]);
 
   const filterDefs = useMemo(() => [
-    { id: 'module', label: t('admin.audit.module'), type: 'text' as const, placeholder: 'Product, Order...' },
-    { id: 'action', label: t('admin.audit.action'), type: 'text' as const, placeholder: 'Create, Update...' },
-    { id: 'user', label: t('admin.audit.user'), type: 'text' as const, placeholder: 'admin' },
+    { id: 'module', label: t('auditLog.module'), type: 'text' as const, placeholder: 'Product, Order...' },
+    { id: 'action', label: t('auditLog.action'), type: 'text' as const, placeholder: 'Create, Update...' },
+    { id: 'user', label: t('auditLog.user'), type: 'text' as const, placeholder: 'admin' },
   ], [t]);
 
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={t('admin.audit.title')}
-        subtitle={t('admin.audit.subtitle')}
+        title={t('auditLog.title')}
+        subtitle={t('admin.subtitles.auditLogs')}
       />
 
       <div className="bg-primary rounded-xl shadow-sm border border-border overflow-hidden">

@@ -38,6 +38,7 @@ public static class MessageConstants
     public const string PasswordChanged = "User.PasswordChanged";
     public const string CurrentPasswordIncorrect = "User.CurrentPasswordIncorrect";
     public const string EmailInUse = "User.EmailInUse";
+    public const string PasswordTooWeak = "User.PasswordTooWeak";
     public const string LoginSuccess = "Auth.LoginSuccess";
     public const string RegisterSuccess = "Auth.RegisterSuccess";
     public const string CartRetrieved = "Cart.Retrieved";
@@ -97,6 +98,7 @@ public static class MessageConstants
             [PasswordChanged] = "Đổi mật khẩu thành công",
             [CurrentPasswordIncorrect] = "Mật khẩu hiện tại không chính xác",
             [EmailInUse] = "Email đã được sử dụng",
+            [PasswordTooWeak] = "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt",
             [LoginSuccess] = "Đăng nhập thành công",
             [RegisterSuccess] = "Đăng ký tài khoản thành công",
             [CartRetrieved] = "Lấy thông tin giỏ hàng thành công",
@@ -152,6 +154,7 @@ public static class MessageConstants
             [PasswordChanged] = "Password changed successfully",
             [CurrentPasswordIncorrect] = "Current password is incorrect",
             [EmailInUse] = "Email already in use",
+            [PasswordTooWeak] = "Password must be at least 8 characters long, including uppercase, lowercase, numbers, and special characters",
             [LoginSuccess] = "Login successful",
             [RegisterSuccess] = "User registered successfully",
             [CartRetrieved] = "Cart retrieved successfully",

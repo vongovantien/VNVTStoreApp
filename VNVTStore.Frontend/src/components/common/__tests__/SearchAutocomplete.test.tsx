@@ -2,7 +2,7 @@
  * Unit tests for SearchAutocomplete component
  * Features: #6 Search Autocomplete with Thumbnails, #7 Recent Search History, #8 Trending Search Terms
  */
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 

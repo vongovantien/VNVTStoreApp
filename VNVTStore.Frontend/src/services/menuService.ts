@@ -10,18 +10,23 @@ export const menuService = {
         resourceName: 'Menu'
     }),
     getAll: async (): Promise<ApiResponse<Menu[]>> => {
-        const response = await apiClient.get<PagedResult<Menu>>(`${API_ENDPOINTS.MENUS.BASE}?pageSize=100`);
+        const response = await apiClient.post<PagedResult<Menu>>(API_ENDPOINTS.MENUS.SEARCH, {
+            pageIndex: 1,
+            pageSize: 100
+        });
+
         if (response.success && response.data?.items) {
             return {
                 ...response,
                 data: response.data.items
             };
         }
+
         return {
-            success: response.success,
-            message: response.message,
+            success: false,
+            message: response.message || 'Failed to load menus',
             data: [],
-            statusCode: response.statusCode
+            statusCode: response.statusCode || 500
         };
     }
 };

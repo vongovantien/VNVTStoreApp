@@ -10,7 +10,7 @@ using VNVTStore.Domain.Entities;
 namespace VNVTStore.API.Controllers.v1;
 
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 public class QuotesController : BaseApiController<TblQuote, QuoteDto, CreateQuoteDto, UpdateQuoteDto>
 {
     public QuotesController(IMediator mediator) : base(mediator)

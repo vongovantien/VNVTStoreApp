@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { createTabStorage } from './helpers';
 
 interface ProductFilterState {
   // UI State
@@ -86,7 +87,7 @@ export const useProductFilterStore = create<ProductFilterState>()(
     }),
     {
       name: 'vnvt-product-filters',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createTabStorage()),
       // Only persist UI settings and maybe sort/filters if desired.
       // Often users expect filters to reset on new session, but viewMode to persist.
       // Let's persist everything for a "sticky" experience, or partial.

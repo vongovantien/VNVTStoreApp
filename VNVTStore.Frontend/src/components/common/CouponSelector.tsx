@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Tag, X, Ticket, ChevronRight, Clock, Info } from 'lucide-react';
+import { Ticket, ChevronRight, Clock, Info } from 'lucide-react';
 import { promotionService, type Promotion } from '@/services/promotionService';
-import { Button, Badge, Modal } from '@/components/ui';
+import { Badge, Drawer } from '@/components/ui';
 import { formatCurrency } from '@/utils/format';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface CouponSelectorProps {
     isOpen: boolean;
@@ -49,13 +48,14 @@ export const CouponSelector: React.FC<CouponSelectorProps> = ({
     };
 
     return (
-        <Modal
+        <Drawer
             isOpen={isOpen}
             onClose={onClose}
             title={t('checkout.availableCoupons', 'Mã giảm giá có sẵn')}
+            position="right"
             size="md"
         >
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-4">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-12 space-y-4">
                         <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
@@ -139,6 +139,6 @@ export const CouponSelector: React.FC<CouponSelectorProps> = ({
                     {t('checkout.couponPolicy', '* Mỗi đơn hàng chỉ có thể áp dụng 01 mã giảm giá.')}
                 </div>
             )}
-        </Modal>
+        </Drawer>
     );
 };

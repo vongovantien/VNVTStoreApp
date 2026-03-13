@@ -1,11 +1,15 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Product } from '@/types';
+import { createTabStorage } from './helpers';
 
 interface RecentState {
     viewedProducts: Product[];
+    searchHistory: string[];
     addToRecent: (product: Product) => void;
+    addSearchQuery: (query: string) => void;
     clearRecent: () => void;
+    clearSearchHistory: () => void;
     mergeRecent: (guestProducts: Product[]) => void;
 }
 
@@ -15,6 +19,7 @@ export const useRecentStore = create<RecentState>()(
     persist(
         (set, get) => ({
             viewedProducts: [],
+            searchHistory: [],
 
             addToRecent: (product) => {
                 const { viewedProducts } = get();
@@ -23,7 +28,16 @@ export const useRecentStore = create<RecentState>()(
                 set({ viewedProducts: updated });
             },
 
+            addSearchQuery: (query) => {
+                if (!query.trim()) return;
+                const { searchHistory } = get();
+                const filtered = searchHistory.filter((q) => q.toLowerCase() !== query.toLowerCase());
+                const updated = [query, ...filtered].slice(0, 5); // Keep last 5 searches
+                set({ searchHistory: updated });
+            },
+
             clearRecent: () => set({ viewedProducts: [] }),
+            clearSearchHistory: () => set({ searchHistory: [] }),
 
             mergeRecent: (guestProducts) => {
                 const { viewedProducts } = get();
@@ -42,7 +56,7 @@ export const useRecentStore = create<RecentState>()(
         }),
         {
             name: 'vnvt-recent-viewed',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => createTabStorage()),
         }
     )
 );

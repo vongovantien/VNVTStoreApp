@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search, Trash2, Edit, RefreshCw } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Trash2, Edit } from 'lucide-react';
+import { Button, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { DataTable, CommonColumns } from '@/components/common';
 import { formatDate } from '@/utils/format';
@@ -128,7 +128,7 @@ export const CouponsPage = () => {
     },
     {
       id: 'promotion',
-      header: t('admin.promotion.name'),
+      header: t('admin.coupons.promotion'),
       accessor: (row: CouponDto) => (
         <div>
           <p className="font-medium">{row.promotionName || row.promotionCode || t('common.none')}</p>
@@ -138,11 +138,11 @@ export const CouponsPage = () => {
     },
     {
       id: 'usage',
-      header: t('admin.coupon.usage'),
+      header: t('admin.coupons.usage'),
       accessor: (row: CouponDto) => (
         <div className="flex flex-col items-center">
           <span className="text-sm font-medium">{row.usageCount || 0}</span>
-          <p className="text-[10px] text-tertiary uppercase tracking-wider">{t('admin.coupon.timesUsed')}</p>
+          <p className="text-[10px] text-tertiary uppercase tracking-wider">{t('admin.coupons.timesUsed')}</p>
         </div>
       ),
       className: 'text-center'
@@ -160,31 +160,9 @@ export const CouponsPage = () => {
       <AdminPageHeader
         title="admin.sidebar.coupons"
         subtitle="admin.subtitles.coupons"
-        rightSection={
-          <Button leftIcon={<Plus size={18} />} onClick={() => { resetForm(); setIsModalOpen(true); }}>
-            {t('admin.coupon.add')}
-          </Button>
-        }
       />
 
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between bg-primary p-4 rounded-xl border border-tertiary">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" size={18} />
-          <input
-            type="text"
-            placeholder={t('common.placeholders.search')}
-            className="w-full pl-10 pr-4 py-2 bg-secondary border border-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-           <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] })}>
-              <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
-           </Button>
-        </div>
-      </div>
+
 
       <DataTable
         columns={columns}
@@ -197,6 +175,16 @@ export const CouponsPage = () => {
         pageSize={pageSize}
         onPageChange={setCurrentPage}
         onPageSizeChange={setPageSize}
+        
+        onRefresh={() => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] })}
+        
+        advancedFilterDefs={[
+          { id: 'search', label: t('common.search'), type: 'text', placeholder: t('common.placeholders.search') }
+        ]}
+        onAdvancedSearch={(filters) => {
+            setSearchQuery(filters.search || '');
+            setCurrentPage(1);
+        }}
 
         renderRowActions={(row) => (
           <div className="flex items-center gap-1">
@@ -221,7 +209,7 @@ export const CouponsPage = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingCoupon ? t('admin.coupon.edit') : t('admin.coupon.add')}
+        title={editingCoupon ? t('admin.coupons.edit') : t('admin.coupons.add')}
         footer={
           <div className="flex justify-end gap-2">
              <Button variant="ghost" onClick={() => setIsModalOpen(false)}>{t('common.cancel')}</Button>
@@ -250,7 +238,7 @@ export const CouponsPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">{t('admin.promotion.name')} <span className="text-error">*</span></label>
+            <label className="block text-sm font-medium mb-1">{t('admin.coupons.promotion')} <span className="text-error">*</span></label>
             <select
               className="w-full p-2 bg-secondary border border-tertiary rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
               value={formData.promotionCode}

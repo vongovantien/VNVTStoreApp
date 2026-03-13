@@ -1,0 +1,2944 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "4.14.0.0",
+        "fileVersion": "4.14.0-3.25359.3 (6dbcfd2f)",
+        "semanticVersion": "4.14.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'VNVTStore.Domain.Entities' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/GetAllOrdersHandler.cs",
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 7,
+                  "endLine": 8,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'VNVTStore.Domain.Interfaces' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/GetMyOrdersHandler.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'VNVTStore.Domain.Interfaces' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/GetOrderByIdHandler.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'VNVTStore.Domain.Interfaces' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/GetOrderStatsHandler.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'VNVTStore.Domain.Interfaces' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetProductStatsHandler.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'VNVTStore.Domain.Interfaces' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/ImportProductsHandler.cs",
+                "region": {
+                  "startLine": 16,
+                  "startColumn": 7,
+                  "endLine": 16,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'MediatR' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Quotes/Queries/GetMyQuotesQuery.cs",
+                "region": {
+                  "startLine": 2,
+                  "startColumn": 7,
+                  "endLine": 2,
+                  "endColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS8766",
+          "level": "warning",
+          "message": "Nullability of reference types in return type of 'string? CategoryDto.Code.get' doesn't match implicitly implemented member 'string IBaseDto.Code.get' (possibly because of nullability attributes).",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/DTOs/CategoryDtos.cs",
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 27,
+                  "endLine": 6,
+                  "endColumn": 30
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'source' in 'string? Enumerable.FirstOrDefault<string>(IEnumerable<string> source)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Brands/Handlers/BrandHandlers.cs",
+                "region": {
+                  "startLine": 71,
+                  "startColumn": 38,
+                  "endLine": 71,
+                  "endColumn": 54
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Banners/Handlers/BannerHandlers.cs",
+                "region": {
+                  "startLine": 197,
+                  "startColumn": 33,
+                  "endLine": 197,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'error' in 'Result<BannerDto> Result.Failure<BannerDto>(Error error)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Banners/Handlers/BannerHandlers.cs",
+                "region": {
+                  "startLine": 139,
+                  "startColumn": 54,
+                  "endLine": 139,
+                  "endColumn": 72
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'source' in 'string? Enumerable.FirstOrDefault<string>(IEnumerable<string> source)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Banners/Handlers/BannerHandlers.cs",
+                "region": {
+                  "startLine": 141,
+                  "startColumn": 31,
+                  "endLine": 141,
+                  "endColumn": 49
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Auth/Handlers/AuthHandlers.cs",
+                "region": {
+                  "startLine": 281,
+                  "startColumn": 35,
+                  "endLine": 281,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Auth/Handlers/AuthHandlers.cs",
+                "region": {
+                  "startLine": 284,
+                  "startColumn": 35,
+                  "endLine": 284,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8600",
+          "level": "warning",
+          "message": "Converting null literal or possible null value to non-nullable type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Auth/Commands/ExternalLoginCommandHandler.cs",
+                "region": {
+                  "startLine": 106,
+                  "startColumn": 20,
+                  "endLine": 108,
+                  "endColumn": 79
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'source' in 'bool Enumerable.Any<string>(IEnumerable<string> source)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Brands/Handlers/BrandHandlers.cs",
+                "region": {
+                  "startLine": 114,
+                  "startColumn": 45,
+                  "endLine": 114,
+                  "endColumn": 61
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Auth/Handlers/AuthHandlers.cs",
+                "region": {
+                  "startLine": 189,
+                  "startColumn": 35,
+                  "endLine": 189,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Auth/Handlers/AuthHandlers.cs",
+                "region": {
+                  "startLine": 192,
+                  "startColumn": 35,
+                  "endLine": 192,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Categories/Handlers/GetCategoriesHandler.cs",
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 33,
+                  "endLine": 35,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'error' in 'Result<BannerDto> Result.Failure<BannerDto>(Error error)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Banners/Handlers/BannerHandlers.cs",
+                "region": {
+                  "startLine": 64,
+                  "startColumn": 54,
+                  "endLine": 64,
+                  "endColumn": 72
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'source' in 'string? Enumerable.FirstOrDefault<string>(IEnumerable<string> source)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Banners/Handlers/BannerHandlers.cs",
+                "region": {
+                  "startLine": 67,
+                  "startColumn": 34,
+                  "endLine": 67,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'value' in 'object QueryHelper.ConvertValue(object value, Type targetType)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 57,
+                  "endLine": 78,
+                  "endColumn": 75
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Categories/Handlers/CategoryHandlers.cs",
+                "region": {
+                  "startLine": 161,
+                  "startColumn": 17,
+                  "endLine": 161,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'source' in 'string? Enumerable.FirstOrDefault<string>(IEnumerable<string> source)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/News/Handlers/NewsHandlers.cs",
+                "region": {
+                  "startLine": 57,
+                  "startColumn": 40,
+                  "endLine": 57,
+                  "endColumn": 56
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'source' in 'string? Enumerable.FirstOrDefault<string>(IEnumerable<string> source)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/News/Handlers/NewsHandlers.cs",
+                "region": {
+                  "startLine": 96,
+                  "startColumn": 40,
+                  "endLine": 96,
+                  "endColumn": 56
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8600",
+          "level": "warning",
+          "message": "Converting null literal or possible null value to non-nullable type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/CreateOrderHandler.cs",
+                "region": {
+                  "startLine": 74,
+                  "startColumn": 31,
+                  "endLine": 74,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8600",
+          "level": "warning",
+          "message": "Converting null literal or possible null value to non-nullable type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/CreateOrderHandler.cs",
+                "region": {
+                  "startLine": 244,
+                  "startColumn": 34,
+                  "endLine": 244,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/CancelOrderHandler.cs",
+                "region": {
+                  "startLine": 68,
+                  "startColumn": 17,
+                  "endLine": 68,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'field' in 'string SqlBuilderHelpers.NormalizeFieldName(string field)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 91,
+                  "startColumn": 63,
+                  "endLine": 91,
+                  "endColumn": 77
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'field' in 'string SqlBuilderHelpers.NormalizeFieldName(string field)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 161,
+                  "startColumn": 63,
+                  "endLine": 161,
+                  "endColumn": 77
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'item' in 'void List<object>.Add(object item)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 287,
+                  "startColumn": 35,
+                  "endLine": 287,
+                  "endColumn": 61
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8620",
+          "level": "warning",
+          "message": "Argument of type 'object?[]' cannot be used for parameter 'values' of type 'object[]' in 'string QueryBuilder.BuildInParam(string field, object[] values, bool notIn, DynamicParameters parameters, ref int paramIndex)' due to differences in the nullability of reference types.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 308,
+                  "startColumn": 59,
+                  "endLine": 308,
+                  "endColumn": 85
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8620",
+          "level": "warning",
+          "message": "Argument of type 'object?[]' cannot be used for parameter 'values' of type 'object[]' in 'string QueryBuilder.BuildInParam(string field, object[] values, bool notIn, DynamicParameters parameters, ref int paramIndex)' due to differences in the nullability of reference types.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 309,
+                  "startColumn": 62,
+                  "endLine": 309,
+                  "endColumn": 88
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS0168",
+          "level": "warning",
+          "message": "The variable 'ex' is declared but never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 313,
+                  "startColumn": 26,
+                  "endLine": 313,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'item' in 'void List<object>.Add(object item)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 344,
+                  "startColumn": 35,
+                  "endLine": 344,
+                  "endColumn": 55
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'error' in 'Result<ProductDto> Result.Failure<ProductDto>(Error error)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/UpdateProductHandler.cs",
+                "region": {
+                  "startLine": 181,
+                  "startColumn": 55,
+                  "endLine": 181,
+                  "endColumn": 71
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8600",
+          "level": "warning",
+          "message": "Converting null literal or possible null value to non-nullable type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 631,
+                  "startColumn": 23,
+                  "endLine": 631,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 631,
+                  "startColumn": 23,
+                  "endLine": 631,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8625",
+          "level": "warning",
+          "message": "Cannot convert null literal to non-nullable reference type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateQuestionHandler.cs",
+                "region": {
+                  "startLine": 26,
+                  "startColumn": 48,
+                  "endLine": 26,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS1503",
+          "level": "error",
+          "message": "Argument 1: cannot convert from 'VNVTStore.Domain.Entities.TblBrand' to 'string?'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetRelatedProductsHandler.cs",
+                "region": {
+                  "startLine": 65,
+                  "startColumn": 66,
+                  "endLine": 65,
+                  "endColumn": 85
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetRelatedProductsHandler.cs",
+                "region": {
+                  "startLine": 62,
+                  "startColumn": 21,
+                  "endLine": 62,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetRelatedProductsHandler.cs",
+                "region": {
+                  "startLine": 79,
+                  "startColumn": 28,
+                  "endLine": 79,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8625",
+          "level": "warning",
+          "message": "Cannot convert null literal to non-nullable reference type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetProductQuestionsHandler.cs",
+                "region": {
+                  "startLine": 24,
+                  "startColumn": 48,
+                  "endLine": 24,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'error' in 'Result<ProductDto> Result.Failure<ProductDto>(Error error)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateProductHandler.cs",
+                "region": {
+                  "startLine": 77,
+                  "startColumn": 55,
+                  "endLine": 77,
+                  "endColumn": 77
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetProductsHandler.cs",
+                "region": {
+                  "startLine": 51,
+                  "startColumn": 33,
+                  "endLine": 51,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS0618",
+          "level": "warning",
+          "message": "'ExcelPackage.LicenseContext' is obsolete: 'Please use the static 'ExcelPackage.License' property to set the required license information from EPPlus 8 and later versions. For more info see http://epplussoftware.com/developers/licensenotsetexception.'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/ExcelExportHelper.cs",
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 9,
+                  "endLine": 13,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 2
+          }
+        },
+        {
+          "ruleId": "CS0618",
+          "level": "warning",
+          "message": "'LicenseContext' is obsolete: 'Used in versions prior to EPPlus 8. Will be removed in coming versions.'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/ExcelExportHelper.cs",
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 39,
+                  "endLine": 13,
+                  "endColumn": 53
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 2
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Reviews/Handlers/ReviewHandlers.cs",
+                "region": {
+                  "startLine": 200,
+                  "startColumn": 33,
+                  "endLine": 200,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS0618",
+          "level": "warning",
+          "message": "'ExcelPackage.LicenseContext' is obsolete: 'Please use the static 'ExcelPackage.License' property to set the required license information from EPPlus 8 and later versions. For more info see http://epplussoftware.com/developers/licensenotsetexception.'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/ExcelImportHelper.cs",
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 9,
+                  "endLine": 14,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 2
+          }
+        },
+        {
+          "ruleId": "CS0618",
+          "level": "warning",
+          "message": "'LicenseContext' is obsolete: 'Used in versions prior to EPPlus 8. Will be removed in coming versions.'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/ExcelImportHelper.cs",
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 39,
+                  "endLine": 14,
+                  "endColumn": 53
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 2
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/ExcelImportHelper.cs",
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 38,
+                  "endLine": 25,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetProductByCodeHandler.cs",
+                "region": {
+                  "startLine": 70,
+                  "startColumn": 13,
+                  "endLine": 70,
+                  "endColumn": 25
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS1998",
+          "level": "warning",
+          "message": "This async method lacks 'await' operators and will run synchronously. Consider using the 'await' operator to await non-blocking API calls, or 'await Task.Run(...)' to do CPU-bound work on a background thread.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 254,
+                  "startColumn": 34,
+                  "endLine": 254,
+                  "endColumn": 67
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Reviews/Handlers/ReviewHandlers.cs",
+                "region": {
+                  "startLine": 376,
+                  "startColumn": 33,
+                  "endLine": 376,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA2016",
+          "level": "note",
+          "message": "Forward the 'cancellationToken' parameter to the 'VerifyIdTokenAsync' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Auth/Commands/ExternalLoginCommandHandler.cs",
+                "region": {
+                  "startLine": 48,
+                  "startColumn": 34,
+                  "endLine": 48,
+                  "endColumn": 81
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "ArgumentName": "cancellationToken",
+              "ParameterName": null,
+              "ShouldFix": "1"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 33,
+                  "endLine": 12,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 122,
+                  "startColumn": 49,
+                  "endLine": 122,
+                  "endColumn": 67
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 267,
+                  "startColumn": 32,
+                  "endLine": 267,
+                  "endColumn": 44
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 291,
+                  "startColumn": 18,
+                  "endLine": 291,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 341,
+                  "startColumn": 14,
+                  "endLine": 341,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1861",
+          "level": "note",
+          "message": "Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 278,
+                  "startColumn": 34,
+                  "endLine": 278,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "paramName": "separator"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 365,
+                  "startColumn": 19,
+                  "endLine": 365,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1861",
+          "level": "note",
+          "message": "Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/QueryHelper.cs",
+                "region": {
+                  "startLine": 354,
+                  "startColumn": 34,
+                  "endLine": 354,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "paramName": "separator"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Dashboard/Handlers/DashboardHandlers.cs",
+                "region": {
+                  "startLine": 130,
+                  "startColumn": 14,
+                  "endLine": 130,
+                  "endColumn": 31
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Roles/Handlers/RoleHandlers.cs",
+                "region": {
+                  "startLine": 36,
+                  "startColumn": 46,
+                  "endLine": 36,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Roles/Handlers/RoleHandlers.cs",
+                "region": {
+                  "startLine": 45,
+                  "startColumn": 40,
+                  "endLine": 45,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Promotions/Handlers/PromotionHandlers.cs",
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 41,
+                  "endLine": 35,
+                  "endColumn": 63
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 57,
+                  "startColumn": 41,
+                  "endLine": 57,
+                  "endColumn": 62
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 34,
+                  "startColumn": 41,
+                  "endLine": 34,
+                  "endColumn": 62
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1854",
+          "level": "note",
+          "message": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/CreateOrderHandler.cs",
+                "region": {
+                  "startLine": 109,
+                  "startColumn": 21,
+                  "endLine": 109,
+                  "endColumn": 56
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/CreateOrderHandler.cs",
+                "region": {
+                  "startLine": 109,
+                  "startColumn": 59,
+                  "endLine": 109,
+                  "endColumn": 82
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/CreateOrderHandler.cs",
+                "region": {
+                  "startLine": 88,
+                  "startColumn": 38,
+                  "endLine": 88,
+                  "endColumn": 61
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Orders/Handlers/CreateOrderHandler.cs",
+                "region": {
+                  "startLine": 114,
+                  "startColumn": 51,
+                  "endLine": 114,
+                  "endColumn": 74
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 97,
+                  "startColumn": 31,
+                  "endLine": 97,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1834",
+          "level": "note",
+          "message": "Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 112,
+                  "startColumn": 71,
+                  "endLine": 112,
+                  "endColumn": 80
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 200,
+                  "startColumn": 14,
+                  "endLine": 200,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Quotes/Handlers/QuoteHandlers.cs",
+                "region": {
+                  "startLine": 73,
+                  "startColumn": 42,
+                  "endLine": 73,
+                  "endColumn": 65
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Quotes/Handlers/QuoteHandlers.cs",
+                "region": {
+                  "startLine": 113,
+                  "startColumn": 17,
+                  "endLine": 113,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1834",
+          "level": "note",
+          "message": "Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 167,
+                  "startColumn": 71,
+                  "endLine": 167,
+                  "endColumn": 80
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1847",
+          "level": "note",
+          "message": "Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 361,
+                  "startColumn": 32,
+                  "endLine": 361,
+                  "endColumn": 35
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 555,
+                  "startColumn": 14,
+                  "endLine": 555,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/UpdateProductHandler.cs",
+                "region": {
+                  "startLine": 87,
+                  "startColumn": 21,
+                  "endLine": 87,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/UpdateProductHandler.cs",
+                "region": {
+                  "startLine": 110,
+                  "startColumn": 21,
+                  "endLine": 110,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/UpdateProductHandler.cs",
+                "region": {
+                  "startLine": 150,
+                  "startColumn": 21,
+                  "endLine": 150,
+                  "endColumn": 53
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1845",
+          "level": "note",
+          "message": "Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateQuestionHandler.cs",
+                "region": {
+                  "startLine": 40,
+                  "startColumn": 20,
+                  "endLine": 40,
+                  "endColumn": 69
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 720,
+                  "startColumn": 32,
+                  "endLine": 720,
+                  "endColumn": 44
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 694,
+                  "startColumn": 32,
+                  "endLine": 694,
+                  "endColumn": 44
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1847",
+          "level": "note",
+          "message": "Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 701,
+                  "startColumn": 69,
+                  "endLine": 701,
+                  "endColumn": 72
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetRelatedProductsHandler.cs",
+                "region": {
+                  "startLine": 73,
+                  "startColumn": 17,
+                  "endLine": 73,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/GetRelatedProductsHandler.cs",
+                "region": {
+                  "startLine": 83,
+                  "startColumn": 13,
+                  "endLine": 83,
+                  "endColumn": 24
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateProductHandler.cs",
+                "region": {
+                  "startLine": 50,
+                  "startColumn": 40,
+                  "endLine": 50,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateProductHandler.cs",
+                "region": {
+                  "startLine": 65,
+                  "startColumn": 39,
+                  "endLine": 65,
+                  "endColumn": 55
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateProductHandler.cs",
+                "region": {
+                  "startLine": 81,
+                  "startColumn": 45,
+                  "endLine": 81,
+                  "endColumn": 67
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateProductHandler.cs",
+                "region": {
+                  "startLine": 113,
+                  "startColumn": 41,
+                  "endLine": 113,
+                  "endColumn": 59
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Reviews/Handlers/ReviewHandlers.cs",
+                "region": {
+                  "startLine": 172,
+                  "startColumn": 43,
+                  "endLine": 172,
+                  "endColumn": 63
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/QueryBuilder.cs",
+                "region": {
+                  "startLine": 737,
+                  "startColumn": 36,
+                  "endLine": 737,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1866",
+          "level": "note",
+          "message": "Use 'string.StartsWith(char)' instead of 'string.StartsWith(string)' when you have a string with a single char",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/JsonUtilities.cs",
+                "region": {
+                  "startLine": 17,
+                  "startColumn": 31,
+                  "endLine": 17,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1866",
+          "level": "note",
+          "message": "Use 'string.EndsWith(char)' instead of 'string.EndsWith(string)' when you have a string with a single char",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/Helpers/JsonUtilities.cs",
+                "region": {
+                  "startLine": 17,
+                  "startColumn": 52,
+                  "endLine": 17,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'IsBase64String' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/CreateProductHandler.cs",
+                "region": {
+                  "startLine": 158,
+                  "startColumn": 18,
+                  "endLine": 158,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 170,
+                  "startColumn": 13,
+                  "endLine": 170,
+                  "endColumn": 30
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 211,
+                  "startColumn": 31,
+                  "endLine": 211,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1068",
+          "level": "note",
+          "message": "Method 'VNVTStore.Application.Common.BaseHandler<TEntity>.GetByCodeIncludeChildrenAsync<TResponse>(string, string, System.Threading.CancellationToken, System.Func<System.Linq.IQueryable<TEntity>, System.Linq.IQueryable<TEntity>>)' should take CancellationToken as the last parameter",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 245,
+                  "startColumn": 45,
+                  "endLine": 245,
+                  "endColumn": 74
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 308,
+                  "startColumn": 13,
+                  "endLine": 308,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 400,
+                  "startColumn": 31,
+                  "endLine": 400,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 485,
+                  "startColumn": 13,
+                  "endLine": 485,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'IsBase64String' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Products/Handlers/UpdateProductHandler.cs",
+                "region": {
+                  "startLine": 225,
+                  "startColumn": 18,
+                  "endLine": 225,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1854",
+          "level": "note",
+          "message": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 564,
+                  "startColumn": 22,
+                  "endLine": 564,
+                  "endColumn": 69
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 572,
+                  "startColumn": 21,
+                  "endLine": 572,
+                  "endColumn": 56
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 578,
+                  "startColumn": 21,
+                  "endLine": 578,
+                  "endColumn": 56
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 566,
+                  "startColumn": 21,
+                  "endLine": 566,
+                  "endColumn": 113
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 544,
+                  "startColumn": 31,
+                  "endLine": 544,
+                  "endColumn": 42
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 557,
+                  "startColumn": 31,
+                  "endLine": 557,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 587,
+                  "startColumn": 35,
+                  "endLine": 587,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 597,
+                  "startColumn": 93,
+                  "endLine": 597,
+                  "endColumn": 119
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 620,
+                  "startColumn": 18,
+                  "endLine": 620,
+                  "endColumn": 35
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 625,
+                  "startColumn": 47,
+                  "endLine": 625,
+                  "endColumn": 70
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetEntityDisplayName' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 333,
+                  "startColumn": 20,
+                  "endLine": 333,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'MapDynamicList' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 726,
+                  "startColumn": 21,
+                  "endLine": 726,
+                  "endColumn": 35
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'MapDynamicListRuntime' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 767,
+                  "startColumn": 38,
+                  "endLine": 767,
+                  "endColumn": 59
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetReferenceTables' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/VNVTStoreApp/VNVTStore.Backend/src/VNVTStore.Application/Common/BaseHandler.cs",
+                "region": {
+                  "startLine": 500,
+                  "startColumn": 34,
+                  "endLine": 500,
+                  "endColumn": 52
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        }
+      ],
+      "rules": {
+        "CA1068": {
+          "id": "CA1068",
+          "shortDescription": "CancellationToken parameters must come last",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1822": {
+          "id": "CA1822",
+          "shortDescription": "Mark members as static",
+          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1834": {
+          "id": "CA1834",
+          "shortDescription": "Consider using 'StringBuilder.Append(char)' when applicable",
+          "fullDescription": "'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1834",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1845": {
+          "id": "CA1845",
+          "shortDescription": "Use span-based 'string.Concat'",
+          "fullDescription": "It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1847": {
+          "id": "CA1847",
+          "shortDescription": "Use char literal for a single character lookup",
+          "fullDescription": "'string.Contains(char)' is available as a better performing overload for single char lookup.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1847",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1854": {
+          "id": "CA1854",
+          "shortDescription": "Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method",
+          "fullDescription": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1860": {
+          "id": "CA1860",
+          "shortDescription": "Avoid using 'Enumerable.Any()' extension method",
+          "fullDescription": "Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1861": {
+          "id": "CA1861",
+          "shortDescription": "Avoid constant arrays as arguments",
+          "fullDescription": "Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1866": {
+          "id": "CA1866",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2016": {
+          "id": "CA2016",
+          "shortDescription": "Forward the 'CancellationToken' parameter to methods",
+          "fullDescription": "Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CS0105": {
+          "id": "CS0105",
+          "shortDescription": "Using directive appeared previously in this namespace",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0105)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS0168": {
+          "id": "CS0168",
+          "shortDescription": "Variable is declared but never used",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0168)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS0618": {
+          "id": "CS0618",
+          "shortDescription": "Type or member is obsolete",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0618)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS1503": {
+          "id": "CS1503",
+          "defaultLevel": "error",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS1503)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry",
+              "NotConfigurable"
+            ]
+          }
+        },
+        "CS1998": {
+          "id": "CS1998",
+          "shortDescription": "Async method lacks 'await' operators and will run synchronously",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS1998)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8600": {
+          "id": "CS8600",
+          "shortDescription": "Converting null literal or possible null value to non-nullable type.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8600)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8602": {
+          "id": "CS8602",
+          "shortDescription": "Dereference of a possibly null reference.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8602)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8604": {
+          "id": "CS8604",
+          "shortDescription": "Possible null reference argument.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8604)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8620": {
+          "id": "CS8620",
+          "shortDescription": "Argument cannot be used for parameter due to differences in the nullability of reference types.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8620)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8625": {
+          "id": "CS8625",
+          "shortDescription": "Cannot convert null literal to non-nullable reference type.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8625)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8766": {
+          "id": "CS8766",
+          "shortDescription": "Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8766)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

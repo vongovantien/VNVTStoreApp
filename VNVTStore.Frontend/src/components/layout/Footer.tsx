@@ -190,18 +190,18 @@ export const Footer = memo(() => {
               <p className="text-sm text-gray-400 mb-4">
                 {t('footer.newsletterDesc')}
               </p>
-              <form onSubmit={handleSubscribe} className="flex gap-2">
+              <form onSubmit={handleSubscribe} className="flex gap-2 overflow-hidden">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t('footer.emailPlaceholder')}
-                  className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
+                  className="flex-1 min-w-0 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
                 />
                 <button
                   type="submit"
                   disabled={isSubscribing}
-                  className="w-11 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center hover:shadow-lg hover:shadow-indigo-500/25 transition-all disabled:opacity-50"
+                  className="w-11 h-11 flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center hover:shadow-lg hover:shadow-indigo-500/25 transition-all disabled:opacity-50"
                 >
                   <Send size={18} className="text-white" />
                 </button>

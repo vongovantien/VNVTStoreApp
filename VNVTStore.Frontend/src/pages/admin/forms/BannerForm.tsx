@@ -81,9 +81,9 @@ export const BannerForm = ({
     {
       name: 'isActive',
       type: 'switch',
-      label: t('common.status.active'),
+      label: t('common.fields.status'),
       description: t('admin.statusHint'),
-      colSpan: 6,
+      colSpan: 12,
     },
   ];
 

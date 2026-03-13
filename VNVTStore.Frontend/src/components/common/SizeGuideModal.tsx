@@ -7,6 +7,25 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Ruler, Info } from 'lucide-react';
 
+interface ClothingSizeRow {
+  size: string;
+  minHeight: number;
+  maxHeight: number;
+  minWeight: number;
+  maxWeight: number;
+  chest: string;
+  waist: string;
+}
+
+interface ShoeSizeRow {
+  size: string;
+  minHeight: number;
+  maxHeight: number;
+  minWeight: number;
+  maxWeight: number;
+  foot: string;
+}
+
 interface SizeGuideProps {
   isOpen: boolean;
   onClose: () => void;
@@ -168,14 +187,14 @@ export const SizeGuideModal = ({ isOpen, onClose, productType = 'clothing' }: Si
                         <td className="py-2 px-2 font-bold">{row.size}</td>
                         <td className="py-2 px-2">{row.minHeight}-{row.maxHeight}cm</td>
                         <td className="py-2 px-2">{row.minWeight}-{row.maxWeight}kg</td>
-                        {productType === 'clothing' && 'chest' in row && (
+                        {productType === 'clothing' && (
                           <>
-                            <td className="py-2 px-2">{(row as any).chest}cm</td>
-                            <td className="py-2 px-2">{(row as any).waist}cm</td>
+                            <td className="py-2 px-2">{(row as ClothingSizeRow).chest}cm</td>
+                            <td className="py-2 px-2">{(row as ClothingSizeRow).waist}cm</td>
                           </>
                         )}
-                        {productType === 'shoes' && 'foot' in row && (
-                          <td className="py-2 px-2">{(row as any).foot}</td>
+                        {productType === 'shoes' && (
+                          <td className="py-2 px-2">{(row as ShoeSizeRow).foot}</td>
                         )}
                       </tr>
                     ))}

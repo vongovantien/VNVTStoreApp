@@ -74,7 +74,9 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
                 request.Dto.MinStockLevel ?? product.MinStockLevel,
                 request.Dto.BinLocation ?? product.BinLocation,
                 request.Dto.VatRate ?? product.VatRate,
-                request.Dto.CountryOfOrigin ?? product.CountryOfOrigin
+                request.Dto.CountryOfOrigin ?? product.CountryOfOrigin,
+                request.Dto.IsNew,
+                request.Dto.IsFeatured
             );
 
             if (request.Dto.IsActive.HasValue)
@@ -200,7 +202,7 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
             var productDto = _mapper.Map<ProductDto>(productToMap);
             
             var finalFiles = await _context.TblFiles
-                .Where(f => f.MasterCode == product.Code && f.MasterType == "Product")
+                .Where(f => f.MasterCode == product.Code && f.MasterType == "TblProduct")
                 .ToListAsync(cancellationToken);
 
             var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');

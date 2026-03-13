@@ -21,13 +21,13 @@
  * #96: Sales Heatmap (table format)
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Upload, FileText, Building2, MapPin, Plus, Trash2, Clock, 
-  Users, Package, AlertTriangle, Edit, Image, Activity, 
-  ShoppingCart, Eye, BarChart3, Globe, Check, X 
+  Upload, Building2, MapPin, Plus, Trash2, Clock, 
+  Users, AlertTriangle, Activity, 
+  ShoppingCart, Eye, Globe, Check 
 } from 'lucide-react';
 
 // ============ #62 Bulk Order Form ============
@@ -44,7 +44,12 @@ export const BulkOrderForm = ({ onSubmit }: { onSubmit: (items: BulkOrderItem[])
   const removeRow = (idx: number) => setItems(items.filter((_, i) => i !== idx));
   const updateRow = (idx: number, field: keyof BulkOrderItem, value: string | number) => {
     const updated = [...items];
-    (updated[idx] as any)[field] = value;
+    const item = updated[idx];
+    if (field === 'sku') {
+      item.sku = value as string;
+    } else if (field === 'quantity') {
+      item.quantity = value as number;
+    }
     setItems(updated);
   };
 

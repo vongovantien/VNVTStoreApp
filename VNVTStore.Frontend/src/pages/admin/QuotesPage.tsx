@@ -46,9 +46,9 @@ export const QuotesPage = () => {
           productName: dto.productName || 'Unknown Product',
           productImage: dto.productImage || 'https://placehold.co/100',
           quantity: dto.quantity,
-          note: dto.note,
+          note: dto.note || '',
           status: dto.status as any,
-          quotedPrice: dto.quotedPrice,
+          quotedPrice: dto.quotedPrice || 0,
           createdAt: dto.createdAt,
           customer: {
             name: dto.customerName || dto.userName || 'Unknown Customer',
@@ -157,10 +157,10 @@ export const QuotesPage = () => {
             className="px-4 py-2 border rounded-lg focus:outline-none focus:border-primary"
           >
             <option value="all">{t('admin.filters.allStatus')}</option>
-            <option value="pending">{t('admin.status.pending')}</option>
-            <option value="quoted">{t('admin.status.quoted')}</option>
-            <option value="closed">{t('admin.status.closed')}</option>
-            <option value="cancelled">{t('admin.status.cancelled')}</option>
+            <option value="pending">{t('common.status.pending')}</option>
+            <option value="quoted">{t('common.status.quoted')}</option>
+            <option value="closed">{t('common.status.closed')}</option>
+            <option value="cancelled">{t('common.status.cancelled')}</option>
           </select>
         </div>
       </div>

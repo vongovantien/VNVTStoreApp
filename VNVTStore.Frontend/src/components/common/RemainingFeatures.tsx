@@ -18,11 +18,11 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  BarChart, ShoppingBag, Download, Reply, Camera, Package,
-  CreditCard, LinkIcon, Box, FileText, ImageIcon, Globe,
-  Image, Edit, GripVertical, Plus, Trash2, Check, X
+  ShoppingBag, Reply, Camera, Package,
+  CreditCard, FileText,
+  GripVertical, Plus, Trash2, Check, ExternalLink
 } from 'lucide-react';
 
 // ============ #2 Price Range Histogram ============
@@ -131,11 +131,10 @@ export const PostPurchaseUpsell = ({
 
 // ============ #46 Admin Response to Review ============
 export const AdminReviewResponse = ({ 
-  reviewId,
   existingResponse,
   onSubmit 
 }: { 
-  reviewId: string;
+  reviewId?: string;
   existingResponse?: string;
   onSubmit: (response: string) => void;
 }) => {
@@ -285,7 +284,7 @@ export const SocialMediaLinks = ({ links }: { links: Record<string, string> }) =
           className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center hover:bg-hover transition-colors text-lg"
           title={platform}
         >
-          {icons[platform] || <LinkIcon size={16} />}
+          {icons[platform] || <ExternalLink size={16} />}
         </a>
       ))}
     </div>
@@ -326,10 +325,9 @@ export const MysteryBoxCard = ({
 
 // ============ #37 Invoice Download (client-side) ============
 export const InvoiceDownloadButton = ({ 
-  orderCode,
   onDownload 
 }: { 
-  orderCode: string;
+  orderCode?: string;
   onDownload: () => void;
 }) => (
   <button onClick={onDownload} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-hover transition-colors">
@@ -365,17 +363,16 @@ interface BannerItem {
 
 export const BannerManager = ({ 
   banners,
-  onReorder,
   onToggle,
   onDelete 
 }: { 
   banners: BannerItem[];
-  onReorder: (from: number, to: number) => void;
+  onReorder?: (from: number, to: number) => void;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }) => (
   <div className="space-y-2">
-    {banners.map((banner, idx) => (
+    {banners.map((banner) => (
       <div key={banner.id} className="flex items-center gap-3 p-3 bg-primary rounded-xl border hover:shadow-sm transition-shadow">
         <GripVertical size={16} className="text-tertiary cursor-grab" />
         <div className="w-16 h-10 rounded bg-secondary overflow-hidden shrink-0">

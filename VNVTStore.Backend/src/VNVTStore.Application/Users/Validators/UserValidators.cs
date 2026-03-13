@@ -1,5 +1,6 @@
 using FluentValidation;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Application.Common;
 
 namespace VNVTStore.Application.Users.Validators;
 
@@ -22,9 +23,10 @@ public class CreateUserDtoValidator : AbstractValidator<CreateUserDto>
             .MaximumLength(100).WithMessage("Email không được vượt quá 100 ký tự");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Mật khẩu không được để trống")
-            .MinimumLength(6).WithMessage("Mật khẩu phải có ít nhất 6 ký tự")
-            .MaximumLength(100).WithMessage("Mật khẩu không được vượt quá 100 ký tự");
+            .NotEmpty().WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak))
+            .MinimumLength(8).WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak))
+            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")
+            .WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak));
 
         RuleFor(x => x.Phone)
             .Matches(@"^[0-9]{10,11}$").When(x => !string.IsNullOrEmpty(x.Phone))
@@ -41,8 +43,11 @@ public class UpdateUserDtoValidator : AbstractValidator<UpdateUserDto>
             .WithMessage("Email không hợp lệ");
 
         RuleFor(x => x.Password)
-            .MinimumLength(6).When(x => !string.IsNullOrEmpty(x.Password))
-            .WithMessage("Mật khẩu phải có ít nhất 6 ký tự");
+            .MinimumLength(8).When(x => !string.IsNullOrEmpty(x.Password))
+            .WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak))
+            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")
+            .When(x => !string.IsNullOrEmpty(x.Password))
+            .WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak));
 
         RuleFor(x => x.Phone)
             .Matches(@"^[0-9]{10,11}$").When(x => !string.IsNullOrEmpty(x.Phone))

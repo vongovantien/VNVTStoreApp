@@ -38,7 +38,7 @@ public class ReferenceAttributeTests
         Assert.Equal("MasterCode", attribute.ForeignKey);
         Assert.Equal("Code", attribute.ParentKey);
         Assert.Equal("MasterType", attribute.FilterColumn);
-        Assert.Equal("Product", attribute.FilterValue);
+        Assert.Equal("TblProduct", attribute.FilterValue);
         Assert.Equal(typeof(ProductImageDto), attribute.ChildDtoType);
     }
 
@@ -71,6 +71,6 @@ public class ReferenceAttributeTests
         Assert.NotNull(attribute);
         Assert.Equal("TblUser", attribute.TableName);
         Assert.Equal("UserCode", attribute.ForeignKey);
-        Assert.Equal("Username", attribute.SelectColumn);
+        Assert.Equal("FullName", attribute.SelectColumn);
     }
 }

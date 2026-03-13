@@ -18,7 +18,6 @@ import {
   Moon,
   Menu,
   Globe,
-  ChevronDown,
   User as UserIcon,
   HelpCircle,
   FileKey,
@@ -62,37 +61,37 @@ const navGroups: NavGroup[] = [
     title: 'admin.sidebar.core',
     items: [
       { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', code: 'DASHBOARD', end: true },
-      { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders', code: 'ORDERS' },
-      { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers', code: 'CUSTOMERS' },
+      { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders', code: 'ORDERS', end: false },
+      { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers', code: 'CUSTOMERS', end: false },
     ]
   },
   {
     title: 'admin.sidebar.inventory',
     items: [
-      { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories', code: 'CATEGORIES' },
-      { path: '/admin/products', icon: Package, label: 'admin.sidebar.products', code: 'PRODUCTS' },
-      { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers', code: 'SUPPLIERS' },
-      { path: '/admin/brands', icon: Tag, label: 'admin.sidebar.brands', code: 'BRANDS' },
-      { path: '/admin/units', icon: Ruler, label: 'admin.sidebar.units', code: 'UNITS' },
+      { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories', code: 'CATEGORIES', end: false },
+      { path: '/admin/products', icon: Package, label: 'admin.sidebar.products', code: 'PRODUCTS', end: false },
+      { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers', code: 'SUPPLIERS', end: false },
+      { path: '/admin/brands', icon: Tag, label: 'admin.sidebar.brands', code: 'BRANDS', end: false },
+      { path: '/admin/units', icon: Ruler, label: 'admin.sidebar.units', code: 'UNITS', end: false },
     ]
   },
   {
     title: 'admin.sidebar.marketing',
     items: [
-      { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes', code: 'QUOTES' },
-      { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions', code: 'PROMOTIONS' },
-      { path: '/admin/coupons', icon: Ticket, label: 'admin.sidebar.coupons', code: 'COUPONS' },
-      { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners', code: 'BANNERS' },
-      { path: '/admin/news', icon: FileText, label: 'admin.sidebar.news', code: 'NEWS' },
-      { path: '/admin/reviews', icon: Star, label: 'admin.sidebar.reviews', code: 'REVIEWS' },
+      { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes', code: 'QUOTES', end: false },
+      { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions', code: 'PROMOTIONS', end: false },
+      { path: '/admin/coupons', icon: Ticket, label: 'admin.sidebar.coupons', code: 'COUPONS', end: false },
+      { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners', code: 'BANNERS', end: false },
+      { path: '/admin/news', icon: FileText, label: 'admin.sidebar.news', code: 'NEWS', end: false },
+      { path: '/admin/reviews', icon: Star, label: 'admin.sidebar.reviews', code: 'REVIEWS', end: false },
     ]
   },
   {
     title: 'admin.sidebar.system',
     items: [
-      { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings', code: 'SETTINGS' },
-      { path: '/admin/audit-logs', icon: FileText, label: 'admin.sidebar.auditLogs', code: 'AUDIT_LOGS' },
-      { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles', code: 'ROLES' },
+      { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings', code: 'SETTINGS', end: false },
+      { path: '/admin/audit-logs', icon: FileText, label: 'admin.sidebar.auditLogs', code: 'AUDIT_LOGS', end: false },
+      { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles', code: 'ROLES', end: false },
     ]
   }
 ];
@@ -295,7 +294,7 @@ export const AdminLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-scroll custom-scrollbar-dark p-4 space-y-6">
+        <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark p-4 space-y-6">
           {filteredNavGroups.map((group, index) => (
             <div key={index}>
               {!sidebarCollapsed && (
@@ -308,7 +307,7 @@ export const AdminLayout = () => {
                   <NavLink
                     key={item.path}
                     to={item.path}
-                    end={item.end}
+                    end={!!item.end}
                     className={({ isActive }) =>
                       cn(
                         'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all',
@@ -379,7 +378,7 @@ export const AdminLayout = () => {
                   <ChevronLeft size={20} />
                 </button>
               </div>
-              <nav className="flex-1 overflow-y-scroll custom-scrollbar-dark p-4 space-y-6">
+              <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark p-4 space-y-6">
                 {filteredNavGroups.map((group, index) => (
                   <div key={index}>
                     <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -390,7 +389,7 @@ export const AdminLayout = () => {
                         <NavLink
                           key={item.path}
                           to={item.path}
-                          end={item.end}
+                          end={!!item.end}
                           onClick={() => setMobileMenuOpen(false)}
                           className={({ isActive }) =>
                             cn(
@@ -550,8 +549,6 @@ export const AdminLayout = () => {
               {/* View Store */}
               <a 
                 href="/" 
-                target="_blank" 
-                rel="noopener noreferrer"
                 className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
               >
                 <ExternalLink size={14} />

@@ -14,40 +14,10 @@ export interface PaymentTransaction {
 }
 
 class PaymentService {
-    endpoint = '/payments';
+    endpoint = '/payment';
 
-    // Admin: Get all payments (Mocked for now as backend missing)
-     
-    async getAll(_params?: Record<string, unknown>): Promise<ApiResponse<PagedResult<PaymentTransaction>>> {
-        // Mock delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        const transactions: PaymentTransaction[] = Array(15).fill(null).map((_, i) => ({
-            id: `pay-${i + 1000}`,
-            orderCode: `ORD-${2023000 + i}`,
-            userCode: `USR-${i}`,
-            userName: `User ${i + 1}`,
-            paymentMethod: i % 3 === 0 ? 'VNPAY' : i % 3 === 1 ? 'MOMO' : 'COD',
-            amount: (i + 1) * 500000,
-            status: ['pending', 'success', 'failed', 'refunded'][i % 4] as PaymentTransaction['status'],
-            transactionId: `TRX-${Date.now()}-${i}`,
-            createdAt: new Date().toISOString()
-        }));
-
-        return {
-            success: true,
-            message: 'Success',
-            data: {
-                items: transactions,
-                totalItems: 50,
-                pageIndex: 1,
-                pageSize: 15,
-                totalPages: 4,
-                hasPreviousPage: false,
-                hasNextPage: true
-            },
-            statusCode: 200
-        };
+    async getAll(params?: Record<string, unknown>): Promise<ApiResponse<PagedResult<PaymentTransaction>>> {
+        return apiClient.get(this.endpoint, { params });
     }
 
     async updateStatus(paymentCode: string, status: string, transactionId?: string): Promise<ApiResponse<void>> {

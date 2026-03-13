@@ -133,8 +133,7 @@ public static class QueryBuilder
         // Use parameters for pagination too
         parameters.Add("@PageOffset", (pageIndex - 1) * pageSize);
         parameters.Add("@PageSize", pageSize);
-        sb.AppendLine("OFFSET @PageOffset ROWS");
-        sb.Append("FETCH NEXT @PageSize ROWS ONLY");
+        sb.AppendLine("LIMIT @PageSize OFFSET @PageOffset");
 
         return new QueryResult(sb.ToString(), parameters);
     }
@@ -180,8 +179,7 @@ public static class QueryBuilder
         sb.AppendLine(")");
         sb.AppendLine("SELECT * FROM TempResult, TempCount");
         sb.Append("ORDER BY TempResult.\"").Append(sortDTO.SortBy).Append("\" ").AppendLine(sortDTO.Sort);
-        sb.Append("OFFSET(").Append(pageIndex).Append(" - 1) * ").AppendLine(pageSize.ToString());
-        sb.Append("FETCH NEXT ").Append(pageSize).Append(" ROWS ONLY");
+        sb.Append("LIMIT ").Append(pageSize).Append(" OFFSET (").Append(pageIndex).Append(" - 1) * ").AppendLine(pageSize.ToString());
 
         var finalSql = sb.ToString();
         return finalSql;
@@ -269,6 +267,12 @@ public static class QueryBuilder
             if (IsNumericField(item.SearchField) && item.SearchValue is string strNum && decimal.TryParse(strNum, out var decimalValue))
             {
                  item.SearchValue = decimalValue;
+            }
+
+            // FIX: Convert date strings to DateTime for typed parameters (avoid operator does not exist: timestamp >= text)
+            if (IsDateField(item.SearchField) && item.SearchValue is string strDate && DateTime.TryParse(strDate, out var dateValue))
+            {
+                 item.SearchValue = dateValue;
             }
 
             // Handle array values
@@ -416,7 +420,7 @@ public static class QueryBuilder
             }
 
             parameters.Add(paramName, stringValue);
-            return $"{field} ILIKE @{paramName} ";
+            return $"{field}::text ILIKE @{paramName} ";
         }
         
         parameters.Add(paramName, value);
@@ -529,7 +533,7 @@ public static class QueryBuilder
         {
             var paramName = $"p{paramIndex++}";
             parameters.Add(paramName, v);
-            conditions.Add(v is string ? $"{field} ILIKE @{paramName}" : $"{field} = @{paramName}");
+            conditions.Add(v is string ? $"{field}::text ILIKE @{paramName}" : $"{field} = @{paramName}");
         }
         return $"({string.Join(" OR ", conditions)}) ";
     }
@@ -732,7 +736,7 @@ public static class QueryBuilder
         
     }
 
-    private static void BuildJoinClauses(StringBuilder sb, string rootAlias, List<ReferenceTable>? refTblList, List<string>? fields, List<SearchDTO>? searchFields = null)
+    public static void BuildJoinClauses(StringBuilder sb, string rootAlias, List<ReferenceTable>? refTblList, List<string>? fields, List<SearchDTO>? searchFields = null)
     {
         if (refTblList == null || !refTblList.Any()) return;
 
@@ -796,7 +800,14 @@ public static class QueryBuilder
     private static bool IsNumericField(string field)
     {
         if (string.IsNullOrEmpty(field)) return false;
-        var f = field.ToLowerInvariant();
+        // Remove quotes if present
+        var f = field.Replace("\"", "").Trim().ToLowerInvariant();
+        // Remove table alias if present
+        if (f.Contains("."))
+        {
+            f = f.Split('.').Last();
+        }
+
         return f.EndsWith("price") || 
                f.EndsWith("amount") || 
                f.EndsWith("quantity") || 
@@ -809,6 +820,26 @@ public static class QueryBuilder
                f == "weight" ||
                f == "stock" ||
                f == "usagecount";
+    }
+
+    private static bool IsDateField(string field)
+    {
+        if (string.IsNullOrEmpty(field)) return false;
+        
+        // Remove quotes if present
+        var f = field.Replace("\"", "").Trim().ToLowerInvariant();
+        // Remove table alias if present
+        if (f.Contains("."))
+        {
+            f = f.Split('.').Last();
+        }
+
+        return f.EndsWith("at") || 
+               f.EndsWith("date") || 
+               f.EndsWith("time") ||
+               f == "dob" ||
+               f == "start" ||
+               f == "end";
     }
 
     #endregion

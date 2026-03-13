@@ -58,6 +58,8 @@ export interface Product {
     promoLabel?: string; // New: Feature 31
     abandonedCartRecoveryEnabled?: boolean; // New: Feature 32
     frequentlyBoughtTogether?: string[]; // New: Feature 33
+    viewCount?: number;
+    soldCount24h?: number;
     videoReviews?: { user: string; videoUrl: string }[]; // New: Feature 40
 }
 
@@ -165,6 +167,7 @@ export interface User {
     menus?: string[];
     addresses?: Address[];
     loyaltyPoints?: number;
+    userTier?: string; // NEW, LOYAL, VIP
     debtLimit?: number;
     currentDebt?: number;
     status: UserStatus;
@@ -229,6 +232,20 @@ export interface Review {
     images?: string[];
     createdAt: string;
     helpful?: number;
+}
+
+export interface ProductQA {
+    code: string;
+    productCode: string;
+    userCode: string;
+    userName: string;
+    userAvatar?: string;
+    comment: string;
+    parentCode?: string;
+    replies?: ProductQA[];
+    likes?: number;
+    createdAt: string;
+    isApproved: boolean;
 }
 
 // ============ Quote Request Types ============

@@ -10,5 +10,7 @@
   "placeholders": {
     "phone": "09xx xxx xxx"
   },
+  "address": "123 Đường ABC, Quận XYZ, TP.HCM",
+  "workingHours": "8:00 - 21:00 (Thứ 2 - CN)",
   "brand": "VNVT Store"
 }

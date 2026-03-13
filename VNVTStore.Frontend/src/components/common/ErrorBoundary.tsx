@@ -1,57 +1,63 @@
-import { useRouteError, isRouteErrorResponse, Link } from 'react-router-dom';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { ErrorFallback } from './ErrorFallback';
 
-const ErrorBoundary = () => {
-  const error = useRouteError();
-  console.error(error);
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode | ((props: { error: Error; resetErrorBoundary: () => void }) => ReactNode);
+  onReset?: () => void;
+  onError?: (error: Error, info: ErrorInfo) => void;
+}
 
-  let errorMessage = 'Đã có lỗi không mong muốn xảy ra.';
-  let errorTitle = 'Ôi hỏng!';
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
 
-  if (isRouteErrorResponse(error)) {
-    if (error.status === 404) {
-      errorTitle = 'Không tìm thấy trang';
-      errorMessage = 'Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.';
-    } else if (error.status === 401) {
-      errorTitle = 'Chưa xác thực';
-      errorMessage = 'Bạn cần đăng nhập để truy cập trang này.';
-    } else if (error.status === 503) {
-      errorTitle = 'Dịch vụ không khả dụng';
-      errorMessage = 'Hệ thống đang bảo trì, vui lòng quay lại sau.';
-    }
-  } else if (error instanceof Error) {
-    errorMessage = error.message;
+export class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+    };
   }
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 text-center">
-      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
-        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-          <AlertTriangle size={32} />
-        </div>
-        
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{errorTitle}</h1>
-        <p className="text-gray-600 mb-8">{errorMessage}</p>
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.reload()}
-            leftIcon={<RefreshCw size={18} />}
-          >
-            Tải lại trang
-          </Button>
-          
-          <Link to="/">
-            <Button leftIcon={<Home size={18} />}>
-              Về trang chủ
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    if (this.props.onError) {
+      this.props.onError(error, info);
+    }
+    // Optimization: Log to error reporting service here
+    console.error('ErrorBoundary caught an error:', error, info);
+  }
 
-export default ErrorBoundary;
+  resetErrorBoundary = () => {
+    if (this.props.onReset) {
+      this.props.onReset();
+    }
+    this.setState({
+      hasError: false,
+      error: null,
+    });
+  };
+
+  render() {
+    if (this.state.hasError && this.state.error) {
+      if (this.props.fallback) {
+        if (typeof this.props.fallback === 'function') {
+           return (this.props.fallback as (props: { error: Error; resetErrorBoundary: () => void }) => ReactNode)({
+             error: this.state.error,
+             resetErrorBoundary: this.resetErrorBoundary,
+           });
+        }
+        return this.props.fallback;
+      }
+      return <ErrorFallback error={this.state.error} resetErrorBoundary={this.resetErrorBoundary} />;
+    }
+
+    return this.props.children;
+  }
+}

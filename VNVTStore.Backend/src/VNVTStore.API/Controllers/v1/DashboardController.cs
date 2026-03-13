@@ -5,7 +5,9 @@ using VNVTStore.Application.Dashboard.Queries;
 
 namespace VNVTStore.API.Controllers.v1;
 
-[Authorize(Roles = "admin,Admin")]
+using VNVTStore.Domain.Enums;
+
+[Authorize(Roles = nameof(UserRole.Admin))]
 public class DashboardController : BaseApiController
 {
     public DashboardController(IMediator mediator) : base(mediator)

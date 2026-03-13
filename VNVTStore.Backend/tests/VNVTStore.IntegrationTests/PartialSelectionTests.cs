@@ -28,7 +28,8 @@ public class PartialSelectionTests : IntegrationTestBase
         };
 
         Console.WriteLine("[DEBUG] Creating product...");
-        var createResponse = await _client.PostAsJsonAsync("/api/v1/products", createDto);
+        var request = new RequestDTO<CreateProductDto> { PostObject = createDto };
+        var createResponse = await _client.PostAsJsonAsync("/api/v1/products", request);
         Console.WriteLine($"[DEBUG] Create Response Status: {createResponse.StatusCode}");
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created); 
         

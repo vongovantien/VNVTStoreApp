@@ -16,7 +16,8 @@ public class PaymentHandlers :
     IRequestHandler<ProcessPaymentCommand, Result<PaymentDto>>,
     IRequestHandler<UpdatePaymentStatusCommand, Result<PaymentDto>>,
     IRequestHandler<GetPaymentByOrderQuery, Result<PaymentDto>>,
-    IRequestHandler<GetMyPaymentsQuery, Result<IEnumerable<PaymentDto>>>
+    IRequestHandler<GetMyPaymentsQuery, Result<IEnumerable<PaymentDto>>>,
+    IRequestHandler<GetAllPaymentsQuery, Result<PagedResult<PaymentDto>>>
 {
     private readonly IRepository<TblPayment> _paymentRepository;
     private readonly IRepository<TblOrder> _orderRepository;
@@ -114,5 +115,22 @@ public class PaymentHandlers :
             .ToListAsync(cancellationToken);
 
         return Result.Success(_mapper.Map<IEnumerable<PaymentDto>>(payments));
+    }
+
+    public async Task<Result<PagedResult<PaymentDto>>> Handle(GetAllPaymentsQuery request, CancellationToken cancellationToken)
+    {
+        var query = _paymentRepository.AsQueryable()
+            .OrderByDescending(p => p.PaymentDate);
+
+        var payments = await query
+            .Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
+
+        var count = await query.CountAsync(cancellationToken);
+
+        var dtos = _mapper.Map<IEnumerable<PaymentDto>>(payments);
+
+        return Result.Success(new PagedResult<PaymentDto>(dtos, count, request.PageIndex, request.PageSize));
     }
 }

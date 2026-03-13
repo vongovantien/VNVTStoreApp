@@ -225,14 +225,20 @@ export function useIntersectionObserver(
 
 /**
  * Hook for previous value
+ * Note: Uses state-based approach to avoid ref-access-in-render errors
  */
 export function usePrevious<T>(value: T): T | undefined {
-    const ref = useRef<T | undefined>(undefined);
+    const [state, setState] = useState<{ current: T; prev: T | undefined }>({
+        current: value,
+        prev: undefined,
+    });
 
-    useEffect(() => {
-        ref.current = value;
-    }, [value]);
+    if (value !== state.current) {
+        setState({
+            current: value,
+            prev: state.current,
+        });
+    }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    return useMemo(() => ref.current, [value]);
+    return state.prev;
 }

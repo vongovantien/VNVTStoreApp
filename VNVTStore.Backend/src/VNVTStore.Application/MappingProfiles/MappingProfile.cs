@@ -43,7 +43,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.TblProductDetails))
             .ForMember(dest => dest.ProductUnits, opt => opt.MapFrom(src => src.TblProductUnits))
             .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.TblProductVariants))
-            .ForMember(dest => dest.ProductImages, opt => opt.Ignore())
             .ReverseMap()
             .ForMember(dest => dest.CategoryCodeNavigation, opt => opt.Ignore())
             .ForMember(dest => dest.Brand, opt => opt.Ignore());
@@ -57,6 +56,7 @@ public class MappingProfile : Profile
         CreateMap<UpdateRoleDto, TblRole>();
         
         CreateMap<TblPermission, PermissionDto>().ReverseMap();
+        CreateMap<TblMenu, MenuDto>().ReverseMap();
         CreateMap<TblRolePermission, RolePermissionDto>().ReverseMap();
         CreateMap<CreateProductVariantDto, TblProductVariant>();
         CreateMap<UpdateProductVariantDto, TblProductVariant>()

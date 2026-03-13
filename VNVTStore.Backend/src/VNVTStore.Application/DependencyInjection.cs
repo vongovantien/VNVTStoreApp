@@ -6,6 +6,7 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.Common.Behaviors;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Application.Services;
 using VNVTStore.Application.MappingProfiles;
 using VNVTStore.Application.Strategies;
 using VNVTStore.Domain.Interfaces;
@@ -37,6 +38,9 @@ public static class DependencyInjection
             
             // Register ValidationBehavior pipeline
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            
+            // Register AuditLoggingBehavior pipeline
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AuditLoggingBehavior<,>));
 
             cfg.TypeEvaluator = type =>
             {
@@ -56,16 +60,12 @@ public static class DependencyInjection
         // services.AddGenericHandler<VNVTStore.Domain.Entities.TblBrand, BrandDto, CreateBrandDto, UpdateBrandDto>();
         // services.AddGenericHandler<VNVTStore.Domain.Entities.TblSupplier, SupplierDto, CreateSupplierDto, UpdateSupplierDto>();
         // services.AddGenericHandler<VNVTStore.Domain.Entities.TblCategory, CategoryDto, CreateCategoryDto, UpdateCategoryDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblBanner, BannerDto, CreateBannerDto, UpdateBannerDto>();
+        services.AddGenericHandler<VNVTStore.Domain.Entities.TblPermission, PermissionDto, PermissionDto, PermissionDto>();
+        services.AddGenericHandler<VNVTStore.Domain.Entities.TblMenu, MenuDto, MenuDto, MenuDto>();
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblUnit, CatalogUnitDto, CreateCatalogUnitDto, UpdateCatalogUnitDto>();
         services.AddGenericHandler<VNVTStore.Domain.Entities.TblTag, TagDto, CreateTagDto, UpdateTagDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblPromotion, PromotionDto, CreatePromotionDto, UpdatePromotionDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblProduct, ProductDto, CreateProductDto, UpdateProductDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblOrder, OrderDto, CreateOrderDto, UpdateOrderDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblUser, UserDto, CreateUserDto, UpdateUserDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblAddress, AddressDto, CreateAddressDto, UpdateAddressDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblReview, ReviewDto, CreateReviewDto, UpdateReviewDto>();
-        services.AddGenericHandler<VNVTStore.Domain.Entities.TblQuote, QuoteDto, CreateQuoteDto, UpdateQuoteDto>();
+        // Address has explicit handler: services.AddGenericHandler<VNVTStore.Domain.Entities.TblAddress, AddressDto, CreateAddressDto, UpdateAddressDto>();
+
         
         // Specialized Handlers (Override generic registrations)
         services.AddScoped<IRequestHandler<GetPagedQuery<ProductDto>, Result<PagedResult<ProductDto>>>, GetProductsHandler>();
@@ -106,6 +106,9 @@ public static class DependencyInjection
         services.AddScoped<IRequestHandler<GetByCodeQuery<CategoryDto>, Result<CategoryDto>>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
         services.AddScoped<IRequestHandler<DeleteMultipleCommand<TblCategory>, Result>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
         services.AddScoped<IRequestHandler<GetStatsQuery<TblCategory>, Result<EntityStatsDto>>, VNVTStore.Application.Categories.Handlers.CategoryHandlers>();
+
+        services.AddSingleton<ILogicHubService, LogicHubService>();
+        services.AddScoped<ISingularityService, SingularityService>();
 
         return services;
     }

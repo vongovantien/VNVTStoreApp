@@ -60,5 +60,21 @@ public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFa
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", content.Data.Token);
             }
         }
+        else
+        {
+             var error = await response.Content.ReadAsStringAsync();
+             Console.WriteLine($"[DEBUG] AuthenticateAsync failed: {error}");
+        }
     }
+
+    protected async Task EnsureSuccessAsync(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[DEBUG] Response Error: {content}");
+        }
+        response.EnsureSuccessStatusCode();
+    }
+
 }

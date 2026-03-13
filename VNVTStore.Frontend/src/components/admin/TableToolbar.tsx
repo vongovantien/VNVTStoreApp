@@ -29,8 +29,6 @@ export const TableToolbar = ({
 
   onBulkDelete,
   onExport,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onImport,
 }: TableToolbarProps) => {
   const { t } = useTranslation();
 

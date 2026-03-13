@@ -58,13 +58,17 @@ export const LoginPage = () => {
 
   /* Load saved email if 'Remember Me' was checked */
   useEffect(() => {
-      const isRemembered = localStorage.getItem('vnvt-remember') === 'true';
-      if (isRemembered) {
-          const savedEmail = localStorage.getItem('vnvt-email');
-          if (savedEmail) {
-              setValue('email', savedEmail);
-              setValue('remember', true);
+      try {
+          const isRemember = localStorage.getItem('vnvt-remember') === 'true';
+          if (isRemember) {
+              const savedEmail = localStorage.getItem('vnvt-email');
+              if (savedEmail) {
+                  setValue('email', savedEmail);
+                  setValue('remember', true);
+              }
           }
+      } catch (e) {
+          console.warn('LocalStorage access denied', e);
       }
   }, [setValue]);
 
@@ -84,12 +88,16 @@ export const LoginPage = () => {
         const { token, refreshToken, user } = response.data;
 
         // Handle Remember Me preference
-        if (data.remember) {
-            localStorage.setItem('vnvt-remember', 'true');
-            localStorage.setItem('vnvt-email', data.email);
-        } else {
-            localStorage.removeItem('vnvt-remember');
-            localStorage.removeItem('vnvt-email');
+        try {
+            if (data.remember) {
+                localStorage.setItem('vnvt-remember', 'true');
+                localStorage.setItem('vnvt-email', data.email);
+            } else {
+                localStorage.removeItem('vnvt-remember');
+                localStorage.removeItem('vnvt-email');
+            }
+        } catch (e) {
+            console.warn('LocalStorage access denied', e);
         }
 
         login(
@@ -100,6 +108,7 @@ export const LoginPage = () => {
             role: (user.role as UserRole) || UserRole.Customer,
             status: UserStatus.Active,
             createdAt: new Date().toISOString(),
+            avatar: user.avatar || (user as unknown as { Avatar: string }).Avatar, // Handle PascalCase from backend
             permissions: user.permissions,
             menus: user.menus
           },
@@ -149,7 +158,7 @@ export const LoginPage = () => {
             role: (userData.role as UserRole) || UserRole.Customer,
             status: UserStatus.Active,
             createdAt: new Date().toISOString(),
-            avatar: userData.avatar,
+            avatar: userData.avatar || (userData as unknown as { Avatar: string }).Avatar,
             permissions: userData.permissions,
             menus: userData.menus
           },
@@ -226,7 +235,7 @@ export const LoginPage = () => {
           data-testid="email-input"
           leftIcon={<Mail size={18} />}
           required
-          error={errors.email?.message}
+          {...(errors.email?.message ? { error: errors.email.message } : {})}
         />
 
         <Input
@@ -247,7 +256,7 @@ export const LoginPage = () => {
             </button>
           }
           required
-          error={errors.password?.message}
+          {...(errors.password?.message ? { error: errors.password.message } : {})}
         />
 
         <div className="flex items-center justify-between">

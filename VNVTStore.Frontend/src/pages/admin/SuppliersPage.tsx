@@ -301,7 +301,7 @@ export default function SuppliersPage() {
        {/* Form Modal */}
        {isFormOpen && (
         <SupplierForm
-            initialData={prepareInitialData()}
+            initialData={prepareInitialData() || {}}
             onSubmit={handleFormSubmit}
             onCancel={closeForm}
             isLoading={isSubmitting}
@@ -341,7 +341,7 @@ export default function SuppliersPage() {
         <Modal
           isOpen={!!viewingSupplier}
           onClose={() => setViewingSupplier(null)}
-          title={t('admin.actions.viewDetails')}
+          title={t('common.actions.viewDetails')}
           size="lg"
         >
           <div className="space-y-6">
@@ -353,7 +353,7 @@ export default function SuppliersPage() {
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">{viewingSupplier.name}</h2>
                 <div className="mt-1">
                     <Badge color={viewingSupplier.isActive !== false ? 'success' : 'secondary'}>
-                        {viewingSupplier.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
+                        {viewingSupplier.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
                     </Badge>
                 </div>
               </div>

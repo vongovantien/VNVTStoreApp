@@ -8,6 +8,8 @@ using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
 
 namespace VNVTStore.Application.Auth.Handlers;
 
@@ -18,19 +20,22 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
     public RegisterCommandHandler(
         IRepository<TblUser> repository,
         IPasswordHasher passwordHasher,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        IEmailService emailService)
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _repository = repository;
         _passwordHasher = passwordHasher;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _emailService = emailService;
+        _configuration = configuration;
     }
 
     public async Task<Result<UserDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -58,7 +63,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
         await _unitOfWork.CommitAsync(cancellationToken);
 
         // Send Verification Email
-        var verificationLink = $"http://localhost:5173/verify-email?email={user.Email}&token={user.EmailVerificationToken}";
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+        var verificationLink = $"{frontendUrl}/verify-email?email={user.Email}&token={user.EmailVerificationToken}";
         await _emailService.SendEmailAsync(user.Email, "VNVT Store - Email Verification", 
             $"<h1>Welcome to VNVT Store!</h1><p>Please verify your email by clicking the following link:</p><a href='{verificationLink}'>Verify Email</a>", true);
 
@@ -102,12 +108,14 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
     private readonly IRepository<TblUser> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
-    public ForgotPasswordCommandHandler(IRepository<TblUser> repository, IUnitOfWork unitOfWork, IEmailService emailService)
+    public ForgotPasswordCommandHandler(IRepository<TblUser> repository, IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
+        _configuration = configuration;
     }
 
     public async Task<Result<bool>> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
@@ -119,7 +127,8 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
-        var resetLink = $"http://localhost:5173/reset-password?email={user.Email}&token={user.PasswordResetToken}";
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+        var resetLink = $"{frontendUrl}/reset-password?email={user.Email}&token={user.PasswordResetToken}";
         await _emailService.SendEmailAsync(user.Email, "VNVT Store - Reset Password",
             $"<h1>Reset Your Password</h1><p>Click the link below to reset your password:</p><a href='{resetLink}'>Reset Password</a>", true);
 
@@ -193,7 +202,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
                     .ThenInclude(rm => rm.MenuCodeNavigation)
             .FirstOrDefaultAsync(cancellationToken);
         
-        if (user == null || !_passwordHasher.Verify(request.password, user.PasswordHash))
+        if (user == null)
+        {
+            Console.WriteLine($"DEBUG: LoginHandler - User '{request.username}' NOT found in database.");
+            return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
+        }
+
+        var isPasswordValid = _passwordHasher.Verify(request.password, user.PasswordHash);
+        Console.WriteLine($"DEBUG: LoginHandler - User found: {user.Username}, Provided Password: '{request.password}', Hash in DB: '{user.PasswordHash}', IsValid: {isPasswordValid}");
+
+        if (!isPasswordValid)
         {
             return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
         }

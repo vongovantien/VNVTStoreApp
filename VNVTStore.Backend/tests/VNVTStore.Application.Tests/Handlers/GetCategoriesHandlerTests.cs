@@ -113,7 +113,6 @@ public class GetCategoriesHandlerTests
             }
         });
 
-        var readCountTotal = 0;
         var readCountPerQuery = 0;
         var lastQueryIndex = 0;
 

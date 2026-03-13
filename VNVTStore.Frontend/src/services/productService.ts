@@ -69,10 +69,13 @@ export interface ProductDto {
     baseUnit?: string;
     binLocation?: string;
     createdAt?: string;
+    updatedAt?: string;
     productImages: ProductImageDto[];
     productUnits?: ProductUnitDto[];
     details?: ProductDetailDto[];
     variants?: ProductVariantDto[];
+    viewCount?: number;
+    soldCount24h?: number;
 }
 
 export interface CreateProductRequest {
@@ -191,7 +194,11 @@ export const productService = {
 
     getTemplate: (): string => {
         return `${API_ENDPOINTS.PRODUCTS.BASE}/template`;
-    }
+    },
+
+    getTrending: async (limit: number = 8) => {
+        return apiClient.get<ProductDto[]>(`${API_ENDPOINTS.PRODUCTS.BASE}/trending?limit=${limit}`);
+    },
 };
 
 export const categoryService = {

@@ -5,16 +5,16 @@
  * #55 Mystery Box, #37 Invoice Download, #82 WebP, #90 Currency Auto-detect,
  * #99 Banner Manager, #98 Bulk Product Edit
  */
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, onClick, ...props }: any) => <div onClick={onClick} {...props}>{children}</div>,
+    div: ({ children, onClick, ...props }: { children: React.ReactNode; onClick?: () => void }) => <div onClick={onClick} {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import {

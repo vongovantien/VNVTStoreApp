@@ -15,6 +15,7 @@ using System.Data;
 namespace VNVTStore.Application.Reviews.Handlers;
 
 public class ReviewHandlers : BaseHandler<TblReview>,
+    IRequestHandler<DeleteMultipleCommand<TblReview>, Result>,
     IRequestHandler<CreateCommand<CreateReviewDto, ReviewDto>, Result<ReviewDto>>,
     IRequestHandler<UpdateCommand<UpdateReviewDto, ReviewDto>, Result<ReviewDto>>,
     IRequestHandler<DeleteCommand<TblReview>, Result>,

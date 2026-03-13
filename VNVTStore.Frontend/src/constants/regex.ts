@@ -8,8 +8,8 @@ export const REGEX = {
     // Simple phone number: 10 to 11 digits
     PHONE_SIMPLE: /^[0-9]{10,11}$/,
 
-    // Password: At least 6 chars, 1 upper, 1 lower, 1 digit
-    PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/,
+    // Password: At least 8 chars, 1 upper, 1 lower, 1 digit, 1 special char
+    PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
 
     // Email regex (if needed specifically, though Zod has .email())
     EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,

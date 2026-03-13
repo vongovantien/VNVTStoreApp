@@ -44,7 +44,8 @@ public class CloudinaryImageUploadService : IImageUploadService
             {
                 File = new FileDescription(fileName, imageStream),
                 Folder = folder,
-                PublicId = Path.GetFileNameWithoutExtension(fileName) // Optional: Use filename as public_id (or let Cloudinary generate)
+                PublicId = Path.GetFileNameWithoutExtension(fileName),
+                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -182,11 +183,12 @@ public class CloudinaryImageUploadService : IImageUploadService
     {
         try
         {
-             var uploadParams = new ImageUploadParams
+            var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(base64Content), 
                 Folder = folder,
-                PublicId = Path.GetFileNameWithoutExtension(fileName) 
+                PublicId = Path.GetFileNameWithoutExtension(fileName), // Optional if you want consistent naming
+                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -330,7 +332,8 @@ public class CloudinaryImageUploadService : IImageUploadService
             {
                 File = new FileDescription(url), 
                 Folder = folder,
-                PublicId = Path.GetFileNameWithoutExtension(fileName) 
+                PublicId = Path.GetFileNameWithoutExtension(fileName), 
+                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);

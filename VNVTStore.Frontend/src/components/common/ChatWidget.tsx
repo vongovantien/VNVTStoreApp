@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Bot, User, Minimize2 } from 'lucide-react';
+import { X, Send, Bot, User, Minimize2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button } from '@/components/ui';
 import type { ChatMessage } from '@/types';

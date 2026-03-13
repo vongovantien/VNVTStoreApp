@@ -24,12 +24,15 @@ using System.Collections.Concurrent;
 
 namespace VNVTStore.Application.Common;
 
-public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
+public abstract class BaseHandler<TEntity>
+    // Removed interfaces to prevent ambiguity and generic type mismatch
+    where TEntity : class, IEntity
 {
     protected readonly IRepository<TEntity> _repository;
     protected readonly IUnitOfWork _unitOfWork;
     protected readonly IMapper _mapper;
     protected readonly IDapperContext _dapperContext;
+    protected readonly IAuditLogService? _auditLogService;
     protected readonly string _entityName;
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _propertyCache = new();
 
@@ -38,12 +41,14 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         IRepository<TEntity> repository, 
         IUnitOfWork unitOfWork, 
         IMapper mapper,
-        IDapperContext dapperContext)
+        IDapperContext dapperContext,
+        IAuditLogService? auditLogService = null)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _dapperContext = dapperContext;
+        _auditLogService = auditLogService;
         _entityName = typeof(TEntity).Name.Replace("Tbl", "");
     }
 
@@ -56,9 +61,78 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
     {
     }
 
+    protected List<string>? FilterAndValidateFields<TResponse>(List<string>? fields, List<ReferenceTable>? referenceTables)
+    {
+        if (fields == null || !fields.Any()) return null;
+
+        var collectionProps = typeof(TResponse).GetProperties()
+            .Where(p => Attribute.IsDefined(p, typeof(ReferenceCollectionAttribute)))
+            .Select(p => p.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var sqlFields = fields.Where(f => !collectionProps.Contains(f)).ToList();
+        
+        var entityType = typeof(TEntity);
+        var entityProps = entityType.GetProperties().ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+
+        var validFields = new List<string>();
+        var refTableAliases = referenceTables?.Select(r => r.AliasName).ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
+        
+        foreach (var fieldName in sqlFields)
+        {
+            if (refTableAliases.Contains(fieldName))
+            {
+                validFields.Add(fieldName);
+                continue;
+            }
+
+            if (entityProps.TryGetValue(fieldName, out var prop))
+            {
+                // Skip if NotMapped
+                if (Attribute.IsDefined(prop, typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute)))
+                {
+                    continue;
+                }
+
+                var columnAttr = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();
+                if (columnAttr != null && !string.IsNullOrEmpty(columnAttr.Name))
+                {
+                    validFields.Add(columnAttr.Name);
+                }
+                else
+                {
+                    validFields.Add(fieldName);
+                }
+                continue;
+            }
+        }
+        
+        if (validFields.Count == 0 && fields.Count > 0)
+        {
+             validFields.Add("Code");
+        }
+        else if (fields != null && fields.Any() && !validFields.Contains("Code", StringComparer.OrdinalIgnoreCase) && !validFields.Contains("\"Code\"", StringComparer.OrdinalIgnoreCase))
+        {
+            // Always include Code if fields are specified, as it's needed for child population
+            validFields.Add("Code");
+        }
+        
+        return validFields;
+    }
+
     public virtual async Task<Result<PagedResult<TResponse>>> Handle<TResponse>(GetPagedQuery<TResponse> request, CancellationToken cancellationToken) where TResponse : class, new()
     {
-        return await GetPagedDapperAsync<TResponse>(request.PageIndex, request.PageSize, request.Searching, request.SortDTO, null, request.Fields, cancellationToken);
+            return await GetPagedDapperAsync<TResponse>(request.PageIndex, request.PageSize, request.Searching, request.SortDTO, null, request.Fields, cancellationToken);
+    }
+    
+    public virtual async Task<Result> Handle(DeleteMultipleCommand<TEntity> request, CancellationToken cancellationToken)
+    {
+        return await DeleteMultipleAsync(request.Codes, _entityName, cancellationToken);
+    }
+
+    public virtual async Task<Result<TResponse>> Handle<TResponse>(GetByCodeQuery<TResponse> request, CancellationToken cancellationToken) where TResponse : class, new()
+    {
+        return await GetByCodeAsync<TResponse>(request.Code, _entityName, cancellationToken);
     }
 
     protected async Task<Result<TResponse>> CreateAsync<TCreateDto, TResponse>(
@@ -148,6 +222,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         }
 
         await _unitOfWork.CommitAsync(cancellationToken);
+
         return Result.Success();
     }
 
@@ -225,11 +300,16 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         string entityName,
         CancellationToken cancellationToken,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? includes = null)
+        where TResponse : class, new()
     {
         var query = _repository.AsQueryable();
 
-        // Filter out Soft Deleted
-        query = query.Where(e => e.ModifiedType != ModificationType.Delete.ToString());
+        // Filter out Soft Deleted IF ModifiedType is mapped
+        var modifiedTypeProp = typeof(TEntity).GetProperty("ModifiedType");
+        if (modifiedTypeProp != null && !Attribute.IsDefined(modifiedTypeProp, typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute)))
+        {
+            query = query.Where(e => e.ModifiedType != ModificationType.Delete.ToString());
+        }
         
         if (includes != null)
             query = includes(query);
@@ -239,7 +319,12 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         if (entity == null)
             return Result.Failure<TResponse>(Error.NotFound(entityName, code));
 
-        return Result.Success(_mapper.Map<TResponse>(entity));
+        var dto = _mapper.Map<TResponse>(entity);
+        
+        // Populate child collections (images, details, etc.)
+        await PopulateCollectionsAsync(new List<TResponse> { dto }, null, cancellationToken).ConfigureAwait(false);
+
+        return Result.Success(dto);
     }
 
     protected async Task<Result<TResponse>> GetByCodeIncludeChildrenAsync<TResponse>(
@@ -247,6 +332,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         string entityName,
         CancellationToken cancellationToken,
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includes)
+        where TResponse : class, new()
     {
         return await GetByCodeAsync<TResponse>(code, entityName, cancellationToken, includes);
     }
@@ -371,19 +457,55 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         
         // Setup search fields
         searchFields ??= new List<SearchDTO>();
-        sortDTO ??= new SortDTO { SortBy = nameof(IEntity.CreatedAt), Sort = "DESC" };
+
+        var entityType = typeof(TEntity);
+        var entityProps = entityType.GetProperties().ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+
+        // Safe default sorting
+        if (sortDTO == null)
+        {
+            sortDTO = new SortDTO { Sort = "DESC" };
+            // Default to CreatedAt if mapped, else Code
+            if (entityProps.TryGetValue("CreatedAt", out var createdAtProp) && 
+                !Attribute.IsDefined(createdAtProp, typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute)))
+            {
+                sortDTO.SortBy = "CreatedAt";
+            }
+            else
+            {
+                sortDTO.SortBy = "Code";
+            }
+        }
+        else if (string.IsNullOrEmpty(sortDTO.SortBy))
+        {
+             // If SortBy is null/empty but sortDTO exists
+             if (entityProps.TryGetValue("CreatedAt", out var createdAtProp) && 
+                !Attribute.IsDefined(createdAtProp, typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute)))
+            {
+                sortDTO.SortBy = "CreatedAt";
+            }
+            else
+            {
+                sortDTO.SortBy = "Code";
+            }
+        }
+
         if (string.IsNullOrEmpty(sortDTO.Sort)) 
             sortDTO.Sort = sortDTO.SortDescending ? "DESC" : "ASC";
 
-        // Filter out Soft Deleted items by default
+        // Filter out Soft Deleted items by default IF ModifiedType is mapped
         if (!searchFields.Any(s => s.SearchField == nameof(IEntity.ModifiedType)))
         {
-            searchFields.Add(new SearchDTO 
-            { 
-                SearchField = nameof(IEntity.ModifiedType), 
-                SearchCondition = SearchCondition.NotEqual, 
-                SearchValue = ModificationType.Delete.ToString() 
-            });
+            if (entityProps.TryGetValue("ModifiedType", out var modifiedTypeProp) && 
+                !Attribute.IsDefined(modifiedTypeProp, typeof(System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute)))
+            {
+                searchFields.Add(new SearchDTO 
+                { 
+                    SearchField = nameof(IEntity.ModifiedType), 
+                    SearchCondition = SearchCondition.NotEqual, 
+                    SearchValue = ModificationType.Delete.ToString() 
+                });
+            }
         }
         
         var tableName = typeof(TEntity).Name;
@@ -394,73 +516,9 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             ? autoRefTables 
             : referenceTables.Concat(autoRefTables).ToList();
 
-        // Fix: Filter out fields that are ReferenceCollections (child lists) as they are not columns in the main table
+        // Filter out fields that are ReferenceCollections (child lists) as they are not columns in the main table
         // They are populated separately in PopulateCollectionsAsync
-        List<string>? sqlFields = null;
-        if (fields != null && fields.Any())
-        {
-            var collectionProps = typeof(TResponse).GetProperties()
-                .Where(p => Attribute.IsDefined(p, typeof(ReferenceCollectionAttribute)))
-                .Select(p => p.Name)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            sqlFields = fields.Where(f => !collectionProps.Contains(f)).ToList();
-            
-            // Resolve column names from TEntity [Column] attributes
-            // This ensures logic works even if DTO property doesn't match DB Column exactly (e.g. ImageUrl vs image_url)
-            var entityType = typeof(TEntity);
-            var entityProps = entityType.GetProperties().ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
-
-
-            // VALIDATION: Filter out fields that are NOT in TEntity AND NOT in ReferenceTables
-            // This prevents "column does not exist" errors if Frontend requests invalid fields (e.g. ImageURL on TblProduct)
-            var validFields = new List<string>();
-            var refTableAliases = referenceTables?.Select(r => r.AliasName).ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
-            
-            for (int i = 0; i < sqlFields.Count; i++)
-            {
-                var fieldName = sqlFields[i];
-                
-                // 1. Keep if it matches a Reference Table Alias (QueryBuilder handles these separately)
-                if (refTableAliases.Contains(fieldName))
-                {
-                    validFields.Add(fieldName);
-                    continue;
-                }
-
-                // 2. Keep if it matches an Entity Property (Resolve [Column] name if needed)
-                if (entityProps.TryGetValue(fieldName, out var prop))
-                {
-                    var columnAttr = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>();
-                    if (columnAttr != null && !string.IsNullOrEmpty(columnAttr.Name))
-                    {
-                        validFields.Add(columnAttr.Name);
-                    }
-                    else
-                    {
-                        validFields.Add(fieldName);
-                    }
-                    continue;
-                }
-                
-                // 3. Drop if neither (Invalid Field)
-            }
-            sqlFields = validFields;
-
-            // QueryBuilder handles empty fields as "SELECT *", so checking Empty is tricky.
-            // But if user requested ONLY collection fields, we still need main entity ID at least?
-            // Usually we assume if fields is empty after filtering, we fallback to specific columns or *?
-            // Actually QueryBuilder logic: if (fields == null || !fields.Any()) -> Select *
-            // So if I pass empty list, it selects *. This might be okay, or retrieving too much.
-            // Better to at least select ID/Code if list is empty but original wasn't?
-            
-            if (sqlFields.Count == 0 && fields.Count > 0)
-            {
-                 // User asked ONLY for collections. We need 'Code' to fetch children.
-                 // Ensure 'Code' is selected.
-                 sqlFields.Add("Code");
-            }
-        }
+        List<string>? sqlFields = FilterAndValidateFields<TResponse>(fields, referenceTables);
 
         // Build parameterized query (SQL injection safe)
         var queryResult = QueryBuilder.BuildRawQueryPagingParameterized(
@@ -497,7 +555,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         return Result.Success(new PagedResult<TResponse>(dtos, totalCount, pageIndex, pageSize));
     }
 
-    private List<ReferenceTable> GetReferenceTables<TResponse>()
+    protected List<ReferenceTable> GetReferenceTables<TResponse>()
     {
         var list = new List<ReferenceTable>();
         var props = typeof(TResponse).GetProperties();
@@ -624,7 +682,14 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
             sb.Append("SELECT ");
             if (childSelectFields == null || !childSelectFields.Any())
             {
-                sb.Append("c.*");
+                if (collAttr.ChildTableName == "TblFile")
+                {
+                    sb.Append("c.*, c.\"Path\" AS \"ImageURL\"");
+                }
+                else
+                {
+                    sb.Append("c.*");
+                }
             }
             else
             {
@@ -640,16 +705,33 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
                 sb.Append(string.Join(", ", selectParts));
             }
 
+            // Optimized SQL: Use standard column name to allow index usage. 
+            // Case-insensitivity is handled by providing both original and lowercase codes in @Codes
+            // and using StringComparer.OrdinalIgnoreCase on the C# dictionary.
             sb.Append($" FROM \"{collAttr.ChildTableName}\" AS c WHERE c.\"{collAttr.ForeignKey}\" = ANY(@Codes)");
             
             var sql = sb.ToString();
             
+            // Build a list of codes including both original and lowercase versions for robust matching
+            var codesToFetch = parentCodes.Concat(parentCodes.Select(c => c.ToLower())).Distinct().ToArray();
+            object parameters = new { Codes = codesToFetch, FilterValue = collAttr.FilterValue };
+
             if (!string.IsNullOrEmpty(collAttr.FilterColumn) && !string.IsNullOrEmpty(collAttr.FilterValue))
             {
-                sql += $" AND c.\"{collAttr.FilterColumn}\" = @FilterValue";
+                if (collAttr.FilterValue.Contains(","))
+                {
+                    var values = collAttr.FilterValue.Split(',').Select(v => v.Trim()).ToArray();
+                    // Optimization: Use ILIKE for case-insensitive matching
+                    sql += $" AND c.\"{collAttr.FilterColumn}\" ILIKE ANY(@FilterValues)";
+                    parameters = new { Codes = codesToFetch, FilterValues = values };
+                }
+                else
+                {
+                    // Optimization: Use ILIKE for case-insensitive matching
+                    sql += $" AND c.\"{collAttr.FilterColumn}\" ILIKE @FilterValue";
+                    parameters = new { Codes = codesToFetch, FilterValue = collAttr.FilterValue };
+                }
             }
-
-            var parameters = new { Codes = parentCodes.ToArray(), FilterValue = collAttr.FilterValue };
             
             // Execute with ConfigureAwait(false)
             var children = await SqlMapper.QueryAsync<dynamic>(connection, sql, parameters)
@@ -668,8 +750,8 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning restore CS8602 // Dereference of a possibly null reference
 
-            // Group children by foreign key
-            var groupedChildren = new Dictionary<string, List<object>>();
+            // Group children by foreign key (case-insensitive for robust matching)
+            var groupedChildren = new Dictionary<string, List<object>>(StringComparer.OrdinalIgnoreCase);
             var foreignKeyProp = childDtoType.GetProperty(collAttr.ForeignKey);
             
             if (foreignKeyProp == null)
@@ -723,7 +805,7 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
         }
     }
 
-    private List<T> MapDynamicList<T>(IEnumerable<dynamic> source) where T : new()
+    protected List<T> MapDynamicList<T>(IEnumerable<dynamic> source) where T : new()
     {
         var list = new List<T>();
         var type = typeof(T);
@@ -795,9 +877,10 @@ public abstract class BaseHandler<TEntity> where TEntity : class, IEntity
                             prop.SetValue(item, Convert.ChangeType(value, propType));
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Skip
+                        // Skip - can happen if DB value doesn't match DTO property type
+                        System.Diagnostics.Debug.WriteLine($"Error mapping property {prop.Name}: {ex.Message}");
                     }
                 }
             }
@@ -840,7 +923,7 @@ public class BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseHandl
         => base.Handle<TResponse>(request, cancellationToken);
 
     public virtual Task<Result<TResponse>> Handle(GetByCodeQuery<TResponse> request, CancellationToken cancellationToken)
-        => GetByCodeAsync<TResponse>(request.Code, _entityName, cancellationToken);
+        => base.Handle<TResponse>(request, cancellationToken);
 
     public virtual Task<Result<TResponse>> Handle(CreateCommand<TCreateDto, TResponse> request, CancellationToken cancellationToken)
         => CreateAsync<TCreateDto, TResponse>(request.Dto, cancellationToken, c => {

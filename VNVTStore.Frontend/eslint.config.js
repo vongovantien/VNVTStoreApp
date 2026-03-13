@@ -55,6 +55,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'react-hooks/exhaustive-deps': 'error',
       'react-refresh/only-export-components': [
         'off',
         { allowConstantExport: true },
@@ -62,8 +63,9 @@ export default tseslint.config(
       'react/react-in-jsx-scope': 'off', // Not needed for React 17+
       'react/prop-types': 'off', // We use TS
       'no-unused-vars': 'off', // Handle via @typescript-eslint
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'error',
+      'eqeqeq': 'error',
     },
   },
   {

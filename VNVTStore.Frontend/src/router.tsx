@@ -1,14 +1,14 @@
 import { Suspense, lazy } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { UserRole } from '@/types';
 
 // Layouts
 import { ShopLayout } from '@/layouts/ShopLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 
-// Loading component
-import { PageLoader } from '@/components/common/PageLoader';
-
-// Lazy load pages for code splitting
+// Common components
+import { PageLoader, RouteErrorAdapter } from '@/components/common';
+import ProtectedRoute from '@/components/common/ProtectedRoute';
 const HomePage = lazy(() => import('@/pages/shop/HomePage'));
 const ProductsPage = lazy(() => import('@/pages/shop/ProductsPage'));
 const ProductDetailPage = lazy(() => import('@/pages/shop/ProductDetailPage'));
@@ -36,13 +36,27 @@ const SupportPage = lazy(() => import('@/pages/shop/SupportPage'));
 const TrackingPage = lazy(() => import('@/pages/shop/TrackingPage'));
 const SearchPage = lazy(() => import('@/pages/shop/SearchPage'));
 
-// Admin pages
+// Admin pages - Second Half (Enabled)
+const AdminCoupons = lazy(() => import('@/pages/admin/CouponsPage'));
+const AdminNews = lazy(() => import('@/pages/admin/NewsPage'));
+const AdminRoles = lazy(() => import('@/pages/admin/RolesPage'));
+const AdminTags = lazy(() => import('@/pages/admin/TagsPage'));
+const AdminAudit = lazy(() => import('@/pages/admin/AuditPage'));
+const AdminPayments = lazy(() => import('@/pages/admin/PaymentsPage'));
+const MediaPage = lazy(() => import('@/pages/admin/MediaPage'));
+const SEOFactoryPage = lazy(() => import('@/pages/admin/SEOFactoryPage'));
+
+const AdminUsers = lazy(() => import('@/features/users').then(module => ({ default: module.UsersPage })));
+
+
+// Admin pages - First Half (Enabled)
 const AdminDashboard = lazy(() => import('@/pages/admin/DashboardPage'));
 const AdminProducts = lazy(() => import('@/pages/admin/ProductsPage'));
 const AdminPromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'));
 const AdminOrders = lazy(() => import('@/pages/admin/OrdersPage'));
 const AdminCustomers = lazy(() => import('@/pages/admin/CustomersPage'));
 const AdminQuotes = lazy(() => import('@/pages/admin/QuotesPage'));
+// Admin pages - Second Quarter Part 1 (Element)
 const AdminSettings = lazy(() => import('@/pages/admin/SettingsPage'));
 const AdminCategories = lazy(() => import('@/pages/admin/CategoriesPage'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/SuppliersPage'));
@@ -50,16 +64,7 @@ const AdminBrands = lazy(() => import('@/pages/admin/BrandsPage'));
 const AdminUnits = lazy(() => import('@/pages/admin/UnitsPage'));
 const AdminBanners = lazy(() => import('@/pages/admin/BannersPage'));
 const AdminReviews = lazy(() => import('@/pages/admin/ReviewsPage'));
-const AdminCoupons = lazy(() => import('@/pages/admin/CouponsPage'));
-const AdminNews = lazy(() => import('@/pages/admin/NewsPage'));
-const AdminRoles = lazy(() => import('@/pages/admin/RolesPage'));
-const AdminTags = lazy(() => import('@/pages/admin/TagsPage'));
-const AdminAudit = lazy(() => import('@/pages/admin/AuditPage'));
-const AdminPayments = lazy(() => import('@/pages/admin/PaymentsPage'));
 
-// Error pages
-import ErrorBoundary from '@/components/common/ErrorBoundary';
-import ProtectedRoute from '@/components/common/ProtectedRoute';
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Router configuration
@@ -68,10 +73,10 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <ShopLayout />,
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouteErrorAdapter />,
     children: [
       {
-        errorElement: <ErrorBoundary />,
+        errorElement: <RouteErrorAdapter />,
         children: [
           {
             index: true,
@@ -84,7 +89,7 @@ const router = createBrowserRouter([
           {
             path: 'products',
             element: (
-              <Suspense fallback={<PageLoader />}>
+             <Suspense fallback={<PageLoader />}>
                 <ProductsPage />
               </Suspense>
             ),
@@ -169,7 +174,6 @@ const router = createBrowserRouter([
               </Suspense>
             ),
           },
-
           {
             path: 'news',
             element: (
@@ -241,7 +245,7 @@ const router = createBrowserRouter([
         <LoginPage />
       </Suspense>
     ),
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouteErrorAdapter />,
   },
   {
     path: '/register',
@@ -250,7 +254,7 @@ const router = createBrowserRouter([
         <RegisterPage />
       </Suspense>
     ),
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouteErrorAdapter />,
   },
   {
     path: '/verify-email',
@@ -259,7 +263,7 @@ const router = createBrowserRouter([
         <VerifyEmailPage />
       </Suspense>
     ),
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouteErrorAdapter />,
   },
   {
     path: '/forgot-password',
@@ -268,7 +272,7 @@ const router = createBrowserRouter([
         <ForgotPasswordPage />
       </Suspense>
     ),
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouteErrorAdapter />,
   },
   {
     path: '/reset-password',
@@ -277,17 +281,22 @@ const router = createBrowserRouter([
         <ResetPasswordPage />
       </Suspense>
     ),
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouteErrorAdapter />,
   },
 
   // Admin routes
+  // Admin routes
   {
     path: '/admin',
-    element: <AdminLayout />,
-    errorElement: <ErrorBoundary />,
+    element: (
+      <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Staff]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
+    errorElement: <RouteErrorAdapter />,
     children: [
       {
-        errorElement: <ErrorBoundary />,
+        errorElement: <RouteErrorAdapter />,
         children: [
           {
             index: true,
@@ -418,14 +427,6 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'roles',
-            element: (
-              <Suspense fallback={<PageLoader />}>
-                <AdminRoles />
-              </Suspense>
-            ),
-          },
-          {
             path: 'tags',
             element: (
               <Suspense fallback={<PageLoader />}>
@@ -446,6 +447,31 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminPayments />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'media',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <MediaPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'seo-factory',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <SEOFactoryPage />
+              </Suspense>
+            ),
+          },
+
+          {
+            path: 'users',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminUsers />
               </Suspense>
             ),
           },

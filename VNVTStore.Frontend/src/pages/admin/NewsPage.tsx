@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search, Trash2, Edit, Image as ImageIcon, RefreshCw } from 'lucide-react';
-import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
+import { Trash2, Edit, Image as ImageIcon } from 'lucide-react';
+const RichTextEditor = lazy(() => import('@/components/common/RichTextEditor'));
+import { Button, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { DataTable, CommonColumns } from '@/components/common';
 import { formatDate } from '@/utils/format';
-import { newsService, type NewsDto } from '@/services/newsService';
+import { newsService, type NewsDto, type CreateNewsRequest, type UpdateNewsRequest } from '@/services/newsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaginationDefaults } from '@/constants';
 import { useToast } from '@/store';
@@ -23,6 +23,7 @@ export const NewsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsDto | null>(null);
   const [newsToDelete, setNewsToDelete] = useState<NewsDto | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab ] = useState<'content' | 'seo'>('content');
 
   // Form State
@@ -54,7 +55,7 @@ export const NewsPage = () => {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (data: Partial<NewsDto>) => newsService.create(data as any),
+    mutationFn: (data: CreateNewsRequest) => newsService.create(data),
     onSuccess: () => {
       success(t('messages.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
@@ -65,7 +66,7 @@ export const NewsPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ code, data }: { code: string, data: Partial<NewsDto> }) => newsService.update(code, data as any),
+    mutationFn: ({ code, data }: { code: string, data: UpdateNewsRequest }) => newsService.update(code, data),
     onSuccess: () => {
       success(t('messages.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
@@ -84,6 +85,24 @@ export const NewsPage = () => {
     },
     onError: () => toastError(t('messages.deleteError'))
   });
+
+  // Bulk Delete State
+  const [itemsToDelete, setItemsToDelete] = useState<NewsDto[] | null>(null);
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (codes: string[]) => newsService.deleteMultiple(codes),
+    onSuccess: () => {
+      success(t('messages.deleteSuccess') || t('common.deleteSuccess'));
+      queryClient.invalidateQueries({ queryKey: ['admin-news'] });
+      setSelectedIds(new Set());
+      setItemsToDelete(null);
+    },
+    onError: () => toastError(t('messages.deleteError') || t('common.deleteError'))
+  });
+
+  const handleBulkDelete = (items: NewsDto[]) => {
+      setItemsToDelete(items);
+  };
 
   // Handlers
   const resetForm = () => {
@@ -123,9 +142,9 @@ export const NewsPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingNews) {
-      updateMutation.mutate({ code: editingNews.code, data: formData });
+      updateMutation.mutate({ code: editingNews.code, data: formData as UpdateNewsRequest });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(formData as CreateNewsRequest);
     }
   };
 
@@ -173,31 +192,7 @@ export const NewsPage = () => {
       <AdminPageHeader
         title="admin.sidebar.news"
         subtitle="admin.subtitles.news"
-        rightSection={
-          <Button leftIcon={<Plus size={18} />} onClick={() => { resetForm(); setIsModalOpen(true); }}>
-            {t('admin.news.add')}
-          </Button>
-        }
       />
-
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between bg-primary p-4 rounded-xl border border-tertiary">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" size={18} />
-          <input
-            type="text"
-            placeholder={t('common.placeholders.search')}
-            className="w-full pl-10 pr-4 py-2 bg-secondary border border-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-news'] })}>
-               <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
-            </Button>
-        </div>
-      </div>
 
       <DataTable
         columns={columns}
@@ -210,6 +205,14 @@ export const NewsPage = () => {
         pageSize={pageSize}
         onPageChange={setCurrentPage}
         onPageSizeChange={setPageSize}
+
+        onAdd={() => { resetForm(); setIsModalOpen(true); }}
+        onRefresh={() => queryClient.invalidateQueries({ queryKey: ['admin-news'] })}
+        onSearch={setSearchQuery}
+
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        onBulkDelete={handleBulkDelete}
 
         renderRowActions={(row) => (
           <div className="flex items-center gap-1">
@@ -306,12 +309,14 @@ export const NewsPage = () => {
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium mb-1">{t('admin.news.content')} <span className="text-error">*</span></label>
-                    <textarea
-                      className="w-full p-2 bg-secondary border border-tertiary rounded-lg outline-none focus:ring-2 focus:ring-primary/20 h-64 font-mono text-sm"
-                      value={formData.content}
-                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      required
-                    />
+                    <Suspense fallback={<div className="h-64 bg-secondary border border-tertiary rounded-lg animate-pulse" />}>
+                      <RichTextEditor
+                        value={formData.content}
+                        onChange={(val) => setFormData({ ...formData, content: val })}
+                        placeholder={t('admin.news.contentPlaceholder', 'Nhập nội dung bài viết...')}
+                        minHeight="250px"
+                      />
+                    </Suspense>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -378,6 +383,22 @@ export const NewsPage = () => {
         message={t('messages.confirmDelete')}
         variant="danger"
         isLoading={deleteMutation.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={!!itemsToDelete}
+        onClose={() => setItemsToDelete(null)}
+        onConfirm={() => {
+            if (itemsToDelete) {
+                bulkDeleteMutation.mutate(itemsToDelete.map(i => i.code));
+            }
+        }}
+        title={t('common.actions.delete')}
+        message={t('messages.confirmDeleteCount', { count: itemsToDelete?.length || 0 })}
+        variant="danger"
+        isLoading={bulkDeleteMutation.isPending}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
       />
     </div>
   );

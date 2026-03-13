@@ -20,17 +20,13 @@ namespace VNVTStore.Application.Products.Handlers;
 public class GetProductsHandler : BaseHandler<TblProduct>,
     IRequestHandler<GetPagedQuery<ProductDto>, Result<PagedResult<ProductDto>>>
 {
-    private readonly IBaseUrlService _baseUrlService;
-
     public GetProductsHandler(
         IRepository<TblProduct> repository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        IDapperContext dapperContext,
-        IBaseUrlService baseUrlService)
+        IDapperContext dapperContext)
         : base(repository, unitOfWork, mapper, dapperContext)
     {
-        _baseUrlService = baseUrlService;
     }
 
     public async Task<Result<PagedResult<ProductDto>>> Handle(GetPagedQuery<ProductDto> request, CancellationToken cancellationToken)
@@ -47,50 +43,6 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
 
         // Ratings are now in TblProduct, so BaseHandler's GetPagedDapperAsync handles filtering/sorting/mapping automatically.
         var result = await GetPagedDapperAsync<ProductDto>(request.PageIndex, request.PageSize, searchFields, sortDTO, null, request.Fields, cancellationToken);
-
-        if (result.IsSuccess && result.Value.Items.Any())
-        {
-            using var connection = _dapperContext.CreateConnection();
-            if (connection.State != System.Data.ConnectionState.Open) connection.Open();
-            
-            var productCodes = result.Value.Items.Select(p => p.Code).ToList();
-            var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
-
-            // Fetch Images efficiently
-            var imageSql = @"
-                SELECT ""MasterCode"", ""Path"", ""OriginalName"", ""Code""
-                FROM ""TblFile""
-                WHERE ""MasterCode"" = ANY(@Codes) AND ""MasterType"" = 'Product' AND ""IsActive"" = true";
-                
-            var files = (await SqlMapper.QueryAsync<dynamic>(connection, imageSql, new { Codes = productCodes.ToArray() })).ToList();
-            var imageMap = files.GroupBy(f => (string)f.MasterCode).ToDictionary(
-                g => g.Key, 
-                g => g.Select((f, index) => {
-                    var path = (string)(f.Path ?? "");
-                    var imgUrl = path.StartsWith("http") ? path : $"{baseUrl}/{path.TrimStart('/')}";
-                    return new ProductImageDto
-                    {
-                        Code = (string)f.Code,
-                        ImageURL = imgUrl,
-                        AltText = (string)f.OriginalName,
-                        IsPrimary = index == 0
-                    };
-                }).ToList()
-            );
-
-            // Populate DTOs
-            foreach (var product in result.Value.Items)
-            {
-                if (imageMap.TryGetValue(product.Code, out var productImages))
-                {
-                    product.ProductImages = productImages;
-                }
-                else
-                {
-                    product.ProductImages = new List<ProductImageDto>();
-                }
-            }
-        }
 
         return result;
     }

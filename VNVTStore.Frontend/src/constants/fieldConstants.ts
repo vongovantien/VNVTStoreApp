@@ -31,7 +31,8 @@ export const PRODUCT_LIST_FIELDS = [
     'CategoryName',
     'CategoryCode',
     'Brand',
-    'StockQuantity'
+    'StockQuantity',
+    'ProductImages'
 ];
 
 // Product fields for detail/edit view
@@ -53,6 +54,7 @@ export const PRODUCT_DETAIL_FIELDS = [
     'SupplierCode',
     'SupplierName',
     'BrandCode',
+    'ProductImages',
     'ProductUnits',
     'Details',
     'Variants',
@@ -141,8 +143,11 @@ export const PROMOTION_LIST_FIELDS = [
 // User fields
 export const USER_LIST_FIELDS = [
     ...COMMON_FIELDS,
+    'Username',
     'FullName',
     'Email',
     'Phone',
     'Role',
+    'IsEmailVerified',
+    'LastLogin',
 ];

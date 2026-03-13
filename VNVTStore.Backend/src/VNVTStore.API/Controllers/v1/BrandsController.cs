@@ -21,7 +21,7 @@ public class BrandsController : BaseApiController<TblBrand, BrandDto, CreateBran
     }
 
     [HttpPost("import")]
-    [Authorize(Roles = "admin,Admin")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Import(IFormFile file)
     {

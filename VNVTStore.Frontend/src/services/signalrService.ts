@@ -26,12 +26,21 @@ class SignalRService {
         this.onStatusChange = callback;
     }
 
-    public async startConnection() {
+    public async startConnection(accessTokenFactory?: () => string | Promise<string> | null) {
         if (this.connection?.state === signalR.HubConnectionState.Connected) return;
 
         this.updateStatus('Connecting');
+
         this.connection = new signalR.HubConnectionBuilder()
-            .withUrl(HUB_URL)
+            .withUrl(HUB_URL, {
+                accessTokenFactory: async () => {
+                    if (accessTokenFactory) {
+                        const token = await accessTokenFactory();
+                        return token || '';
+                    }
+                    return '';
+                }
+            })
             .withAutomaticReconnect()
             .configureLogging(signalR.LogLevel.Information)
             .build();
@@ -42,6 +51,10 @@ class SignalRService {
 
         this.connection.on('ReceiveOrderNotification', (message: string) => {
             this.notifyListeners('ReceiveOrderNotification', message);
+        });
+
+        this.connection.on('ReceiveNotification', (data: string | SignalRNotification) => {
+            this.notifyListeners('ReceiveNotification', data);
         });
 
         this.connection.on('ReceiveSystemNotification', (data: string | SignalRNotification) => {

@@ -427,7 +427,6 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1102,6 +1101,9 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<decimal?>("VatRate")
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("WholesalePrice")
                         .HasPrecision(15, 2)
@@ -1980,6 +1982,12 @@ namespace VNVTStore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("UserTier")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("UserTier");
 
                     b.Property<string>("Username")
                         .IsRequired()

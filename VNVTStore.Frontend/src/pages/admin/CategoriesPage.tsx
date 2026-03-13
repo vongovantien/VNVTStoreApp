@@ -87,7 +87,32 @@ export default function CategoriesPage() {
   const [viewingCategory, setViewingCategory] = useState<CategoryDto | null>(null);
 
   // Selection State
+  // Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [itemsToDelete, setItemsToDelete] = useState<CategoryDto[] | null>(null);
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (codes: string[]) => categoryService.deleteMultiple(codes),
+    onSuccess: () => {
+        toast.success(t('common.deleteSuccess'));
+        setItemsToDelete(null);
+        setSelectedIds(new Set());
+        refetch();
+    },
+    onError: (err: Error) => {
+        toast.error(err.message || t('common.deleteError'));
+    }
+  });
+
+  const handleBulkDelete = (items: CategoryDto[]) => {
+      setItemsToDelete(items);
+  };
+
+  const confirmBulkDelete = () => {
+    if (itemsToDelete) {
+        bulkDeleteMutation.mutate(itemsToDelete.map(i => i.code));
+    }
+  };
 
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, pageIndex: page }));
@@ -103,18 +128,18 @@ export default function CategoriesPage() {
         id: editingCategory.code,
         data: {
           name: formData.name,
-          description: formData.description,
+          description: formData.description || '',
           parentCode: formData.parentCode || null,
-          imageURL: formData.imageURL,
+          imageURL: formData.imageURL || '',
           isActive: formData.isActive
         }
       });
     } else {
       await createCategory({
         name: formData.name,
-        description: formData.description,
+        description: formData.description || '',
         parentCode: formData.parentCode || null,
-        imageURL: formData.imageURL,
+        imageURL: formData.imageURL || '',
         isActive: formData.isActive
       });
     }
@@ -223,7 +248,7 @@ export default function CategoriesPage() {
           description: editingCategory.description || undefined,
           parentCode: editingCategory.parentCode || undefined,
           imageURL: editingCategory.imageURL || undefined,
-          isActive: editingCategory.isActive
+          isActive: editingCategory.isActive ?? true
       };
   };
 
@@ -270,6 +295,11 @@ export default function CategoriesPage() {
       <DataTable
         data={categories}
         columns={columns}
+        keyField="code"
+        enableSelection
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        onBulkDelete={handleBulkDelete}
         isLoading={isLoading}
         searchPlaceholder={t('common.placeholders.search')}
         advancedFilterDefs={[
@@ -297,17 +327,8 @@ export default function CategoriesPage() {
         importTemplateUrl="/categories/template"
         importTitle={t('common.importData')}
         onExportAllData={() => categoryService.exportData()}
-        keyField="code"
-        enableSelection
         onAdd={() => openCreate()}
         onRefresh={() => refetch()}
-        
-        // Selection & Actions
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onEdit={(item) => openEdit(item)}
-        onDelete={(item) => confirmDelete(item)}
-        onBulkDelete={() => { /* categories doesn't seem to support bulk delete in hook yet? */ }}
         onView={(item) => setViewingCategory(item)}
 
         // Server-Side Pagination
@@ -322,13 +343,13 @@ export default function CategoriesPage() {
        {/* Form Modal */}
        {isFormOpen && (
         <CategoryForm
-            initialData={prepareInitialData()}
+            initialData={prepareInitialData() || {}}
             onSubmit={handleFormSubmit}
             onCancel={closeForm}
             isLoading={isSubmitting}
             modalOpen={isFormOpen}
             modalTitle={editingCategory ? t('admin.actions.edit') : t('admin.actions.create')}
-            excludeCode={editingCategory?.code}
+            excludeCode={editingCategory?.code || ''}
             imageBaseUrl={apiBaseUrl.replace(/\/api\/v1\/?$/, '')}
         />
        )}
@@ -338,9 +359,9 @@ export default function CategoriesPage() {
         isOpen={!!categoryToDelete}
         onClose={cancelDelete}
         onConfirm={handleDelete}
-        title={t('admin.actions.delete')}
+        title={t('common.actions.delete')}
         message={t('messages.confirmDelete', { name: categoryToDelete?.name })}
-        confirmText={t('admin.actions.delete')}
+        confirmText={t('common.actions.delete')}
         cancelText={t('common.cancel')}
         variant="danger"
         isLoading={isDeleting}
@@ -398,7 +419,7 @@ export default function CategoriesPage() {
                   <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.status')}</label>
                   <div className="mt-1">
                       <Badge color={viewingCategory.isActive !== false ? 'success' : 'secondary'}>
-                          {viewingCategory.isActive !== false ? t('admin.status.active') : t('admin.status.inactive')}
+                          {viewingCategory.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
                       </Badge>
                   </div>
               </div>
@@ -412,6 +433,17 @@ export default function CategoriesPage() {
           </div>
         </Modal>
       )}
+      <ConfirmDialog
+        isOpen={!!itemsToDelete}
+        onClose={() => setItemsToDelete(null)}
+        onConfirm={confirmBulkDelete}
+        title={t('admin.actions.delete')}
+        message={t('messages.confirmDeleteCount', { count: itemsToDelete?.length || 0 })}
+        confirmText={t('admin.actions.delete')}
+        cancelText={t('common.cancel')}
+        variant="danger"
+        isLoading={bulkDeleteMutation.isPending}
+      />
     </div>
   );
 }

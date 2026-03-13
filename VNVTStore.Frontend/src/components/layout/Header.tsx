@@ -18,13 +18,12 @@ import {
   Globe,
   LayoutDashboard,
   Package,
-  LogOut,
-  Loader2,
   ShieldAlert,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
-import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast } from '@/store';
+import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast, useRecentStore } from '@/store';
 import { NotificationDropdown, UserMenu } from '@/components/common';
 import { type SignalRNotification } from '@/services/signalrService';
 import { useClickOutside, useSignalR, useDebounce } from '@/hooks';
@@ -38,10 +37,12 @@ export const Header = memo(() => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategories, setShowCategories] = useState(false);
   
-  const { data: categories = [], isLoading: isLoadingCategories } = useCategories({ 
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories({ 
     enabled: showCategories || mobileMenuOpen 
   });
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const categories = (categoriesData as any[]) || [];
+
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -58,7 +59,6 @@ export const Header = memo(() => {
   const searchResults = searchData?.products || [];
 
   const handleLogoutClick = () => {
-    setShowUserMenu(false);
     setMobileMenuOpen(false);
     setShowLogoutConfirm(true);
   };
@@ -72,7 +72,6 @@ export const Header = memo(() => {
 
 
   const categoriesRef = useClickOutside<HTMLDivElement>(() => setShowCategories(false));
-  const userMenuRef = useClickOutside<HTMLDivElement>(() => setShowUserMenu(false));
   // const langMenuRef = useClickOutside<HTMLDivElement>(() => setShowLangMenu(false)); // Temporarily removed
   const langMenuRef = useRef<HTMLDivElement>(null); // Use simple ref for button
   const langDropdownRef = useRef<HTMLDivElement>(null); // Ref for dropdown portal
@@ -132,6 +131,7 @@ export const Header = memo(() => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      useRecentStore.getState().addSearchQuery(searchQuery.trim());
       window.location.href = `/search?search=${encodeURIComponent(searchQuery)}`;
     }
   };
@@ -236,59 +236,110 @@ export const Header = memo(() => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-40"
+                  className="absolute top-full left-0 right-0 mt-2 bg-primary rounded-2xl shadow-2xl border border-border overflow-hidden z-[110]"
                 >
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                      {t('header.searchMatches', 'Kết quả tìm kiếm')}
-                    </span>
-                    {isSearching && <Loader2 size={14} className="animate-spin text-indigo-500" />}
-                  </div>
+                  <div className="z-[110]">
+                    {/* Search History & Trending (Only when no results or loading) */}
+                    {!debouncedSearch && (
+                      <div className="p-4 space-y-4">
+                        {/* Recent Searches */}
+                        {useRecentStore.getState().searchHistory.length > 0 && (
+                           <div>
+                             <div className="flex justify-between items-center mb-2">
+                               <span className="text-[10px] font-bold text-tertiary uppercase tracking-widest">{t('header.recentSearches', 'Tìm kiếm gần đây')}</span>
+                               <button onClick={() => useRecentStore.getState().clearSearchHistory()} className="text-[10px] text-indigo-500 hover:underline">Xóa</button>
+                             </div>
+                             <div className="flex flex-wrap gap-2">
+                               {useRecentStore.getState().searchHistory.map((q) => (
+                                 <button 
+                                   key={q} 
+                                   type="button"
+                                   onClick={() => setSearchQuery(q)}
+                                   className="px-3 py-1 bg-secondary/5 hover:bg-secondary/10 rounded-full text-xs text-secondary transition-colors"
+                                 >
+                                   {q}
+                                 </button>
+                               ))}
+                             </div>
+                           </div>
+                        )}
 
-                  <div className="max-h-[400px] overflow-y-auto py-2">
-                    {searchResults.length > 0 ? (
-                      <>
-                        {searchResults.map((p) => (
-                          <Link
-                            key={p.code}
-                            to={`/product/${p.code}`}
-                            onClick={() => setShowSearchResults(false)}
-                            className="flex items-center gap-4 px-4 py-3 hover:bg-hover transition-colors group"
-                          >
-                            <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex-shrink-0">
-                              <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 transition-colors">
-                                {p.name}
-                              </h4>
-                              <p className="text-xs text-slate-400 truncate">{p.category}</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-sm font-bold text-slate-900 dark:text-white">
-                                {p.price > 0 ? formatCurrency(p.price) : t('product.contact')}
-                              </div>
-                              {p.price > 0 && p.originalPrice && p.originalPrice > p.price && (
-                                <div className="text-[10px] text-slate-400 line-through">
-                                  {formatCurrency(p.originalPrice)}
-                                </div>
-                              )}
-                            </div>
-                          </Link>
-                        ))}
-                        <Link
-                          to={`/search?search=${encodeURIComponent(debouncedSearch)}`}
-                          onClick={() => setShowSearchResults(false)}
-                          className="block text-center py-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border-t border-slate-100 dark:border-slate-700 mt-2"
-                        >
-                          {t('header.viewAllResults', 'Xem tất cả kết quả cho "{{query}}"', { query: debouncedSearch })}
-                        </Link>
-                      </>
-                    ) : !isSearching ? (
-                      <div className="p-8 text-center text-slate-400 text-sm">
-                        {t('header.noResults', 'Không tìm thấy sản phẩm nào')}
+                        {/* Trending */}
+                        <div>
+                           <span className="text-[10px] font-bold text-tertiary uppercase tracking-widest block mb-2">{t('header.trending', 'Xu hướng tìm kiếm')}</span>
+                           <div className="grid grid-cols-2 gap-2">
+                             {['iPhone 15 Pro', 'MacBook M3', 'Samsung S24', 'Sony WH-1000XM5'].map((trending) => (
+                               <button 
+                                 key={trending}
+                                 type="button"
+                                 onClick={() => setSearchQuery(trending)}
+                                 className="flex items-center gap-2 p-2 hover:bg-hover rounded-lg text-sm text-secondary transition-colors text-left"
+                               >
+                                 <span className="w-5 h-5 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded text-[10px] font-bold">#</span>
+                                 {trending}
+                               </button>
+                             ))}
+                           </div>
+                        </div>
                       </div>
-                    ) : null}
+                    )}
+
+                    {debouncedSearch && (
+                      <>
+                        <div className="p-4 border-b border-border flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            {t('header.searchMatches', 'Kết quả tìm kiếm')}
+                          </span>
+                          {isSearching && <Loader2 size={14} className="animate-spin text-indigo-500" />}
+                        </div>
+
+                        <div className="max-h-[400px] overflow-y-auto py-2">
+                          {searchResults.length > 0 ? (
+                            <>
+                              {searchResults.map((p) => (
+                                <Link
+                                  key={p.code}
+                                  to={`/product/${p.code}`}
+                                  onClick={() => setShowSearchResults(false)}
+                                  className="flex items-center gap-4 px-4 py-3 hover:bg-hover transition-colors group"
+                                >
+                                  <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex-shrink-0">
+                                    <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 transition-colors">
+                                      {p.name}
+                                    </h4>
+                                    <p className="text-xs text-slate-400 truncate">{p.category}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm font-bold text-slate-900 dark:text-white">
+                                      {p.price > 0 ? formatCurrency(p.price) : t('product.contact')}
+                                    </div>
+                                    {p.price > 0 && p.originalPrice && p.originalPrice > p.price && (
+                                      <div className="text-[10px] text-slate-400 line-through">
+                                        {formatCurrency(p.originalPrice)}
+                                      </div>
+                                    )}
+                                  </div>
+                                </Link>
+                              ))}
+                              <Link
+                                to={`/search?search=${encodeURIComponent(debouncedSearch)}`}
+                                onClick={() => setShowSearchResults(false)}
+                                className="block text-center py-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border-t border-slate-100 dark:border-slate-700 mt-2"
+                              >
+                                {t('header.viewAllResults', 'Xem tất cả kết quả cho "{{query}}"', { query: debouncedSearch })}
+                              </Link>
+                            </>
+                          ) : !isSearching ? (
+                            <div className="p-8 text-center text-slate-400 text-sm">
+                              {t('header.noResults', 'Không tìm thấy sản phẩm nào')}
+                            </div>
+                          ) : null}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -344,17 +395,26 @@ export const Header = memo(() => {
               )}
             </div>
 
-            {/* Notifications - Only for Admin */}
-            {user?.role === 'Admin' && (
+            {/* Notifications - Open for all authenticated users */}
+            {isAuthenticated && (
                 <NotificationDropdown 
                     isConnected={isConnected}
-                    onNotificationClick={() => navigate('/admin/orders')}
+                    onNotificationClick={() => navigate('/account/notifications')}
                 />
             )}
-
+            
             {/* Theme Toggle */}
-            <Button variant="ghost" size="sm" onClick={toggleTheme}>
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            <Button variant="ghost" size="sm" onClick={toggleTheme} className="transition-all duration-300">
+              {theme === 'light' ? (
+                <Moon size={20} className="hover:text-indigo-600" />
+              ) : theme === 'dark' ? (
+                <Sun size={20} className="hover:text-amber-500" />
+              ) : (
+                <div className="relative">
+                  <span className="absolute -inset-1 blur-sm bg-cyan-400 animate-pulse rounded-full opacity-50"></span>
+                  <Package size={20} className="relative text-cyan-400" />
+                </div>
+              )}
             </Button>
 
             {/* Compare */}

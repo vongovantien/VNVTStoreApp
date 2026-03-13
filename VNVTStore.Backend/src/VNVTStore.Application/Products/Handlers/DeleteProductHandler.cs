@@ -15,6 +15,7 @@ using AutoMapper;
 namespace VNVTStore.Application.Products.Handlers;
 
 public class DeleteProductHandler : BaseHandler<TblProduct>,
+    IRequestHandler<DeleteMultipleCommand<TblProduct>, Result>,
     IRequestHandler<DeleteCommand<TblProduct>, Result>
 {
     private readonly IFileService _fileService;
@@ -40,7 +41,7 @@ public class DeleteProductHandler : BaseHandler<TblProduct>,
 
         if (result.IsSuccess)
         {
-            await _fileService.DeleteLinkedFilesAsync(request.Code, "Product", cancellationToken);
+            await _fileService.DeleteLinkedFilesAsync(request.Code, "TblProduct", cancellationToken);
         }
 
         return result;

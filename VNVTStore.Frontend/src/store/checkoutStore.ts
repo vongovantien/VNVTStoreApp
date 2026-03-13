@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { createTabStorage } from './helpers';
+import { useDiagnosticStore } from './diagnosticStore';
 
 export interface CheckoutFormData {
     fullName: string;
@@ -42,9 +44,27 @@ export const useCheckoutStore = create<CheckoutState>()(
             formData: initialFormData,
             paymentMethod: 'COD',
             voucherCode: '',
-            setStep: (step) => set({ step }),
+            setStep: (step) => {
+                useDiagnosticStore.getState().track({
+                    module: 'SHOP',
+                    eventType: 'CHECKOUT_STEP_CHANGE',
+                    description: `Moved to checkout step ${step}`,
+                    payload: { step },
+                    severity: 'INFO'
+                });
+                set({ step });
+            },
             setFormData: (data) => set((state) => ({ formData: { ...state.formData, ...data } })),
-            setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
+            setPaymentMethod: (paymentMethod) => {
+                useDiagnosticStore.getState().track({
+                    module: 'SHOP',
+                    eventType: 'PAYMENT_METHOD_SELECT',
+                    description: `User selected ${paymentMethod} payment method`,
+                    payload: { paymentMethod },
+                    severity: 'INFO'
+                });
+                set({ paymentMethod });
+            },
             setVoucherCode: (voucherCode) => set({ voucherCode }),
             resetCheckout: () => set({
                 step: 1,
@@ -55,7 +75,7 @@ export const useCheckoutStore = create<CheckoutState>()(
         }),
         {
             name: 'vnvt-checkout',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => createTabStorage()),
         }
     )
 );

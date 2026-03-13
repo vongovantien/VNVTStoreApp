@@ -1,4 +1,4 @@
-﻿# Ignore Visual Studio for Mac / JetBrains Rider project files
+# Ignore Visual Studio for Mac / JetBrains Rider project files
 .vscode/
 .idea/
 
@@ -88,3 +88,6 @@ obj/
 
 # Ignore Visual Studio specific files
 .vs/
+
+# Firebase Secrets
+VNVTStore.Backend/src/VNVTStore.API/firebase-service-account.json

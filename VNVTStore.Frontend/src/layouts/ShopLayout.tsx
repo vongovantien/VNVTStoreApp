@@ -5,7 +5,6 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { QuickViewModal } from '@/components/common';
 import { CartDrawer } from '@/components/common/CartDrawer';
-import { ChatWidget } from '@/components/common/ChatWidget';
 import { AnnouncementBanner } from '@/components/common/AnnouncementBanner';
 import { FloatingContact } from '@/components/common/FloatingContact';
 

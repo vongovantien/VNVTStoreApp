@@ -25,11 +25,7 @@ const setMetaTag = (property: string, content: string, isProperty = false) => {
     return el;
 };
 
-const removeMetaTag = (property: string, isProperty = false) => {
-    const attr = isProperty ? 'property' : 'name';
-    const el = document.querySelector(`meta[${attr}="${property}"]`);
-    if (el) el.remove();
-};
+
 
 // ============ #86 Canonical Tag ============
 export const useCanonical = (path?: string) => {

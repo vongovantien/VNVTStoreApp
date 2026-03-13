@@ -54,7 +54,7 @@ export const TrackingPage = () => {
                 toast.error(t('tracking.notFound') || 'Không tìm thấy đơn hàng');
                 setOrderInfo(null);
             }
-        } catch (error) {
+        } catch {
             toast.error(t('common.error') || 'Có lỗi xảy ra');
         } finally {
             setLoading(false);

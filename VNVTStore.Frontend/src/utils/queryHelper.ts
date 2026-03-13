@@ -92,7 +92,7 @@ const compareEqual = (a: unknown, b: unknown): boolean => {
     if (a === b) return true;
     // loose equality for numbers/strings mismatch
 
-    if (a == b) return true;
+    if (a === b) return true;
 
     // Case insensitive string comparison
     if (typeof a === 'string' && typeof b === 'string') {

@@ -18,8 +18,8 @@ interface CropArea {
 }
 
 interface AvatarUploadProps {
-    currentAvatarUrl?: string;
-    onUploadSuccess: (url: string) => void;
+    currentAvatarUrl?: string | undefined;
+    onUploadSuccess: (url: string | undefined) => void;
     className?: string;
     size?: 'sm' | 'md' | 'lg' | 'xl';
 }

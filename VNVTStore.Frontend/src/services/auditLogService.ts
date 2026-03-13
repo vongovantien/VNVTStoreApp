@@ -17,14 +17,14 @@ export interface AuditLogDto {
 export interface SearchParams {
     pageIndex: number;
     pageSize: number;
-    searching?: any[];
+    searching?: Record<string, unknown>[];
     sortDTO?: {
         sortBy: string;
         sort: string;
     };
 }
 
-const baseService = createEntityService<AuditLogDto, any, any>({
+const baseService = createEntityService<AuditLogDto, Record<string, unknown>, Record<string, unknown>>({
     endpoint: API_ENDPOINTS.AUDIT_LOGS.BASE,
 });
 

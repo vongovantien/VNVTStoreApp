@@ -11,7 +11,7 @@ import { useSEO } from '@/hooks/useSEO';
 
 const OrderSuccessPage = () => {
      
-  const { t } = useTranslation();
+  useTranslation();
   
   useSEO({
     title: 'Đặt hàng thành công',

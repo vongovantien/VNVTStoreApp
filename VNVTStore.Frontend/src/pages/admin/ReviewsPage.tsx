@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star, Check, X, MessageSquare, Trash2, Search } from 'lucide-react';
+import { Star, MessageSquare, Trash2 } from 'lucide-react';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';

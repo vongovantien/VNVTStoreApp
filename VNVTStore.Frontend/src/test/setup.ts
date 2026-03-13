@@ -13,22 +13,22 @@ afterEach(() => {
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
-        t: (key: string, ...args: any[]) => {
+        t: (key: string, ...args: unknown[]) => {
             let defaultValue = '';
-            let options: any = {};
+            let options: Record<string, unknown> = {};
 
             if (args.length === 1) {
                 if (typeof args[0] === 'string') defaultValue = args[0];
-                else options = args[0];
+                else options = args[0] as Record<string, unknown>;
             } else if (args.length === 2) {
-                defaultValue = args[0];
-                options = args[1];
+                defaultValue = args[0] as string;
+                options = args[1] as Record<string, unknown>;
             }
 
-            let text = defaultValue || options.defaultValue || key;
+            let text = defaultValue || (options.defaultValue as string) || key;
             if (options) {
                 Object.keys(options).forEach(k => {
-                    text = text.replace(`{{${k}}}`, options[k]);
+                    text = text.replace(`{{${k}}}`, String(options[k]));
                 });
             }
             return text;

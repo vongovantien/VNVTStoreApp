@@ -12,7 +12,7 @@ export interface UpdateProfileData {
   fullName: string;
   email: string;
   phone: string;
-  avatarUrl?: string;
+  avatarUrl?: string | undefined;
 }
 
 interface ProfileFormProps {
@@ -29,8 +29,8 @@ interface ProfileFormProps {
 const ProfileForm = ({ initialData, onSave, loading }: ProfileFormProps) => {
   const { t } = useTranslation();
   const { userBaseSchema } = createSchemas(t);
-  const avatarVal = initialData.avatar || (initialData as any).Avatar;
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(getImageUrl(avatarVal));
+  const avatarVal = (initialData.avatar || (initialData as Record<string, unknown>).Avatar) as string | undefined;
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(getImageUrl(avatarVal) || undefined);
 
   const form = useForm({
     resolver: zodResolver(userBaseSchema),

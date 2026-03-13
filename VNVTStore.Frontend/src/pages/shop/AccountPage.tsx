@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import AccountSidebar from './account/AccountSidebar';
 import { Loader2 } from 'lucide-react';
 

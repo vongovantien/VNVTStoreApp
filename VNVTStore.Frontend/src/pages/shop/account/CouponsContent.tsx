@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ticket, Clock, Info, ChevronRight, Tag } from 'lucide-react';
+import { Ticket, Clock, Info } from 'lucide-react';
 import { promotionService, type Promotion } from '@/services/promotionService';
 import { Badge, Loading } from '@/components/ui';
 import { formatCurrency } from '@/utils/format';

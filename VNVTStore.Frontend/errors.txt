@@ -1,0 +1,32 @@
+D:\VNVTStoreApp\VNVTStore.Frontend\src\components\shop\CompareTable.tsx
+  4:18 'AnimatePresence' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+  8:10 'cn' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+  19:11 't' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\hooks\useSEO.ts
+  28:7 'removeMetaTag' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\layouts\ShopLayout.tsx
+  8:10 'ChatWidget' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\pages\admin\ReviewsPage.tsx
+  3:16 'Check' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+  3:23 'X' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+  3:49 'Search' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\pages\shop\AccountPage.tsx
+  2:25 'Navigate' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\pages\shop\OrderSuccessPage.tsx
+  14:11 't' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\pages\shop\TrackingPage.tsx
+  57:18 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\pages\shop\account\CouponsContent.tsx
+  3:31 'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+  3:45 'Tag' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\pages\shop\account\components\ProfileForm.tsx
+  32:59 Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\services\auditLogService.ts
+  20:17 Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  27:54 Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  27:59 Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\test\setup.ts
+  16:35 Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+  18:26 Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\VNVTStoreApp\VNVTStore.Frontend\src\utils\queryHelper.ts
+  95:11 Expected '===' and instead saw '=='. (eqeqeq)

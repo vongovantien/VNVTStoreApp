@@ -1,11 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, ShoppingCart, Check, Minus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Product } from '@/types';
 import { Button } from '@/components/ui';
 import { formatCurrency } from '@/utils/format';
-import { cn } from '@/utils/cn';
 import CustomImage from '@/components/common/Image';
 
 interface CompareTableProps {
@@ -16,7 +15,7 @@ interface CompareTableProps {
 }
 
 export const CompareTable: React.FC<CompareTableProps> = ({ items, onRemove, onAddToCart, onClose }) => {
-  const { t } = useTranslation();
+  useTranslation();
 
   if (items.length === 0) return null;
 

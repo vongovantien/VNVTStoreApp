@@ -35,6 +35,6 @@ public class UploadController : ControllerBase
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        return Ok(new { url = result.Value });
+        return Ok(new { url = result.Value.Url });
     }
 }

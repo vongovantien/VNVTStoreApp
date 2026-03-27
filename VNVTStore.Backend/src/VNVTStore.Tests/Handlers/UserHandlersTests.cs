@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
@@ -60,6 +60,33 @@ public class UserHandlersTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+    }
+
+    [Fact]
+    public async Task DeleteUser_ShouldFail_WhenHasActiveOrders()
+    {
+        // Arrange
+        // Note: Using real repository connected to in-memory DB, 
+        // but the stashed code used mocks. I'll stick to real DB behavior.
+        var userCode = "USER01";
+        var user = TblUser.Create("testuser", "test@test.com", "hash", "Test User", UserRole.Customer);
+        user.Code = userCode;
+        user.IsActive = false;
+        await _context.TblUsers.AddAsync(user);
+        
+        var order = TblOrder.Create("ORD01", userCode, 100, "Address", "0909", "Customer", null);
+        order.Status = OrderStatus.Processing;
+        await _context.TblOrders.AddAsync(order);
+        await _context.SaveChangesAsync();
+
+        var command = new DeleteCommand<TblUser>(userCode);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Contains("orders", result.Error.Message);
     }
 
     [Fact]

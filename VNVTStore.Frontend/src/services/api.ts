@@ -241,6 +241,7 @@ axiosInstance.interceptors.response.use(
 
               const { data } = response;
               if (data.success && data.data) {
+                console.log("Làm mới token thành công.");
                 setTokens(data.data.token, data.data.refreshToken);
                 axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + data.data.token;
                 processQueue(null, data.data.token);
@@ -250,10 +251,11 @@ axiosInstance.interceptors.response.use(
                 }
                 return axiosInstance(originalRequest);
               } else {
-                console.error("Làm mới token thất bại.");
+                console.error("Làm mới token thất bại: dữ liệu phản hồi không hợp lệ.", data);
                 throw new Error('Refresh failed');
               }
             } catch (err) {
+              console.error("Lỗi nghiêm trọng khi làm mới token:", err);
               processQueue(err, null);
               authStore?.getState()?.logout();
               return Promise.reject(err);

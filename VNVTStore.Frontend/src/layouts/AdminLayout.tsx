@@ -90,6 +90,8 @@ const navGroups: NavGroup[] = [
     title: 'admin.sidebar.system',
     items: [
       { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings', code: 'SETTINGS', end: false },
+      { path: '/admin/system-configs', icon: LayoutDashboard, label: 'admin.sidebar.systemConfigs', code: 'SETTINGS', end: false },
+      { path: '/admin/system-secrets', icon: Shield, label: 'admin.sidebar.systemSecrets', code: 'SETTINGS', end: false },
       { path: '/admin/audit-logs', icon: FileText, label: 'admin.sidebar.auditLogs', code: 'AUDIT_LOGS', end: false },
       { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles', code: 'ROLES', end: false },
     ]

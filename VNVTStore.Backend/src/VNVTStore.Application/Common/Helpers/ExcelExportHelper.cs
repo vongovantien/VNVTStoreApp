@@ -24,4 +24,33 @@ public static class ExcelExportHelper
         worksheet.Cells.AutoFitColumns();
         return package.GetAsByteArray();
     }
+
+    public static byte[] ExportToExcel<T>(IEnumerable<T> data, string sheetName = "Data") where T : class
+    {
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        using var package = new ExcelPackage();
+        var worksheet = package.Workbook.Worksheets.Add(sheetName);
+
+        var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        
+        // Headers
+        for (int i = 0; i < properties.Length; i++)
+        {
+            worksheet.Cells[1, i + 1].Value = properties[i].Name;
+            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+        }
+
+        // Data
+        var dataList = data.ToList();
+        for (int row = 0; row < dataList.Count; row++)
+        {
+            for (int col = 0; col < properties.Length; col++)
+            {
+                worksheet.Cells[row + 2, col + 1].Value = properties[col].GetValue(dataList[row]);
+            }
+        }
+
+        worksheet.Cells.AutoFitColumns();
+        return package.GetAsByteArray();
+    }
 }

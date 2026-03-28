@@ -302,8 +302,6 @@
             "passwordStrengthError": "Mật khẩu không đạt yêu cầu về độ mạnh.",
             "checkQuotesPage": "Vui lòng kiểm tra trang Báo giá để xem chi tiết.",
             "featureComingSoon": "Tính năng đang được phát triển",
-            "importSuccess": "Nhập dữ liệu thành công",
-            "importError": "Nhập dữ liệu thất bại",
             "saveProductFirst": "Vui lòng lưu sản phẩm trước khi tạo đơn vị tính",
             "confirmDeleteCount": "Bạn có chắc chắn muốn xóa {{count}} mục đã chọn?",
             "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất không?",
@@ -319,6 +317,10 @@
             "deleteSuccess": "Xóa thành công!",
             "deleteError": "Không thể xóa. Vui lòng thử lại.",
             "saveSuccess": "Đã lưu thay đổi thành công!",
+            "exportSuccess": "Xuất dữ liệu thành công!",
+            "exportError": "Xuất dữ liệu thất bại!",
+            "importSuccess": "Nhập dữ liệu thành công ({{count}} mục)!",
+            "importError": "Nhập dữ liệu thất bại!",
             "selectProductsFlashSale": "Chọn sản phẩm tham gia",
             "noProductsAvailable": "Không tìm thấy sản phẩm nào",
             "selectProductsInfo": "Các sản phẩm được chọn sẽ được áp dụng mức giảm giá này.",
@@ -575,7 +577,9 @@
             "coupons": "Mã giảm giá",
             "news": "Tin tức",
             "roles": "Phân quyền",
-            "auditLogs": "Nhật ký hoạt động"
+            "auditLogs": "Nhật ký hoạt động",
+            "systemConfigs": "Cấu hình hệ thống",
+            "systemSecrets": "Tham số bảo mật"
         },
         "userMenu": {
             "signedInAs": "Đăng nhập với tư cách",
@@ -600,7 +604,9 @@
             "news": "Quản lý tin tức và bài viết blog",
             "reviews": "Quản lý đánh giá từ khách hàng",
             "auditLogs": "Xem nhật ký hoạt động hệ thống",
-            "banners": "Quản lý banner quảng cáo"
+            "banners": "Quản lý banner quảng cáo",
+            "systemConfig": "Quản lý các thông số vận hành chung của cửa hàng",
+            "systemSecrets": "Quản lý API Keys và các thông tin nhạy cảm (Secrets)"
         },
         "titles": {
             "productEdit": "Chỉnh sửa sản phẩm",

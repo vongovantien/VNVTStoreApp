@@ -125,8 +125,27 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
             return Result<AuthResponseDto>.Failure("Account is locked.");
         }
 
-        // 3. Generate Tokens using IJwtService (external login has no custom permissions or menus)
-        var accessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, Array.Empty<string>(), Array.Empty<string>());
+        // 3. Generate Tokens using IJwtService (external login now includes role permissions/menus)
+        var userWithRoles = await _context.TblUsers
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRolePermissions)
+                    .ThenInclude(rp => rp.PermissionCodeNavigation)
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRoleMenus)
+                    .ThenInclude(rm => rm.MenuCodeNavigation)
+            .FirstOrDefaultAsync(u => u.Code == user.Code, cancellationToken);
+
+        var permissions = userWithRoles?.RoleCodeNavigation?.TblRolePermissions
+            .Where(rp => rp.PermissionCodeNavigation != null)
+            .Select(rp => rp.PermissionCodeNavigation!.Name)
+            .ToList() ?? new List<string>();
+            
+        var menus = userWithRoles?.RoleCodeNavigation?.TblRoleMenus
+            .Where(rm => rm.MenuCodeNavigation != null)
+            .Select(rm => rm.MenuCodeNavigation!.Code)
+            .ToList() ?? new List<string>();
+
+        var accessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, permissions, menus);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));

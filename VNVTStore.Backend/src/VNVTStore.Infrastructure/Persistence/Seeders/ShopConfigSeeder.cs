@@ -27,7 +27,8 @@ public class ShopConfigSeeder : IDataSeeder
             new TblSystemConfig { Code = "VIP_THRESHOLD", ConfigValue = "5000", Description = "Points required for VIP tier" },
             new TblSystemConfig { Code = "LOYAL_THRESHOLD", ConfigValue = "1000", Description = "Points required for Loyal tier" },
             new TblSystemConfig { Code = "SHOP_LOGO_URL", ConfigValue = "/logo.png", Description = "Shop global logo URL" },
-            new TblSystemConfig { Code = "ANNOUNCEMENT_BANNER", ConfigValue = "Welcome to VNVT Store!", Description = "Text for the top announcement banner" }
+            new TblSystemConfig { Code = "ANNOUNCEMENT_BANNER", ConfigValue = "Welcome to VNVT Store!", Description = "Text for the top announcement banner" },
+            new TblSystemConfig { Code = "JwtSettings__ExpirationInMinutes", ConfigValue = "120", Description = "JWT Access Token Expiration in minutes" }
         };
 
         foreach (var config in configs)

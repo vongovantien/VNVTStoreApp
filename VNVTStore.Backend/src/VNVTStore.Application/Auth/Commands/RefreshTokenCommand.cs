@@ -4,6 +4,7 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 
 namespace VNVTStore.Application.Auth.Commands;
@@ -47,15 +48,31 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
              return Result.Failure<AuthResponseDto>(Error.Validation("Invalid token claims"));
         }
 
-        var user = await _repository.GetByCodeAsync(userCode, cancellationToken);
+        var user = await _repository.Where(u => u.Code == userCode)
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRolePermissions)
+                    .ThenInclude(rp => rp.PermissionCodeNavigation)
+            .Include(u => u.RoleCodeNavigation)
+                .ThenInclude(r => r.TblRoleMenus)
+                    .ThenInclude(rm => rm.MenuCodeNavigation)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {
             return Result.Failure<AuthResponseDto>(Error.Validation("Invalid access token or refresh token"));
         }
 
-        // TODO: Ideally, fetch permissions and menus from user's role here
-        var newAccessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, Array.Empty<string>(), Array.Empty<string>());
+        var permissions = user.RoleCodeNavigation?.TblRolePermissions
+            .Where(rp => rp.PermissionCodeNavigation != null)
+            .Select(rp => rp.PermissionCodeNavigation!.Name)
+            .ToList() ?? new List<string>();
+            
+        var menus = user.RoleCodeNavigation?.TblRoleMenus
+            .Where(rm => rm.MenuCodeNavigation != null)
+            .Select(rm => rm.MenuCodeNavigation!.Code)
+            .ToList() ?? new List<string>();
+
+        var newAccessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, permissions, menus);
         var newRefreshToken = _jwtService.GenerateRefreshToken();
 
         user.SetRefreshToken(newRefreshToken, DateTime.UtcNow.AddDays(7));
@@ -64,11 +81,16 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
-        return Result.Success(new AuthResponseDto
+        var responseDto = new AuthResponseDto
         {
             Token = newAccessToken,
             RefreshToken = newRefreshToken,
             User = _mapper.Map<UserDto>(user)
-        });
+        };
+        
+        responseDto.User.Permissions = permissions;
+        responseDto.User.Menus = menus;
+
+        return Result.Success(responseDto);
     }
 }

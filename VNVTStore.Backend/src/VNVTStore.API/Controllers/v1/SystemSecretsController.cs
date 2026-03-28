@@ -51,6 +51,29 @@ public class SystemSecretsController : BaseApiController
         var result = await Mediator.Send(command);
         return HandleResult(result, "Secret deleted successfully.");
     }
+
+    /// <summary>
+    /// Xuáº¥t Excel danh sÃ¡ch bÃ­ máº­t
+    /// </summary>
+    [HttpGet("export")]
+    public async Task<IActionResult> Export()
+    {
+        var result = await Mediator.Send(new ExportSystemSecretsQuery());
+        if (!result.IsSuccess) return HandleResult(result);
+        return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"SystemSecrets_{DateTime.Now:yyyyMMdd}.xlsx");
+    }
+
+    /// <summary>
+    /// Nháº­p Excel danh sÃ¡ch bÃ­ máº­t
+    /// </summary>
+    [HttpPost("import")]
+    public async Task<IActionResult> Import(IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest("File is empty");
+        using var stream = file.OpenReadStream();
+        var result = await Mediator.Send(new ImportSystemSecretsCommand(stream));
+        return HandleResult(result);
+    }
 }
 
 public record UpdateSecretRequest(string Key, string Value, string? Description);

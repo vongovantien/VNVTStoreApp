@@ -1,33 +1,34 @@
 import { ApiResponse } from './api';
 import apiClient from './api';
 
-export interface SystemConfigDto extends Record<string, unknown> {
-    configKey: string;
-    configValue: string;
+export interface SystemSecretDto extends Record<string, unknown> {
+    code: string;
+    secretValue: string;
     description?: string;
     isActive: boolean;
+    isEncrypted: boolean;
     updatedAt?: string;
 }
 
-export interface UpdateSystemConfigRequest {
-    configKey: string;
-    configValue: string;
-    isActive?: boolean;
+export interface UpdateSystemSecretRequest {
+    key: string;
+    value: string;
+    description?: string | null;
 }
 
-class SystemConfigService {
-    endpoint = '/systemconfig';
+class SystemSecretService {
+    endpoint = '/systemsecrets';
 
-    async getAll(): Promise<ApiResponse<SystemConfigDto[]>> {
+    async getAll(): Promise<ApiResponse<SystemSecretDto[]>> {
         return apiClient.get(this.endpoint);
     }
 
-    async get(key: string): Promise<ApiResponse<SystemConfigDto>> {
-        return apiClient.get(`${this.endpoint}/${key}`);
+    async update(data: UpdateSystemSecretRequest): Promise<ApiResponse<boolean>> {
+        return apiClient.post(this.endpoint, data);
     }
 
-    async update(data: UpdateSystemConfigRequest): Promise<ApiResponse<SystemConfigDto>> {
-        return apiClient.post(`${this.endpoint}`, data);
+    async delete(key: string): Promise<ApiResponse<boolean>> {
+        return apiClient.delete(`${this.endpoint}/${key}`);
     }
 
     async export(): Promise<void> {
@@ -35,7 +36,7 @@ class SystemConfigService {
         const url = window.URL.createObjectURL(new Blob([response.data as BlobPart]));
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `SystemConfigs_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        link.setAttribute('download', `SystemSecrets_${new Date().toISOString().slice(0, 10)}.xlsx`);
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -51,4 +52,4 @@ class SystemConfigService {
     }
 }
 
-export const systemConfigService = new SystemConfigService();
+export const systemSecretService = new SystemSecretService();

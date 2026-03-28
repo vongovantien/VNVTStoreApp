@@ -71,11 +71,12 @@ export const useToastStore = create<ToastStore>((set, get) => ({
 }));
 
 // Export hook for easier access
+import { useMemo } from 'react';
 export const useToast = () => {
   const success = useToastStore(state => state.success);
   const error = useToastStore(state => state.error);
   const warning = useToastStore(state => state.warning);
   const info = useToastStore(state => state.info);
 
-  return { success, error, warning, info };
+  return useMemo(() => ({ success, error, warning, info }), [success, error, warning, info]);
 };

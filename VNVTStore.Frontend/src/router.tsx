@@ -64,6 +64,8 @@ const AdminBrands = lazy(() => import('@/pages/admin/BrandsPage'));
 const AdminUnits = lazy(() => import('@/pages/admin/UnitsPage'));
 const AdminBanners = lazy(() => import('@/pages/admin/BannersPage'));
 const AdminReviews = lazy(() => import('@/pages/admin/ReviewsPage'));
+const AdminConfigs = lazy(() => import('@/pages/admin/SystemConfigsPage'));
+const AdminSecrets = lazy(() => import('@/pages/admin/SystemSecretsPage'));
 
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
@@ -466,7 +468,22 @@ const router = createBrowserRouter([
               </Suspense>
             ),
           },
-
+          {
+            path: 'system-configs',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminConfigs />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'system-secrets',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminSecrets />
+              </Suspense>
+            ),
+          },
           {
             path: 'users',
             element: (

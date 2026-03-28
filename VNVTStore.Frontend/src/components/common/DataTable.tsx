@@ -454,7 +454,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
   // ============ Render ============
   return (
     <>
-      <div className="bg-primary border shadow-sm rounded-xl relative flex flex-col" ref={containerRef}>
+      <div className="bg-bg-primary border shadow-sm rounded-xl relative flex flex-col" ref={containerRef}>
         {/* Toolbar */}
         {showToolbar && (
           <div className="p-4 border-b border-border">
@@ -502,7 +502,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
         {/* Floating Filter Panel */}
         {advancedFilterDefs && showFilters && (
           <div
-            className="fixed inset-x-4 top-24 z-[100] md:absolute md:top-16 md:w-[600px] md:inset-auto bg-primary shadow-2xl rounded-xl border border-border p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-left max-h-[80vh] overflow-y-auto"
+            className="fixed inset-x-4 top-24 z-[100] md:absolute md:top-16 md:w-[600px] md:inset-auto bg-bg-primary shadow-2xl rounded-xl border border-border p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-left max-h-[80vh] overflow-y-auto"
             style={{
               ...(window.innerWidth >= 768 ? { left: popupLeft > 0 ? popupLeft : '230px' } : {})
             }}
@@ -568,7 +568,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
 
           {/* Error Overlay */}
           {showError && (
-            <div className="absolute inset-0 bg-primary/80 flex items-center justify-center z-10 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-bg-primary/80 flex items-center justify-center z-10 backdrop-blur-sm">
               <div className="text-center">
                 <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
                 <h3 className="font-semibold mb-2">{t('messages.error')}</h3>
@@ -589,7 +589,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
             ) : (
               <>
                 {(isLoading || isFetching) && (
-                  <div className="absolute inset-0 bg-primary/40 z-10 flex items-center justify-center backdrop-blur-[1px]">
+                  <div className="absolute inset-0 bg-bg-primary/40 z-10 flex items-center justify-center backdrop-blur-[1px]">
                     <Loading />
                   </div>
                 )}

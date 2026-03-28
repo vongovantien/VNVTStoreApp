@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using VNVTStore.Application.Interfaces;
@@ -26,17 +28,39 @@ public class JwtSettings
 public class JwtService : IJwtService
 {
     private readonly JwtSettings _jwtSettings;
+    private readonly IApplicationDbContext _context;
+    private readonly ILogger<JwtService> _logger;
 
-    public JwtService(IOptions<JwtSettings> jwtSettings)
+    public JwtService(IOptions<JwtSettings> jwtSettings, IApplicationDbContext context, ILogger<JwtService> logger)
     {
         _jwtSettings = jwtSettings.Value;
+        _context = context;
+        _logger = logger;
     }
 
     public string GenerateToken(string userCode, string username, string email, UserRole role, IEnumerable<string> permissions, IEnumerable<string> menus)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
-        var expiry = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes);
+        
+        // Dynamic expiration from Database
+        int expirationMinutes = _jwtSettings.ExpirationInMinutes;
+        try 
+        {
+            var config = _context.TblSystemConfigs
+                .AsNoTracking()
+                .FirstOrDefault(c => c.Code == "JwtSettings__ExpirationInMinutes");
+            if (config != null && int.TryParse(config.ConfigValue, out int dbExpiration))
+            {
+                expirationMinutes = dbExpiration;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[GenerateToken] Error reading JWT expiration from DB, using default: {Default}", expirationMinutes);
+        }
+
+        var expiry = DateTime.UtcNow.AddMinutes(expirationMinutes);
 
         var claims = new List<Claim>
         {

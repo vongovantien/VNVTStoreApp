@@ -52,6 +52,21 @@ public static class PermissionSeeder
             await context.SaveChangesAsync(default);
         }
 
+        // 2b. Seed Customer Role
+        var customerRole = await context.TblRoles.FirstOrDefaultAsync(r => r.Code == "CUSTOMER");
+        if (customerRole == null)
+        {
+            customerRole = new TblRole
+            {
+                Code = "CUSTOMER",
+                Name = "Customer",
+                Description = "Default customer role",
+                IsActive = true
+            };
+            context.TblRoles.Add(customerRole);
+            await context.SaveChangesAsync(default);
+        }
+
         // 3. Assign all permissions to Admin Role
         var allPermissions = await context.TblPermissions.ToListAsync();
         var existingRolePermissions = await context.TblRolePermissions

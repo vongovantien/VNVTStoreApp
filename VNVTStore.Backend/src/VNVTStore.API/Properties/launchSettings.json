@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
@@ -8,6 +8,11 @@
       "applicationUrl": "http://localhost:5176",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__DefaultConnection": "Host=ep-holy-heart-a58jnnwh-pooler.us-east-2.aws.neon.tech;Port=5432;Database=saleapp;Username=saleapp_owner;Password=yp8tDSnX6vjF;SSL Mode=Require;Trust Server Certificate=true",
+        "JwtSettings__SecretKey": "ThisIsASuperSecretKeyForDevelopment purposes only 12345!@#$%",
+        "JwtSettings__Issuer": "VNVTStore",
+        "JwtSettings__ExpirationInMinutes": "120",
+        "JwtSettings__Audience": "VNVTStoreUser",
         "FrontendUrl": "http://localhost:5173",
         "EmailSettings__Host": "smtp.gmail.com",
         "EmailSettings__Port": "587",
@@ -31,6 +36,11 @@
       "applicationUrl": "https://localhost:7092;http://localhost:5176",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__DefaultConnection": "Host=ep-holy-heart-a58jnnwh-pooler.us-east-2.aws.neon.tech;Port=5432;Database=saleapp;Username=saleapp_owner;Password=yp8tDSnX6vjF;SSL Mode=Require;Trust Server Certificate=true",
+        "JwtSettings__SecretKey": "ThisIsASuperSecretKeyForDevelopment purposes only 12345!@#$%",
+        "JwtSettings__Issuer": "VNVTStore",
+        "JwtSettings__ExpirationInMinutes": "120",
+        "JwtSettings__Audience": "VNVTStoreUser",
         "FrontendUrl": "http://localhost:5173",
         "EmailSettings__Host": "smtp.gmail.com",
         "EmailSettings__Port": "587",

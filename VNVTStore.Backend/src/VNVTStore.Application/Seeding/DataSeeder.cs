@@ -112,6 +112,28 @@ public static class DataSeeder
             Log.Information("[SeedAsync] Seeded POS Staff: posuser / Staff@123");
         }
         
+        // 3.5. Seed Default System Secrets
+        var defaultSecrets = new[]
+        {
+            new TblSystemSecret { Code = "EMAIL_HOST", SecretValue = "smtp.gmail.com", Description = "SMTP Server Host", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "EMAIL_PORT", SecretValue = "587", Description = "SMTP Server Port", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "EMAIL_FROM", SecretValue = "your-email@gmail.com", Description = "Sender Email Address", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "EMAIL_PASSWORD", SecretValue = "your-app-password", Description = "Sender Email Password (App Password)", IsActive = true, IsEncrypted = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "EMAIL_SSL", SecretValue = "true", Description = "Enable SSL for SMTP", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "CLOUDINARY_CLOUD_NAME", SecretValue = "dgct8zpvp", Description = "Cloudinary Cloud Name", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "CLOUDINARY_API_KEY", SecretValue = "631943736442228", Description = "Cloudinary API Key", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "CLOUDINARY_API_SECRET", SecretValue = "4xKADk_UWqAKS7vlOl8qst_LUjw", Description = "Cloudinary API Secret", IsActive = true, IsEncrypted = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "FIREBASE_KEY", SecretValue = "", Description = "Firebase Service Account JSON", IsActive = true, IsEncrypted = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+        };
+
+        foreach (var secret in defaultSecrets)
+        {
+            if (!await context.TblSystemSecrets.AnyAsync(s => s.Code == secret.Code))
+            {
+                context.TblSystemSecrets.Add(secret);
+            }
+        }
+
         await context.SaveChangesAsync(default);
 
         // 4. Seed 100 Products

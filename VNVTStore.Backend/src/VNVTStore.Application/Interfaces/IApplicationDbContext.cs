@@ -37,6 +37,7 @@ public interface IApplicationDbContext
     DbSet<TblSupplier> TblSuppliers { get; }
     DbSet<TblDebtLog> TblDebtLogs { get; }
     DbSet<TblSystemConfig> TblSystemConfigs { get; }
+    DbSet<TblSystemSecret> TblSystemSecrets { get; }
     DbSet<TblMenu> TblMenus { get; }
     DbSet<TblRoleMenu> TblRoleMenus { get; }
     DbSet<TblAuditLog> TblAuditLogs { get; }

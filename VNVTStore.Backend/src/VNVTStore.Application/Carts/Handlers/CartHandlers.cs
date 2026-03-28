@@ -1,6 +1,7 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using VNVTStore.Application.Carts.Commands;
 using VNVTStore.Application.Carts.Queries;
 using VNVTStore.Application.Common;
@@ -23,17 +24,20 @@ public class CartHandlers :
     private readonly IRepository<TblProduct> _productRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ILogger<CartHandlers> _logger;
 
     public CartHandlers(
         ICartService cartService,
         IRepository<TblProduct> productRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper,
+        ILogger<CartHandlers> logger)
     {
         _cartService = cartService;
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<Result<CartDto>> Handle(GetMyCartQuery request, CancellationToken cancellationToken)
@@ -50,15 +54,17 @@ public class CartHandlers :
 
     public async Task<Result<CartDto>> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
-        var product = await _productRepository.GetByCodeAsync(request.ProductCode, cancellationToken);
-        if (product == null)
-        {
-            return Result.Failure<CartDto>(Error.NotFound(MessageConstants.Product, request.ProductCode));
-        }
-
         return await ExecuteWithRetryAsync(async () =>
         {
+            var product = await _productRepository.GetByCodeAsync(request.ProductCode, cancellationToken);
+            if (product == null)
+            {
+                return Result.Failure<CartDto>(Error.NotFound(MessageConstants.Product, request.ProductCode));
+            }
+
             var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
+            _logger.LogInformation("[AddToCart] Cart {CartCode} loaded for user {UserCode}, items count: {Count}", 
+                cart.Code, request.UserCode, cart.TblCartItems.Count);
 
             try
             {
@@ -70,6 +76,8 @@ public class CartHandlers :
             }
 
             await _unitOfWork.CommitAsync(cancellationToken);
+            _logger.LogInformation("[AddToCart] Successfully added product {ProductCode} to cart {CartCode}", 
+                request.ProductCode, cart.Code);
             return Result.Success(_mapper.Map<CartDto>(cart));
         }, cancellationToken);
     }
@@ -121,7 +129,7 @@ public class CartHandlers :
         return Result.Success(true);
     }
 
-    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken, int maxRetries = 10)
+    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken, int maxRetries = 3)
     {
         int retryCount = 0;
         while (true)
@@ -130,18 +138,51 @@ public class CartHandlers :
             {
                 return await action();
             }
-            catch (Exception ex) when (ex is DbUpdateConcurrencyException || ex is DbUpdateException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 retryCount++;
-                if (retryCount >= maxRetries) throw;
+                _logger.LogWarning(ex, "[Cart] Concurrency exception on attempt {Attempt}/{MaxRetries}. Entries: {Entries}", 
+                    retryCount, maxRetries, 
+                    string.Join(", ", ex.Entries.Select(e => $"{e.Entity.GetType().Name}[{e.State}]")));
+                
+                if (retryCount >= maxRetries)
+                {
+                    _logger.LogError(ex, "[Cart] All {MaxRetries} retry attempts exhausted");
+                    throw;
+                }
+
+                // Resolve concurrency by reloading database values
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.State == EntityState.Modified)
+                    {
+                        // Reload the entity from database
+                        await entry.ReloadAsync(cancellationToken);
+                    }
+                    else if (entry.State == EntityState.Added)
+                    {
+                        // For added entities that conflict, detach and retry
+                        entry.State = EntityState.Detached;
+                    }
+                }
 
                 // Clear tracking to reload fresh entities in next attempt
                 _unitOfWork.ClearChangeTracker();
                 
-                // Exponential backoff with jitter
-                var delay = TimeSpan.FromMilliseconds(new Random().Next(100, 300) * retryCount);
-                await Task.Delay(delay, cancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
+            }
+            catch (DbUpdateException ex)
+            {
+                retryCount++;
+                _logger.LogWarning(ex, "[Cart] DbUpdateException on attempt {Attempt}/{MaxRetries}: {Message}", 
+                    retryCount, maxRetries, ex.InnerException?.Message ?? ex.Message);
+                
+                if (retryCount >= maxRetries) throw;
+
+                _unitOfWork.ClearChangeTracker();
+                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
             }
         }
     }
 }
+

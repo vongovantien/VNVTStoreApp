@@ -487,7 +487,6 @@ const CustomersPage = () => {
             {!editingCustomer && (
                 <Input
                     label={t('common.fields.username')}
-                    initialData={promotionInitialData}
                     value={formData.username}
                     onChange={e => setFormData({...formData, username: e.target.value})}
                     isRequired

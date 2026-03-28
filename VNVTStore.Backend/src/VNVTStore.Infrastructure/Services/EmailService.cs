@@ -9,22 +9,25 @@ namespace VNVTStore.Infrastructure.Services;
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
+    private readonly ISecretConfigurationService _secretConfig;
     private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
+    public EmailService(IConfiguration configuration, ISecretConfigurationService secretConfig, ILogger<EmailService> logger)
     {
         _configuration = configuration;
+        _secretConfig = secretConfig;
         _logger = logger;
     }
 
     public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
-        var emailSettings = _configuration.GetSection("EmailSettings");
-        var host = emailSettings["Host"];
-        var port = int.Parse(emailSettings["Port"] ?? "587");
-        var fromEmail = emailSettings["FromEmail"];
-        var password = emailSettings["Password"];
-        var enableSsl = bool.Parse(emailSettings["EnableSsl"] ?? "true");
+        var host = await _secretConfig.GetSecretAsync("EMAIL_HOST") ?? _configuration["EmailSettings:Host"];
+        var portStr = await _secretConfig.GetSecretAsync("EMAIL_PORT") ?? _configuration["EmailSettings:Port"];
+        var port = int.Parse(portStr ?? "587");
+        var fromEmail = await _secretConfig.GetSecretAsync("EMAIL_FROM") ?? _configuration["EmailSettings:FromEmail"];
+        var password = await _secretConfig.GetSecretAsync("EMAIL_PASSWORD") ?? _configuration["EmailSettings:Password"];
+        var enableSslStr = await _secretConfig.GetSecretAsync("EMAIL_SSL") ?? _configuration["EmailSettings:EnableSsl"];
+        var enableSsl = bool.Parse(enableSslStr ?? "true");
 
         if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(fromEmail))
         {

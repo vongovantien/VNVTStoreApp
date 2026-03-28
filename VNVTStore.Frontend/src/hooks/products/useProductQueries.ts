@@ -1,6 +1,6 @@
 import { useQuery, useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
 import { Product } from '@/types';
-import { productService, categoryService, type ProductDto } from '@/services/productService';
+import { productService, categoryService, type ProductDto, type CategoryDto } from '@/services/productService';
 import { SearchCondition, type SearchParams } from '@/services/baseService';
 import { CATEGORY_LIST_FIELDS, PRODUCT_LIST_FIELDS } from '@/constants/fieldConstants';
 import { useDiagnosticStore } from '@/store/diagnosticStore';
@@ -306,26 +306,28 @@ export function useProducts(params: {
  * Hook for infinite scrolling products
  */
 export function useInfiniteProducts(params: {
-    pageSize?: number;
-    search?: string;
-    sortField?: string;
-    sortDir?: 'asc' | 'desc';
-    category?: string;
-    brands?: string[];
-    minPrice?: number;
-    maxPrice?: number;
-    rating?: number;
-    priceType?: 'all' | 'fixed' | 'contact';
-    enabled?: boolean;
-    fields?: string[];
-    inStockOnly?: boolean;
-    isNewArrivals?: boolean;
+    pageSize?: number | undefined;
+    search?: string | undefined;
+    sortField?: string | undefined;
+    sortDir?: 'asc' | 'desc' | undefined;
+    category?: string | undefined;
+    brands?: string[] | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    rating?: number | undefined;
+    discount?: number | undefined;
+    priceType?: 'all' | 'fixed' | 'contact' | undefined;
+    enabled?: boolean | undefined;
+    fields?: string[] | undefined;
+    inStockOnly?: boolean | undefined;
+    isNewArrivals?: boolean | undefined;
 }) {
     const { enabled = true, fields = PRODUCT_LIST_FIELDS, pageSize = 12, ...searchParams } = params;
 
     return useInfiniteQuery({
         queryKey: [...productKeys.lists(), 'infinite', { ...searchParams, fields, pageSize }],
         queryFn: async ({ pageParam = 1 }) => {
+            console.log(`[useInfiniteProducts] Querying page ${pageParam}`, searchParams);
             // Build filters (logic similar to useProducts but reusable)
             const filters: NonNullable<SearchParams['filters']> = [];
             if (searchParams.category) {
@@ -335,20 +337,19 @@ export function useInfiniteProducts(params: {
                     filters.push({ field: 'CategoryCode', value: searchParams.category, operator: SearchCondition.Equal });
                 }
             }
-            if (searchParams.brands?.length) filters.push({ field: 'brand', value: searchParams.brands, operator: SearchCondition.In });
-            if (searchParams.minPrice) filters.push({ field: 'price', value: searchParams.minPrice, operator: SearchCondition.GreaterThanEqual });
-            if (searchParams.maxPrice) filters.push({ field: 'price', value: searchParams.maxPrice, operator: SearchCondition.LessThanEqual });
-            if (searchParams.inStockOnly) filters.push({ field: 'StockQuantity', value: 0, operator: SearchCondition.GreaterThan });
-
-            // Feature 36: New Arrivals (Last 7 Days)
+            if (searchParams.brands?.length) filters.push({ field: 'Brand', value: searchParams.brands, operator: SearchCondition.In });
+            if (searchParams.minPrice) filters.push({ field: 'Price', value: searchParams.minPrice, operator: SearchCondition.GreaterThanEqual });
+            if (searchParams.maxPrice) filters.push({ field: 'Price', value: searchParams.maxPrice, operator: SearchCondition.LessThanEqual });
+            if (searchParams.rating) filters.push({ field: 'Rating', value: searchParams.rating, operator: SearchCondition.GreaterThanEqual });
+            if (searchParams.discount) filters.push({ field: 'Discount', value: searchParams.discount, operator: SearchCondition.GreaterThanEqual });
+            if (searchParams.priceType && searchParams.priceType !== 'all') {
+                filters.push({ field: 'PriceType', value: searchParams.priceType, operator: SearchCondition.Equal });
+            }
+            if (searchParams.inStockOnly) {
+                filters.push({ field: 'StockQuantity', value: 0, operator: SearchCondition.GreaterThan });
+            }
             if (searchParams.isNewArrivals) {
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                filters.push({
-                    field: 'CreatedAt',
-                    value: sevenDaysAgo.toISOString(),
-                    operator: SearchCondition.GreaterThanEqual
-                });
+                 filters.push({ field: 'IsNew', value: true, operator: SearchCondition.Equal });
             }
 
             // Feature 32: Exclude Logic (Simple Split)
@@ -388,12 +389,12 @@ export function useInfiniteProducts(params: {
                 }
 
                 return {
-                    products: items.map(item => mapProductDtoToProduct(item as ProductDto)),
+                    items: items.map(item => mapProductDtoToProduct(item as ProductDto)),
                     nextPage: pageParam < Math.ceil(response.data.totalItems / pageSize) ? pageParam + 1 : undefined,
                     totalItems: response.data.totalItems,
                 };
             }
-            return { products: [], nextPage: undefined, totalItems: 0 };
+            return { items: [], nextPage: undefined, totalItems: 0 };
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => lastPage.nextPage,

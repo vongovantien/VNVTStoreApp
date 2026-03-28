@@ -409,18 +409,38 @@ export const ProductsPage = () => {
     keywords: 'sản phẩm, đồ gia dụng, thiết bị nhà bếp, mua sắm online, VNVT Store',
   });
 
-  // Filters state
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]); // Filter States
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.get('category') ? searchParams.get('category')!.split(',') : []
+  // Derive all filters from URL Search Params (Single Source of Truth)
+  const selectedCategories = useMemo(() => 
+    searchParams.get('category') ? searchParams.get('category')!.split(',') : [],
+    [searchParams]
   );
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const [priceType, setPriceType] = useState<'all' | 'fixed' | 'contact'>('all');
+  
+  const selectedBrands = useMemo(() => 
+    searchParams.get('brand') ? searchParams.get('brand')!.split(',') : [],
+    [searchParams]
+  );
+
+  const priceRange = useMemo<[number, number]>(() => {
+    const min = Number(searchParams.get('minPrice')) || 0;
+    const max = Number(searchParams.get('maxPrice')) || 100000000;
+    return [min, max];
+  }, [searchParams]);
+
+  const selectedRating = useMemo(() => {
+    const r = searchParams.get('rating');
+    return r ? Number(r) : null;
+  }, [searchParams]);
+
+  const priceType = (searchParams.get('priceType') as 'all' | 'fixed' | 'contact') || 'all';
+  
+  const inStockOnly = searchParams.get('stock') === 'true';
+  const isNewArrivals = searchParams.get('new') === 'true';
+  const selectedDiscount = useMemo(() => {
+    const d = searchParams.get('discount');
+    return d ? Number(d) : null;
+  }, [searchParams]);
+
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string[]>>({});
-  const [inStockOnly, setInStockOnly] = useState(false);
-  const [isNewArrivals, setIsNewArrivals] = useState(false); // Feature 36
-  const [selectedDiscount, setSelectedDiscount] = useState<number | null>(null); // Feature 31
 
   // Feature 7: Bulk Selection Mode
   const [bulkMode, setBulkMode] = useState(false);
@@ -489,18 +509,18 @@ export const ProductsPage = () => {
     ...(searchQuery ? { search: searchQuery } : {}),
     sortField: sortConfig.field,
     sortDir: sortConfig.dir,
-    category: categorySlug,
+    category: selectedCategories.join(','),
     brands: selectedBrands,
-    minPrice: priceRange[0],
-    maxPrice: priceRange[1],
+    minPrice: priceRange[0] > 0 ? priceRange[0] : undefined,
+    maxPrice: priceRange[1] < 100000000 ? priceRange[1] : undefined,
     rating: selectedRating || undefined,
-    priceType: priceType,
+    priceType: priceType === 'all' ? undefined : priceType,
     inStockOnly: inStockOnly,
-    isNewArrivals: isNewArrivals, // Feature 36
+    isNewArrivals: isNewArrivals,
   });
 
   const products = useMemo(() => {
-    return infiniteData?.pages.flatMap((page) => page.products) || [];
+    return infiniteData?.pages.flatMap((page) => page.items) || [];
   }, [infiniteData]);
 
   // Total items from first page info
@@ -540,40 +560,16 @@ export const ProductsPage = () => {
   }, [products]);
 
   // Apply client-side logic for features NOT supported by API yet
-  // Currently: None (if Generic Search handles everything via 'In' or property checks)
-  // However, since Brand/Rating are mocked on FE, passing them to API might return empty or error if fields don't exist.
-  // QueryHelper uses reflection. If 'Brand' doesn't exist on TblProduct, it skips. UseProducts will send it.
-  // Result: API returns ALL products (filter ignored). FE must filter client-side for these mocked fields.
   const filteredProducts = useMemo(() => {
+    // Rely on Server-Side filtering for most fields to avoid pagination mismatch ("loc sai")
     let result = [...products];
 
-    // Client-side filtering for Multi-Category (if passed as separate params or single param in URL)
-    // Controller logic handles "category" param. 
-    // If selectedCategories has content, it overrides categorySlug.
-    // So API receives it.
-    // But we might have latency or mismatch.
-    // Actually, if we trust API, we don't need this.
-    // result = result.filter((p) => selectedCategories.includes(p.categoryId));
-
-    // Client-side Brand (Mock Validation)
-    if (selectedBrands.length > 0) {
-       // Since backend might ignore 'Brand' if missing, we filter here to be safe for Mock UI
-       result = result.filter((p) => p.brand && selectedBrands.includes(p.brand));
-    }
-
-    // Price is now Server-Side. Remove client filter.
-
-    if (selectedRating) {
-       // Since backend might ignore 'Rating', and data is mocked
-       result = result.filter((p) => (p.rating || 0) >= selectedRating);
-    }
-    
-    // Feature 31: Filter by Discount
+    // Feature 31: Filter by Discount (Client-side as backend might not support yet)
     if (selectedDiscount) {
       result = result.filter((p) => (p.discount || 0) >= selectedDiscount);
     }
 
-    // Attribute filters
+    // Attribute filters (Client-side)
     Object.entries(selectedAttributes).forEach(([attr, values]) => {
       if (values.length > 0) {
         result = result.filter(p => {
@@ -604,7 +600,7 @@ export const ProductsPage = () => {
     }
 
     return result;
-  }, [products, selectedBrands, selectedRating, sortBy, selectedAttributes, selectedDiscount]);
+  }, [products, sortBy, selectedAttributes, selectedDiscount]);
 
   // Feature 7: Bulk Selection Handlers
   const handleSelectToggle = useCallback((code: string) => {
@@ -658,45 +654,94 @@ export const ProductsPage = () => {
 
   // Handlers
   const handleCategoryToggle = useCallback((id: string) => {
-    setSelectedCategories((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((c) => c !== id)
-        : [...prev, id];
+    const current = searchParams.get('category') ? searchParams.get('category')!.split(',') : [];
+    const next = current.includes(id)
+      ? current.filter((c) => c !== id)
+      : [...current, id];
 
-      // Optional: Update URL to reflect single category selection (common pattern)
-      // If we want multi-select in URL, we'd join them. For now let's assume single or primary category in URL
+    setSearchParams(params => {
       if (next.length > 0) {
-        setSearchParams(params => {
-          params.set('category', next.join(',')); // Join with comma for multiple selection
-          return params;
-        });
+        params.set('category', next.join(','));
       } else {
-        setSearchParams(params => {
-          params.delete('category');
-          return params;
-        });
+        params.delete('category');
       }
-      return next;
+      // Reset page index when filter changes
+      params.delete('page'); 
+      return params;
+    });
+  }, [searchParams, setSearchParams]);
+
+  const handleBrandToggle = useCallback((brand: string) => {
+    const current = searchParams.get('brand') ? searchParams.get('brand')!.split(',') : [];
+    const next = current.includes(brand)
+      ? current.filter((b) => b !== brand)
+      : [...current, brand];
+
+    setSearchParams(params => {
+      if (next.length > 0) params.set('brand', next.join(','));
+      else params.delete('brand');
+      params.delete('page');
+      return params;
+    });
+  }, [searchParams, setSearchParams]);
+
+  const onPriceRangeChange = useCallback((range: [number, number]) => {
+    setSearchParams(params => {
+      params.set('minPrice', range[0].toString());
+      params.set('maxPrice', range[1].toString());
+      params.delete('page');
+      return params;
     });
   }, [setSearchParams]);
 
-  const handleBrandToggle = useCallback((brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-    );
-  }, []);
+  const onPriceTypeChange = useCallback((type: string) => {
+    setSearchParams(params => {
+      if (type !== 'all') params.set('priceType', type);
+      else params.delete('priceType');
+      params.delete('page');
+      return params;
+    });
+  }, [setSearchParams]);
+
+  const onRatingChange = useCallback((rating: number | null) => {
+    setSearchParams(params => {
+      if (rating) params.set('rating', rating.toString());
+      else params.delete('rating');
+      params.delete('page');
+      return params;
+    });
+  }, [setSearchParams]);
+
+  const onInStockOnlyChange = useCallback((val: boolean) => {
+    setSearchParams(params => {
+      if (val) params.set('stock', 'true');
+      else params.delete('stock');
+      params.delete('page');
+      return params;
+    });
+  }, [setSearchParams]);
+
+  const onNewArrivalsChange = useCallback((val: boolean) => {
+    setSearchParams(params => {
+      if (val) params.set('new', 'true');
+      else params.delete('new');
+      params.delete('page');
+      return params;
+    });
+  }, [setSearchParams]);
+
+  const onDiscountChange = useCallback((val: number | null) => {
+    setSearchParams(params => {
+      if (val) params.set('discount', val.toString());
+      else params.delete('discount');
+      params.delete('page');
+      return params;
+    });
+  }, [setSearchParams]);
 
   const clearFilters = useCallback(() => {
-    setSelectedCategories([]);
-    setSelectedBrands([]);
-    setPriceRange([0, 100000000]);
-    setSelectedRating(null);
-    setPriceType('all');
-    setSelectedAttributes({});
-    setInStockOnly(false);
-    setIsNewArrivals(false);
-    setSelectedDiscount(null);
     setSearchParams({});
+    setSelectedAttributes({});
   }, [setSearchParams]);
 
   const hasActiveFilters =
@@ -750,11 +795,11 @@ export const ProductsPage = () => {
                   selectedBrands={selectedBrands}
                   onBrandToggle={handleBrandToggle}
                   priceRange={priceRange}
-                  onPriceRangeChange={setPriceRange}
+                  onPriceRangeChange={onPriceRangeChange}
                   priceType={priceType}
-                  onPriceTypeChange={setPriceType}
+                  onPriceTypeChange={onPriceTypeChange}
                   selectedRating={selectedRating}
-                  onRatingChange={setSelectedRating}
+                  onRatingChange={onRatingChange}
                   brands={brands}
                   selectedAttributes={selectedAttributes}
                   onAttributeToggle={handleAttributeToggle}
@@ -762,11 +807,11 @@ export const ProductsPage = () => {
                   onClearAll={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   inStockOnly={inStockOnly}
-                  onInStockOnlyChange={setInStockOnly}
+                  onInStockOnlyChange={onInStockOnlyChange}
                   isNewArrivals={isNewArrivals}
-                  onNewArrivalsChange={setIsNewArrivals}
+                  onNewArrivalsChange={onNewArrivalsChange}
                   selectedDiscount={selectedDiscount}
-                  onDiscountChange={setSelectedDiscount}
+                  onDiscountChange={onDiscountChange}
                 />
               </motion.div>
             )}
@@ -936,7 +981,7 @@ export const ProductsPage = () => {
                     color="primary"
                     variant="soft"
                     closable
-                    onClose={() => setPriceType('all')}
+                    onClose={() => onPriceTypeChange('all')}
                   >
                     {priceType === 'fixed' ? t('filter.fixedPrice') : t('filter.contactPrice')}
                   </Badge>

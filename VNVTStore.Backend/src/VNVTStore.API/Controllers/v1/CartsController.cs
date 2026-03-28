@@ -33,6 +33,15 @@ public class CartsController : BaseApiController
         return HandleResult(result, MessageConstants.Get(MessageConstants.CartRetrieved));
     }
 
+    [HttpPost("items/bulk")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<CartDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AddMultipleItems([FromBody] AddMultipleCartItemsDto dto)
+    {
+        var result = await Mediator.Send(new AddMultipleToCartCommand(GetUserCode(), dto.Items));
+        return HandleResult(result, MessageConstants.Get(MessageConstants.CartAdded));
+    }
+
     [HttpPost("items")]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<CartDto>), StatusCodes.Status200OK)]

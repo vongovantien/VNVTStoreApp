@@ -36,6 +36,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
     private readonly ILoyaltyService _loyaltyService;
+    private readonly ISecretConfigurationService _secretConfig;
     private readonly ILogger<CreateOrderHandler> _logger;
 
     public CreateOrderHandler(
@@ -54,6 +55,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
         IEmailService emailService,
         IConfiguration configuration,
         ILoyaltyService loyaltyService,
+        ISecretConfigurationService secretConfig,
         ILogger<CreateOrderHandler> logger) : base(orderRepository, unitOfWork, mapper, dapperContext)
     {
         _cartService = cartService;
@@ -67,6 +69,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
         _emailService = emailService;
         _configuration = configuration;
         _loyaltyService = loyaltyService;
+        _secretConfig = secretConfig;
         _logger = logger;
     }
 
@@ -346,7 +349,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             await _mediator.Publish(new OrderCreatedEvent(order, userCode, request.dto.CartCode), cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var frontendUrl = await _secretConfig.GetSecretAsync("FRONTEND_URL") ?? _configuration["FrontendUrl"] ?? "http://localhost:5173";
             var verifyLink = $"{frontendUrl}/verify-order?token={token}";
             
             var userEmail = (await _userRepository.GetByCodeAsync(userCode, cancellationToken))?.Email;
@@ -369,7 +372,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             }
 
             // Send admin notification
-            var adminEmail = _configuration["EmailSettings:AdminEmail"];
+            var adminEmail = await _secretConfig.GetSecretAsync("ADMIN_EMAIL") ?? _configuration["EmailSettings:AdminEmail"];
             if (!string.IsNullOrEmpty(adminEmail))
             {
                 try

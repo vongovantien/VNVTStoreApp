@@ -1165,6 +1165,8 @@
         "noAttributes": "No attributes added"
     },
     "messages": {
+        "logoutConfirmTitle": "Confirm Logout",
+        "logoutConfirmMessage": "Are you sure you want to log out of the system?",
         "loginSuccess": "Login successful!",
         "impersonateSuccess": "Switched to user session",
         "confirmImpersonate": "Login as {{name}}?"

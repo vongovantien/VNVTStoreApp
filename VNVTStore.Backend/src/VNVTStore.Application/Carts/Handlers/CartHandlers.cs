@@ -56,7 +56,10 @@ public class CartHandlers :
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var product = await _productRepository.GetByCodeAsync(request.ProductCode, cancellationToken);
+            var product = await _productRepository.AsQueryable()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Code == request.ProductCode, cancellationToken);
+
             if (product == null)
             {
                 return Result.Failure<CartDto>(Error.NotFound(MessageConstants.Product, request.ProductCode));
@@ -94,7 +97,9 @@ public class CartHandlers :
                  return Result.Failure<CartDto>(Error.NotFound(MessageConstants.OrderItem, request.CartItemCode));
             }
 
-            var product = await _productRepository.GetByCodeAsync(cartItem.ProductCode, cancellationToken);
+            var product = await _productRepository.AsQueryable()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Code == cartItem.ProductCode, cancellationToken);
             int maxStock = product?.StockQuantity ?? 0;
 
             try
@@ -129,7 +134,7 @@ public class CartHandlers :
         return Result.Success(true);
     }
 
-    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken, int maxRetries = 3)
+    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken, int maxRetries = 5)
     {
         int retryCount = 0;
         while (true)

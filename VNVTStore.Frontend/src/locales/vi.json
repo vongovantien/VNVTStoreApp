@@ -398,7 +398,7 @@
             "usageLimit": "Giới hạn sử dụng",
             "contact": "Liên hệ",
             "quotedPrice": "Giá báo",
-            "customer": "Khách hàng",
+            "customer": "Tên/User",
             "orderCode": "Mã đơn hàng",
             "finalAmount": "Thành tiền",
             "shippingFee": "Phí vận chuyển",
@@ -422,8 +422,9 @@
             "sku": "Mã SKU",
             "stockQuantity": "Số lượng tồn",
             "active": "Đang hoạt động",
-            "emailVerified": "Email đã xác thực",
-            "lastLogin": "Đăng nhập cuối"
+            "emailVerified": "Xác thực Mail",
+            "lastLogin": "Đăng nhập cuối",
+            "never": "Chưa bao giờ"
         },
         "status": {
             "active": "Hoạt động",
@@ -678,6 +679,10 @@
             "revenue": "Doanh thu",
             "orders": "Đơn hàng",
             "customers": "Khách hàng",
+            "totalCustomers": "Tổng khách",
+            "notActivated": "Chưa kích hoạt",
+            "activeCustomers": "Khách tích cực",
+            "activity": "Hoạt động",
             "products": "Sản phẩm",
             "vsLastMonth": "so với tháng trước",
             "totalOrders": "Tổng đơn hàng",
@@ -691,10 +696,7 @@
             "mainCategories": "Danh mục chính",
             "totalProducts": "Tổng sản phẩm",
             "lowStock": "Sắp hết hàng",
-            "outOfStock": "Hết hàng",
-            "totalCustomers": "Tổng khách hàng",
-            "notActivated": "Chưa kích hoạt",
-            "activeCustomers": "Khách hàng tích cực"
+            "outOfStock": "Hết hàng"
         },
         "revenueChart": "Biểu đồ doanh thu",
         "topProducts": "Sản phẩm bán chạy",
@@ -1258,6 +1260,8 @@
         "noAttributes": "Chưa có thuộc tính nào"
     },
     "messages": {
+        "logoutConfirmTitle": "Xác nhận đăng xuất",
+        "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
         "loginSuccess": "Đăng nhập thành công!",
         "impersonateSuccess": "Đã chuyển sang phiên người dùng",
         "confirmImpersonate": "Đăng nhập với tư cách {{name}}?"

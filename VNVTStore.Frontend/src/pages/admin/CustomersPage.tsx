@@ -222,25 +222,27 @@ const CustomersPage = () => {
           </div>
         </div>
       ),
-      sortable: true
+      sortable: true,
+      minWidth: '170px'
     },
     {
       id: 'contact',
       header: t('common.fields.contact'),
       accessor: (customer) => (
-        <div className="space-y-1">
-          <p className="text-sm flex items-center gap-2 text-slate-600 dark:text-slate-400">
-            <Mail size={14} className="text-blue-400" />
-            {customer.email}
+        <div className="space-y-0.5">
+          <p className="text-sm flex items-center gap-2 text-slate-700 dark:text-slate-300">
+            <Mail size={13} className="text-blue-500/70" />
+            <span className="truncate max-w-[120px]">{customer.email}</span>
           </p>
           {customer.phone && (
-            <p className="text-sm flex items-center gap-2 text-slate-500 dark:text-slate-500">
-              <Phone size={14} className="text-slate-400" />
+            <p className="text-xs flex items-center gap-2 text-slate-500">
+              <Phone size={11} className="text-slate-400" />
               {customer.phone}
             </p>
           )}
         </div>
-      )
+      ),
+      minWidth: '150px'
     },
     {
       id: 'role',
@@ -251,31 +253,40 @@ const CustomersPage = () => {
         </Badge>
       ),
       className: 'text-center',
-      headerClassName: 'text-center'
+      headerClassName: 'text-center',
+      minWidth: '100px'
     },
     CommonColumns.createStatusColumn(t),
     {
       id: 'isEmailVerified',
-      header: t('common.fields.emailVerified', 'Email Verified'),
+      header: t('common.fields.emailVerified'),
       accessor: (customer) => (
-        <Badge color={customer.isEmailVerified ? 'success' : 'error'} variant="outline">
+        <Badge color={customer.isEmailVerified ? 'success' : 'error'} variant="outline" className="scale-90">
           {customer.isEmailVerified ? t('common.status.verified') : t('common.status.unactivated')}
         </Badge>
       ),
       className: 'text-center',
-      headerClassName: 'text-center'
+      minWidth: '110px'
     },
     {
-      id: 'lastLogin',
-      header: t('common.fields.lastLogin', 'Last Login'),
-      accessor: (customer) => <span className="text-slate-500">{customer.lastLogin ? formatDate(customer.lastLogin) : t('common.never', 'Never')}</span>,
-      sortable: true
-    },
-    {
-      id: 'joinDate',
-      header: t('common.fields.joinDate'),
-      accessor: (customer) => <span className="text-slate-500">{formatDate(customer.createdAt)}</span>,
-      sortable: true
+      id: 'activity',
+      header: t('admin.stats.activity', 'Activity'),
+      accessor: (customer) => (
+        <div className="text-xs space-y-1 text-slate-500">
+          <p className="flex items-center gap-1">
+            <span className="opacity-70">{t('common.fields.joinDate')}:</span>
+            <span className="font-medium">{formatDate(customer.createdAt)}</span>
+          </p>
+          <p className="flex items-center gap-1">
+            <span className="opacity-70">{t('common.fields.lastLogin')}:</span>
+            <span className={customer.lastLogin ? "text-blue-600" : ""}>
+               {customer.lastLogin ? formatDate(customer.lastLogin) : t('common.never')}
+            </span>
+          </p>
+        </div>
+      ),
+      minWidth: '160px',
+      noWrap: true
     },
 
   ];

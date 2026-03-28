@@ -54,7 +54,7 @@
         "RateLimiting__QueueLimit": "2",
         "Cloudinary__CloudName": "dgct8zpvp",
         "Cloudinary__ApiKey": "631943736442228",
-        "Cloudinary__ApiSecret": "4xKADk_UWqAKS7vlOl8qst_LUjw"
+        "Cloudinary__ApiSecret": ""
       }
     }
   }

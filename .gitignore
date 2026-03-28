@@ -90,7 +90,7 @@ obj/
 .vs/
 
 # Firebase Secrets
-VNVTStore.Backend/src/VNVTStore.API/firebase-service-account.json
+# Logs
 *.log
 logs/
 VNVTStore.Backend/src/VNVTStore.API/logs/

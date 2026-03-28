@@ -16,14 +16,16 @@ export const WishlistPage = () => {
     noindex: true,
   });
   const { items, clearWishlist } = useWishlistStore();
-  const addToCart = useCartStore((state) => state.addItem);
+  const addItems = useCartStore((state) => state.addItems);
 
-  const handleAddAllToCart = () => {
-    items.forEach((product) => {
-      if (product.price > 0) {
-        addToCart(product);
-      }
-    });
+  const handleAddAllToCart = async () => {
+    const validItems = items
+      .filter((p) => p.price > 0)
+      .map((product) => ({ product, quantity: 1 }));
+
+    if (validItems.length > 0) {
+      await addItems(validItems);
+    }
   };
 
   if (items.length === 0) {

@@ -23,23 +23,26 @@ export function mapProductDtoToProduct(item: ProductDto, options?: { includeDeta
     const images = getProductImages(item);
     const primaryImg = images?.find((img: ProductImageDto) => img.isPrimary) || images?.[0];
 
+    const record = item as unknown as Record<string, unknown>;
+    const imgRecord = primaryImg as unknown as Record<string, unknown> | undefined;
+    
     // Build base product with required/primitive fields
     const product: Product = {
-        code: item.code,
-        name: item.name,
-        slug: item.code,
-        description: item.description || '',
-        price: item.price,
-        image: getImageUrl(primaryImg?.imageURL),
-        images: images?.map((img: ProductImageDto) => getImageUrl(img.imageURL)) || [],
+        code: item.code || (record.Code as string) || (record.code as string),
+        name: item.name || (record.Name as string) || (record.name as string) || 'Sản phẩm không tên',
+        slug: item.code || (record.Code as string) || (record.code as string),
+        description: item.description || (record.Description as string) || (record.description as string) || '',
+        price: item.price !== undefined ? item.price : ((record.Price as number) || 0),
+        image: getImageUrl(primaryImg?.imageURL || (imgRecord?.ImageUrl as string) || (imgRecord?.image_url as string)),
+        images: images?.map((img) => getImageUrl(img.imageURL || (img as unknown as Record<string, unknown>)?.ImageUrl as string)) || [],
         productImages: images || [],
-        category: item.categoryName || '',
-        categoryCode: item.categoryCode || '',
-        stock: item.stockQuantity || 0,
-        brand: item.brand || 'VNVT',
+        category: item.categoryName || (record.CategoryName as string) || (record.category_name as string) || '',
+        categoryCode: item.categoryCode || (record.CategoryCode as string) || (record.category_code as string) || '',
+        stock: item.stockQuantity !== undefined ? item.stockQuantity : ((record.StockQuantity as number) || (record.stock as number) || 0),
+        brand: item.brand || (record.Brand as string) || (record.brand as string) || 'VNVT',
         rating: 5,
         reviewCount: 0,
-        createdAt: item.createdAt || new Date().toISOString()
+        createdAt: item.createdAt || (record.CreatedAt as string) || (record.created_at as string) || new Date().toISOString()
     };
 
     // Handle optional booleans/strings with exactOptionalPropertyTypes compliance

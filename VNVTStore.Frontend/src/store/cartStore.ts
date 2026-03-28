@@ -16,6 +16,7 @@ export interface CartState {
     items: CartItem[];
     isLoading: boolean;
     addItem: (product: Product, quantity?: number, options?: { size?: string; color?: string }) => Promise<void>;
+    addItems: (items: Array<{ product: Product; quantity?: number; options?: { size?: string; color?: string } }>) => Promise<void>;
     removeItem: (itemId: string) => Promise<void>;
     updateQuantity: (itemId: string, quantity: number) => Promise<void>;
     clearCart: () => Promise<void>;
@@ -168,6 +169,55 @@ export const useCartStore = create<CartState>()(
                     }
                 } catch (error) {
                     console.error('[addItem] Add to cart failed', error);
+                    throw error;
+                } finally {
+                    set({ isLoading: false });
+                }
+            },
+            addItems: async (itemsToAdd) => {
+                const { isAuthenticated } = useAuthStore.getState();
+                if (!isAuthenticated) {
+                    set((state) => {
+                        const currentItems = [...state.items];
+                        itemsToAdd.forEach(({ product, quantity = 1, options }) => {
+                            if (product.price <= 0) return;
+                            const existingItemIndex = currentItems.findIndex((item) =>
+                                item.product.code === product.code &&
+                                item.size === options?.size &&
+                                item.color === options?.color
+                            );
+                            if (existingItemIndex > -1) {
+                                currentItems[existingItemIndex] = {
+                                    ...currentItems[existingItemIndex],
+                                    quantity: currentItems[existingItemIndex].quantity + quantity
+                                };
+                            } else {
+                                const newItemId = `guest_${product.code}_${options?.size || ''}_${options?.color || ''}_${Date.now()}_${Math.random()}`;
+                                currentItems.push({
+                                    code: newItemId, product, quantity,
+                                    ...(options?.size && { size: options.size }),
+                                    ...(options?.color && { color: options.color })
+                                } as CartItem);
+                            }
+                        });
+                        return { items: currentItems };
+                    });
+                    return;
+                }
+                set({ isLoading: true });
+                try {
+                    const mappedItems = itemsToAdd.map(item => ({
+                        productCode: item.product.code,
+                        quantity: item.quantity || 1,
+                        ...(item.options?.size && { size: item.options.size }),
+                        ...(item.options?.color && { color: item.options.color })
+                    }));
+                    const res = await cartService.addMultipleToCart(mappedItems);
+                    if (res.success && res.data) {
+                        set({ items: cartService.mapToFrontend(res.data) });
+                    }
+                } catch (error) {
+                    console.error('[addItems] Bulk add to cart failed', error);
                     throw error;
                 } finally {
                     set({ isLoading: false });

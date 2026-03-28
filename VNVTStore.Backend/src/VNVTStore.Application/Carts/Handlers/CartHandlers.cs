@@ -18,7 +18,8 @@ public class CartHandlers :
     IRequestHandler<AddToCartCommand, Result<CartDto>>,
     IRequestHandler<UpdateCartItemCommand, Result<CartDto>>,
     IRequestHandler<RemoveFromCartCommand, Result<CartDto>>,
-    IRequestHandler<ClearCartCommand, Result<bool>>
+    IRequestHandler<ClearCartCommand, Result<bool>>,
+    IRequestHandler<AddMultipleToCartCommand, Result<CartDto>>
 {
     private readonly ICartService _cartService;
     private readonly IRepository<TblProduct> _productRepository;
@@ -132,6 +133,52 @@ public class CartHandlers :
         cart.Clear();
         await _unitOfWork.CommitAsync(cancellationToken);
         return Result.Success(true);
+    }
+
+    public async Task<Result<CartDto>> Handle(AddMultipleToCartCommand request, CancellationToken cancellationToken)
+    {
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            if (request.Items == null || !request.Items.Any())
+            {
+                return Result.Failure<CartDto>(Error.Validation("ItemsRequired", "Danh sách sản phẩm không được để trống"));
+            }
+
+            var cart = await _cartService.GetOrCreateCartAsync(request.UserCode, cancellationToken);
+            _logger.LogInformation("[AddMultipleToCart] Cart {CartCode} loaded for user {UserCode}, items count: {Count}", 
+                cart.Code, request.UserCode, cart.TblCartItems.Count);
+
+            var productCodes = request.Items.Select(i => i.ProductCode).Distinct().ToList();
+            var products = await _productRepository.AsQueryable()
+                .AsNoTracking()
+                .Where(p => productCodes.Contains(p.Code))
+                .ToDictionaryAsync(p => p.Code, p => p, cancellationToken);
+
+            foreach (var item in request.Items)
+            {
+                if (!products.TryGetValue(item.ProductCode, out var product))
+                {
+                    _logger.LogWarning("[AddMultipleToCart] Product {ProductCode} not found, skipping", item.ProductCode);
+                    continue;
+                }
+
+                try
+                {
+                    cart.AddItem(item.ProductCode, item.Quantity, item.Size, item.Color, product.StockQuantity ?? 0);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogWarning("[AddMultipleToCart] Insufficient stock for {ProductCode}: {Message}", item.ProductCode, ex.Message);
+                    // For bulk add, we might want to continue adding other items even if one fails stock check
+                    // or return failure for the whole batch. Usually better to add what's possible OR return list of errors.
+                    // For now, let's keep it simple and skip failed items, but log them.
+                }
+            }
+
+            await _unitOfWork.CommitAsync(cancellationToken);
+            _logger.LogInformation("[AddMultipleToCart] Successfully added items to cart {CartCode}", cart.Code);
+            return Result.Success(_mapper.Map<CartDto>(cart));
+        }, cancellationToken);
     }
 
     private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken, int maxRetries = 5)

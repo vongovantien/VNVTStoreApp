@@ -21,6 +21,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
     private readonly IMapper _mapper;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ISecretConfigurationService _secretConfig;
 
     public RegisterCommandHandler(
         IRepository<TblUser> repository,
@@ -28,7 +29,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IEmailService emailService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ISecretConfigurationService secretConfig)
     {
         _repository = repository;
         _passwordHasher = passwordHasher;
@@ -36,6 +38,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
         _mapper = mapper;
         _emailService = emailService;
         _configuration = configuration;
+        _secretConfig = secretConfig;
     }
 
     public async Task<Result<UserDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -63,10 +66,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
         await _unitOfWork.CommitAsync(cancellationToken);
 
         // Send Verification Email
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+        var frontendUrl = await _secretConfig.GetSecretAsync("FRONTEND_URL") ?? _configuration["FrontendUrl"] ?? "http://localhost:5173";
         var verificationLink = $"{frontendUrl}/verify-email?email={user.Email}&token={user.EmailVerificationToken}";
-        await _emailService.SendEmailAsync(user.Email, "VNVT Store - Email Verification", 
-            $"<h1>Welcome to VNVT Store!</h1><p>Please verify your email by clicking the following link:</p><a href='{verificationLink}'>Verify Email</a>", true);
+        try
+        {
+            await _emailService.SendEmailAsync(user.Email, "VNVT Store - Email Verification", 
+                $"<h1>Welcome to VNVT Store!</h1><p>Please verify your email by clicking the following link:</p><a href='{verificationLink}'>Verify Email</a>", true);
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail registration if email fails (or handle as needed)
+            Console.WriteLine($"[RegisterCommandHandler] Failed to send email to {user.Email}: {ex.Message}");
+        }
 
         return Result.Success(_mapper.Map<UserDto>(user));
     }
@@ -109,13 +120,15 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ISecretConfigurationService _secretConfig;
 
-    public ForgotPasswordCommandHandler(IRepository<TblUser> repository, IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration)
+    public ForgotPasswordCommandHandler(IRepository<TblUser> repository, IUnitOfWork unitOfWork, IEmailService emailService, IConfiguration configuration, ISecretConfigurationService secretConfig)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
         _configuration = configuration;
+        _secretConfig = secretConfig;
     }
 
     public async Task<Result<bool>> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
@@ -127,7 +140,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         _repository.Update(user);
         await _unitOfWork.CommitAsync(cancellationToken);
 
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+        var frontendUrl = await _secretConfig.GetSecretAsync("FRONTEND_URL") ?? _configuration["FrontendUrl"] ?? "http://localhost:5173";
         var resetLink = $"{frontendUrl}/reset-password?email={user.Email}&token={user.PasswordResetToken}";
         await _emailService.SendEmailAsync(user.Email, "VNVT Store - Reset Password",
             $"<h1>Reset Your Password</h1><p>Click the link below to reset your password:</p><a href='{resetLink}'>Reset Password</a>", true);
@@ -214,6 +227,11 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         if (!isPasswordValid)
         {
             return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
+        }
+
+        if (!user.IsEmailVerified)
+        {
+            return Result.Failure<AuthResponseDto>(Error.Validation("Tài khoản của bạn chưa được xác thực email. Vui lòng kiểm tra hộp thư để kích hoạt tài khoản."));
         }
         
         var permissions = new List<string>();

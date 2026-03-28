@@ -76,6 +76,10 @@ export const cartService = {
         return apiClient.post<CartDto>('/carts/items', data);
     },
 
+    async addMultipleToCart(items: AddToCartRequest[]): Promise<ApiResponse<CartDto>> {
+        return apiClient.post<CartDto>('/carts/items/bulk', { items });
+    },
+
     async updateCartItem(data: UpdateCartItemRequest): Promise<ApiResponse<CartDto>> {
         return apiClient.put<CartDto>(`/carts/items/${data.itemCode}`, { quantity: data.quantity });
     },

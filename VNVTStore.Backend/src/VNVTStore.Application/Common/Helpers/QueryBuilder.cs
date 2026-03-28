@@ -27,7 +27,9 @@ public static class QueryBuilder
     /// </summary>
     public static (string Sql, DynamicParameters Parameters) BuildRawQueryConditionParameterized(
         List<SearchDTO>? searchFieldList, 
-        string? tableName = null)
+        string? tableName = null,
+        List<ReferenceTable>? refTblList = null,
+        Dictionary<string, string>? aliasMap = null)
     {
         var parameters = new DynamicParameters();
         
@@ -40,10 +42,10 @@ public static class QueryBuilder
         var paramIndex = 0;
 
         // Process grouped conditions
-        ProcessGroupedConditionsParameterized(sb, searchFieldList, tableName, parameters, ref paramIndex);
+        ProcessGroupedConditionsParameterized(sb, searchFieldList, tableName, parameters, ref paramIndex, refTblList, aliasMap);
         
         // Process ungrouped conditions
-        ProcessUngroupedConditionsParameterized(sb, searchFieldList, tableName, parameters, ref paramIndex);
+        ProcessUngroupedConditionsParameterized(sb, searchFieldList, tableName, parameters, ref paramIndex, refTblList, aliasMap);
 
         return (sb.ToString(), parameters);
     }
@@ -112,10 +114,11 @@ public static class QueryBuilder
         sb.Append(" FROM \"").Append(rootTbl).Append("\" AS ").Append(rootAlias);
         
         // Build JOINs
-        BuildJoinClauses(sb, rootAlias, refTblList, fields, searchFieldList);
+        // Build JOINs and get alias mapping for the WHERE clause
+        var aliasMap = BuildJoinClauses(sb, rootAlias, refTblList, fields, searchFieldList);
         
-        // Build WHERE clause with parameters
-        var (whereClause, whereParams) = BuildRawQueryConditionParameterized(searchFieldList, rootAlias);
+        // Build WHERE clause with parameters and alias mapping for correct aliasing
+        var (whereClause, whereParams) = BuildRawQueryConditionParameterized(searchFieldList, rootAlias, refTblList, aliasMap);
         parameters.AddDynamicParams(whereParams);
         
         if (!string.IsNullOrEmpty(whereClause))
@@ -192,7 +195,9 @@ public static class QueryBuilder
         List<SearchDTO> searchFields, 
         string? tableName,
         DynamicParameters parameters,
-        ref int paramIndex)
+        ref int paramIndex,
+        List<ReferenceTable>? refTblList = null,
+        Dictionary<string, string>? aliasMap = null)
     {
         var groupedItems = searchFields.Where(x => x.GroupID.HasValue).ToList();
         if (!groupedItems.Any()) return;
@@ -214,7 +219,7 @@ public static class QueryBuilder
                     groupSb.Append(string.IsNullOrEmpty(item.CombineCondition) ? " AND " : $" {item.CombineCondition} ");
                 }
 
-                var condition = BuildConditionParameterized(item, tableName, parameters, ref paramIndex);
+                var condition = BuildConditionParameterized(item, tableName, parameters, ref paramIndex, refTblList, aliasMap);
                 groupSb.Append(condition);
             }
 
@@ -232,7 +237,9 @@ public static class QueryBuilder
         List<SearchDTO> searchFields, 
         string? tableName,
         DynamicParameters parameters,
-        ref int paramIndex)
+        ref int paramIndex,
+        List<ReferenceTable>? refTblList = null,
+        Dictionary<string, string>? aliasMap = null)
     {
         var ungroupedItems = searchFields.Where(x => !x.GroupID.HasValue).ToList();
 
@@ -245,7 +252,7 @@ public static class QueryBuilder
                 sb.Append(string.IsNullOrEmpty(item.CombineCondition) ? " AND " : $" {item.CombineCondition} ");
             }
 
-            var condition = BuildConditionParameterized(item, tableName, parameters, ref paramIndex);
+            var condition = BuildConditionParameterized(item, tableName, parameters, ref paramIndex, refTblList, aliasMap);
             sb.Append(condition);
         }
     }
@@ -254,11 +261,36 @@ public static class QueryBuilder
         SearchDTO item, 
         string? tableName, 
         DynamicParameters parameters,
-        ref int paramIndex)
+        ref int paramIndex,
+        List<ReferenceTable>? refTblList = null,
+        Dictionary<string, string>? aliasMap = null)
     {
         try
         {
-            var field = SqlBuilderHelpers.QuoteField(tableName, item.SearchField);
+            var searchField = item.SearchField;
+            var currentTableName = tableName;
+
+            // Handle joined reference fields (e.g. "Brand", "CategoryName")
+            if (aliasMap != null && aliasMap.TryGetValue(searchField, out var mappedAlias))
+            {
+                currentTableName = mappedAlias;
+                // If the mapped field in the join is different from AliasName, we should use refTbl.ColumnName
+                // But aliasMap currently only stores TargetAlias. We need to know the ColumnName too.
+                if (refTblList != null)
+                {
+                    var refTbl = refTblList.FirstOrDefault(r => string.Equals(r.AliasName, searchField, StringComparison.OrdinalIgnoreCase));
+                    if (refTbl != null) searchField = refTbl.ColumnName;
+                }
+            }
+            else if (searchField.Contains('.'))
+            {
+                // Explicit alias provided in SearchField (e.g. "t1.Name")
+                var parts = searchField.Split('.');
+                currentTableName = parts[0];
+                searchField = parts[1];
+            }
+
+            var field = SqlBuilderHelpers.QuoteField(currentTableName, searchField);
 
             // Unwrap JsonElement if present
             item.SearchValue = UnwrapJsonElement(item.SearchValue);
@@ -736,9 +768,10 @@ public static class QueryBuilder
         
     }
 
-    public static void BuildJoinClauses(StringBuilder sb, string rootAlias, List<ReferenceTable>? refTblList, List<string>? fields, List<SearchDTO>? searchFields = null)
+    public static Dictionary<string, string> BuildJoinClauses(StringBuilder sb, string rootAlias, List<ReferenceTable>? refTblList, List<string>? fields, List<SearchDTO>? searchFields = null)
     {
-        if (refTblList == null || !refTblList.Any()) return;
+        var aliasMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (refTblList == null || !refTblList.Any()) return aliasMap;
 
         var normalizedFields = fields?
             .Select(SqlBuilderHelpers.NormalizeFieldName)
@@ -750,9 +783,20 @@ public static class QueryBuilder
         {
             foreach (var s in searchFields)
             {
-                if (string.IsNullOrEmpty(s.SearchField) || !s.SearchField.Contains('.')) continue;
+                if (string.IsNullOrEmpty(s.SearchField)) continue;
                 searchAliases ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                searchAliases.Add(SqlBuilderHelpers.NormalizeFieldName(s.SearchField.Split('.')[0]));
+                if (s.SearchField.Contains('.'))
+                {
+                    searchAliases.Add(SqlBuilderHelpers.NormalizeFieldName(s.SearchField.Split('.')[0]));
+                }
+                else
+                {
+                    // FEATURE: Detect alias usage in search fields even without dot notation
+                    if (refTblList.Any(r => string.Equals(r.AliasName, s.SearchField, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        searchAliases.Add(SqlBuilderHelpers.NormalizeFieldName(s.SearchField));
+                    }
+                }
             }
         }
 
@@ -777,6 +821,7 @@ public static class QueryBuilder
             }
 
             var targetAlias = $"t{tableIndex}";
+            aliasMap[refTbl.AliasName] = targetAlias;
             
             // Only add to SELECT if it was in normalizedFields (or normalizedFields is null)
             if (normalizedFields == null || normalizedFields.Contains(refTbl.AliasName))
@@ -795,6 +840,8 @@ public static class QueryBuilder
 
             tableIndex++;
         }
+
+        return aliasMap;
     }
 
     private static bool IsNumericField(string field)

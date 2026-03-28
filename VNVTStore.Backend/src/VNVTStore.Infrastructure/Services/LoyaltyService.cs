@@ -9,17 +9,24 @@ public class LoyaltyService : ILoyaltyService
 {
     private readonly IRepository<TblUser> _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ISecretConfigurationService _secretConfig;
 
-    public LoyaltyService(IRepository<TblUser> userRepository, IUnitOfWork unitOfWork)
+    public LoyaltyService(IRepository<TblUser> userRepository, IUnitOfWork unitOfWork, ISecretConfigurationService secretConfig)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _secretConfig = secretConfig;
     }
 
-    public Task<int> CalculatePointsForOrderAsync(decimal orderAmount)
+    public async Task<int> CalculatePointsForOrderAsync(decimal orderAmount)
     {
-        // Reward 1 point for every 10,000 VND spent
-        return Task.FromResult((int)(orderAmount / 10000));
+        // Reward points based on currency spend
+        var pointsPerCurrencyStr = await _secretConfig.GetSecretAsync("LOYALTY_POINTS_PER_CURRENCY") ?? "10000";
+        if (decimal.TryParse(pointsPerCurrencyStr, out var pointsPerCurrency) && pointsPerCurrency > 0)
+        {
+            return (int)(orderAmount / pointsPerCurrency);
+        }
+        return (int)(orderAmount / 10000); // Fallback
     }
 
     public async Task AddPointsToUserAsync(string userCode, int points)
@@ -33,8 +40,15 @@ public class LoyaltyService : ILoyaltyService
             // Points are earned 1 per 10k, so 1000 points = 10,000,000 VND
             var currentPoints = user.LoyaltyPoints;
             var newTier = "NEW";
-            if (currentPoints >= 5000) newTier = "VIP"; // > 50M
-            else if (currentPoints >= 1000) newTier = "LOYAL"; // > 10M
+            
+            var vipThresholdStr = await _secretConfig.GetSecretAsync("LOYALTY_TIER_VIP_THRESHOLD") ?? "5000";
+            var loyalThresholdStr = await _secretConfig.GetSecretAsync("LOYALTY_TIER_LOYAL_THRESHOLD") ?? "1000";
+            
+            int.TryParse(vipThresholdStr, out var vipThreshold);
+            int.TryParse(loyalThresholdStr, out var loyalThreshold);
+
+            if (currentPoints >= vipThreshold) newTier = "VIP";
+            else if (currentPoints >= loyalThreshold) newTier = "LOYAL";
 
             // Need to add UpdateTier method to TblUser or use reflection since it's private set
             var tierProp = typeof(TblUser).GetProperty("UserTier");

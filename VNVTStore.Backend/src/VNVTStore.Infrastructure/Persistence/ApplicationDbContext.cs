@@ -21,6 +21,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public virtual DbSet<TblBanner> TblBanners { get; set; }
     public virtual DbSet<TblSystemConfig> TblSystemConfigs { get; set; }
+    public virtual DbSet<TblSystemSecret> TblSystemSecrets { get; set; }
 
     public virtual DbSet<TblCart> TblCarts { get; set; }
 
@@ -1176,6 +1177,21 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(d => d.UserCode)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("TblAuditLog_UserCode_fkey");
+        });
+        modelBuilder.Entity<TblSystemSecret>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblSystemSecret_pkey");
+            entity.ToTable("TblSystemSecret");
+            
+            entity.Property(e => e.Code).HasMaxLength(100);
+            entity.Property(e => e.SecretValue);
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.IsEncrypted).HasDefaultValue(false);
+            
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
         OnModelCreatingPartial(modelBuilder);

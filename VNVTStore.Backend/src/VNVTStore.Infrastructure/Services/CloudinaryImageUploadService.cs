@@ -10,23 +10,32 @@ namespace VNVTStore.Infrastructure.Services;
 
 public class CloudinaryImageUploadService : IImageUploadService
 {
-    private readonly Cloudinary _cloudinary;
+    private Cloudinary? _cloudinary;
     private readonly IApplicationDbContext _context;
+    private readonly IConfiguration _configuration;
+    private readonly ISecretConfigurationService _secretConfig;
 
-    public CloudinaryImageUploadService(IConfiguration configuration, IApplicationDbContext context)
+    public CloudinaryImageUploadService(IConfiguration configuration, ISecretConfigurationService secretConfig, IApplicationDbContext context)
     {
         _context = context;
-        // Parse CLOUDINARY_URL or individual keys
-        var cloudinaryUrl = configuration["CLOUDINARY_URL"];
+        _configuration = configuration;
+        _secretConfig = secretConfig;
+    }
+
+    private async Task EnsureCloudinaryInitializedAsync()
+    {
+        if (_cloudinary != null) return;
+
+        var cloudinaryUrl = await _secretConfig.GetSecretAsync("CLOUDINARY_URL") ?? _configuration["CLOUDINARY_URL"];
         if (!string.IsNullOrEmpty(cloudinaryUrl))
         {
             _cloudinary = new Cloudinary(cloudinaryUrl);
         }
         else
         {
-            var cloudName = configuration["Cloudinary:CloudName"];
-            var apiKey = configuration["Cloudinary:ApiKey"];
-            var apiSecret = configuration["Cloudinary:ApiSecret"];
+            var cloudName = await _secretConfig.GetSecretAsync("CLOUDINARY_CLOUD_NAME") ?? _configuration["Cloudinary:CloudName"];
+            var apiKey = await _secretConfig.GetSecretAsync("CLOUDINARY_API_KEY") ?? _configuration["Cloudinary:ApiKey"];
+            var apiSecret = await _secretConfig.GetSecretAsync("CLOUDINARY_API_SECRET") ?? _configuration["Cloudinary:ApiSecret"];
             var account = new Account(cloudName, apiKey, apiSecret);
             _cloudinary = new Cloudinary(account);
         }
@@ -35,6 +44,7 @@ public class CloudinaryImageUploadService : IImageUploadService
 
     public async Task<Result<FileDto>> UploadImageAsync(Stream imageStream, string fileName, string folder = "products")
     {
+        await EnsureCloudinaryInitializedAsync();
         try
         {
             if (imageStream.Position > 0)
@@ -115,6 +125,7 @@ public class CloudinaryImageUploadService : IImageUploadService
 
     public async Task<Result> DeleteImagesAsync(IEnumerable<string> imageUrls)
     {
+        await EnsureCloudinaryInitializedAsync();
         try
         {
             if (imageUrls == null || !imageUrls.Any()) return Result.Success();
@@ -181,6 +192,7 @@ public class CloudinaryImageUploadService : IImageUploadService
 
     public async Task<Result<FileDto>> UploadBase64Async(string base64Content, string fileName, string folder = "products")
     {
+        await EnsureCloudinaryInitializedAsync();
         try
         {
             var uploadParams = new ImageUploadParams
@@ -233,6 +245,7 @@ public class CloudinaryImageUploadService : IImageUploadService
 
     public async Task<Result<IEnumerable<FileDto>>> UploadBase64ImagesAsync(IEnumerable<(string Base64Content, string FileName)> images, string folder = "products")
     {
+        await EnsureCloudinaryInitializedAsync();
         // 1. Sequential Upload to Cloudinary (SAFE)
         var uploadedFiles = new List<FileDto>();
         var errors = new List<string>();
@@ -326,6 +339,7 @@ public class CloudinaryImageUploadService : IImageUploadService
 
     public async Task<Result<FileDto>> UploadUrlAsync(string url, string fileName, string folder = "products")
     {
+        await EnsureCloudinaryInitializedAsync();
         try
         {
              var uploadParams = new ImageUploadParams

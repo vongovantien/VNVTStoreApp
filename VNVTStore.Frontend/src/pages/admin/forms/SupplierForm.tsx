@@ -4,21 +4,23 @@ import { useTranslation } from 'react-i18next';
 import { BaseForm, FieldDefinition } from '@/components/common';
 import { REGEX } from '@/constants/regex';
 
-// ============ Schema with Validation ============
-const supplierSchema = z.object({
-  name: z.string().min(1, 'required'), // will be handled by t('admin.validation.supplierNameRequired')
+import type { TFunction } from 'i18next';
+
+// ============ Schema Factory ============
+const createSupplierSchema = (t: TFunction) => z.object({
+  name: z.string().min(1, t('validation.required')), // will be handled correctly by i18n
   contactPerson: z.string().optional(),
-  email: z.string().email('invalid_email').optional().or(z.literal('')),
-  phone: z.string().regex(REGEX.PHONE_SIMPLE, 'invalid_phone').optional().or(z.literal('')),
+  email: z.string().email(t('validation.invalidEmail')).optional().or(z.literal('')),
+  phone: z.string().regex(REGEX.PHONE_SIMPLE, t('validation.invalidPhone')).optional().or(z.literal('')),
   address: z.string().optional(),
-  taxCode: z.string().regex(REGEX.TAX_CODE, 'invalid_tax_code').optional().or(z.literal('')),
+  taxCode: z.string().regex(REGEX.TAX_CODE, t('validation.invalidTaxCode')).optional().or(z.literal('')),
   bankAccount: z.string().optional(),
   bankName: z.string().optional(),
   notes: z.string().optional(),
   isActive: z.boolean(),
 });
 
-export type SupplierFormData = z.infer<typeof supplierSchema>;
+export type SupplierFormData = z.infer<ReturnType<typeof createSupplierSchema>>;
 
 // ============ Props ============
 interface SupplierFormProps {
@@ -135,7 +137,7 @@ export const SupplierForm = ({
 
   return (
     <BaseForm<SupplierFormData>
-      schema={supplierSchema}
+      schema={createSupplierSchema(t)}
       defaultValues={defaultValues}
       fields={fields}
       onSubmit={onSubmit}

@@ -1,6 +1,7 @@
 
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { BaseForm, FieldDefinition } from '@/components/common';
 import { useCategories } from '@/hooks';
 import { contentWeaverService } from '@/services/ContentWeaverService';
@@ -8,15 +9,15 @@ import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 // ============ Schema ============
-const categorySchema = z.object({
-  name: z.string().min(1, 'required'), // will be localized in component or handling
+const createCategorySchema = (t: TFunction) => z.object({
+  name: z.string().min(1, t('validation.required')), // Handle validation correctly
   description: z.string().optional(),
   parentCode: z.string().optional(),
   imageURL: z.string().optional(),
   isActive: z.boolean(),
 });
 
-export type CategoryFormData = z.infer<typeof categorySchema>;
+export type CategoryFormData = z.infer<ReturnType<typeof createCategorySchema>>;
 
 // ============ Props ============
 interface CategoryFormProps {
@@ -105,7 +106,7 @@ export const CategoryForm = ({
 
   return (
     <BaseForm<CategoryFormData>
-      schema={categorySchema}
+      schema={createCategorySchema(t)}
       defaultValues={defaultValues}
       fields={fields}
       onSubmit={onSubmit}

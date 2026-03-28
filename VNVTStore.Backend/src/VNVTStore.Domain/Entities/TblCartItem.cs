@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using VNVTStore.Domain.Interfaces;
 
@@ -36,6 +36,7 @@ public partial class TblCartItem : IEntity
 
     public static TblCartItem Create(string cartCode, string productCode, int quantity, string? size, string? color)
     {
+        var now = DateTime.UtcNow;
         return new TblCartItem
         {
             Code = $"CRI{Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper()}",
@@ -44,7 +45,11 @@ public partial class TblCartItem : IEntity
             Quantity = quantity,
             Size = size,
             Color = color,
-            AddedAt = DateTime.UtcNow
+            AddedAt = now,
+            CreatedAt = now,
+            UpdatedAt = now,
+            ModifiedType = "ADD",
+            IsActive = true
         };
     }
 

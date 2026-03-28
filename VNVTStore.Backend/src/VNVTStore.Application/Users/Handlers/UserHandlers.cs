@@ -239,6 +239,14 @@ public class UserHandlers : BaseHandler<TblUser>,
     }
     public async Task<Result> Handle(DeleteCommand<TblUser> request, CancellationToken cancellationToken)
     {
+        var hasOrders = await _orderRepository.CountAsync(o => o.UserCode == request.Code, cancellationToken);
+        if (hasOrders > 0)
+        {
+             var user = await _repository.GetByCodeAsync(request.Code, cancellationToken);
+             return Result.Failure(Error.Conflict(MessageConstants.Conflict, 
+                 MessageConstants.Get(MessageConstants.UserHasOrders, user?.FullName ?? request.Code, hasOrders)));
+        }
+
         return await DeleteAsync(request.Code, MessageConstants.User, cancellationToken);
     }
 

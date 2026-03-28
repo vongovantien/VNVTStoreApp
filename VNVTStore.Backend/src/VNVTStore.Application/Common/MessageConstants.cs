@@ -62,6 +62,7 @@ public static class MessageConstants
     public const string CouponNotFound = "Coupon.NotFound";
     public const string CouponMinOrderAmountNotMet = "Coupon.MinOrderAmountNotMet";
     public const string CategoryHasProducts = "Category.HasProducts";
+    public const string UserHasOrders = "User.HasOrders";
 
     public const string NotificationNewOrder = "Notification.NewOrder";
     public const string NotificationSystemBroadcast = "Notification.SystemBroadcast";
@@ -124,6 +125,7 @@ public static class MessageConstants
             [CategoryHasProducts] = "Không thể xóa danh mục '{0}' vì đang có {1} sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.",
             [NotificationNewOrder] = "Đơn hàng mới: {0}",
             [NotificationSystemBroadcast] = "Thông báo hệ thống: {0}",
+            [UserHasOrders] = "Người dùng '{0}' đang có {1} đơn hàng hoạt động.",
             [RequireLoginOrGuestInfo] = "Vui lòng đăng nhập hoặc điền thông tin liên hệ."
         },
         ["en"] = new()
@@ -180,6 +182,7 @@ public static class MessageConstants
             [CategoryHasProducts] = "Cannot delete category '{0}' because it has {1} products. Please move products to another category first.",
             [NotificationNewOrder] = "New Order: {0}",
             [NotificationSystemBroadcast] = "System Notification: {0}",
+            [UserHasOrders] = "User '{0}' has {1} active orders.",
             [RequireLoginOrGuestInfo] = "Please login or provide contact information."
         }
     };

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using VNVTStore.Domain.Interfaces;
 
@@ -29,12 +29,15 @@ public partial class TblCart : IEntity
 
     public static TblCart Create(string userCode)
     {
+        var now = DateTime.UtcNow;
         return new TblCart
         {
             Code = $"CRT{Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper()}",
             UserCode = userCode,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = now,
+            UpdatedAt = now,
+            ModifiedType = "ADD",
+            IsActive = true,
             TblCartItems = new List<TblCartItem>()
         };
     }

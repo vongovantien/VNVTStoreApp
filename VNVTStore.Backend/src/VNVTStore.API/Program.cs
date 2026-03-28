@@ -41,45 +41,6 @@ try
     builder.Services.AddMemoryCache();
     builder.Services.AddHttpContextAccessor();
 
-    // Initialize Firebase Admin SDK
-    var firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
-    if (File.Exists(firebaseKeyPath))
-    {
-        try 
-        {
-            var json = File.ReadAllText(firebaseKeyPath);
-            // Some environments/files may have malformed private_key strings (e.g. literal \n instead of actual newlines)
-            // We ensure it's properly formatted for the Google Auth library.
-            if (json.Contains("\\n"))
-            {
-                json = json.Replace("\\\\n", "\\n"); // Handle double escaped if any
-            }
-
-            if (builder.Environment.EnvironmentName != "Testing")
-            {
-                if (FirebaseApp.DefaultInstance == null)
-                {
-                    FirebaseApp.Create(new AppOptions()
-                    {
-                        Credential = GoogleCredential.FromJson(json)
-                    });
-                    Log.Information("[Firebase] Firebase Admin SDK initialized successfully.");
-                }
-            }
-            else
-            {
-                Log.Information("[Firebase] Skipping Firebase initialization in Testing environment.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "[Firebase] Failed to initialize Firebase Admin SDK. This can be ignored if you are running migrations.");
-        }
-    }
-    else
-    {
-        Log.Warning("[Firebase] Warning: Firebase service account file not found.");
-    }
 
     // Increase Request Body Limits for Large Image Uploads
     builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
@@ -100,6 +61,7 @@ try
     {
         var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var secretConfig = scope.ServiceProvider.GetRequiredService<ISecretConfigurationService>();
         
         try 
         {
@@ -112,10 +74,35 @@ try
             await PermissionSeeder.SeedAsync(context);
             await DataSeeder.SeedAsync(context, passwordHasher);
             await MenuSeeder.SeedAsync(context);
+
+            // Initialize Firebase from DB Secret
+            if (app.Environment.EnvironmentName != "Testing")
+            {
+                var firebaseJson = await secretConfig.GetSecretAsync("FIREBASE_KEY");
+                if (!string.IsNullOrEmpty(firebaseJson))
+                {
+                    if (firebaseJson.Contains("\\n"))
+                    {
+                        firebaseJson = firebaseJson.Replace("\\\\n", "\\n"); // Handle double escaped
+                    }
+                    if (FirebaseApp.DefaultInstance == null)
+                    {
+                        FirebaseApp.Create(new AppOptions()
+                        {
+                            Credential = GoogleCredential.FromJson(firebaseJson)
+                        });
+                        Log.Information("[Firebase] Firebase Admin SDK initialized successfully from database secret.");
+                    }
+                }
+                else
+                {
+                    Log.Warning("[Firebase] Warning: FIREBASE_KEY not found in TblSystemSecret.");
+                }
+            }
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Database initialization or seeding failed. This is expected if migrations are pending or DB is unavailable.");
+            Log.Warning(ex, "Database initialization, seeding or Firebase initialization failed.");
         }
     }
 

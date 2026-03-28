@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -19,6 +19,7 @@ using VNVTStore.Infrastructure.Persistence;
 using Xunit;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
+using VNVTStore.Application.Common.Models;
 
 using VNVTStore.Tests.Common;
 
@@ -33,6 +34,7 @@ namespace VNVTStore.Tests.Handlers
         private readonly Mock<IBaseUrlService> _mockBaseUrlService;
         private readonly Mock<IFileService> _mockFileService;
         private readonly ApplicationDbContext _context; // Real In-Memory Context
+        private readonly Mock<IImageUploadService> _mockUploadService;
         private readonly CreateProductHandler _createHandler;
         private readonly DeleteProductHandler _deleteHandler;
 
@@ -68,6 +70,7 @@ namespace VNVTStore.Tests.Handlers
             _mockDapperContext = new Mock<IDapperContext>();
             _mockBaseUrlService = new Mock<IBaseUrlService>();
             _mockFileService = new Mock<IFileService>();
+            _mockUploadService = new Mock<IImageUploadService>();
 
             _createHandler = new CreateProductHandler(
                 _mockRepo.Object,
@@ -181,6 +184,48 @@ namespace VNVTStore.Tests.Handlers
         public void Dispose()
         {
             TestDbContextFactory.Destroy(_context);
+        }
+
+        [Fact]
+        public async Task CreateProduct_WithImage_Success()
+        {
+            // Arrange
+            var createDto = new CreateProductDto 
+            { 
+                Name = "Product With Image", 
+                Price = 100, 
+                StockQuantity = 10,
+                CategoryCode = "CAT1",
+                Images = new List<string> { "data:image/png;base64,test" }
+            };
+            var request = new CreateCommand<CreateProductDto, ProductDto>(createDto);
+            
+            var uploadedPath = "products/newimage.png";
+            _mockUploadService.Setup(s => s.UploadBase64ImagesAsync(It.IsAny<List<(string, string)>>(), "products"))
+                .ReturnsAsync(Result.Success<IEnumerable<FileDto>>(new List<FileDto> { new FileDto { Url = uploadedPath, Path = uploadedPath } }));
+
+            _mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<TblProduct>()))
+                .Returns((TblProduct source) => new ProductDto { Code = source.Code, Name = source.Name });
+
+            // Create a mock file for linking
+            var fileEntity = TblFile.Create("newimage.png", "newimage.png", ".png", "image/png", 100, uploadedPath);
+            _context.TblFiles.Add(fileEntity);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _createHandler.Handle(request, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            _mockUploadService.Verify(s => s.UploadBase64ImagesAsync(It.IsAny<List<(string, string)>>(), "products"), Times.Once);
+            
+            var dbProduct = await _context.TblProducts.FirstOrDefaultAsync(p => p.Name == "Product With Image");
+            dbProduct.Should().NotBeNull();
+            
+            // Verify linking happened on the file entity itself
+            var linkedFile = await _context.TblFiles.FirstOrDefaultAsync(f => f.Url == uploadedPath);
+            linkedFile!.MasterCode.Should().Be(dbProduct!.Code);
+            linkedFile.MasterType.Should().Be("Product");
         }
     }
 }

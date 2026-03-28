@@ -17,7 +17,9 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                   .EnableSensitiveDataLogging()
+                   .EnableDetailedErrors());
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
@@ -34,6 +36,7 @@ public static class DependencyInjection
         services.AddSingleton<IDapperContext, DapperContext>();
 
         // Add Services
+        services.AddScoped<ISecretConfigurationService, SecretConfigurationService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
         // Ideally we pass IWebHostEnvironment but for now checking config or defaulting

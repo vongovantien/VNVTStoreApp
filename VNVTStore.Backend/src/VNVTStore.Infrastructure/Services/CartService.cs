@@ -28,6 +28,9 @@ public class CartService : ICartService
             cart = TblCart.Create(userCode);
             await _cartRepository.AddAsync(cart, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
+            
+            // Reload to get DB-generated values and avoid concurrency issues
+            await _cartRepository.ReloadAsync(cart, cancellationToken);
         }
 
         return cart;

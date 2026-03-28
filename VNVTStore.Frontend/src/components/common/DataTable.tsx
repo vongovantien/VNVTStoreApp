@@ -307,7 +307,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
 
   // Internal pagination
   // Use the computed pageSize (which includes internal state)
-  const effectivePageSize = pageSize; 
+  const effectivePageSize = pageSize;
   const internalTotalPages = Math.ceil(sortedData.length / effectivePageSize);
   const paginatedData = useMemo(() => {
     if (isExternalPagination) return sortedData;
@@ -322,7 +322,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
   // Filter columns based on visibility AND append actions column if needed
   const visibleColumnDefs = useMemo(() => {
     const cols = columns.filter(col => visibleColIds.includes(col.id));
-    
+
     // Check if we need to add an actions column
     const hasActions = onView || onEdit || onDelete || renderRowActions;
     // Check if actions column already exists to avoid duplication if passed manually
@@ -387,7 +387,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
   const handleExport = useCallback(() => {
     // If onExportAllData is provided, fetch all data first
     const dataToExport = onExportAllData ? onExportAllData() : sortedData;
-    
+
     // Automatically generate export columns from visible columns if not provided
     const cols = exportColumns || visibleColumnDefs
       .filter(col => col.id !== 'actions') // Don't export actions column
@@ -404,9 +404,9 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
     setSearchQuery('');
     setSearchField('all');
     setSelectedIds(new Set());
-    setAdvancedFilters({}); 
-    if (onReset) onReset(); 
-    if (onAdvancedSearch) onAdvancedSearch({}); 
+    setAdvancedFilters({});
+    if (onReset) onReset();
+    if (onAdvancedSearch) onAdvancedSearch({});
     if (!isExternalSort) {
       setInternalSortField(null);
       setInternalSortDir('asc');
@@ -454,10 +454,10 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
   // ============ Render ============
   return (
     <>
-    <div className="bg-primary border shadow-sm rounded-xl relative flex flex-col" ref={containerRef}>
-      {/* Toolbar */}
-      {showToolbar && (
-        <div className="p-4 border-b border-border">
+      <div className="bg-primary border shadow-sm rounded-xl relative flex flex-col" ref={containerRef}>
+        {/* Toolbar */}
+        {showToolbar && (
+          <div className="p-4 border-b border-border">
             <AdminToolbar
               onAdd={onAdd}
               onRefresh={onRefresh}
@@ -496,229 +496,229 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
                 />
               )}
             </AdminToolbar>
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Floating Filter Panel */}
-      {advancedFilterDefs && showFilters && (
-        <div
-          className="fixed inset-x-4 top-24 z-[100] md:absolute md:top-16 md:w-[600px] md:inset-auto bg-primary shadow-2xl rounded-xl border border-border p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-left max-h-[80vh] overflow-y-auto"
-          style={{
-            ...(window.innerWidth >= 768 ? { left: popupLeft > 0 ? popupLeft : '230px' } : {})
-          }}
-        >
+        {/* Floating Filter Panel */}
+        {advancedFilterDefs && showFilters && (
+          <div
+            className="fixed inset-x-4 top-24 z-[100] md:absolute md:top-16 md:w-[600px] md:inset-auto bg-primary shadow-2xl rounded-xl border border-border p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-left max-h-[80vh] overflow-y-auto"
+            style={{
+              ...(window.innerWidth >= 768 ? { left: popupLeft > 0 ? popupLeft : '230px' } : {})
+            }}
+          >
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {advancedFilterDefs.map((def) => (
-              <div key={def.id} className="space-y-1.5">
-                <label className="text-sm font-semibold text-primary">
-                  {def.label}
-                </label>
-                {def.type === 'select' ? (
-                  <div className="relative">
-                    <select
-                      className="w-full pl-3 pr-10 py-2 bg-secondary border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm appearance-none outline-none cursor-pointer"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {advancedFilterDefs.map((def) => (
+                <div key={def.id} className="space-y-1.5">
+                  <label className="text-sm font-semibold text-primary">
+                    {def.label}
+                  </label>
+                  {def.type === 'select' ? (
+                    <div className="relative">
+                      <select
+                        className="w-full pl-3 pr-10 py-2 bg-secondary border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm appearance-none outline-none cursor-pointer"
+                        value={advancedFilters[def.id] || ''}
+                        onChange={(e) => setAdvancedFilters(prev => ({ ...prev, [def.id]: e.target.value }))}
+                      >
+                        <option value="">{t('common.all')}</option>
+                        {def.options?.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary pointer-events-none" />
+                    </div>
+                  ) : (
+                    <input
+                      type={def.type}
+                      className="w-full px-3 py-2 bg-secondary border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm outline-none placeholder:text-gray-400"
+                      placeholder={def.placeholder}
                       value={advancedFilters[def.id] || ''}
                       onChange={(e) => setAdvancedFilters(prev => ({ ...prev, [def.id]: e.target.value }))}
-                    >
-                      <option value="">{t('common.all')}</option>
-                      {def.options?.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary pointer-events-none" />
-                  </div>
-                ) : (
-                  <input
-                    type={def.type}
-                    className="w-full px-3 py-2 bg-secondary border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm outline-none placeholder:text-gray-400"
-                    placeholder={def.placeholder}
-                    value={advancedFilters[def.id] || ''}
-                    onChange={(e) => setAdvancedFilters(prev => ({ ...prev, [def.id]: e.target.value }))}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-center items-center gap-3 pt-4 border-t border-border">
-            <button
-              className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-md transition-all flex items-center gap-2"
-              onClick={() => {
-                if (onAdvancedSearch) onAdvancedSearch(advancedFilters);
-                setShowFilters(false);
-              }}
-            >
-              <Filter size={16} />
-              {t('common.actions.apply')}
-            </button>
-            <button
-              className="px-5 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white font-medium shadow-md transition-all flex items-center gap-2"
-              onClick={() => setShowFilters(false)}
-            >
-              {t('common.actions.close')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Table Container */}
-      <div className="relative min-h-[400px] flex-1">
-
-        {/* Error Overlay */}
-        {showError && (
-          <div className="absolute inset-0 bg-primary/80 flex items-center justify-center z-10 backdrop-blur-sm">
-            <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-              <h3 className="font-semibold mb-2">{t('messages.error')}</h3>
-              <p className="text-secondary text-sm">{error?.message || t('messages.loadError')}</p>
+            {/* Action Buttons */}
+            <div className="flex justify-center items-center gap-3 pt-4 border-t border-border">
+              <button
+                className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-md transition-all flex items-center gap-2"
+                onClick={() => {
+                  if (onAdvancedSearch) onAdvancedSearch(advancedFilters);
+                  setShowFilters(false);
+                }}
+              >
+                <Filter size={16} />
+                {t('common.actions.apply')}
+              </button>
+              <button
+                className="px-5 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white font-medium shadow-md transition-all flex items-center gap-2"
+                onClick={() => setShowFilters(false)}
+              >
+                {t('common.actions.close')}
+              </button>
             </div>
           </div>
         )}
-        {/* Table Container with Loading Overlay */}
-        <div className="relative">
-          {/* Table Skeleton / Loading Overlay */}
-          {(isLoading || isFetching) && displayData.length === 0 ? (
-            <TableSkeleton 
-              columns={visibleColumnDefs.length} 
-              rows={pageSize} 
-              hasSelection={enableSelection}
-              hasActions={!!(onView || onEdit || onDelete || renderRowActions)}
-            />
-          ) : (
-            <>
-              {(isLoading || isFetching) && (
-                <div className="absolute inset-0 bg-primary/40 z-10 flex items-center justify-center backdrop-blur-[1px]">
-                  <Loading />
-                </div>
-              )}
-              <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-60")}>
-              <table className="w-full">
-            <thead className="bg-secondary border-b border-border">
-              {/* Main Header Row */}
-              <tr>
-                {/* Selection Checkbox */}
-                {enableSelection && (
-                  <th className="px-4 py-3 w-12">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300 focus:ring-primary"
-                    />
-                  </th>
+
+        {/* Table Container */}
+        <div className="relative min-h-[400px] flex-1">
+
+          {/* Error Overlay */}
+          {showError && (
+            <div className="absolute inset-0 bg-primary/80 flex items-center justify-center z-10 backdrop-blur-sm">
+              <div className="text-center">
+                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+                <h3 className="font-semibold mb-2">{t('messages.error')}</h3>
+                <p className="text-secondary text-sm">{error?.message || t('messages.loadError')}</p>
+              </div>
+            </div>
+          )}
+          {/* Table Container with Loading Overlay */}
+          <div className="relative">
+            {/* Table Skeleton / Loading Overlay */}
+            {(isLoading || isFetching) && displayData.length === 0 ? (
+              <TableSkeleton
+                columns={visibleColumnDefs.length}
+                rows={pageSize}
+                hasSelection={enableSelection}
+                hasActions={!!(onView || onEdit || onDelete || renderRowActions)}
+              />
+            ) : (
+              <>
+                {(isLoading || isFetching) && (
+                  <div className="absolute inset-0 bg-primary/40 z-10 flex items-center justify-center backdrop-blur-[1px]">
+                    <Loading />
+                  </div>
                 )}
+                <div className={cn("overflow-x-auto transition-opacity duration-200", (isLoading || isFetching) && "opacity-60")}>
+                  <table className="w-full">
+                    <thead className="bg-secondary border-b border-border">
+                      {/* Main Header Row */}
+                      <tr>
+                        {/* Selection Checkbox */}
+                        {enableSelection && (
+                          <th className="px-4 py-3 w-12">
+                            <input
+                              type="checkbox"
+                              checked={allSelected}
+                              onChange={(e) => handleSelectAll(e.target.checked)}
+                              className="w-4 h-4 rounded border-gray-300 focus:ring-primary"
+                            />
+                          </th>
+                        )}
 
-                {visibleColumnDefs.map(column => (
-                  <th
-                    key={column.id}
-                    onClick={() => column.sortable && handleSort(column.id)}
-                    className={cn(
-                      "px-4 py-3 text-left text-sm font-semibold text-secondary",
-                      column.sortable && "cursor-pointer hover:bg-tertiary select-none transition-colors",
-                      column.headerClassName
-                    )}
-                    style={{
-                      width: column.width,
-                      minWidth: column.minWidth,
-                      maxWidth: column.maxWidth
-                    }}
-                  >
-                    <div className={cn("flex items-center gap-1", column.noWrap && "whitespace-nowrap")}>
-                      {column.header}
-                      {column.sortable && <SortIcon columnId={column.id} sortField={sortField} sortDir={sortDir || 'asc'} />}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {displayData.length === 0 && !isLoading ? (
-                <tr>
-                  <td colSpan={visibleColumnDefs.length + (enableSelection ? 1 : 0)} className="px-4 py-12 text-center text-secondary">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                       <span className="text-slate-400 text-lg">¯\_(ツ)_/¯</span>
-                       <p>{finalEmptyMessage}</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                displayData.map((row, index) => {
-                  const rowKey = String(row[keyField]);
-                  const isSelected = selectedIds.has(rowKey);
+                        {visibleColumnDefs.map(column => (
+                          <th
+                            key={column.id}
+                            onClick={() => column.sortable && handleSort(column.id)}
+                            className={cn(
+                              "px-4 py-3 text-left text-sm font-semibold text-secondary",
+                              column.sortable && "cursor-pointer hover:bg-tertiary select-none transition-colors",
+                              column.headerClassName
+                            )}
+                            style={{
+                              width: column.width,
+                              minWidth: column.minWidth,
+                              maxWidth: column.maxWidth
+                            }}
+                          >
+                            <div className={cn("flex items-center gap-1", column.noWrap && "whitespace-nowrap")}>
+                              {column.header}
+                              {column.sortable && <SortIcon columnId={column.id} sortField={sortField} sortDir={sortDir || 'asc'} />}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {displayData.length === 0 && !isLoading ? (
+                        <tr>
+                          <td colSpan={visibleColumnDefs.length + (enableSelection ? 1 : 0)} className="px-4 py-12 text-center text-secondary">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              <span className="text-slate-400 text-lg">¯\_(ツ)_/¯</span>
+                              <p>{finalEmptyMessage}</p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        displayData.map((row, index) => {
+                          const rowKey = String(row[keyField]);
+                          const isSelected = selectedIds.has(rowKey);
 
-                  return (
-                    <tr
-                      key={rowKey}
-                      className={cn(
-                        "hover:bg-tertiary transition-colors",
-                        isSelected && "bg-blue-50/50 dark:bg-blue-900/20",
-                        rowClassName?.(row, index)
+                          return (
+                            <tr
+                              key={rowKey}
+                              className={cn(
+                                "hover:bg-tertiary transition-colors",
+                                isSelected && "bg-blue-50/50 dark:bg-blue-900/20",
+                                rowClassName?.(row, index)
+                              )}
+                            >
+                              {enableSelection && (
+                                <td className="px-4 py-4">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleSelectRow(rowKey)}
+                                    className="w-4 h-4 rounded border-gray-300 focus:ring-primary"
+                                  />
+                                </td>
+                              )}
+
+                              {visibleColumnDefs.map(column => (
+                                <td
+                                  key={column.id}
+                                  className={cn(
+                                    "px-4 py-4 text-sm",
+                                    column.className,
+                                    column.noWrap && "whitespace-nowrap"
+                                  )}
+                                  style={{
+                                    maxWidth: column.maxWidth // Apply max-width to td as well to force truncation if needed
+                                  }}
+                                >
+                                  {getCellValue(row, column)}
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })
                       )}
-                    >
-                      {enableSelection && (
-                        <td className="px-4 py-4">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleSelectRow(rowKey)}
-                            className="w-4 h-4 rounded border-gray-300 focus:ring-primary"
-                          />
-                        </td>
-                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
 
-                      {visibleColumnDefs.map(column => (
-                        <td 
-                          key={column.id} 
-                          className={cn(
-                            "px-4 py-4 text-sm", 
-                            column.className,
-                            column.noWrap && "whitespace-nowrap"
-                          )}
-                          style={{
-                             maxWidth: column.maxWidth // Apply max-width to td as well to force truncation if needed
-                          }}
-                        >
-                          {getCellValue(row, column)}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            isLoading={isLoading || isFetching}
+          />
+
         </div>
-        </>
-        )}
       </div>
-      
-       {/* Pagination */}
-       <Pagination
-         currentPage={currentPage}
-         totalPages={totalPages}
-         totalItems={totalItems}
-         pageSize={pageSize}
-         onPageChange={setCurrentPage}
-         onPageSizeChange={handlePageSizeChange}
-         pageSizeOptions={pageSizeOptions}
-         isLoading={isLoading || isFetching}
-       />
 
-    </div>
-    </div>
-
-    {/* Import Modal */}
-    {onImport && (
-      <ImportModal
-        isOpen={isImportOpen}
-        onClose={() => setIsImportOpen(false)}
-        onImport={onImport}
-        title={importTitle || t('common.importData')}
-        templateUrl={importTemplateUrl}
-      />
-    )}
+      {/* Import Modal */}
+      {onImport && (
+        <ImportModal
+          isOpen={isImportOpen}
+          onClose={() => setIsImportOpen(false)}
+          onImport={onImport}
+          title={importTitle || t('common.importData')}
+          templateUrl={importTemplateUrl}
+        />
+      )}
     </>
   );
 }

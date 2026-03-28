@@ -427,7 +427,7 @@ export const AdminLayout = () => {
       {/* Main Content */}
       <div
         className={cn(
-          'flex-1 transition-all duration-300',
+          'flex-1 min-w-0 overflow-hidden transition-all duration-300',
           sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
         )}
       >

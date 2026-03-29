@@ -6,7 +6,7 @@ interface UseExportOptions<T> {
     defaultColumns?: ExportColumn<T>[];
 }
 
-export function useExport<T extends Record<string, unknown>>(initialOptions: UseExportOptions<T> = {}) {
+export function useExport<T extends object>(initialOptions: UseExportOptions<T> = {}) {
     const [isExporting, setIsExporting] = useState(false);
 
     const exportData = useCallback(async (

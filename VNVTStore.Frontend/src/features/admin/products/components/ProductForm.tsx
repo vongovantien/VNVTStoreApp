@@ -45,8 +45,24 @@ const productSchema = z.object({
   })).optional(),
   code: z.string().optional(),
   unitsSection: z.unknown().optional(),
-  productUnits: z.array(z.unknown()).optional(),
-  variants: z.array(z.unknown()).optional(),
+  productUnits: z.array(z.object({
+    code: z.string().optional(),
+    productCode: z.string().optional(),
+    unitName: z.string(),
+    conversionRate: z.number(),
+    price: z.number(),
+    isBaseUnit: z.boolean(),
+    isActive: z.boolean().optional()
+  })).optional(),
+  variants: z.array(z.object({
+    code: z.string().optional(),
+    productCode: z.string().optional(),
+    sku: z.string(),
+    attributes: z.union([z.string(), z.record(z.unknown())]), // Attributes can be JSON string or object
+    price: z.number(),
+    stockQuantity: z.number(),
+    isActive: z.boolean().optional()
+  })).optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;
@@ -57,17 +73,19 @@ interface ProductDetail {
   specValue: string;
 }
 
+export interface ProductInitialData extends Partial<ProductFormData> {
+  productImages?: ProductImage[];
+  originalPrice?: number;
+  categoryName?: string;
+  supplierName?: string;
+  brandName?: string;
+  productUnits?: ProductUnitDto[];
+  variants?: ProductVariantData[];
+  imageURL?: string;
+}
+
 interface ProductFormProps {
-  initialData?: Partial<ProductFormData> & { 
-      productImages?: ProductImage[]; 
-      originalPrice?: number;
-      categoryName?: string;
-      supplierName?: string;
-      brandName?: string;
-      productUnits?: ProductUnitDto[];
-      variants?: ProductVariantData[];
-      imageURL?: string;
-  };
+  initialData?: ProductInitialData;
   onSubmit: (data: ProductFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -138,13 +156,13 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
   const { t } = useTranslation();
   
 
-  const [localUnits, setLocalUnits] = useState<ProductUnitDto[]>(initialData?.productUnits || []);
+  const [localUnits, setLocalUnits] = useState<ProductUnitDto[]>((initialData?.productUnits as ProductUnitDto[]) || []);
   const [localVariants, setLocalVariants] = useState<ProductVariantData[]>(initialData?.variants || []);
 
   useEffect(() => {
     if (initialData?.productUnits) {
         // eslint-disable-next-line
-        setLocalUnits(initialData.productUnits);
+        setLocalUnits(initialData.productUnits as ProductUnitDto[]);
     }
     if (initialData?.variants) {
          

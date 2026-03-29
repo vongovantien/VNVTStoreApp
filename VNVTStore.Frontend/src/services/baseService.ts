@@ -20,14 +20,14 @@ export interface EntityServiceConfig {
 
 
 export interface SearchParams {
-    pageIndex?: number;
-    pageSize?: number;
-    search?: string;
-    searchField?: string;
-    sortBy?: string;
-    sortDesc?: boolean;
-    filters?: Array<{ field: string; value: string | number | boolean | null | string[] | number[]; operator?: SearchCondition }>;
-    fields?: string[];  // List of columns to select (reduces data transfer)
+    pageIndex?: number | undefined;
+    pageSize?: number | undefined;
+    search?: string | undefined;
+    searchField?: string | undefined;
+    sortBy?: string | undefined;
+    sortDesc?: boolean | undefined;
+    filters?: Array<{ field: string; value: string | number | boolean | null | string[] | number[]; operator?: SearchCondition }> | undefined;
+    fields?: string[] | undefined;  // List of columns to select (reduces data transfer)
 }
 
 // ============ HTTP Methods (internal) ============

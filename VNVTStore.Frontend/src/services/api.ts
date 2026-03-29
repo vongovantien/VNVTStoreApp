@@ -98,9 +98,9 @@ export interface SortDTO {
 export interface RequestDTO {
   pageIndex: number;
   pageSize: number;
-  searching?: SearchDTO[];
-  sortDTO?: SortDTO;
-  fields?: string[];
+  searching?: SearchDTO[] | undefined;
+  sortDTO?: SortDTO | undefined;
+  fields?: string[] | undefined;
 }
 
 // ============ Discriminated Union Types for Type-Safe State ============

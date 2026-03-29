@@ -3,7 +3,7 @@ import { Package, Star } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { formatCurrency, getImageUrl } from '@/utils/format';
 import type { Product } from '@/types';
-import { DataTableColumn, CommonColumns } from '@/components/common/DataTable';
+import { type DataTableColumn, CommonColumns } from '@/components/common/DataTable';
 
 export const useProductColumns = () => {
   const { t, i18n } = useTranslation();
@@ -100,7 +100,7 @@ export const useProductColumns = () => {
       header: t('common.fields.createdAt') || 'Created At',
       accessor: (product) => (
         <span className="text-sm text-slate-500">
-           {new Date(product.createdAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' })}
+           {product.createdAt ? new Date(product.createdAt).toLocaleDateString(i18n.language, { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
         </span>
       ),
       className: 'text-center',

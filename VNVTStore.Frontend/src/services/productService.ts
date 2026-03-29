@@ -16,8 +16,8 @@ export interface ProductImageDto {
 }
 
 export interface ProductUnitDto {
-    code: string;
-    productCode: string;
+    code?: string;
+    productCode?: string;
     unitCode?: string;
     unitName: string;
     conversionRate: number;
@@ -28,6 +28,7 @@ export interface ProductUnitDto {
 
 export interface ProductDetailDto {
     code: string;
+    productCode?: string; // Added to match ProductDetail model
     detailType: 'SPEC' | 'LOGISTICS' | 'RELATION' | 'IMAGE';
     specName: string;
     specValue: string;
@@ -67,6 +68,7 @@ export interface ProductDto {
     isNew?: boolean;
     countryOfOrigin?: string;
     baseUnit?: string;
+    minStockLevel?: number; // Added to match Product model
     binLocation?: string;
     createdAt?: string;
     updatedAt?: string;

@@ -11,7 +11,7 @@ import {
   type EntityService
 } from '@/hooks';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { productService, type CreateProductRequest, type UpdateProductRequest } from '@/services/productService';
+import { productService, type CreateProductRequest, type UpdateProductRequest, type ProductUnitDto } from '@/services/productService';
 import { useToast } from '@/store';
 import type { Product, ProductUnit } from '@/types';
 import { DataTable } from '@/components/common/DataTable';
@@ -305,7 +305,7 @@ export const ProductsPage = () => {
         minStockLevel: editingProduct.minStockLevel,
         binLocation: editingProduct.binLocation,
         countryOfOrigin: editingProduct.countryOfOrigin || getDetailValue(editingProduct.details, ['origin', 'xuất xứ', 'nước sản xuất']),
-        productUnits: editingProduct.productUnits,
+        productUnits: editingProduct.productUnits as ProductUnitDto[],
       } : undefined, [editingProduct]);
 
       return (
@@ -428,7 +428,7 @@ export const ProductsPage = () => {
             // Force unmount on close to reset form state
           >
             <ProductForm
-              initialData={productInitialData as unknown as ProductFormData}
+              initialData={productInitialData as any}
               onSubmit={editingProduct ? handleUpdate : handleCreate}
               onCancel={closeForm}
               isLoading={createMutation.isPending || updateMutation.isPending}

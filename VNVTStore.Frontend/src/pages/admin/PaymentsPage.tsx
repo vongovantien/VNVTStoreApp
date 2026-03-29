@@ -1,4 +1,3 @@
-import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { AdminPageHeader } from '@/components/admin';
@@ -6,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { paymentService, PaymentTransaction } from '@/services/paymentService';
 import { Badge } from '@/components/ui';
 import { formatCurrency } from '@/utils/format';
+import { useMemo } from 'react';
 
 const AdminPaymentsPage = () => {
   const { t } = useTranslation();

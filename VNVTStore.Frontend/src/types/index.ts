@@ -37,7 +37,7 @@ export interface Product {
     isFeatured?: boolean;
     isNew?: boolean;
     isActive?: boolean;
-    createdAt: string;
+    createdAt?: string;
     updatedAt?: string;
 
     // Relations
@@ -80,13 +80,13 @@ export interface ProductDetail {
 }
 
 export interface ProductUnit {
-    code: string;
-    productCode: string;
+    code?: string | undefined;
+    productCode?: string | undefined;
     unitName: string;
     conversionRate: number;
     price: number;
-    isActive?: boolean;
-    isBaseUnit?: boolean;
+    isActive?: boolean | undefined;
+    isBaseUnit: boolean;
 }
 
 export interface ProductTag {
@@ -135,8 +135,8 @@ export interface CartItem {
     code: string;
     product: Product;
     quantity: number;
-    color?: string;
-    size?: string;
+    color?: string | undefined;
+    size?: string | undefined;
 }
 
 // ============ User Types ============

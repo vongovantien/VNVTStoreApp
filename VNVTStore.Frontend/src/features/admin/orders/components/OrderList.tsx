@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui';
-import { DataTable } from '@/components/common/DataTable';
-import { DataTableColumn } from '@/components/common/DataTable';
+import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { type ExportColumn } from '@/utils/export';
 import { OrderDto } from '@/services/orderService';
 import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/utils/format';
 import { Check, Truck, Package, X, Printer, Eye } from 'lucide-react';
@@ -169,7 +169,7 @@ export const OrderList = ({
                 { key: 'finalAmount', label: t('common.fields.finalAmount'), width: 15 },
                 { key: 'status', label: t('common.fields.status'), width: 15 },
                 { key: 'orderDate', label: t('common.fields.date'), width: 18 },
-            ]}
+            ] as ExportColumn<OrderDto>[]}
             onExportAllData={onExport}
 
             className="bg-white dark:bg-slate-900 rounded-lg border border-border-color shadow-sm"

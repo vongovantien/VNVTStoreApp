@@ -11,7 +11,7 @@ export interface ProductUnitDto {
     conversionRate: number;
     price: number;
     isActive?: boolean;
-    isBaseUnit?: boolean;
+    isBaseUnit: boolean;
     productCode?: string;
 }
 

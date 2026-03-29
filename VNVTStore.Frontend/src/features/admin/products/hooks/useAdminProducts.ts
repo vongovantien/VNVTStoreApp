@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { productService, CreateProductRequest, UpdateProductRequest, ProductDto } from '@/services/productService';
 import { SearchParams } from '@/services/baseService';
-import { Product } from '@/types';
+import { Product, ProductDetailType } from '@/types';
 import { getImageUrl } from '@/utils/format';
 
 export const ADMIN_PRODUCT_KEYS = {
@@ -43,9 +43,19 @@ function mapAdminProduct(dto: ProductDto): Product {
         isNew: dto.isNew,
 
         // Detailed fields (mapped for form population)
-        details: dto.details || [],
-        productUnits: dto.productUnits || [],
-        variants: dto.variants || [],
+        details: (dto.details || []).map(d => ({
+            ...d,
+            productCode: d.productCode || dto.code,
+            detailType: d.detailType as ProductDetailType
+        })),
+        productUnits: (dto.productUnits || []).map(u => ({
+            ...u,
+            productCode: u.productCode || dto.code
+        })),
+        variants: (dto.variants || []).map(v => ({
+            ...v,
+            productCode: v.productCode || dto.code
+        })),
         baseUnit: dto.baseUnit,
         minStockLevel: dto.minStockLevel,
         binLocation: dto.binLocation,

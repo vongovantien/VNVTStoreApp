@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAdminProducts, useProductMutation } from '../hooks/useAdminProducts';
 import { ProductList } from '../components/ProductList';
-import { ProductForm, ProductFormData } from '../components/ProductForm';
+import { ProductForm, ProductFormData, ProductInitialData } from '../components/ProductForm';
+import { ProductUnitDto } from '@/components/common/ProductUnitsManager';
+import { ProductVariantData } from '@/components/common/ProductVariantManager';
 import { Product } from '@/types';
 import { ConfirmDialog, Modal } from '@/components/ui';
 import { AdminPageHeader } from '@/components/admin';
@@ -147,10 +149,12 @@ export const ProductsPage = () => {
                         // This might require a helper or ensuring Product matches Form expectations
                         initialData={editingProduct ? {
                             ...editingProduct,
-                            // Map existing Product fields to Form fields if names differ
-                            // The Product formed by useAdminProducts should be compatible with ProductForm expectations
-                            // since we copied ProductForm which expects partial ProductFormData
-                        } as unknown as ProductFormData : undefined} 
+                            productUnits: (editingProduct.productUnits || []) as ProductUnitDto[],
+                            variants: (editingProduct.variants || []).map(v => ({
+                                ...v,
+                                attributes: typeof v.attributes === 'string' ? JSON.parse(v.attributes) : (v.attributes as Record<string, string>)
+                            })) as ProductVariantData[],
+                        } as ProductInitialData : undefined} 
                         onSubmit={handleSubmit}
                         onCancel={() => setIsFormOpen(false)}
                         isLoading={create.isPending || update.isPending}

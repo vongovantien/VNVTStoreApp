@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
 import { useEntityManager } from '@/hooks/useEntityManager';
@@ -61,7 +61,7 @@ const AdminTagsPage = () => {
     {
       id: 'isActive',
       header: t('common.fields.status'),
-      accessor: (row) => (
+      accessor: (row: Tag) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${row.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
           {row.isActive ? t('common.status.active') : t('common.status.inactive')}
         </span>

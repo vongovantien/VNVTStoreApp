@@ -109,22 +109,22 @@ export function useCategoriesList(params: {
  * Hook for fetching products with pagination and search
  */
 export function useProducts(params: {
-    pageIndex?: number;
-    pageSize?: number;
-    search?: string;
-    sortField?: string;
-    sortDir?: 'asc' | 'desc';
-    category?: string;
-    brands?: string[];
-    minPrice?: number;
-    maxPrice?: number;
-    rating?: number;
-    priceType?: 'all' | 'fixed' | 'contact';
-    enabled?: boolean;
-    ids?: string[];
-    fields?: string[];  // Selective columns to fetch (reduces data transfer)
-    inStockOnly?: boolean; // Feature 4: filter out-of-stock products
-    isNewArrivals?: boolean; // Feature 36: Filter by Date Added
+    pageIndex?: number | undefined;
+    pageSize?: number | undefined;
+    search?: string | undefined;
+    sortField?: string | undefined;
+    sortDir?: 'asc' | 'desc' | undefined;
+    category?: string | undefined;
+    brands?: string[] | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    rating?: number | undefined;
+    priceType?: 'all' | 'fixed' | 'contact' | undefined;
+    enabled?: boolean | undefined;
+    ids?: string[] | undefined;
+    fields?: string[] | undefined;  // Selective columns to fetch (reduces data transfer)
+    inStockOnly?: boolean | undefined; // Feature 4: filter out-of-stock products
+    isNewArrivals?: boolean | undefined; // Feature 36: Filter by Date Added
 }) {
     const { enabled = true, fields = PRODUCT_LIST_FIELDS, ...searchParams } = params;
 
@@ -150,7 +150,7 @@ export function useProducts(params: {
 
     // 2. Category (Multi-select)
     if (searchParams.category) {
-        if (searchParams.category.includes(',')) {
+        if (typeof searchParams.category === 'string' && searchParams.category.includes(',')) {
             const cats = searchParams.category.split(',').map(c => c.trim());
             filters.push({
                 field: 'CategoryCode',
@@ -326,12 +326,13 @@ export function useInfiniteProducts(params: {
 
     return useInfiniteQuery({
         queryKey: [...productKeys.lists(), 'infinite', { ...searchParams, fields, pageSize }],
-        queryFn: async ({ pageParam = 1 }) => {
-            console.log(`[useInfiniteProducts] Querying page ${pageParam}`, searchParams);
+        queryFn: async ({ pageParam }: { pageParam: number }) => {
+            const page = pageParam || 1;
+            console.log(`[useInfiniteProducts] Querying page ${page}`, searchParams);
             // Build filters (logic similar to useProducts but reusable)
             const filters: NonNullable<SearchParams['filters']> = [];
             if (searchParams.category) {
-                if (searchParams.category.includes(',')) {
+                if (typeof searchParams.category === 'string' && searchParams.category.includes(',')) {
                     filters.push({ field: 'CategoryCode', value: searchParams.category.split(','), operator: SearchCondition.In });
                 } else {
                     filters.push({ field: 'CategoryCode', value: searchParams.category, operator: SearchCondition.Equal });

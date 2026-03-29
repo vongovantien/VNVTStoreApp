@@ -103,10 +103,7 @@ export const BrandList = ({
             enableSelection
             selectedIds={selectedIds}
             onSelectionChange={onSelectionChange}
-            onBulkDelete={(ids) => {
-                const selectedBrands = brands.filter(b => ids.has(b.code));
-                onBulkDelete(selectedBrands);
-            }}
+            onBulkDelete={onBulkDelete}
 
             // Server-side props
             currentPage={pagination.pageIndex}

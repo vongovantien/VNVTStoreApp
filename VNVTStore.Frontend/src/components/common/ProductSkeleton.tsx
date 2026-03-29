@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const ProductSkeleton = () => {
   return (
     <div className="bg-primary rounded-xl overflow-hidden border shadow-sm h-full flex flex-col">

@@ -58,19 +58,19 @@ interface ProductDetail {
 }
 
 interface ProductFormProps {
-  initialData?: Partial<ProductFormData> & { 
-      productImages?: ProductImage[]; 
-      originalPrice?: number;
-      categoryName?: string;
-      supplierName?: string;
-      brandName?: string;
-      productUnits?: ProductUnitDto[];
-      variants?: ProductVariantData[];
-      imageURL?: string;
-  };
+  initialData?: (Partial<ProductFormData> & { 
+      productImages?: ProductImage[] | undefined; 
+      originalPrice?: number | undefined;
+      categoryName?: string | undefined;
+      supplierName?: string | undefined;
+      brandName?: string | undefined;
+      productUnits?: ProductUnitDto[] | undefined;
+      variants?: ProductVariantData[] | undefined;
+      imageURL?: string | undefined;
+  }) | undefined;
   onSubmit: (data: ProductFormData) => void;
   onCancel: () => void;
-  isLoading?: boolean;
+  isLoading?: boolean | undefined;
 }
 
 
@@ -138,13 +138,12 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
   const { t } = useTranslation();
   
 
-  const [localUnits, setLocalUnits] = useState<ProductUnitDto[]>(initialData?.productUnits || []);
-  const [localVariants, setLocalVariants] = useState<ProductVariantData[]>(initialData?.variants || []);
+  const [localUnits, setLocalUnits] = useState<ProductUnitDto[]>((initialData?.productUnits as ProductUnitDto[]) || []);
+  const [localVariants, setLocalVariants] = useState<ProductVariantData[]>((initialData?.variants as ProductVariantData[]) || []);
 
   useEffect(() => {
     if (initialData?.productUnits) {
-        // eslint-disable-next-line
-        setLocalUnits(initialData.productUnits);
+        setLocalUnits(initialData.productUnits as ProductUnitDto[]);
     }
     if (initialData?.variants) {
          

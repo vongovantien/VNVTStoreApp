@@ -18,15 +18,14 @@
     "allowSyntheticDefaultImports": true,
 
     /* Linting */
-    "strict": false,
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": false,
-    "noUncheckedSideEffectImports": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
     "exactOptionalPropertyTypes": false,
-    "suppressImplicitAnyIndexErrors": true,
 
     /* Path aliases */
     "baseUrl": ".",

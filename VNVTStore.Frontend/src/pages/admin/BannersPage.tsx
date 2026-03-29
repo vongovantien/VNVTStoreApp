@@ -238,8 +238,7 @@ const BannersPage = () => {
         size="lg"
       >
         <BannerForm
-          {...(editingBanner ? {
-            initialData: {
+          initialData={editingBanner ? {
               title: editingBanner.title,
               content: editingBanner.content || '',
               linkUrl: editingBanner.linkUrl || '',
@@ -247,8 +246,7 @@ const BannersPage = () => {
               imageURL: editingBanner.imageURL || '',
               priority: editingBanner.priority,
               isActive: editingBanner.isActive
-            }
-          } : {})}
+          } : undefined}
           onSubmit={editingBanner ? handleUpdate : handleCreate}
           onCancel={() => setIsFormOpen(false)}
           isLoading={createMutation.isPending || updateMutation.isPending}

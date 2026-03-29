@@ -13,7 +13,7 @@ export interface ExportColumn<T> {
  * @param filename - Filename without extension
  * @param columns - Optional column definitions for headers and keys
  */
-export const exportToExcel = async <T extends Record<string, any>>(
+export const exportToExcel = async <T extends object>(
     data: T[],
     filename: string,
     columns?: ExportColumn<T>[]
@@ -52,7 +52,7 @@ export const exportToExcel = async <T extends Record<string, any>>(
 
     // Add data rows
     data.forEach(item => {
-        const row: Record<string, any> = {};
+        const row: Record<string, unknown> = {};
         exportColumns.forEach(col => {
             const value = item[col.key];
             // Handle different value types
@@ -102,7 +102,7 @@ export const exportToExcel = async <T extends Record<string, any>>(
 /**
  * Legacy CSV export function for backwards compatibility
  */
-export const exportToCSV = <T extends Record<string, any>>(
+export const exportToCSV = <T extends object>(
     data: T[],
     filename: string,
     columns?: { key: keyof T; label: string }[]
@@ -114,9 +114,9 @@ export const exportToCSV = <T extends Record<string, any>>(
         ? columns.map((c) => c.label)
         : Object.keys(data[0]);
 
-    const keys = columns
+    const keys = (columns
         ? columns.map((c) => c.key)
-        : Object.keys(data[0]);
+        : Object.keys(data[0])) as (keyof T)[];
 
     // Convert to CSV string
     const csvContent = [

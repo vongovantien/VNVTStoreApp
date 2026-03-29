@@ -149,7 +149,7 @@ export const ProductDetailPage = () => {
           <div className="lg:col-span-2 sticky top-24 self-start">
             <ImageGallery 
               images={images} 
-              video={product.videoURL}
+              video={product.videoURL || undefined}
               altPrefix={product.name} 
               selectedIndex={selectedIndex}
               onSelectIndex={setSelectedIndex}
@@ -181,7 +181,7 @@ export const ProductDetailPage = () => {
         <ProductTabs 
           product={product}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab: string) => setActiveTab(tab as typeof activeTab)}
           images={images}
           relations={relations}
           setSelectedIndex={setSelectedIndex}

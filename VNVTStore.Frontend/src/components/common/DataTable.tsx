@@ -29,8 +29,7 @@ export interface DataTableColumn<T> {
   noWrap?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface DataTableProps<T extends Record<string, any>> {
+export interface DataTableProps<T extends object> {
   // Data
   columns: DataTableColumn<T>[];
   data: T[];
@@ -49,6 +48,7 @@ export interface DataTableProps<T extends Record<string, any>> {
   exportFilename?: string;
   exportColumns?: ExportColumn<T>[];
   onExportAllData?: () => Promise<T[]>; // Fetch all data for export
+  onExport?: (data: T[]) => void; // Manual export handler
   enableColumnVisibility?: boolean;
 
   // Advanced Filter
@@ -98,10 +98,11 @@ export interface DataTableProps<T extends Record<string, any>> {
   onReset?: () => void;
   initialFilters?: Record<string, string>;
   onSearch?: (query: string) => void;
+  className?: string;
 }
 
 // ============ Helper Functions ============
-export const createStatusColumn = <T extends { isActive?: boolean }>(t: (key: string) => string): DataTableColumn<T> => ({
+export const createStatusColumn = <T extends object & { isActive?: boolean }>(t: (key: string) => string): DataTableColumn<T> => ({
   id: 'isActive',
   header: t('common.fields.status'),
   accessor: (row: T) => (
@@ -130,7 +131,7 @@ const SortIcon = ({ columnId, sortField, sortDir }: { columnId: string; sortFiel
 };
 
 // ============ DataTable Component ============
-function DataTableInner<T extends Record<string, unknown>>({ // Changed from any to unknown
+function DataTableInner<T extends object>({ // Changed from Record<string, unknown> to object
   columns,
   data,
   keyField,
@@ -173,6 +174,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
   enableSelection = true,
   renderRowActions,
   initialFilters,
+  onExport,
 }: DataTableProps<T>) {
   const { t } = useTranslation();
 
@@ -428,10 +430,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
 
   // ============ Render Helpers ============
   const getCellValue = (row: T, column: DataTableColumn<T>): React.ReactNode => {
-    if (typeof column.accessor === 'function') {
-      return column.accessor(row);
-    }
-    return row[column.accessor] as React.ReactNode;
+    return row[column.accessor as keyof T] as React.ReactNode;
   };
 
 
@@ -480,7 +479,7 @@ function DataTableInner<T extends Record<string, unknown>>({ // Changed from any
               } : undefined}
               onSearchClick={() => setShowFilters(!showFilters)}
               onReset={handleReset}
-              onExport={handleExport}
+              onExport={onExport ? () => onExport(data) : handleExport}
               onImport={onImport ? () => setIsImportOpen(true) : undefined}
               isSearchActive={showFilters}
               isExporting={isExporting}

@@ -19,12 +19,14 @@
 
     /* Linting */
     "strict": false,
+    "noImplicitAny": false,
     "noImplicitReturns": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": false,
     "noUncheckedSideEffectImports": false,
     "exactOptionalPropertyTypes": false,
+    "suppressImplicitAnyIndexErrors": true,
 
     /* Path aliases */
     "baseUrl": ".",

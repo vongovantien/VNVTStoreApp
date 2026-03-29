@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using VNVTStore.Application.Carts.Commands;
@@ -17,6 +18,7 @@ public class CartHandlersTests
     private readonly Mock<IRepository<TblProduct>> _productRepoMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<ILogger<CartHandlers>> _loggerMock;
     private readonly CartHandlers _handler;
 
     public CartHandlersTests()
@@ -25,12 +27,14 @@ public class CartHandlersTests
         _productRepoMock = new Mock<IRepository<TblProduct>>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _mapperMock = new Mock<IMapper>();
+        _loggerMock = new Mock<ILogger<CartHandlers>>();
 
         _handler = new CartHandlers(
             _cartServiceMock.Object,
             _productRepoMock.Object,
             _unitOfWorkMock.Object,
-            _mapperMock.Object);
+            _mapperMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]

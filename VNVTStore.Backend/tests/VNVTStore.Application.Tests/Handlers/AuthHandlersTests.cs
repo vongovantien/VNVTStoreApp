@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -32,6 +32,7 @@ public class AuthHandlersTests
     private readonly Mock<ICurrentUser> _currentUserServiceMock;
     private readonly Mock<IDapperContext> _dapperContextMock;
     private readonly Mock<Microsoft.Extensions.Configuration.IConfiguration> _configurationMock;
+    private readonly Mock<ISecretConfigurationService> _secretConfigMock;
 
     public AuthHandlersTests()
     {
@@ -44,6 +45,7 @@ public class AuthHandlersTests
         _currentUserServiceMock = new Mock<ICurrentUser>();
         _dapperContextMock = new Mock<IDapperContext>();
         _configurationMock = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+        _secretConfigMock = new Mock<ISecretConfigurationService>();
     }
 
     [Fact]
@@ -57,7 +59,8 @@ public class AuthHandlersTests
             _unitOfWorkMock.Object, 
             _mapperMock.Object, 
             _emailServiceMock.Object,
-            _configurationMock.Object
+            _configurationMock.Object,
+            _secretConfigMock.Object
         );
 
         _userRepositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblUser, bool>>>(), It.IsAny<CancellationToken>()))
@@ -88,7 +91,8 @@ public class AuthHandlersTests
             _unitOfWorkMock.Object, 
             _mapperMock.Object, 
             _emailServiceMock.Object,
-            _configurationMock.Object
+            _configurationMock.Object,
+            _secretConfigMock.Object
         );
 
         _userRepositoryMock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<TblUser, bool>>>(), It.IsAny<CancellationToken>()))

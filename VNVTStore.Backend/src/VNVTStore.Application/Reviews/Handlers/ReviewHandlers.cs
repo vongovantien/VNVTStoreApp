@@ -198,7 +198,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             request.Fields,
             cancellationToken);
 
-        if (result.IsSuccess && result.Value.Items.Any())
+        if (result.IsSuccess && result.Value != null && result.Value.Items.Any())
         {
             var parentCodes = result.Value.Items.Select(r => r.Code).ToList();
             var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
@@ -374,7 +374,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             request.Fields,
             cancellationToken);
 
-        if (result.IsSuccess && result.Value.Items.Any())
+        if (result.IsSuccess && result.Value != null && result.Value.Items.Any())
         {
             TransformAvatars(result.Value.Items);
         }

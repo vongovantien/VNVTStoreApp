@@ -129,13 +129,10 @@ public class UsersController : BaseApiController<TblUser, UserDto, CreateUserDto
         return await base.Update(code, request);
     }
 
-    /// <summary>
-    /// Xóa user (Admin only)
-    /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Delete(string id)
+    public override async Task<IActionResult> Delete(string id)
     {
         var command = new DeleteCommand<TblUser>(id);
         var result = await Mediator.Send(command);
@@ -145,12 +142,12 @@ public class UsersController : BaseApiController<TblUser, UserDto, CreateUserDto
     /// <summary>
     /// Xóa nhiều users (Admin only)
     /// </summary>
-    [HttpDelete("bulk")]
+    [HttpPost("delete-multiple")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> DeleteBulk([FromBody] List<string> ids)
+    public override async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
     {
-        var command = new DeleteMultipleCommand<TblUser>(ids);
+        var command = new DeleteMultipleCommand<TblUser>(codes);
         var result = await Mediator.Send(command);
         return HandleDelete(result);
     }

@@ -199,7 +199,7 @@ public class CartHandlers :
                 
                 if (retryCount >= maxRetries)
                 {
-                    _logger.LogError(ex, "[Cart] All {MaxRetries} retry attempts exhausted");
+                    _logger.LogError(ex, "[Cart] All {MaxRetries} retry attempts exhausted", maxRetries);
                     throw;
                 }
 

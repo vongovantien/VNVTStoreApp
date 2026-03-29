@@ -14,6 +14,7 @@ import { SearchCondition } from '@/services/baseService';
 import { ProductUnitsManager, ProductUnitDto } from '@/components/common/ProductUnitsManager';
 import { ProductVariantManager, ProductVariantData } from '@/components/common/ProductVariantManager';
 import { ProductImage } from '@/types';
+import { getApiRoot } from '@/utils/config';
 
 const productSchema = z.object({
   name: z.string().min(3, { message: 'validation.productNameMin' }),
@@ -173,8 +174,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
   const handleSubmit = async (data: ProductFormData) => {
     try {
         // Strip API base URL from existing images to send relative paths (fixes update issue)
-        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
-        const root = apiBase.replace(/\/api\/v1\/?$/, '');
+        const root = getApiRoot();
         
         const processedImages = data.images?.map(img => {
             if (img.startsWith('data:')) return img; // Keep new base64 uploads

@@ -58,7 +58,7 @@ public class CloudinaryImageUploadService : IImageUploadService
                 Transformation = new Transformation().Quality("auto").FetchFormat("auto")
             };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            var uploadResult = await _cloudinary!.UploadAsync(uploadParams);
 
             if (uploadResult.Error != null)
             {
@@ -178,7 +178,7 @@ public class CloudinaryImageUploadService : IImageUploadService
                     {
                         PublicIds = chunk.ToList()
                     };
-                    await _cloudinary.DeleteResourcesAsync(delParams);
+                    await _cloudinary!.DeleteResourcesAsync(delParams);
                 }
             }
 
@@ -203,7 +203,7 @@ public class CloudinaryImageUploadService : IImageUploadService
                 Transformation = new Transformation().Quality("auto").FetchFormat("auto")
             };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            var uploadResult = await _cloudinary!.UploadAsync(uploadParams);
 
             if (uploadResult.Error != null)
             {
@@ -262,7 +262,7 @@ public class CloudinaryImageUploadService : IImageUploadService
                 };
 
                 // Sequential await to avoid overwhelming network or hitting rate limits aggressively
-                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                var uploadResult = await _cloudinary!.UploadAsync(uploadParams);
 
                 if (uploadResult.Error != null)
                 {
@@ -350,7 +350,7 @@ public class CloudinaryImageUploadService : IImageUploadService
                 Transformation = new Transformation().Quality("auto").FetchFormat("auto")
             };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            var uploadResult = await _cloudinary!.UploadAsync(uploadParams);
 
             if (uploadResult.Error != null)
             {

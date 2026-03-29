@@ -274,7 +274,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             decimal shippingFee = _shippingStrategy.CalculateShippingFee(totalAmount - discountAmount);
 
             TblAddress? orderAddress = null;
-            string addressCode = request.dto.AddressCode;
+            string addressCode = request.dto.AddressCode ?? string.Empty;
             if (string.IsNullOrEmpty(addressCode))
             {
                  if (!string.IsNullOrEmpty(request.dto.Address))

@@ -67,9 +67,9 @@ public class PricingService : IPricingService
         return finalPrice;
     }
 
-    public async Task<decimal> GetDiscountForUserAsync(string userCode, decimal totalOrderAmount)
+    public Task<decimal> GetDiscountForUserAsync(string userCode, decimal totalOrderAmount)
     {
         // Placeholder for Volume Discount Logic
-        return 0; 
+        return Task.FromResult(0m); 
     }
 }

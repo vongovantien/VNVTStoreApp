@@ -349,11 +349,15 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             {
                 entity.Property(e => e.Status)
                     .HasMaxLength(20)
-                    .HasDefaultValueSql("'pending'::character varying");
+                    .HasDefaultValueSql("'pending'::character varying")
+                    .HasSentinel(OrderStatus.Pending);
             }
             else
             {
-                entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue(OrderStatus.Pending);
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValue(OrderStatus.Pending)
+                    .HasSentinel(OrderStatus.Pending);
             }
             entity.Property(e => e.TotalAmount).HasPrecision(15, 2);
             entity.Property(e => e.UserCode).HasMaxLength(100);
@@ -451,11 +455,15 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             {
                 entity.Property(e => e.Status)
                     .HasMaxLength(20)
-                    .HasDefaultValueSql("'pending'::character varying");
+                    .HasDefaultValueSql("'pending'::character varying")
+                    .HasSentinel(PaymentStatus.Pending);
             }
             else
             {
-                entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue(PaymentStatus.Pending);
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValue(PaymentStatus.Pending)
+                    .HasSentinel(PaymentStatus.Pending);
             }
             entity.Property(e => e.TransactionId)
                 .HasMaxLength(100)
@@ -783,11 +791,15 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             {
                 entity.Property(e => e.Role)
                     .HasMaxLength(20)
-                    .HasDefaultValueSql("'customer'::character varying");
+                    .HasDefaultValueSql("'customer'::character varying")
+                    .HasSentinel(UserRole.Customer);
             }
             else
             {
-                entity.Property(e => e.Role).HasMaxLength(20).HasDefaultValue(UserRole.Customer);
+                entity.Property(e => e.Role)
+                    .HasMaxLength(20)
+                    .HasDefaultValue(UserRole.Customer)
+                    .HasSentinel(UserRole.Customer);
             }
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")

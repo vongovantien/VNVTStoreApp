@@ -33,7 +33,8 @@ export const injectStore = (store: StoreApi<AuthState>) => {
  * Base configuration for calling VNVTStore API
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+import { getApiUrl } from '@/utils/config';
+const API_BASE_URL = getApiUrl();
 
 // ============ Constants ============
 export const HttpStatus = {

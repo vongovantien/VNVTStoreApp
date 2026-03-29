@@ -1,10 +1,9 @@
 using System.Data;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using VNVTStore.Application.Interfaces;
 
 namespace VNVTStore.Infrastructure.Persistence;
-
-using VNVTStore.Application.Interfaces;
 
 public class DapperContext : IDapperContext
 {
@@ -14,7 +13,8 @@ public class DapperContext : IDapperContext
     public DapperContext(IConfiguration configuration)
     {
         _configuration = configuration;
-        _connectionString = _configuration.GetConnectionString("DefaultConnection");
+        _connectionString = _configuration.GetConnectionString("DefaultConnection") 
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     }
 
     public IDbConnection CreateConnection()

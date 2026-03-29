@@ -24,7 +24,7 @@ public class ConfigsController : ControllerBase
     public async Task<ActionResult<ApiResponse<List<ShopConfigDto>>>> GetAll()
     {
         var result = await _mediator.Send(new GetShopConfigsQuery());
-        return Ok(ApiResponse<List<ShopConfigDto>>.Ok(result.Value!));
+        return Ok(ApiResponse<List<ShopConfigDto>>.Ok(result.Value ?? new List<ShopConfigDto>()));
     }
 
     [HttpGet("{code}")]

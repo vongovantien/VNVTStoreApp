@@ -121,7 +121,7 @@ public class CategoriesController : BaseApiController<TblCategory, CategoryDto, 
 
     [HttpPost("delete-multiple")]
     [Authorize(Roles = nameof(UserRole.Admin))]
-    public async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
+    public override async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
     {
         var result = await Mediator.Send(new DeleteMultipleCommand<TblCategory>(codes));
         

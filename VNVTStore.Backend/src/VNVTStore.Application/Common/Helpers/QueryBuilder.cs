@@ -664,6 +664,7 @@ public static class QueryBuilder
 
     private static string BuildArrayCondition(SearchDTO item, string? tableName)
     {
+        if (item.SearchValue == null) return string.Empty;
         var values = ((JArray)item.SearchValue).ToObject<object[]>()!;
         var field = SqlBuilderHelpers.QuoteField(tableName, item.SearchField);
 

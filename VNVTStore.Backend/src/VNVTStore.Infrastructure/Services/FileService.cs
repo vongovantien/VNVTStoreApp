@@ -65,10 +65,10 @@ public class FileService : IFileService
         if (base64Images.Any())
         {
             var uploadResult = await _imageUploadService.UploadBase64ImagesAsync(base64Images, folderName);
-            if (uploadResult.IsFailure)
-                return Result.Failure<IEnumerable<string>>(uploadResult.Error);
-
-            finalUrls.AddRange(uploadResult.Value.Select(f => f.Url));
+            if (uploadResult.Value != null)
+            {
+                finalUrls.AddRange(uploadResult.Value.Select(f => f.Url));
+            }
         }
 
         // Link to Master record

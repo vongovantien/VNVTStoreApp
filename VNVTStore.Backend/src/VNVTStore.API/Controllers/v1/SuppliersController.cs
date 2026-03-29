@@ -18,7 +18,7 @@ public class SuppliersController : BaseApiController<TblSupplier, SupplierDto, C
     }
 
     [HttpPost("delete-multiple")]
-    public async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
+    public override async Task<IActionResult> DeleteMultiple([FromBody] List<string> codes)
     {
         var result = await Mediator.Send(new DeleteMultipleCommand<TblSupplier>(codes));
         return HandleDelete(result);

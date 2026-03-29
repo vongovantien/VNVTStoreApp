@@ -59,7 +59,7 @@ public class SystemSecretsController : BaseApiController
     public async Task<IActionResult> Export()
     {
         var result = await Mediator.Send(new ExportSystemSecretsQuery());
-        if (!result.IsSuccess) return HandleResult(result);
+        if (!result.IsSuccess || result.Value == null) return HandleResult(result);
         return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"SystemSecrets_{DateTime.Now:yyyyMMdd}.xlsx");
     }
 

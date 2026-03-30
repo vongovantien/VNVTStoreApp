@@ -31,11 +31,7 @@ vi.mock('firebase/auth', () => ({
   FacebookAuthProvider: vi.fn(),
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
+
 
 // Mock createSchemas
 vi.mock('@/utils/schemas', () => ({

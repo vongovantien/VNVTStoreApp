@@ -18,11 +18,7 @@ vi.mock('@/store', () => ({
     useToast: vi.fn(),
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
+
 
 // Mock z and schemas
 vi.mock('@/utils/schemas', () => ({

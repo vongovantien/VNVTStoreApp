@@ -5,11 +5,7 @@ import ComparePage from '../ComparePage';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock dependencies
-vi.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string, fallback?: string) => fallback || key,
-    }),
-}));
+
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({

@@ -61,15 +61,15 @@ describe('Header Component', () => {
     it('renders language switcher correctly', () => {
         renderWithProviders(<Header />);
 
-        // Check for Language button (displaying VI)
-        const langBtn = screen.getByText('vi');
+        // Check for Language button (displaying VN)
+        const langBtn = screen.getByText('VN');
         expect(langBtn).toBeInTheDocument();
     });
 
     it('opens language menu on click', async () => {
         renderWithProviders(<Header />);
 
-        const langBtn = screen.getByText('vi').closest('button');
+        const langBtn = screen.getByText('VN').closest('button');
         fireEvent.click(langBtn!);
 
         // Expect dropdown options to appear

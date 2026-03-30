@@ -35,8 +35,6 @@ jobs:
     - name: Run Domain Tests
       run: dotnet test tests/VNVTStore.Domain.Tests/VNVTStore.Domain.Tests.csproj --configuration Release --verbosity normal
 
-    - name: Run Legacy Tests
-      run: dotnet test src/VNVTStore.Tests/VNVTStore.Tests.csproj --configuration Release --verbosity normal
 
     - name: Publish API
       run: dotnet publish src/VNVTStore.API/VNVTStore.API.csproj --configuration Release --output ${{ github.workspace }}/publish

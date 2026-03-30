@@ -9,7 +9,8 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: { children: React.ReactNode }) => <div {...props}>{children}</div>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    div: ({ children, initial, animate, exit, transition, whileHover, ...props }: any) => <div {...props}>{children}</div>,
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
@@ -19,6 +20,7 @@ import { LiveSalesPopup } from '../LiveSalesPopup';
 describe('LiveSalesPopup - Feature #50', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -33,15 +35,13 @@ describe('LiveSalesPopup - Feature #50', () => {
   it('shows a sale notification after initial delay', async () => {
     render(<LiveSalesPopup />);
     
-    // Advance past the initial delay (usually 5-15 seconds)
+    // Advance past the initial delay (15s)
     await act(async () => {
-      vi.advanceTimersByTime(20000);
+      vi.advanceTimersByTime(16000);
     });
 
     // Should show a sale notification with customer name
-    expect(screen.queryByText(/vừa mua/i) || screen.queryByText(/đã mua/i)).toBeTruthy();
-    // Notification may or may not be visible depending on random timing
-    // The component should at least not crash
+    expect(screen.getByText(/vừa mua/i)).toBeInTheDocument();
   });
 
   it('cycles through notifications over time', async () => {

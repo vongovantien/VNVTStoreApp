@@ -59,7 +59,8 @@ vi.mock('@/store', () => ({
 }));
 
 vi.mock('@/components/ui', () => ({
-    Button: ({ children, onClick, ...props }: { children: React.ReactNode; onClick?: () => void }) => (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Button: ({ children, onClick, fullWidth, leftIcon, rightIcon, isLoading, loadingText, variant, size, ...props }: any) => (
         <button onClick={onClick} {...props}>{children}</button>
     ),
     Badge: ({ children, ...props }: { children: React.ReactNode }) => <span {...props}>{children}</span>,

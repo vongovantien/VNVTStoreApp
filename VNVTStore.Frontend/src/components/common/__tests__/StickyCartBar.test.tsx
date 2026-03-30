@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi, describe, it, expect } from 'vitest';
 import { StickyCartBar } from '../StickyCartBar';
@@ -21,8 +21,8 @@ vi.mock('framer-motion', () => ({
 }));
 
 vi.mock('@/components/ui', () => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Button: ({ children, onClick, ...props }: any) => (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Button: ({ children, onClick, fullWidth, leftIcon, rightIcon, isLoading, loadingText, variant, size, rounded, ...props }: any) => (
         <button onClick={onClick} {...props}>{children}</button>
     ),
 }));
@@ -59,8 +59,10 @@ describe('StickyCartBar Component', () => {
 
         // Component mounts without error — content is hidden until scroll > 600
         // Simulate scroll to make it visible
-        Object.defineProperty(window, 'scrollY', { value: 700, writable: true, configurable: true });
-        window.dispatchEvent(new Event('scroll'));
+        act(() => {
+            Object.defineProperty(window, 'scrollY', { value: 700, writable: true, configurable: true });
+            window.dispatchEvent(new Event('scroll'));
+        });
         
         // After scroll, the component should exist
         expect(container).toBeTruthy();
@@ -82,11 +84,13 @@ describe('StickyCartBar Component', () => {
             />
         );
 
-        const buyBtn = screen.queryByText('Mua ngay');
-        if (buyBtn) {
-            fireEvent.click(buyBtn);
-            expect(handleBuyNow).toHaveBeenCalled();
-        }
+        act(() => {
+            window.dispatchEvent(new Event('scroll'));
+        });
+
+        const buyBtn = screen.getByText('Mua ngay');
+        fireEvent.click(buyBtn);
+        expect(handleBuyNow).toHaveBeenCalled();
     });
 
     it('shows contact button when hasFixedPrice is false', () => {
@@ -105,8 +109,12 @@ describe('StickyCartBar Component', () => {
             />
         );
 
+        act(() => {
+            window.dispatchEvent(new Event('scroll'));
+        });
+
         // Should render the contact/quote button instead of add to cart
-        const quoteBtn = screen.queryByText('product.requestQuote');
+        const quoteBtn = screen.getByText('product.requestQuote');
         expect(quoteBtn).toBeInTheDocument();
         // Component exists even if visibility is controlled by scroll
         expect(document.body).toBeTruthy();

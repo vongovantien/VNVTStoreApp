@@ -28,7 +28,7 @@ describe('Button', () => {
   it('shows loading state', () => {
     render(<Button isLoading loadingText="Loading">Click Me</Button>);
     expect(screen.getByRole('button')).toBeDisabled();
-    expect(screen.getByText(/Click Me/i)).toBeInTheDocument(); // Component renders children when loading if no loadingText provided
+    expect(screen.getByText(/Loading/i)).toBeInTheDocument();
   });
 
   it('handles disabled state', () => {

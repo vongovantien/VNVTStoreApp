@@ -1,0 +1,10 @@
+.git
+.github
+VNVTStore.Backend/
+docs/
+TestFirebaseKeyProj/
+node_modules/
+.husky/
+README.md
+vntv-store.sln
+*.md

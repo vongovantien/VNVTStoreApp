@@ -77,7 +77,7 @@ jobs:
   deploy:
     name: Multi-Cloud Deployment
     needs: [backend, frontend]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

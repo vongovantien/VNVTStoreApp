@@ -24,10 +24,10 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore Dependencies
-      run: dotnet restore VNVTStore.sln
+      run: dotnet restore
 
     - name: Build API
-      run: dotnet build VNVTStore.sln --no-restore --configuration Release
+      run: dotnet build --no-restore --configuration Release
 
     - name: Run Application Tests
       run: dotnet test tests/VNVTStore.Application.Tests/VNVTStore.Application.Tests.csproj --configuration Release --verbosity normal

@@ -39,7 +39,7 @@ public class PromotionsController : BaseApiController<TblPromotion, PromotionDto
     [HttpPost("import")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Import(IFormFile file)
+    public override async Task<IActionResult> Import(IFormFile file)
     {
         if (file == null || file.Length == 0) return BadRequest("File is empty");
         using var memoryStream = new MemoryStream();

@@ -8,7 +8,7 @@ import { DataTable, type DataTableColumn, CommonColumns } from '@/components/com
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, type EntityService } from '@/hooks';
 import { customerService, type CustomerDto, type CreateCustomerRequest, type UpdateCustomerRequest } from '@/services';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaginationDefaults, SortDirection } from '@/constants';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
 import { USER_LIST_FIELDS } from '@/constants/fieldConstants';
@@ -100,6 +100,7 @@ const CustomersPage = () => {
   });
 
   const toast = useToast();
+  const queryClient = useQueryClient();
   // Bulk Delete State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [itemsToDelete, setItemsToDelete] = useState<CustomerDto[] | null>(null);
@@ -332,8 +333,19 @@ const CustomersPage = () => {
         onEdit={handleOpenEdit}
         onDelete={confirmDelete}
         onAdd={handleOpenCreate}
-        onRefresh={refetch}
-        initialFilters={{ role: 'customer' }}
+        onRefresh={() => queryClient.invalidateQueries({ queryKey: ['admin-customers'] })}
+        
+        onImport={async (file) => {
+            try {
+                await customerService.import(file);
+                toast.success(t('messages.importSuccess'));
+                queryClient.invalidateQueries({ queryKey: ['admin-customers'] });
+            } catch (err: any) {
+                toast.error(err.message || t('messages.importError'));
+            }
+        }}
+        importTemplateUrl="/api/v1/customers/template"
+
         renderRowActions={(customer) => (
           <div className="flex items-center gap-1">
             <button

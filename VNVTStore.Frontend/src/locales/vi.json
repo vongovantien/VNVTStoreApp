@@ -1180,6 +1180,7 @@
         "wishlist": "đã thêm vào yêu thích"
     },
     "product": {
+        "justOrdered": "Vừa mới đặt mua",
         "tab": {
             "description": "Mô tả",
             "specs": "Thông số",

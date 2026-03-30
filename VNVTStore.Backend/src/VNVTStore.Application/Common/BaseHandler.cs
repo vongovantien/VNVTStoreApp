@@ -135,6 +135,76 @@ public abstract class BaseHandler<TEntity>
         return await GetByCodeAsync<TResponse>(request.Code, _entityName, cancellationToken);
     }
 
+    protected virtual async Task<Result<byte[]>> ExportAllAsync<TResponse>(CancellationToken cancellationToken) where TResponse : class, new()
+    {
+        // Fetch all items (up to 10k for safety)
+        var result = await GetPagedDapperAsync<TResponse>(1, 10000, null, null, null, null, cancellationToken);
+        if (result.IsFailure) return Result.Failure<byte[]>(result.Error!);
+
+        var bytes = ExcelExportHelper.ExportToExcel(result.Value.Items, _entityName);
+        return Result.Success(bytes);
+    }
+
+    protected virtual Task<Result<byte[]>> GetTemplateAsync<TImportDto>(CancellationToken cancellationToken) where TImportDto : class
+    {
+        var bytes = ExcelExportHelper.GenerateTemplate<TImportDto>();
+        return Task.FromResult(Result.Success(bytes));
+    }
+
+    protected async Task<Result<int>> ImportAsync<TImportDto, TResponse>(
+        Stream fileStream,
+        CancellationToken cancellationToken,
+        Func<TImportDto, TEntity?, Task>? beforeSave = null) 
+        where TImportDto : class, new()
+    {
+        try
+        {
+            var rows = ExcelImportHelper.Import<TImportDto>(fileStream);
+            var importedCount = 0;
+
+            await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            foreach (var dto in rows)
+            {
+                // Try to find existing by Code
+                TEntity? existing = null;
+                var codeProp = typeof(TImportDto).GetProperty("Code");
+                if (codeProp != null)
+                {
+                    var codeValue = codeProp.GetValue(dto)?.ToString();
+                    if (!string.IsNullOrEmpty(codeValue))
+                    {
+                        existing = await _repository.GetByCodeAsync(codeValue, cancellationToken);
+                    }
+                }
+
+                if (existing != null)
+                {
+                    _mapper.Map(dto, existing);
+                    if (beforeSave != null) await beforeSave(dto, existing);
+                    _repository.Update(existing);
+                }
+                else
+                {
+                    var entity = _mapper.Map<TEntity>(dto);
+                    if (beforeSave != null) await beforeSave(dto, entity);
+                    await _repository.AddAsync(entity, cancellationToken);
+                }
+                importedCount++;
+            }
+
+            await _unitOfWork.CommitAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return Result.Success(importedCount);
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            return Result.Failure<int>("ImportError", ex.Message);
+        }
+    }
+
     protected async Task<Result<TResponse>> CreateAsync<TCreateDto, TResponse>(
         TCreateDto dto, 
         CancellationToken cancellationToken,
@@ -904,10 +974,13 @@ public class BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseHandl
     IRequestHandler<UpdateCommand<TUpdateDto, TResponse>, Result<TResponse>>,
     IRequestHandler<DeleteCommand<TEntity>, Result>,
     IRequestHandler<DeleteMultipleCommand<TEntity>, Result>,
-    IRequestHandler<GetStatsQuery<TEntity>, Result<EntityStatsDto>>
+    IRequestHandler<GetStatsQuery<TEntity>, Result<EntityStatsDto>>,
+    IRequestHandler<ExportAllQuery<TResponse>, Result<byte[]>>,
+    IRequestHandler<GetTemplateQuery<TCreateDto>, Result<byte[]>>,
+    IRequestHandler<ImportCommand<TCreateDto, TResponse>, Result<int>>
     where TEntity : class, IEntity
     where TResponse : class, IBaseDto, new()
-    where TCreateDto : class
+    where TCreateDto : class, new()
     where TUpdateDto : class
 {
     public BaseHandler(
@@ -953,6 +1026,34 @@ public class BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseHandl
          var active = await query.CountAsync(e => e.IsActive, cancellationToken);
          
          return Result.Success(new EntityStatsDto { Total = total, Active = active });
+    }
+
+    public virtual async Task<Result<byte[]>> Handle(ExportAllQuery<TResponse> request, CancellationToken cancellationToken)
+    {
+        var result = await GetPagedDapperAsync<TResponse>(1, 10000, null, null, null, null, cancellationToken);
+        if (result.IsFailure) return Result.Failure<byte[]>(result.Error!);
+
+        // Hook for data refinement (Custom export logic here)
+        var exportData = await PrepareDataForExportAsync(result.Value.Items);
+        
+        var bytes = ExcelExportHelper.ExportToExcel(exportData, _entityName);
+        return Result.Success(bytes);
+    }
+
+    protected virtual Task<IEnumerable<TResponse>> PrepareDataForExportAsync(IEnumerable<TResponse> data)
+    {
+        return Task.FromResult(data);
+    }
+
+    public virtual Task<Result<byte[]>> Handle(GetTemplateQuery<TCreateDto> request, CancellationToken cancellationToken)
+        => GetTemplateAsync<TCreateDto>(cancellationToken);
+
+    public virtual Task<Result<int>> Handle(ImportCommand<TCreateDto, TResponse> request, CancellationToken cancellationToken)
+        => base.ImportAsync<TCreateDto, TResponse>(request.FileStream, cancellationToken, OnBeforeImportSaveAsync);
+
+    protected virtual Task OnBeforeImportSaveAsync(TCreateDto dto, TEntity? entity)
+    {
+        return Task.CompletedTask;
     }
 }
 

@@ -233,7 +233,7 @@ export default function BrandsPage() {
            const res = await brandService.getAll(10000);
            return res.data?.items || [];
         }}
-        exportFilename="brands"
+        exportFilename="brands_export"
 
         keyField="code"
         enableSelection
@@ -246,8 +246,15 @@ export default function BrandsPage() {
         onView={(item) => setViewingBrand(item)}
         
         // Import
-        onImport={async (file) => { await brandService.import(file); refetch(); }}
-        importTemplateUrl={brandService.getTemplate()}
+        onImport={async (file) => {
+          try {
+              await brandService.import(file);
+              queryClient.invalidateQueries({ queryKey: ['brands'] });
+          } catch (err: any) {
+              // Service already handles generic errors but we can log/toast here if needed
+          }
+        }}
+        importTemplateUrl="/api/v1/brands/template"
         importTitle={t('common.importData')}
       />
 

@@ -1095,6 +1095,7 @@
         "points": "points"
     },
     "product": {
+        "justOrdered": "Just purchased",
         "tab": {
             "description": "Description",
             "specs": "Specifications",

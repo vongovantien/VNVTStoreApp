@@ -282,7 +282,7 @@ public class ProductHandlerTests
         Assert.True(result.IsSuccess);
         _fileServiceMock.Verify(x => x.SaveAndLinkImagesAsync(
             It.IsAny<string>(),
-            "Product",
+            "TblProduct",
             It.Is<List<string>>(l => l.Count == 2),
             "products",
             It.IsAny<CancellationToken>()), Times.Once);
@@ -353,7 +353,7 @@ public class ProductHandlerTests
 
         // Verify FileService was called for images
         _fileServiceMock.Verify(x => x.SaveAndLinkImagesAsync(
-            It.IsAny<string>(), "Product", It.IsAny<List<string>>(), "products", It.IsAny<CancellationToken>()), Times.Once);
+            It.IsAny<string>(), "TblProduct", It.IsAny<List<string>>(), "products", It.IsAny<CancellationToken>()), Times.Once);
 
         // Verify transaction was committed
         _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);

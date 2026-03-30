@@ -116,7 +116,7 @@ public static class DependencyInjection
     private static IServiceCollection AddGenericHandler<TEntity, TResponse, TCreateDto, TUpdateDto>(this IServiceCollection services)
         where TEntity : class, IEntity
         where TResponse : class, IBaseDto, new()
-        where TCreateDto : class
+        where TCreateDto : class, new()
         where TUpdateDto : class
     {
         var handlerType = typeof(BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto>);
@@ -128,6 +128,9 @@ public static class DependencyInjection
         services.AddTransient(typeof(IRequestHandler<DeleteCommand<TEntity>, Result>), handlerType);
         services.AddTransient(typeof(IRequestHandler<DeleteMultipleCommand<TEntity>, Result>), handlerType);
         services.AddTransient(typeof(IRequestHandler<GetStatsQuery<TEntity>, Result<EntityStatsDto>>), handlerType);
+        services.AddTransient(typeof(IRequestHandler<ExportAllQuery<TResponse>, Result<byte[]>>), handlerType);
+        services.AddTransient(typeof(IRequestHandler<GetTemplateQuery<TCreateDto>, Result<byte[]>>), handlerType);
+        services.AddTransient(typeof(IRequestHandler<ImportCommand<TCreateDto, TResponse>, Result<int>>), handlerType);
 
         return services;
     }

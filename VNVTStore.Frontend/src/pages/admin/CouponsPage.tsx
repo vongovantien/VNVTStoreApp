@@ -176,8 +176,26 @@ export const CouponsPage = () => {
         onPageChange={setCurrentPage}
         onPageSizeChange={setPageSize}
         
+        onAdd={() => { resetForm(); setIsModalOpen(true); }}
         onRefresh={() => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] })}
         
+        onImport={async (file) => {
+          try {
+              await couponService.import(file);
+              success(t('messages.importSuccess'));
+              queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
+          } catch (err: any) {
+              toastError(err.message || t('messages.importError'));
+          }
+        }}
+        importTemplateUrl="/api/v1/coupons/template"
+        
+        onExportAllData={async () => {
+          const response = await couponService.search({ pageIndex: 1, pageSize: 10000 });
+          return response.data?.items || [];
+        }}
+        exportFilename="coupons_export"
+
         advancedFilterDefs={[
           { id: 'search', label: t('common.search'), type: 'text', placeholder: t('common.placeholders.search') }
         ]}

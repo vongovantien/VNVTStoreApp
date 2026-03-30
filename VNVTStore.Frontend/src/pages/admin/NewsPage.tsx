@@ -232,6 +232,23 @@ export const NewsPage = () => {
             </button>
           </div>
         )}
+
+        onImport={async (file) => {
+          try {
+              await newsService.import(file);
+              success(t('messages.importSuccess'));
+              queryClient.invalidateQueries({ queryKey: ['admin-news'] });
+          } catch (err: any) {
+              toastError(err.message || t('messages.importError'));
+          }
+        }}
+        importTemplateUrl="/api/v1/news/template"
+        
+        onExportAllData={async () => {
+          const response = await newsService.search({ pageIndex: 1, pageSize: 10000 });
+          return response.data?.items || [];
+        }}
+        exportFilename="news_export"
       />
 
       <Modal

@@ -9,10 +9,10 @@ import { orderService, type OrderDto } from '@/services/orderService';
 import { AdminPageHeader } from '@/components/admin';
 import { DataTable } from '@/components/common';
 import { DataTableColumn } from '@/components/common/DataTable';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaginationDefaults, OrderStatus } from '@/constants';
 import { StatsCards } from '@/components/admin/StatsCards';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/store';
 
 export const OrdersPage = () => {
   const { t } = useTranslation();
@@ -27,6 +27,7 @@ export const OrdersPage = () => {
 
 
 
+  const toast = useToast();
   const queryClient = useQueryClient();
   const [orderToDelete, setOrderToDelete] = useState<OrderDto | null>(null);
 
@@ -297,6 +298,16 @@ export const OrdersPage = () => {
           const response = await orderService.search({ pageIndex: 1, pageSize: 10000 });
           return response.data?.items || [];
         }}
+        onImport={async (file) => {
+          try {
+              await orderService.import(file);
+              toast.success(t('messages.importSuccess'));
+              queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+          } catch (err: any) {
+              toast.error(err.message || t('messages.importError'));
+          }
+        }}
+        importTemplateUrl="/api/v1/orders/template"
         enableSelection={false}
 
         // Search & Filter

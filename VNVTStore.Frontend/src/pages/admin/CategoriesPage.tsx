@@ -146,21 +146,6 @@ export default function CategoriesPage() {
   };
 
 
-  const importMutation = useMutation({
-    mutationFn: (file: File) => categoryService.import(file),
-    onSuccess: () => {
-      toast.success(t('common.messages.importSuccess') || 'Import successful');
-      refetch();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t('common.messages.importError') || 'Import failed');
-    },
-  });
-
-  const handleImport = async (file: File) => {
-    await importMutation.mutateAsync(file);
-  };
-
   const handleDelete = () => {
     if (categoryToDelete) {
       deleteCategory(categoryToDelete.code, {
@@ -323,10 +308,21 @@ export default function CategoriesPage() {
              // Basic search simulation
              refetch(); // In real app, pass filters to hook
         }}
-        onImport={handleImport}
-        importTemplateUrl="/categories/template"
+        onImport={async (file) => {
+          try {
+              await categoryService.import(file);
+              toast.success(t('messages.importSuccess'));
+              refetch();
+          } catch (err: any) {
+              toast.error(err.message || t('messages.importError'));
+          }
+        }}
+        importTemplateUrl="/api/v1/categories/template"
         importTitle={t('common.importData')}
-        onExportAllData={() => categoryService.exportData()}
+        onExportAllData={async () => {
+          const res = await categoryService.getAll(10000);
+          return res.data?.items || [];
+        }}
         onAdd={() => openCreate()}
         onRefresh={() => refetch()}
         onView={(item) => setViewingCategory(item)}

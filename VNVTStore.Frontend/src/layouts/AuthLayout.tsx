@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { LanguageSwitcher } from '@/components/common';
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -12,7 +13,12 @@ export const AuthLayout = ({ children, title, subtitle }: AuthLayoutProps) => {
     const { t } = useTranslation();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary to-purple-500/5 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary to-purple-500/5 flex items-center justify-center p-4 relative">
+            {/* Multi-language selector */}
+            <div className="absolute top-6 right-6 z-50">
+                <LanguageSwitcher variant="outline" align="right" />
+            </div>
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

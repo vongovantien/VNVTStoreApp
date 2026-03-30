@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,36 +9,34 @@ import {
   Users,
   FileText,
   Settings,
-  ChevronLeft,
+  Folder,
+  Building2,
+  Tag,
+  Ruler,
+  Ticket,
+  Star,
+  Shield,
   ChevronRight,
+  ChevronLeft,
   LogOut,
   Search,
   Sun,
   Moon,
   Menu,
-  Globe,
   User as UserIcon,
   HelpCircle,
   FileKey,
-  Folder,
-  Building2,
   ExternalLink,
   AlertTriangle,
   Command,
   Home,
-  Tag,
-  Ruler,
-  Star,
-  Ticket,
-  Shield,
-
   ChevronRight as BreadcrumbSeparator,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { ToastContainer } from '@/components/ui/Toast';
 import { useUIStore, useAuthStore, useToastStore, useNotificationStore } from '@/store';
-import { NotificationDropdown, UserMenu } from '@/components/common';
+import { NotificationDropdown, UserMenu, LanguageSwitcher } from '@/components/common';
 import { useSignalR } from '@/hooks/useSignalR';
 
 // Navigation items
@@ -99,17 +96,17 @@ const navGroups: NavGroup[] = [
 ];
 
 export const AdminLayout = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
   const { theme, toggleTheme } = useUIStore();
   const { logout, user, isAuthenticated, hasMenu } = useAuthStore();
-  const location = useLocation();
 
   // Filter navigation items based on user's menus
   const filteredNavGroups = useMemo(() => {
@@ -121,18 +118,8 @@ export const AdminLayout = () => {
       .filter(group => group.items.length > 0);
   }, [hasMenu]);
 
-  // Refs for dropdowns
-  const langBtnRef = useRef<HTMLButtonElement>(null);
+  // Refs for search
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [langMenuPosition, setLangMenuPosition] = useState({ top: 0, left: 0 });
-
-  useEffect(() => {
-    if (showLangMenu && langBtnRef.current) {
-      const rect = langBtnRef.current.getBoundingClientRect();
-      setLangMenuPosition({ top: rect.bottom + 8, left: rect.right - 140 });
-    }
-  }, [showLangMenu]);
-
 
   // SignalR Integration
   const { on, isConnected } = useSignalR();
@@ -141,15 +128,12 @@ export const AdminLayout = () => {
 
   useEffect(() => {
     // Listen for new orders
-    const cleanupOrder = on('ReceiveOrderNotification', (data: unknown) => {
-       const message = typeof data === 'string' ? data : (data as { Message: string })?.Message || t('admin.notifications.newOrder');
-       // Show toast
+    const cleanupOrder = on('ReceiveOrderNotification', (data: any) => {
+       const message = typeof data === 'string' ? data : data?.Message || t('admin.notifications.newOrder');
        info(message);
-       // Add to notification list
        addNotification(message);
        
-       // Optional: Play a sound
-       const audio = new Audio('/notification.mp3'); // Ensure this file exists or remove
+       const audio = new Audio('/notification.mp3');
        audio.play().catch(e => console.log('Audio play failed', e)); 
     });
 
@@ -176,12 +160,12 @@ export const AdminLayout = () => {
   // Focus search input when modal opens
   useEffect(() => {
     if (showSearchModal && searchInputRef.current) {
-      searchInputRef.current.focus();
+      setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   }, [showSearchModal]);
 
   // Generate breadcrumbs from current path
-  const getBreadcrumbs = () => {
+  const breadcrumbs = useMemo(() => {
     const pathParts = location.pathname.split('/').filter(Boolean);
     const crumbs: { label: string; path: string }[] = [];
     
@@ -193,7 +177,6 @@ export const AdminLayout = () => {
       if (part === 'admin') {
           label = t('admin.sidebar.dashboard');
       } else {
-          // Try to find localized label
           const translated = t(`admin.sidebar.${part}`);
           if (translated !== `admin.sidebar.${part}`) {
               label = translated;
@@ -207,29 +190,7 @@ export const AdminLayout = () => {
       crumbs.push({ label, path: currentPath });
     }
     return crumbs;
-  };
-
-  const breadcrumbs = getBreadcrumbs();
-
-  // Click outside handler for language menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-
-      if (showLangMenu &&
-        langBtnRef.current && !langBtnRef.current.contains(target)) {
-        setShowLangMenu(false);
-      }
-    };
-
-    if (showLangMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showLangMenu]);
-
+  }, [location.pathname, t]);
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
@@ -256,12 +217,6 @@ export const AdminLayout = () => {
     navigate('/login');
   };
 
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem('language', lang);
-    setShowLangMenu(false);
-  };
-
   return (
     <div className="flex min-h-screen bg-secondary">
       {/* Sidebar */}
@@ -273,7 +228,7 @@ export const AdminLayout = () => {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800 shrink-0">
           <AnimatePresence mode="wait">
             {!sidebarCollapsed && (
               <motion.div
@@ -369,7 +324,6 @@ export const AdminLayout = () => {
               exit={{ x: -280 }}
               className="fixed left-0 top-0 z-50 h-screen w-64 bg-gray-900 text-white lg:hidden flex flex-col"
             >
-              {/* Same content as desktop sidebar */}
               <div className="flex items-center h-16 px-4 border-b border-gray-800 shrink-0">
                 <span className="text-2xl">🏠</span>
                 <span className="font-bold text-lg ml-2">VNVT Admin</span>
@@ -411,7 +365,6 @@ export const AdminLayout = () => {
                 ))}
               </nav>
               
-              {/* Logout button for mobile */}
               <div className="p-4 border-t border-gray-800 shrink-0">
                 <button
                   onClick={handleLogout}
@@ -436,7 +389,6 @@ export const AdminLayout = () => {
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-primary shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-            {/* Mobile menu button */}
             <button
               className="p-2 rounded-lg hover:bg-hover lg:hidden"
               onClick={() => setMobileMenuOpen(true)}
@@ -444,7 +396,7 @@ export const AdminLayout = () => {
               <Menu size={24} />
             </button>
 
-            {/* Breadcrumbs - Hidden on mobile */}
+            {/* Breadcrumbs */}
             <div className="hidden lg:flex items-center gap-1 text-sm">
               <Home size={14} className="text-tertiary" />
               {breadcrumbs.map((crumb, index) => (
@@ -461,126 +413,55 @@ export const AdminLayout = () => {
               ))}
             </div>
 
-            {/* Global Search with Ctrl+K */}
+            {/* Search */}
             <div className="hidden md:block flex-1 max-w-sm mx-4">
               <button
                 onClick={() => setShowSearchModal(true)}
                 className="w-full flex items-center gap-3 px-4 py-2 bg-secondary rounded-lg border border-transparent hover:border-indigo-500 transition-all group"
               >
                 <Search size={18} className="text-tertiary group-hover:text-indigo-500" />
-                <span className="flex-1 text-left text-sm text-tertiary">{t('common.search', 'Tìm kiếm...')}</span>
+                <span className="flex-1 text-left text-sm text-tertiary">{t('common.search')}</span>
                 <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-tertiary bg-primary rounded border">
                   <Command size={10} /> K
                 </kbd>
               </button>
             </div>
 
-            {/* Quick Stats */}
-            <div className="hidden lg:flex items-center gap-2 mr-2">
-              <button 
-                onClick={() => navigate('/admin/orders?status=pending')}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
-                title={t('admin.tooltips.pendingOrders')}
-              >
-                <ShoppingCart size={14} />
-                <span>5</span>
-              </button>
-              <button 
-                onClick={() => navigate('/admin/products?stock=0')}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                title={t('admin.tooltips.outOfStock')}
-              >
-                <AlertTriangle size={14} />
-                <span>2</span>
-              </button>
-            </div>
-
             {/* Actions */}
             <div className="flex items-center gap-2">
-              {/* Language Switcher */}
-              <div className="relative">
-                <Button ref={langBtnRef} variant="ghost" size="sm" onClick={() => setShowLangMenu(!showLangMenu)}>
-                  <Globe size={20} />
-                  <span className="text-xs ml-1 uppercase">{i18n.language}</span>
-                </Button>
-                {showLangMenu && createPortal(
-                  <div
-                    className="fixed bg-primary rounded-lg shadow-xl border border-border p-1 min-w-[140px] z-[9999]"
-                    style={{
-                      top: langMenuPosition.top,
-                      left: langMenuPosition.left,
-                    }}
-                  >
-                    <button
-                      onClick={() => { changeLanguage('vi'); setShowLangMenu(false); }}
-                      className={cn(
-                        'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                        i18n.language === 'vi'
-                          ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                          : 'hover:bg-hover text-primary'
-                      )}
-                    >
-                      🇻🇳 Tiếng Việt
-                    </button>
-                    <button
-                      onClick={() => { changeLanguage('en'); setShowLangMenu(false); }}
-                      className={cn(
-                        'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                        i18n.language === 'en'
-                          ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                          : 'hover:bg-hover text-primary'
-                      )}
-                    >
-                      🇺🇸 English
-                    </button>
-                  </div>,
-                  document.body
-                )}
-              </div>
+              <LanguageSwitcher variant="ghost" align="right" />
 
               <Button variant="ghost" size="sm" onClick={toggleTheme}>
                 {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               </Button>
 
-              {/* Notifications Dropdown */}
               <NotificationDropdown 
                 isConnected={isConnected}
                 onNotificationClick={() => navigate('/admin/orders')}
               />
 
-              {/* View Store */}
               <a 
                 href="/" 
+                target="_blank"
+                rel="noreferrer"
                 className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
               >
                 <ExternalLink size={14} />
-                {t('admin.viewStore', 'Xem cửa hàng')}
+                {t('admin.viewStore')}
               </a>
 
-              {/* User menu */}
               <UserMenu 
                 onLogout={handleLogout}
                 items={[
-                  {
-                    label: t('admin.userMenu.accountSettings'),
-                    icon: UserIcon,
-                    link: '/admin/settings'
-                  },
-                  {
-                    label: t('admin.userMenu.support'),
-                    icon: HelpCircle
-                  },
-                  {
-                    label: t('admin.userMenu.license'),
-                    icon: FileKey
-                  }
+                  { label: t('admin.userMenu.accountSettings'), icon: UserIcon, link: '/admin/settings' },
+                  { label: t('admin.userMenu.support'), icon: HelpCircle },
+                  { label: t('admin.userMenu.license'), icon: FileKey }
                 ]}
               />
             </div>
           </div>
         </header>
 
-        {/* Page content */}
         <main className="p-4 lg:p-6">
           <Outlet />
         </main>
@@ -613,7 +494,6 @@ export const AdminLayout = () => {
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
               className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-primary rounded-2xl shadow-2xl border border-border z-[1000] overflow-hidden"
             >
-              {/* Search Header with Gradient */}
               <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4">
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur rounded-xl px-4 py-3">
                   <Search size={20} className="text-white/80" />
@@ -622,7 +502,7 @@ export const AdminLayout = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t('admin.searchPlaceholder', 'Tìm đơn hàng, sản phẩm, khách hàng...')}
+                    placeholder={t('admin.searchPlaceholder')}
                     className="flex-1 bg-transparent outline-none text-white placeholder:text-white/60 text-sm font-medium"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && searchQuery.trim()) {
@@ -631,54 +511,28 @@ export const AdminLayout = () => {
                       }
                     }}
                   />
-                  <kbd className="px-2 py-1 text-[10px] font-bold text-white/80 bg-white/20 rounded-lg">
-                    ESC
-                  </kbd>
+                  <kbd className="px-2 py-1 text-[10px] font-bold text-white/80 bg-white/20 rounded-lg">ESC</kbd>
                 </div>
               </div>
               
-              {/* Quick Links */}
               <div className="p-4">
                 <p className="mb-3 text-xs font-semibold text-tertiary uppercase tracking-widest">
-                  ⚡ {t('common.quickAccess', 'Truy cập nhanh')}
+                  ⚡ {t('common.quickAccess')}
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  <button 
-                    onClick={() => { setShowSearchModal(false); navigate('/admin/orders'); }}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors group"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                      <ShoppingCart size={18} className="text-white" />
-                    </div>
-                    <span className="text-xs font-medium text-secondary group-hover:text-primary">{t('admin.sidebar.orders')}</span>
+                  <button onClick={() => { setShowSearchModal(false); navigate('/admin/orders'); }} className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-secondary transition-colors group">
+                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white"><ShoppingCart size={18} /></div>
+                    <span className="text-xs font-medium">{t('admin.sidebar.orders')}</span>
                   </button>
-                  <button 
-                    onClick={() => { setShowSearchModal(false); navigate('/admin/products'); }}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors group"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                      <Package size={18} className="text-white" />
-                    </div>
-                    <span className="text-xs font-medium text-secondary group-hover:text-primary">{t('admin.sidebar.products')}</span>
+                  <button onClick={() => { setShowSearchModal(false); navigate('/admin/products'); }} className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-secondary transition-colors group">
+                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white"><Package size={18} /></div>
+                    <span className="text-xs font-medium">{t('admin.sidebar.products')}</span>
                   </button>
-                  <button 
-                    onClick={() => { setShowSearchModal(false); navigate('/admin/customers'); }}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors group"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                      <Users size={18} className="text-white" />
-                    </div>
-                    <span className="text-xs font-medium text-secondary group-hover:text-primary">{t('admin.sidebar.customers')}</span>
+                  <button onClick={() => { setShowSearchModal(false); navigate('/admin/customers'); }} className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-secondary transition-colors group">
+                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white"><Users size={18} /></div>
+                    <span className="text-xs font-medium">{t('admin.sidebar.customers')}</span>
                   </button>
                 </div>
-              </div>
-              
-              {/* Footer hint */}
-              <div className="px-4 py-3 bg-secondary border-t border-border text-xs text-tertiary flex items-center justify-between">
-                <span>{t('admin.search.pressEnter')}</span>
-                <span className="flex items-center gap-1">
-                  <Command size={10} /> + K {t('admin.search.ctrlKHint')}
-                </span>
               </div>
             </motion.div>
           </>

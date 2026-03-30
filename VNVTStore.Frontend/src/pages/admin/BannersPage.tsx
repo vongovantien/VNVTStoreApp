@@ -223,10 +223,22 @@ const BannersPage = () => {
 
         enableColumnVisibility={true}
         exportFilename="banners_export"
+        onExportAllData={async (): Promise<BannerDto[]> => {
+          const response = await bannerService.getAll(10000);
+          return (response.data?.items || []) as BannerDto[];
+        }}
         
         // Import
-        onImport={async (file) => { await bannerService.import(file); refetch(); }}
-        importTemplateUrl={bannerService.getTemplate()}
+        onImport={async (file) => {
+          try {
+              await bannerService.import(file);
+              toast.success(t('messages.importSuccess'));
+              refetch();
+          } catch (err: any) {
+              toast.error(err.message || t('messages.importError'));
+          }
+        }}
+        importTemplateUrl="/api/v1/banners/template"
         importTitle={t('common.importData')}
       />
 

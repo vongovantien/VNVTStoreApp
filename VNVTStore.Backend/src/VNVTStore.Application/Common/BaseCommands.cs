@@ -74,3 +74,22 @@ public record DeleteMultipleCommand<TMarker>(List<string> Codes) : IRequest<Resu
 /// Base Query to get simple stats (Total, Active) - REUSABLE
 /// </summary>
 public record GetStatsQuery<TMarker> : IRequest<Result<EntityStatsDto>>;
+
+/// <summary>
+/// Base Query to get all data for export - REUSABLE
+/// </summary>
+public record ExportAllQuery<TResponse> : IRequest<Result<byte[]>>;
+
+/// <summary>
+/// Base Query to get import template - REUSABLE
+/// </summary>
+public record GetTemplateQuery<TImportDto> : IRequest<Result<byte[]>>;
+
+/// <summary>
+/// Base Command for generic bulk import - REUSABLE
+/// </summary>
+public record ImportCommand<TImportDto, TResponse>(Stream FileStream) : IRequest<Result<int>>, IAuditableCommand
+{
+    public string? AuditAction => "IMPORT_" + typeof(TResponse).Name.Replace("Dto", "").Replace("Catalog", "").ToUpper();
+    public string? AuditResourceId => null;
+}

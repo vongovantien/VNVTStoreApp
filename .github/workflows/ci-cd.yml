@@ -24,15 +24,18 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore Dependencies
-      run: |
-        dotnet restore src/VNVTStore.API/VNVTStore.API.csproj
-        dotnet restore src/VNVTStore.Tests/VNVTStore.Tests.csproj
+      run: dotnet restore VNVTStore.sln
 
     - name: Build API
-      run: dotnet build src/VNVTStore.API/VNVTStore.API.csproj --no-restore --configuration Release
+      run: dotnet build VNVTStore.sln --no-restore --configuration Release
 
-    - name: Run Tests
-      # Removed --no-build to ensure Tests project is built before running
+    - name: Run Application Tests
+      run: dotnet test tests/VNVTStore.Application.Tests/VNVTStore.Application.Tests.csproj --configuration Release --verbosity normal
+
+    - name: Run Domain Tests
+      run: dotnet test tests/VNVTStore.Domain.Tests/VNVTStore.Domain.Tests.csproj --configuration Release --verbosity normal
+
+    - name: Run Legacy Tests
       run: dotnet test src/VNVTStore.Tests/VNVTStore.Tests.csproj --configuration Release --verbosity normal
 
     - name: Publish API
@@ -64,31 +67,34 @@ jobs:
     - name: Install Dependencies
       run: npm ci
 
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+
     - name: Run Tests
-      run: npm test -- run
+      run: npm test -- --run
 
     - name: Build
       run: npm run build
 
-  deploy-backend:
-    name: Deploy Backend to Azure
-    needs: backend
+  deploy:
+    name: Multi-Cloud Deployment
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    environment:
-      name: 'Production'
-    
     steps:
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: backend-app
+    - uses: actions/checkout@v4
 
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v2
+    # 1. Backend Deployment to Render
+    - name: Trigger Render Backend Deploy
+      run: |
+        curl -X POST ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
+
+    # 2. Frontend Deployment to Vercel
+    - name: Deploy Frontend to Vercel
+      uses: amondnet/vercel-action@v20
       with:
-        # App Name is optional when using Publish Profile, but good for logs. 
-        # Checking if user set it: `secrets.AZURE_WEBAPP_NAME`. 
-        # If user didn't set it, relying on profile.
-        # app-name: ${{ secrets.AZURE_WEBAPP_NAME }} 
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: .
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod' # Deploy directly to production
+        working-directory: ./VNVTStore.Frontend

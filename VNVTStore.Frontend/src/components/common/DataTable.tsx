@@ -430,6 +430,9 @@ function DataTableInner<T extends object>({ // Changed from Record<string, unkno
 
   // ============ Render Helpers ============
   const getCellValue = (row: T, column: DataTableColumn<T>): React.ReactNode => {
+    if (typeof column.accessor === 'function') {
+      return column.accessor(row);
+    }
     return row[column.accessor as keyof T] as React.ReactNode;
   };
 

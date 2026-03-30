@@ -8,8 +8,8 @@
       "applicationUrl": "http://localhost:5176",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings__DefaultConnection": "Host=ep-holy-heart-a58jnnwh-pooler.us-east-2.aws.neon.tech;Port=5432;Database=saleapp;Username=saleapp_owner;Password=yp8tDSnX6vjF;SSL Mode=Require;Trust Server Certificate=true",
-        "JwtSettings__SecretKey": "ThisIsASuperSecretKeyForDevelopment purposes only 12345!@#$%",
+        "ConnectionStrings__DefaultConnection": "YOUR_DATABASE_CONNECTION_STRING",
+        "JwtSettings__SecretKey": "YOUR_SUPER_SECRET_KEY_MIN_32_CHARS",
         "JwtSettings__Issuer": "VNVTStore",
         "JwtSettings__ExpirationInMinutes": "120",
         "JwtSettings__Audience": "VNVTStoreUser",
@@ -17,7 +17,7 @@
         "EmailSettings__Host": "smtp.gmail.com",
         "EmailSettings__Port": "587",
         "EmailSettings__FromEmail": "your-email@gmail.com",
-        "EmailSettings__Password": "your-app-password",
+        "EmailSettings__Password": "YOUR_EMAIL_APP_PASSWORD",
         "EmailSettings__EnableSsl": "true",
         "CorsSettings__AllowedOrigins__0": "http://localhost:5173",
         "CorsSettings__AllowedOrigins__1": "http://localhost:3000",
@@ -25,8 +25,8 @@
         "RateLimiting__WindowInSeconds": "60",
         "RateLimiting__QueueLimit": "2",
         "Cloudinary__CloudName": "dgct8zpvp",
-        "Cloudinary__ApiKey": "631943736442228",
-        "Cloudinary__ApiSecret": "4xKADk_UWqAKS7vlOl8qst_LUjw"
+        "Cloudinary__ApiKey": "YOUR_CLOUDINARY_API_KEY",
+        "Cloudinary__ApiSecret": "YOUR_CLOUDINARY_API_SECRET"
       }
     },
     "https": {
@@ -36,7 +36,7 @@
       "applicationUrl": "https://localhost:7092;http://localhost:5176",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings__DefaultConnection": "Host=ep-holy-heart-a58jnnwh-pooler.us-east-2.aws.neon.tech;Port=5432;Database=saleapp;Username=saleapp_owner;Password=yp8tDSnX6vjF;SSL Mode=Require;Trust Server Certificate=true",
+        "ConnectionStrings__DefaultConnection": "YOUR_DATABASE_CONNECTION_STRING",
         "JwtSettings__SecretKey": "ThisIsASuperSecretKeyForDevelopment purposes only 12345!@#$%",
         "JwtSettings__Issuer": "VNVTStore",
         "JwtSettings__ExpirationInMinutes": "120",
@@ -45,7 +45,7 @@
         "EmailSettings__Host": "smtp.gmail.com",
         "EmailSettings__Port": "587",
         "EmailSettings__FromEmail": "your-email@gmail.com",
-        "EmailSettings__Password": "your-app-password",
+        "EmailSettings__Password": "YOUR_EMAIL_APP_PASSWORD",
         "EmailSettings__EnableSsl": "true",
         "CorsSettings__AllowedOrigins__0": "http://localhost:5173",
         "CorsSettings__AllowedOrigins__1": "http://localhost:3000",
@@ -53,7 +53,7 @@
         "RateLimiting__WindowInSeconds": "60",
         "RateLimiting__QueueLimit": "2",
         "Cloudinary__CloudName": "dgct8zpvp",
-        "Cloudinary__ApiKey": "631943736442228",
+        "Cloudinary__ApiKey": "YOUR_CLOUDINARY_API_KEY",
         "Cloudinary__ApiSecret": ""
       }
     }

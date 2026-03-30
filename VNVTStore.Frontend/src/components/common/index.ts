@@ -23,3 +23,4 @@ export * from './B2BAndAdminFeatures';
 export * from './RemainingFeatures';
 export * from './ChatWidget';
 export * from './CartDrawer';
+export * from './LanguageSwitcher';

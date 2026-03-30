@@ -51,16 +51,6 @@ export const PromotionsPage = () => {
 
   // Import
   // State for Fetching
-  const handleImportPromotion = async (file: File) => {
-    try {
-        await promotionService.import(file);
-        toast.success(t('common.importSuccess') || 'Import successful');
-        refetch();
-    } catch (error) {
-        toast.error(t('common.importError') || 'Import failed');
-        throw error;
-    }
-  };
 
   // Fetch API
   const {
@@ -278,8 +268,16 @@ export const PromotionsPage = () => {
             isFetching={isFetching}
             onAdd={() => openCreate()}
             onRefresh={() => refetch()}
-            onImport={handleImportPromotion}
-            importTemplateUrl="/templates/promotions_template.xlsx" 
+            onImport={async (file) => {
+              try {
+                  await promotionService.import(file);
+                  toast.success(t('messages.importSuccess'));
+                  refetch();
+              } catch (err: any) {
+                  toast.error(err.message || t('messages.importError'));
+              }
+            }}
+            importTemplateUrl="/api/v1/promotions/template" 
 
 
             currentPage={currentPage}

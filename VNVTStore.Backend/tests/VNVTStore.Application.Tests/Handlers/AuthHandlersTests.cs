@@ -120,6 +120,9 @@ public class AuthHandlersTests
         );
 
         var existingUser = TblUser.Create("user", "email", "hashed_password", "Name", UserRole.Customer);
+        // Ensure email is verified for login success
+        typeof(TblUser).GetProperty(nameof(TblUser.IsEmailVerified))?.SetValue(existingUser, true);
+        
         var users = new List<TblUser> { existingUser };
         var mockDbSet = CreateMockDbSet(users);
         

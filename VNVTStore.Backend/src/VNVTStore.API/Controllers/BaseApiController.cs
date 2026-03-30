@@ -216,6 +216,53 @@ public abstract class BaseApiController<TEntity, TResponse, TCreateDto, TUpdateD
         return HandleDelete(result);
     }
 
+    /// <summary>
+    /// Generic Export to Excel
+    /// </summary>
+    [HttpGet("export")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public virtual async Task<IActionResult> Export()
+    {
+        var result = await Mediator.Send(new ExportAllQuery<TResponse>());
+        if (result.IsFailure) return HandleError(result.Error!);
+        
+        var fileName = $"{typeof(TEntity).Name.Replace("Tbl", "")}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    /// <summary>
+    /// Generic Get Import Template
+    /// </summary>
+    [HttpGet("template")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public virtual async Task<IActionResult> GetTemplate()
+    {
+        var result = await Mediator.Send(new GetTemplateQuery<TCreateDto>());
+        if (result.IsFailure) return HandleError(result.Error!);
+        
+        var fileName = $"{typeof(TEntity).Name.Replace("Tbl", "")}_Template.xlsx";
+        return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    /// <summary>
+    /// Generic Import from Excel
+    /// </summary>
+    [HttpPost("import")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    [Consumes("multipart/form-data")]
+    public virtual async Task<IActionResult> Import(IFormFile file)
+    {
+        if (file == null || file.Length == 0) 
+            return BadRequest(ApiResponse<string>.Fail(MessageConstants.Get(MessageConstants.BadRequest)));
+        
+        using var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
+        stream.Position = 0;
+        
+        var result = await Mediator.Send(new ImportCommand<TCreateDto, TResponse>(stream));
+        return HandleResult(result);
+    }
+
     // Default implementations of factory methods
     protected virtual IRequest<Result<PagedResult<TResponse>>> CreatePagedQuery(int pageIndex, int pageSize, SortDTO? sort, List<SearchDTO>? filters, List<string>? fields = null)
         => new GetPagedQuery<TResponse> { PageIndex = pageIndex, PageSize = pageSize, SortDTO = sort, Searching = filters, Fields = fields };

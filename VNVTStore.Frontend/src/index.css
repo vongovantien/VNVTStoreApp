@@ -369,29 +369,32 @@ textarea:focus {
   /* Firefox */
 }
 
-/* Custom Scrollbar for Dark Sidebar */
+/* Custom Scrollbar for Dark Sidebar - Enhanced Visibility */
 .custom-scrollbar-dark {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
-  overflow-y: auto !important; /* Show scrollbar only when needed */
+  scrollbar-color: #818cf8 rgba(255, 255, 255, 0.1);
+  overflow-y: auto !important;
 }
 
 .custom-scrollbar-dark::-webkit-scrollbar {
-  width: 6px !important;
+  width: 10px !important; /* Increased from 8px */
   display: block !important;
 }
 
 .custom-scrollbar-dark::-webkit-scrollbar-track {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(30, 41, 59, 0.5); /* Semi-transparent base */
+  border-radius: 5px;
 }
 
 .custom-scrollbar-dark::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+  background-color: #4f46e5; /* Primary indigo */
+  border-radius: 5px;
+  border: 2px solid rgba(15, 23, 42, 0.8); /* Dark border for contrast */
+  transition: background-color 0.2s;
 }
 
 .custom-scrollbar-dark::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: #818cf8; /* Lighter indigo on hover */
 }
 
 @keyframes shimmer {

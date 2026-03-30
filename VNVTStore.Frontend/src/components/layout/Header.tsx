@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,6 @@ import {
   Phone,
   MessageCircle,
   Scale,
-  Globe,
   LayoutDashboard,
   Package,
   ShieldAlert,
@@ -24,31 +23,31 @@ import {
 import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { useCartStore, useWishlistStore, useUIStore, useCompareStore, useAuthStore, useNotificationStore, useToast, useRecentStore } from '@/store';
-import { NotificationDropdown, UserMenu } from '@/components/common';
+import { NotificationDropdown, UserMenu, LanguageSwitcher } from '@/components/common';
 import { type SignalRNotification } from '@/services/signalrService';
 import { useClickOutside, useSignalR, useDebounce } from '@/hooks';
 import { useCategories, useProducts } from '@/hooks/useProducts';
 import { formatCurrency } from '@/utils/format';
 
 export const Header = memo(() => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategories, setShowCategories] = useState(false);
-  
-  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories({ 
-    enabled: showCategories || mobileMenuOpen 
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const categories = (categoriesData as any[]) || [];
-
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
+  // Categories loading
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories({ 
+    enabled: showCategories || mobileMenuOpen 
+  });
+  const categories = (categoriesData as any[]) || [];
+
   const debouncedSearch = useDebounce(searchQuery, 300);
   const searchRef = useClickOutside<HTMLDivElement>(() => setShowSearchResults(false));
+  const categoriesRef = useClickOutside<HTMLDivElement>(() => setShowCategories(false));
 
   const { data: searchData, isLoading: isSearching } = useProducts({
     search: debouncedSearch,
@@ -63,29 +62,21 @@ export const Header = memo(() => {
     setShowLogoutConfirm(true);
   };
 
-  const navigate = useNavigate();
+  const { user, isAuthenticated, logout, adminToken, stopImpersonating } = useAuthStore();
+  const { theme, toggleTheme, setCartOpen } = useUIStore();
+  const { addNotification } = useNotificationStore();
+  const { info } = useToast();
+  const { on, isConnected } = useSignalR();
+
+  const cartCount = useCartStore((state) => state.getItemCount());
+  const wishlistCount = useWishlistStore((state) => state.items.length);
+  const compareCount = useCompareStore((state) => state.items.length);
+
   const confirmLogout = () => {
     logout();
     setShowLogoutConfirm(false);
     navigate('/');
   };
-
-
-  const categoriesRef = useClickOutside<HTMLDivElement>(() => setShowCategories(false));
-  // const langMenuRef = useClickOutside<HTMLDivElement>(() => setShowLangMenu(false)); // Temporarily removed
-  const langMenuRef = useRef<HTMLDivElement>(null); // Use simple ref for button
-  const langDropdownRef = useRef<HTMLDivElement>(null); // Ref for dropdown portal
-
-  const cartCount = useCartStore((state) => state.getItemCount());
-  const wishlistCount = useWishlistStore((state) => state.items.length);
-  const compareCount = useCompareStore((state) => state.items.length);
-  const { theme, toggleTheme, setCartOpen } = useUIStore();
-  const { user, isAuthenticated, logout, adminToken, stopImpersonating } = useAuthStore();
-  const { addNotification } = useNotificationStore();
-
-  const { info } = useToast();
-
-  const { on, isConnected } = useSignalR();
 
   useEffect(() => {
     if (!isConnected) return;
@@ -108,38 +99,13 @@ export const Header = memo(() => {
     };
   }, [isConnected, on, addNotification, info, t]);
 
-  // Manual click outside handler for language menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      // Check if click is outside both the button and the dropdown
-      const isOutsideButton = langMenuRef.current && !langMenuRef.current.contains(target);
-      const isOutsideDropdown = langDropdownRef.current && !langDropdownRef.current.contains(target);
-
-      if (isOutsideButton && isOutsideDropdown) {
-        setShowLangMenu(false);
-      }
-    };
-    if (showLangMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showLangMenu]);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       useRecentStore.getState().addSearchQuery(searchQuery.trim());
-      window.location.href = `/search?search=${encodeURIComponent(searchQuery)}`;
+      navigate(`/search?search=${encodeURIComponent(searchQuery)}`);
+      setShowSearchResults(false);
     }
-  };
-
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem('language', lang);
-    setShowLangMenu(false);
   };
 
   return (
@@ -163,346 +129,220 @@ export const Header = memo(() => {
         </div>
       )}
       <header className="bg-primary transition-colors duration-200 relative z-[101]">
-      {/* Top Bar */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-slate-300 text-xs py-2">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex gap-6">
-            <a href="tel:1900123456" className="flex items-center gap-1 hover:text-white transition-colors">
-              <Phone size={12} />
-              <span>{t('shared.hotlineFull')}</span>
-            </a>
-            <a href="https://zalo.me" className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors">
-              <MessageCircle size={12} />
-              <span>{t('shared.chatZalo')}</span>
-            </a>
-          </div>
-          <div className="hidden md:flex gap-4">
-            <Link to="/tracking" className="hover:text-white transition-colors">{t('header.trackOrder')}</Link>
-            <Link to="/support" className="hover:text-white transition-colors">{t('header.support')}</Link>
-            <Link to="/about" className="hover:text-white transition-colors">{t('header.about')}</Link>
+        {/* Top Bar */}
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-slate-300 text-xs py-2">
+          <div className="container mx-auto px-4 flex justify-between items-center">
+            <div className="flex gap-6">
+              <a href="tel:1900123456" className="flex items-center gap-1 hover:text-white transition-colors">
+                <Phone size={12} />
+                <span>{t('shared.hotlineFull')}</span>
+              </a>
+              <a href="https://zalo.me" className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors">
+                <MessageCircle size={12} />
+                <span>{t('shared.chatZalo')}</span>
+              </a>
+            </div>
+            <div className="hidden md:flex gap-4">
+              <Link to="/tracking" className="hover:text-white transition-colors">{t('header.trackOrder')}</Link>
+              <Link to="/support" className="hover:text-white transition-colors">{t('header.support')}</Link>
+              <Link to="/about" className="hover:text-white transition-colors">{t('header.about')}</Link>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Header */}
-      <div className="border-b py-3">
-        <div className="container mx-auto px-4 flex items-center gap-6">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-3xl">🏠</span>
-            <span className="flex flex-col leading-tight">
-              <span className="text-xl font-extrabold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                VNVT
+        {/* Main Header */}
+        <div className="border-b py-3">
+          <div className="container mx-auto px-4 flex items-center gap-6">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-3xl">🏠</span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-xl font-extrabold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                  VNVT
+                </span>
+                <span className="text-xs text-secondary font-medium">Store</span>
               </span>
-              <span className="text-xs text-secondary font-medium">Store</span>
-            </span>
-          </Link>
+            </Link>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-xl mx-8 hidden md:block relative">
-            <form onSubmit={handleSearch} className="relative z-50">
-              <div className="flex items-center bg-tertiary border border-transparent focus-within:border-indigo-500 rounded-full pl-4 pr-1 py-1 transition-all duration-200">
-                <Search size={20} className="text-secondary" />
-                <div className="flex-1 ml-3 mr-2">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setShowSearchResults(true)}
-                    placeholder={t('header.searchPlaceholder')}
-                    className="w-full !bg-transparent text-sm outline-none text-primary placeholder:text-tertiary !border-0 !ring-0 !shadow-none focus:ring-0"
-                  />
-                </div>
-                {searchQuery && (
-                  <button 
-                    type="button" 
-                    onClick={() => setSearchQuery('')}
-                    className="p-1 hover:bg-hover rounded-full mr-2 text-slate-400"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-                <Button type="submit" rounded size="sm" className="px-6 h-9 shrink-0">
-                  {t('common.search')}
-                </Button>
-              </div>
-            </form>
-
-            {/* Live Search Results Popover */}
-            <AnimatePresence>
-              {showSearchResults && debouncedSearch && (
-                <motion.div
-                  ref={searchRef}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-primary rounded-2xl shadow-2xl border border-border overflow-hidden z-[110]"
-                >
-                  <div className="z-[110]">
-                    {/* Search History & Trending (Only when no results or loading) */}
-                    {!debouncedSearch && (
-                      <div className="p-4 space-y-4">
-                        {/* Recent Searches */}
-                        {useRecentStore.getState().searchHistory.length > 0 && (
-                           <div>
-                             <div className="flex justify-between items-center mb-2">
-                               <span className="text-[10px] font-bold text-tertiary uppercase tracking-widest">{t('header.recentSearches', 'Tìm kiếm gần đây')}</span>
-                               <button onClick={() => useRecentStore.getState().clearSearchHistory()} className="text-[10px] text-indigo-500 hover:underline">Xóa</button>
-                             </div>
-                             <div className="flex flex-wrap gap-2">
-                               {useRecentStore.getState().searchHistory.map((q) => (
-                                 <button 
-                                   key={q} 
-                                   type="button"
-                                   onClick={() => setSearchQuery(q)}
-                                   className="px-3 py-1 bg-secondary/5 hover:bg-secondary/10 rounded-full text-xs text-secondary transition-colors"
-                                 >
-                                   {q}
-                                 </button>
-                               ))}
-                             </div>
-                           </div>
-                        )}
-
-                        {/* Trending */}
-                        <div>
-                           <span className="text-[10px] font-bold text-tertiary uppercase tracking-widest block mb-2">{t('header.trending', 'Xu hướng tìm kiếm')}</span>
-                           <div className="grid grid-cols-2 gap-2">
-                             {['iPhone 15 Pro', 'MacBook M3', 'Samsung S24', 'Sony WH-1000XM5'].map((trending) => (
-                               <button 
-                                 key={trending}
-                                 type="button"
-                                 onClick={() => setSearchQuery(trending)}
-                                 className="flex items-center gap-2 p-2 hover:bg-hover rounded-lg text-sm text-secondary transition-colors text-left"
-                               >
-                                 <span className="w-5 h-5 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded text-[10px] font-bold">#</span>
-                                 {trending}
-                               </button>
-                             ))}
-                           </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {debouncedSearch && (
-                      <>
-                        <div className="p-4 border-b border-border flex justify-between items-center">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                            {t('header.searchMatches', 'Kết quả tìm kiếm')}
-                          </span>
-                          {isSearching && <Loader2 size={14} className="animate-spin text-indigo-500" />}
-                        </div>
-
-                        <div className="max-h-[400px] overflow-y-auto py-2">
-                          {searchResults.length > 0 ? (
-                            <>
-                              {searchResults.map((p) => (
-                                <Link
-                                  key={p.code}
-                                  to={`/product/${p.code}`}
-                                  onClick={() => setShowSearchResults(false)}
-                                  className="flex items-center gap-4 px-4 py-3 hover:bg-hover transition-colors group"
-                                >
-                                  <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex-shrink-0">
-                                    <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 transition-colors">
-                                      {p.name}
-                                    </h4>
-                                    <p className="text-xs text-slate-400 truncate">{p.category}</p>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-sm font-bold text-slate-900 dark:text-white">
-                                      {p.price > 0 ? formatCurrency(p.price) : t('product.contact')}
-                                    </div>
-                                    {p.price > 0 && p.originalPrice && p.originalPrice > p.price && (
-                                      <div className="text-[10px] text-slate-400 line-through">
-                                        {formatCurrency(p.originalPrice)}
-                                      </div>
-                                    )}
-                                  </div>
-                                </Link>
-                              ))}
-                              <Link
-                                to={`/search?search=${encodeURIComponent(debouncedSearch)}`}
-                                onClick={() => setShowSearchResults(false)}
-                                className="block text-center py-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border-t border-slate-100 dark:border-slate-700 mt-2"
-                              >
-                                {t('header.viewAllResults', 'Xem tất cả kết quả cho "{{query}}"', { query: debouncedSearch })}
-                              </Link>
-                            </>
-                          ) : !isSearching ? (
-                            <div className="p-8 text-center text-slate-400 text-sm">
-                              {t('header.noResults', 'Không tìm thấy sản phẩm nào')}
-                            </div>
-                          ) : null}
-                        </div>
-                      </>
-                    )}
+            {/* Search Bar */}
+            <div className="flex-1 max-w-xl mx-8 hidden md:block relative">
+              <form onSubmit={handleSearch} className="relative z-50">
+                <div className="flex items-center bg-tertiary border border-transparent focus-within:border-indigo-500 rounded-full pl-4 pr-1 py-1 transition-all duration-200">
+                  <Search size={20} className="text-secondary" />
+                  <div className="flex-1 ml-3 mr-2">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setShowSearchResults(true)}
+                      placeholder={t('header.searchPlaceholder')}
+                      className="w-full bg-transparent text-sm outline-none text-primary placeholder:text-tertiary border-0 ring-0 shadow-none focus:ring-0"
+                    />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1">
-            {/* Language Switcher */}
-            {/* Language Switcher */}
-            <div className="relative" ref={langMenuRef}>
-              <Button
-                variant="ghost"
-                size="sm"
-                data-testid="lang-toggle"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowLangMenu(!showLangMenu);
-                }}
-              >
-                <Globe size={20} />
-                    <span className="text-xs ml-1 uppercase">{i18n.language}</span>
-                </Button>
-              
-              {showLangMenu && (
-                <div
-                  ref={langDropdownRef}
-                  className="absolute top-full right-0 mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-1 min-w-[140px] z-[9999]"
-                >
-                  <button
-                    onClick={() => changeLanguage('vi')}
-                    className={cn(
-                      'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                      (i18n.language || 'vi').startsWith('vi')
-                        ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                        : 'hover:bg-hover text-gray-700 dark:text-gray-200'
-                    )}
-                  >
-                    <span className="text-xs font-semibold uppercase text-tertiary">VN</span> Tiếng Việt
-                  </button>
-                  <button
-                    onClick={() => changeLanguage('en')}
-                    className={cn(
-                      'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors',
-                      (i18n.language || 'en').startsWith('en')
-                        ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                        : 'hover:bg-hover text-gray-700 dark:text-gray-200'
-                    )}
-                  >
-                    <span className="text-xs font-semibold uppercase text-tertiary">US</span> English
-                  </button>
+                  {searchQuery && (
+                    <button 
+                      type="button" 
+                      onClick={() => setSearchQuery('')}
+                      className="p-1 hover:bg-hover rounded-full mr-2 text-slate-400"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                  <Button type="submit" rounded size="sm" className="px-6 h-9 shrink-0">
+                    {t('common.search')}
+                  </Button>
                 </div>
-              )}
+              </form>
+
+              {/* Live Search Results Popover */}
+              <AnimatePresence>
+                {showSearchResults && debouncedSearch && (
+                  <motion.div
+                    ref={searchRef}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-primary rounded-2xl shadow-2xl border border-border overflow-hidden z-[110]"
+                  >
+                    <div className="p-4 border-b border-border flex justify-between items-center">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        {t('header.searchMatches', 'Kết quả tìm kiếm')}
+                      </span>
+                      {isSearching && <Loader2 size={14} className="animate-spin text-indigo-500" />}
+                    </div>
+
+                    <div className="max-h-[400px] overflow-y-auto py-2">
+                      {searchResults.length > 0 ? (
+                        <>
+                          {searchResults.map((p) => (
+                            <Link
+                              key={p.code}
+                              to={`/product/${p.code}`}
+                              onClick={() => setShowSearchResults(false)}
+                              className="flex items-center gap-4 px-4 py-3 hover:bg-hover transition-colors group"
+                            >
+                              <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex-shrink-0">
+                                <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-600 transition-colors">
+                                  {p.name}
+                                </h4>
+                                <p className="text-xs text-slate-400 truncate">{p.category}</p>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                                  {p.price > 0 ? formatCurrency(p.price) : t('product.contact')}
+                                </div>
+                              </div>
+                            </Link>
+                          ))}
+                          <Link
+                            to={`/search?search=${encodeURIComponent(debouncedSearch)}`}
+                            onClick={() => setShowSearchResults(false)}
+                            className="block text-center py-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border-t border-slate-100 dark:border-slate-700 mt-2"
+                          >
+                            {t('header.viewAllResults', 'Xem tất cả kết quả cho "{{query}}"', { query: debouncedSearch })}
+                          </Link>
+                        </>
+                      ) : !isSearching ? (
+                        <div className="p-8 text-center text-slate-400 text-sm">
+                          {t('header.noResults', 'Không tìm thấy sản phẩm nào')}
+                        </div>
+                      ) : null}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Notifications - Open for all authenticated users */}
-            {isAuthenticated && (
+            {/* Actions */}
+            <div className="flex items-center gap-1">
+              <LanguageSwitcher variant="ghost" align="right" className="mr-1" />
+
+              {isAuthenticated && (
                 <NotificationDropdown 
-                    isConnected={isConnected}
-                    onNotificationClick={() => navigate('/account/notifications')}
+                  isConnected={isConnected}
+                  onNotificationClick={() => navigate('/account/notifications')}
                 />
-            )}
-            
-            {/* Theme Toggle */}
-            <Button variant="ghost" size="sm" onClick={toggleTheme} className="transition-all duration-300">
-              {theme === 'light' ? (
-                <Moon size={20} className="hover:text-indigo-600" />
-              ) : theme === 'dark' ? (
-                <Sun size={20} className="hover:text-amber-500" />
+              )}
+              
+              <Button variant="ghost" size="sm" onClick={toggleTheme} className="transition-all duration-300">
+                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              </Button>
+
+              <Link to="/compare" className="hidden sm:flex">
+                <Button variant="ghost" size="sm" className="relative">
+                  <Scale size={20} />
+                  {compareCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {compareCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              <Link to="/wishlist" className="hidden sm:flex">
+                <Button variant="ghost" size="sm" className="relative">
+                  <Heart size={20} />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              <Button variant="ghost" size="sm" className="relative" onClick={() => setCartOpen(true)}>
+                <ShoppingCart size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+
+              {isAuthenticated ? (
+                <UserMenu 
+                  className="hidden lg:block z-20"
+                  onLogout={handleLogoutClick}
+                  items={[
+                    ...(user?.role === 'Admin' ? [{
+                      label: t('common.adminDashboard'),
+                      icon: LayoutDashboard,
+                      link: '/admin',
+                      className: 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                    }] : []),
+                    { label: t('common.account.title'), icon: User, link: '/account' },
+                    { label: t('common.account.orders'), icon: Package, link: '/account/orders' }
+                  ]}
+                />
               ) : (
-                <div className="relative">
-                  <span className="absolute -inset-1 blur-sm bg-cyan-400 animate-pulse rounded-full opacity-50"></span>
-                  <Package size={20} className="relative text-cyan-400" />
+                <div className="hidden lg:flex items-center gap-2">
+                  <Link to="/login">
+                    <Button variant="ghost" size="sm" className="font-semibold">
+                      {t('common.login')}
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button size="sm" className="px-6 font-semibold">
+                      {t('common.register')}
+                    </Button>
+                  </Link>
                 </div>
               )}
-            </Button>
 
-            {/* Compare */}
-            <Link to="/compare" className="hidden sm:flex">
-              <Button variant="ghost" size="sm" className="relative">
-                <Scale size={20} />
-                {compareCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {compareCount}
-                  </span>
-                )}
+              <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setMobileMenuOpen(true)}>
+                <Menu size={24} />
               </Button>
-            </Link>
-
-            {/* Wishlist */}
-            <Link to="/wishlist" className="hidden sm:flex">
-              <Button variant="ghost" size="sm" className="relative">
-                <Heart size={20} />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {wishlistCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
-
-            {/* Cart */}
-            <Button variant="ghost" size="sm" className="relative" onClick={() => setCartOpen(true)}>
-              <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
-
-            {/* User Menu / Auth Buttons */}
-            {isAuthenticated ? (
-              <UserMenu 
-                className="hidden lg:block z-20"
-                onLogout={handleLogoutClick}
-                items={[
-                  ...(user?.role === 'Admin' ? [{
-                    label: t('common.adminDashboard') || 'Admin Dashboard',
-                    icon: LayoutDashboard,
-                    link: '/admin',
-                    className: 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
-                  }] : []),
-                  {
-                    label: t('common.account.title'),
-                    icon: User,
-                    link: '/account'
-                  },
-                  {
-                    label: t('common.account.orders'),
-                    icon: Package,
-                    link: '/account/orders'
-                  }
-                ]}
-              />
-            ) : (
-              <div className="hidden lg:flex items-center gap-2">
-                <Link to="/login">
-                  <Button variant="ghost" size="sm" className="font-semibold">
-                    {t('common.login')}
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button size="sm" className="px-6 font-semibold shadow-lg shadow-indigo-200 dark:shadow-none">
-                    {t('common.register')}
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile Menu Button */}
-            <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setMobileMenuOpen(true)}>
-              <Menu size={24} />
-            </Button>
+            </div>
           </div>
         </div>
-      </div>
-
       </header>
+
       {/* Navigation */}
       <nav className="hidden lg:block border-b bg-primary transition-colors duration-200 sticky top-0 z-[100] shadow-md">
         <div className="container mx-auto px-4 flex items-center gap-6">
-          {/* Categories Dropdown */}
           <div className="relative" ref={categoriesRef}>
             <Button
               onClick={() => setShowCategories(!showCategories)}
@@ -513,39 +353,39 @@ export const Header = memo(() => {
               {t('header.categoryMenu')}
             </Button>
             {showCategories && (
-              <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overflow-y-auto overscroll-contain z-[999] grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="absolute top-full left-0 bg-primary rounded-b-xl shadow-xl border-t-0 p-4 w-[800px] max-w-[calc(100vw-2rem)] max-h-[75vh] overflow-y-auto z-[999] grid grid-cols-3 gap-6">
                 {isLoadingCategories ? (
-                   <div className="col-span-3 text-center py-8 text-secondary">Loading categories...</div>
+                   <div className="col-span-3 text-center py-8 text-secondary text-sm">Loading categories...</div>
                 ) : (
                    categories.filter(c => !c.parentCode).map((parent) => (
-                  <div key={parent.code} className="space-y-3">
-                    <Link
-                      to={`/products?category=${parent.code}`}
-                      onClick={() => setShowCategories(false)}
-                      className="font-bold text-base hover:text-indigo-600 block"
-                    >
-                      {parent.name}
-                    </Link>
-                    <ul className="space-y-2">
-                      {categories.filter(c => c.parentCode === parent.code).map((child) => (
-                        <li key={child.code}>
-                          <Link
-                            to={`/products?category=${child.code}`}
-                            onClick={() => setShowCategories(false)}
-                            className="text-sm text-secondary hover:text-primary block transition-colors"
-                          >
-                            {child.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )))}
+                    <div key={parent.code} className="space-y-3">
+                      <Link
+                        to={`/products?category=${parent.code}`}
+                        onClick={() => setShowCategories(false)}
+                        className="font-bold text-base hover:text-indigo-600 block"
+                      >
+                        {parent.name}
+                      </Link>
+                      <ul className="space-y-2">
+                        {categories.filter(c => c.parentCode === parent.code).map((child) => (
+                          <li key={child.code}>
+                            <Link
+                              to={`/products?category=${child.code}`}
+                              onClick={() => setShowCategories(false)}
+                              className="text-sm text-secondary hover:text-primary block transition-colors"
+                            >
+                              {child.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
 
-          {/* Nav Links */}
           <div className="flex items-center gap-6 flex-1">
             {[
               { path: '/', label: 'common.home' },
@@ -559,8 +399,7 @@ export const Header = memo(() => {
                 to={link.path}
                 className={cn(
                   'py-3 font-medium transition-colors',
-                  (location.pathname === link.path ||
-                    (link.path !== '/' && location.pathname.startsWith(link.path)))
+                  (location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path)))
                     ? 'text-primary'
                     : 'text-secondary hover:text-primary'
                 )}
@@ -568,12 +407,6 @@ export const Header = memo(() => {
                 {t(link.label)}
               </Link>
             ))}
-          </div>
-
-          {/* Promo */}
-          <div className="flex items-center gap-2 text-sm">
-            <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">🔥 HOT</span>
-            <span className="text-secondary">{t('header.freeShipping')}</span>
           </div>
         </div>
       </nav>
@@ -593,7 +426,6 @@ export const Header = memo(() => {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'tween' }}
               className="fixed top-0 right-0 bottom-0 w-80 max-w-full bg-primary z-[1002] overflow-y-auto"
             >
               <div className="flex items-center justify-between p-4 border-b">
@@ -602,79 +434,44 @@ export const Header = memo(() => {
                   <X size={24} />
                 </Button>
               </div>
-
               <div className="p-4 space-y-4">
-                {/* Mobile Search */}
                 <form onSubmit={handleSearch} className="flex gap-2">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('header.searchPlaceholder')}
-                    className="flex-1 px-4 py-2 border rounded-lg text-sm"
+                    className="flex-1 px-4 py-2 border rounded-lg text-sm bg-transparent"
                   />
-                  <Button type="submit" size="sm">
-                    <Search size={18} />
-                  </Button>
+                  <Button type="submit" size="sm"><Search size={18} /></Button>
                 </form>
-
-                {/* Mobile Nav */}
                 <nav className="space-y-1">
                   {[
                     { path: '/', label: 'common.home' },
                     { path: '/products', label: 'common.products' },
                     { path: '/promotions', label: 'header.promotions' },
                     { path: '/wishlist', label: 'common.wishlist' },
-                    { path: '/compare', label: 'common.compare' },
-                     { path: '/account', label: 'common.account.title' },
+                    { path: '/account', label: 'common.account.title' },
                   ].map((link) => (
                     <Link
                       key={link.path}
                       to={link.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block px-4 py-3 font-medium hover:bg-hover rounded-lg transition-colors"
+                      className="block px-4 py-3 font-medium hover:bg-hover rounded-lg"
                     >
                       {t(link.label)}
                     </Link>
                   ))}
                 </nav>
-
-                {/* Categories */}
-                <div>
-                  <h3 className="text-xs font-semibold text-tertiary uppercase mb-2 px-4">
-                    {t('common.categories')}
-                  </h3>
-                  {categories.map((category) => (
-                    <Link
-                      key={category.code}
-                      to={`/products?category=${category.code}`}
-                      className="block px-4 py-2 hover:bg-hover transition-colors rounded-lg"
-                      onClick={() => setShowCategories(false)}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Auth buttons */}
                 <div className="flex gap-2 pt-4 border-t">
                   {isAuthenticated ? (
-                    <Button 
-                      fullWidth 
-                      variant="outline" 
-                      className="text-red-500 border-red-200 hover:bg-red-50"
-                      onClick={handleLogoutClick}
-                    >
+                    <Button fullWidth variant="outline" className="text-red-500 hover:bg-red-50" onClick={handleLogoutClick}>
                       {t('common.logout')}
                     </Button>
                   ) : (
                     <>
-                      <Button fullWidth onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}>
-                        {t('common.login')}
-                      </Button>
-                      <Button fullWidth variant="outline" onClick={() => { setMobileMenuOpen(false); navigate('/register'); }}>
-                        {t('common.register')}
-                      </Button>
+                      <Button fullWidth onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}>{t('common.login')}</Button>
+                      <Button fullWidth variant="outline" onClick={() => { setMobileMenuOpen(false); navigate('/register'); }}>{t('common.register')}</Button>
                     </>
                   )}
                 </div>
@@ -689,7 +486,7 @@ export const Header = memo(() => {
         onClose={() => setShowLogoutConfirm(false)}
         onConfirm={confirmLogout}
         title={t('common.logout')}
-        message={t('common.messages.logoutConfirmMessage') || 'Are you sure you want to log out?'}
+        message={t('common.messages.logoutConfirmMessage')}
         confirmText={t('common.logout')}
         cancelText={t('common.cancel')}
       />
@@ -698,5 +495,4 @@ export const Header = memo(() => {
 });
 
 Header.displayName = 'Header';
-
 export default Header;

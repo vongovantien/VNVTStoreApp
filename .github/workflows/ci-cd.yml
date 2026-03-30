@@ -2,9 +2,9 @@ name: VNVTStore CI/CD
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "dev" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "dev" ]
   workflow_dispatch:
 
 jobs:

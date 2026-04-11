@@ -247,6 +247,12 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(d => d.ProductCodeNavigation).WithMany(p => p.TblCartItems)
                 .HasForeignKey(d => d.ProductCode)
                 .HasConstraintName("TblCartItem_ProductCode_fkey");
+
+            entity.HasIndex(e => new { e.CartCode, e.ProductCode, e.Size, e.Color }, "idx_cartitem_unique")
+                .IsUnique();
+            
+            // Use PostgreSQL system column xmin for optimistic concurrency
+            entity.UseXminAsConcurrencyToken();
         });
 
         modelBuilder.Entity<TblCategory>(entity =>

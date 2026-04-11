@@ -32,144 +32,135 @@ public class FileService : IFileService
         string folderName = "products",
         CancellationToken cancellationToken = default)
     {
-        if (imageStrings == null || !imageStrings.Any())
-            return Result.Success(Enumerable.Empty<string>());
-
-        var base64Images = new List<(string Content, string FileName)>();
-        var existingUrls = new List<string>();
-
-        foreach (var imgStr in imageStrings)
-        {
-            if (IsBase64String(imgStr))
-            {
-                string extension = ".png";
-                if (imgStr.StartsWith("data:image/"))
-                {
-                    try
-                    {
-                        var mime = imgStr.Substring(5, imgStr.IndexOf(";") - 5);
-                        extension = "." + mime.Split('/')[1];
-                    }
-                    catch { }
-                }
-                base64Images.Add((imgStr, $"{masterType.ToLower()}_{Guid.NewGuid()}{extension}"));
-            }
-            else
-            {
-                existingUrls.Add(imgStr);
-            }
-        }
-
-        var finalUrls = new List<string>(existingUrls);
-
-        if (base64Images.Any())
-        {
-            var uploadResult = await _imageUploadService.UploadBase64ImagesAsync(base64Images, folderName);
-            if (uploadResult.Value != null)
-            {
-                finalUrls.AddRange(uploadResult.Value.Select(f => f.Url));
-            }
-        }
-
-        // Link to Master record
-        var uniqueUrls = finalUrls.Distinct().ToList();
-        var relativeUrls = uniqueUrls.SelectMany(u =>
-        {
-            var list = new List<string> { u };
-            if (Uri.TryCreate(u, UriKind.Absolute, out var uri))
-                list.Add(uri.AbsolutePath);
-            return list;
-        }).ToList();
-
-        var filesToLink = await _context.TblFiles
-            .Where(f => relativeUrls.Contains(f.Path))
-            .ToListAsync(cancellationToken);
-            
-        var uniqueUrlsFoundInDb = filesToLink.Select(f => f.Path).ToHashSet();
-
-        foreach (var file in filesToLink)
-        {
-            file.MasterCode = masterCode;
-            file.MasterType = masterType;
-        }
-
-        // Identify "External" URLs that might have been saved to DB but not uploaded yet (legacy data or partial state)
-        var externalUrlsInDb = filesToLink
-            .Where(f => f.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) 
-                        && !f.Path.Contains("res.cloudinary.com") 
-                        && !f.Path.Contains("/uploads/"))
-            .Select(f => f.Path)
-            .ToList();
-
-        // Create TblFile for URLs that do not exist in DB yet
-        var missingUrls = uniqueUrls.Except(uniqueUrlsFoundInDb).ToList();
+        _logger.LogInformation("[SaveAndLinkImagesAsync] Starting for MasterCode: {MasterCode}, MasterType: {MasterType}", masterCode, masterType);
         
-        // Also process "External" URLs found in DB to migrate them
-        var urlsToProcess = missingUrls.Union(externalUrlsInDb).Distinct().ToList();
-
-        if (urlsToProcess.Any())
+        if (imageStrings == null || !imageStrings.Any())
         {
-            _logger.LogInformation("[SaveAndLinkImagesAsync] Processing {Count} URLs to upload: {Urls}", urlsToProcess.Count, string.Join(", ", urlsToProcess));
-            
-            foreach (var url in urlsToProcess)
-            {
-                _logger.LogDebug("[SaveAndLinkImagesAsync] Attempting to upload URL: {Url}", url);
-                
-                // Upload External URL to Cloudinary
-                var fileName = System.IO.Path.GetFileName(url);
-                if (string.IsNullOrEmpty(fileName) || fileName.Length < 3)
-                    fileName = $"imported_{Guid.NewGuid()}";
-                
-                _logger.LogDebug("[SaveAndLinkImagesAsync] Using filename: {FileName}, folder: {FolderName}", fileName, folderName);
-                    
-                var uploadResult = await _imageUploadService.UploadUrlAsync(url, fileName, folderName);
-                
-                if (uploadResult.IsSuccess)
-                {
-                    var newFileCode = uploadResult.Value.Code;
-                    _logger.LogInformation("[SaveAndLinkImagesAsync] Upload successful! Code: {Code}, URL: {Url}", newFileCode, uploadResult.Value.Url);
-                    
-                    // Case 1: Newly created file (from missingUrls)
-                    var fileEntity = await _context.TblFiles.FirstOrDefaultAsync(f => f.Code == newFileCode, cancellationToken);
-                    _logger.LogDebug("[SaveAndLinkImagesAsync] Found entity by code {Code}: {Found}", newFileCode, fileEntity != null);
-                    
-                    if (fileEntity != null)
-                    {
-                        fileEntity.MasterCode = masterCode;
-                        fileEntity.MasterType = masterType;
-                        _logger.LogInformation("[SaveAndLinkImagesAsync] Linked file {Code} to {MasterType}:{MasterCode}", newFileCode, masterType, masterCode);
-                    }
+            _logger.LogInformation("[SaveAndLinkImagesAsync] No image strings provided.");
+            return Result.Success(Enumerable.Empty<string>());
+        }
 
-                    // Case 2: Existing file in DB that was replaced (from externalUrlsInDb)
-                    // If we uploaded an existing external URL, UploadUrlAsync created a NEW TblFile.
-                    // We should probably DELETE the old one to avoid duplicates?
-                    // The old one matches `url`.
-                    if (externalUrlsInDb.Contains(url))
+        try
+        {
+            var base64Images = new List<(string Content, string FileName)>();
+            var existingUrls = new List<string>();
+
+            foreach (var imgStr in imageStrings)
+            {
+                if (IsBase64String(imgStr))
+                {
+                    string extension = ".png";
+                    if (imgStr.StartsWith("data:image/"))
                     {
-                        var oldEntities = await _context.TblFiles
-                            .Where(f => f.Path == url && f.MasterCode == masterCode)
-                            .ToListAsync(cancellationToken);
-                        _logger.LogDebug("[SaveAndLinkImagesAsync] Removing {Count} old external URL entries", oldEntities.Count);
-                        _context.TblFiles.RemoveRange(oldEntities);
+                        try
+                        {
+                            var mime = imgStr.Substring(5, imgStr.IndexOf(";") - 5);
+                            extension = "." + mime.Split('/')[1];
+                        }
+                        catch { }
                     }
-                    
-                    uniqueUrls.Remove(url);
-                    uniqueUrls.Add(uploadResult.Value.Url);
+                    base64Images.Add((imgStr, $"{masterType.ToLower()}_{Guid.NewGuid()}{extension}"));
                 }
                 else
                 {
-                    _logger.LogWarning("[SaveAndLinkImagesAsync] Error: Upload FAILED for {Url}. Keeping original URL in list", url);
+                    existingUrls.Add(imgStr);
                 }
             }
+
+            _logger.LogInformation("[SaveAndLinkImagesAsync] Identified {Base64Count} base64 images and {UrlCount} existing URLs.", base64Images.Count, existingUrls.Count);
+
+            var finalUrls = new List<string>(existingUrls);
+
+            if (base64Images.Any())
+            {
+                var uploadResult = await _imageUploadService.UploadBase64ImagesAsync(base64Images, folderName);
+                if (uploadResult.Value != null)
+                {
+                    var newUrls = uploadResult.Value.Select(f => f.Url).ToList();
+                    _logger.LogInformation("[SaveAndLinkImagesAsync] Successfully uploaded base64 images. New URLs: {NewUrls}", string.Join(", ", newUrls));
+                    finalUrls.AddRange(newUrls);
+                }
+                else if (uploadResult.IsFailure)
+                {
+                    _logger.LogError("[SaveAndLinkImagesAsync] Failed to upload base64 images: {Error}", uploadResult.Error);
+                    return Result.Failure<IEnumerable<string>>(uploadResult.Error);
+                }
+            }
+
+            // Link to Master record
+            var uniqueUrls = finalUrls.Distinct().ToList();
+            _logger.LogDebug("[SaveAndLinkImagesAsync] Unique URLs to link: {Urls}", string.Join(", ", uniqueUrls));
+
+            // Expand uniqueUrls to include variants of the URL that might be stored in DB (absolute vs relative)
+            var searchPaths = uniqueUrls.SelectMany(u =>
+            {
+                var list = new List<string> { u };
+                if (Uri.TryCreate(u, UriKind.Absolute, out var uri))
+                {
+                    list.Add(uri.AbsolutePath);
+                    list.Add(uri.AbsoluteUri);
+                }
+                return list;
+            }).Distinct().ToList();
+
+            _logger.LogDebug("[SaveAndLinkImagesAsync] Searching for TblFiles with paths: {Paths}", string.Join(", ", searchPaths));
+
+            var filesToLink = await _context.TblFiles
+                .Where(f => searchPaths.Contains(f.Path))
+                .ToListAsync(cancellationToken);
+                
+            _logger.LogInformation("[SaveAndLinkImagesAsync] Found {Count} TblFiles in DB to link.", filesToLink.Count);
+
+            foreach (var file in filesToLink)
+            {
+                _logger.LogDebug("[SaveAndLinkImagesAsync] Linking file {Code} (Path: {Path}) to {MasterCode}", file.Code, file.Path, masterCode);
+                file.MasterCode = masterCode;
+                file.MasterType = masterType;
+            }
+
+            // Identify URLs that don't have a record in DB yet (e.g. external URLs)
+            var urlsInDb = filesToLink.Select(f => f.Path).ToHashSet();
+            var missingUrls = uniqueUrls.Where(u => !urlsInDb.Contains(u)).ToList();
+
+            if (missingUrls.Any())
+            {
+                _logger.LogInformation("[SaveAndLinkImagesAsync] Processing {Count} missing/external URLs for upload: {Urls}", missingUrls.Count, string.Join(", ", missingUrls));
+                
+                foreach (var url in missingUrls)
+                {
+                    var fileName = System.IO.Path.GetFileName(url);
+                    if (string.IsNullOrEmpty(fileName) || fileName.Length < 3)
+                        fileName = $"imported_{Guid.NewGuid()}";
+                        
+                    var uploadResult = await _imageUploadService.UploadUrlAsync(url, fileName, folderName);
+                    
+                    if (uploadResult.IsSuccess)
+                    {
+                        var newFileEntity = await _context.TblFiles.FirstOrDefaultAsync(f => f.Code == uploadResult.Value.Code, cancellationToken);
+                        if (newFileEntity != null)
+                        {
+                            newFileEntity.MasterCode = masterCode;
+                            newFileEntity.MasterType = masterType;
+                            _logger.LogInformation("[SaveAndLinkImagesAsync] Uploaded and linked external URL: {Url}", uploadResult.Value.Url);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("[SaveAndLinkImagesAsync] Failed to upload/link external URL: {Url}. error: {Error}", url, uploadResult.Error);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("[SaveAndLinkImagesAsync] Successfully completed and saved changes.");
+
+            return Result.Success((IEnumerable<string>)uniqueUrls);
         }
-        else
+        catch (Exception ex)
         {
-            _logger.LogDebug("[SaveAndLinkImagesAsync] No URLs to process. uniqueUrls: {UniqueUrls}, uniqueUrlsFoundInDb: {FoundUrls}", string.Join(", ", uniqueUrls), string.Join(", ", uniqueUrlsFoundInDb));
+            _logger.LogError(ex, "[SaveAndLinkImagesAsync] Unexpected error during image processing for MasterCode: {MasterCode}", masterCode);
+            return Result.Failure<IEnumerable<string>>(Error.Validation("An unexpected error occurred while processing images."));
         }
-
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return Result.Success((IEnumerable<string>)uniqueUrls);
     }
 
     public async Task<Result> SyncProductImagesAsync(

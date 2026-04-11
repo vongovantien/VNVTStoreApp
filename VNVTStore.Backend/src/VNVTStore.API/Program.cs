@@ -2,7 +2,7 @@ using VNVTStore.API.Extensions;
 using VNVTStore.API.Middlewares;
 using VNVTStore.Application;
 using VNVTStore.Infrastructure;
-using Scalar.AspNetCore;
+// using Scalar.AspNetCore;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using VNVTStore.Application.Seeding;
@@ -112,12 +112,14 @@ try
     {
         options.RouteTemplate = "openapi/{documentName}.json";
     });
+/*
     app.MapScalarApiReference(options =>
     {
         options.WithTitle("VNVTStore API")
                .WithTheme(Scalar.AspNetCore.ScalarTheme.DeepSpace)
                .WithDefaultHttpClient(Scalar.AspNetCore.ScalarTarget.CSharp, Scalar.AspNetCore.ScalarClient.HttpClient);
     });
+    */
 
     if (app.Environment.IsDevelopment())
     {

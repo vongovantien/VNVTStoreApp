@@ -33,9 +33,15 @@ public class CloudinaryImageUploadService : IImageUploadService
         }
         else
         {
-            var cloudName = await _secretConfig.GetSecretAsync("CLOUDINARY_CLOUD_NAME") ?? _configuration["Cloudinary:CloudName"];
-            var apiKey = await _secretConfig.GetSecretAsync("CLOUDINARY_API_KEY") ?? _configuration["Cloudinary:ApiKey"];
-            var apiSecret = await _secretConfig.GetSecretAsync("CLOUDINARY_API_SECRET") ?? _configuration["Cloudinary:ApiSecret"];
+            var cloudName = await _secretConfig.GetSecretAsync("CLOUDINARY_CLOUD_NAME");
+            if (string.IsNullOrEmpty(cloudName)) cloudName = _configuration["Cloudinary:CloudName"];
+
+            var apiKey = await _secretConfig.GetSecretAsync("CLOUDINARY_API_KEY");
+            if (string.IsNullOrEmpty(apiKey)) apiKey = _configuration["Cloudinary:ApiKey"];
+
+            var apiSecret = await _secretConfig.GetSecretAsync("CLOUDINARY_API_SECRET");
+            if (string.IsNullOrEmpty(apiSecret)) apiSecret = _configuration["Cloudinary:ApiSecret"];
+
             var account = new Account(cloudName, apiKey, apiSecret);
             _cloudinary = new Cloudinary(account);
         }
@@ -246,57 +252,60 @@ public class CloudinaryImageUploadService : IImageUploadService
     public async Task<Result<IEnumerable<FileDto>>> UploadBase64ImagesAsync(IEnumerable<(string Base64Content, string FileName)> images, string folder = "products")
     {
         await EnsureCloudinaryInitializedAsync();
-        // 1. Sequential Upload to Cloudinary (SAFE)
+        
         var uploadedFiles = new List<FileDto>();
         var errors = new List<string>();
 
-        foreach (var image in images)
-        {
-            try 
-            {
-                 var uploadParams = new ImageUploadParams
-                {
-                    File = new FileDescription(image.Base64Content), 
-                    Folder = folder,
-                    PublicId = Path.GetFileNameWithoutExtension(image.FileName) 
-                };
-
-                // Sequential await to avoid overwhelming network or hitting rate limits aggressively
-                var uploadResult = await _cloudinary!.UploadAsync(uploadParams);
-
-                if (uploadResult.Error != null)
-                {
-                    errors.Add($"Failed to upload {image.FileName}: {uploadResult.Error.Message}");
-                    continue;
-                }
-
-                var fileDto = new FileDto
-                {
-                    Code = Guid.NewGuid().ToString(),
-                    FileName = image.FileName,
-                    OriginalName = image.FileName,
-                    Extension = Path.GetExtension(image.FileName),
-                    MimeType = "image/" + uploadResult.Format,
-                    Size = uploadResult.Bytes,
-                    Path = uploadResult.SecureUrl.AbsoluteUri,
-                    Url = uploadResult.SecureUrl.AbsoluteUri
-                };
-                uploadedFiles.Add(fileDto);
-            }
-            catch (Exception ex)
-            {
-                errors.Add($"Exception uploading {image.FileName}: {ex.Message}");
-            }
-        }
-
-        if (!uploadedFiles.Any() && errors.Any())
-        {
-            return Result.Failure<IEnumerable<FileDto>>(VNVTStore.Application.Common.Error.Validation($"All uploads failed. Errors: {string.Join("; ", errors)}"));
-        }
-
-        // 2. Batch Insert to Database (FAST & SAFE)
         try
         {
+            // 1. Sequential Upload to Cloudinary
+            foreach (var image in images)
+            {
+                try 
+                {
+                     var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(image.Base64Content), 
+                        Folder = folder,
+                        PublicId = Path.GetFileNameWithoutExtension(image.FileName),
+                        Transformation = new Transformation().Quality("auto").FetchFormat("auto")
+                    };
+
+                    var uploadResult = await _cloudinary!.UploadAsync(uploadParams);
+
+                    if (uploadResult.Error != null)
+                    {
+                        var errMsg = $"Cloudinary error for {image.FileName}: {uploadResult.Error.Message}";
+                        // We use a internal logger if available, but for now just add to errors
+                        errors.Add(errMsg);
+                        continue;
+                    }
+
+                    var fileDto = new FileDto
+                    {
+                        Code = Guid.NewGuid().ToString(),
+                        FileName = image.FileName,
+                        OriginalName = image.FileName,
+                        Extension = Path.GetExtension(image.FileName),
+                        MimeType = "image/" + uploadResult.Format,
+                        Size = uploadResult.Bytes,
+                        Path = uploadResult.SecureUrl.AbsoluteUri,
+                        Url = uploadResult.SecureUrl.AbsoluteUri
+                    };
+                    uploadedFiles.Add(fileDto);
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Exception uploading {image.FileName} to Cloudinary: {ex.Message}");
+                }
+            }
+
+            if (!uploadedFiles.Any() && errors.Any())
+            {
+                return Result.Failure<IEnumerable<FileDto>>(VNVTStore.Application.Common.Error.Validation($"All uploads failed. Errors: {string.Join("; ", errors)}"));
+            }
+
+            // 2. Batch Insert to Database
             var entities = new List<TblFile>();
             foreach (var dto in uploadedFiles)
             {
@@ -308,16 +317,13 @@ public class CloudinaryImageUploadService : IImageUploadService
                     dto.Size,
                     dto.Url
                 );
-                // Ensure unique codes if generating manually based on ticks
-                // Adding a small delay or random suffix might be needed if tight loop
-                // Or just use Guid for Code if schema allows, but schema seems to use FIL+Ticks
-                // We'll trust new Ticks will change, or use a counter.
                 
-                // Better: Use a counter offset for ticks to ensure uniqueness in this batch
                 var tickOffset = uploadedFiles.IndexOf(dto);
                 entity.Code = $"FIL{DateTime.Now.Ticks + tickOffset}";
                 
                 entities.Add(entity);
+                // Update DTO code to match entity code for potential retrieval
+                dto.Code = entity.Code;
             }
 
             if (entities.Any())
@@ -330,9 +336,7 @@ public class CloudinaryImageUploadService : IImageUploadService
         }
         catch (Exception ex)
         {
-             // If DB save fails, we ideally should rollback Cloudinary uploads (compensation transaction)
-             // For now, return failure.
-             return Result.Failure<IEnumerable<FileDto>>(VNVTStore.Application.Common.Error.Validation($"Database save failed: {ex.Message}"));
+             return Result.Failure<IEnumerable<FileDto>>(VNVTStore.Application.Common.Error.Validation($"Critical failure in UploadBase64ImagesAsync: {ex.Message}"));
         }
     }
 

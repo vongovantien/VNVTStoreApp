@@ -33,10 +33,9 @@ public class SuppliersController : BaseApiController<TblSupplier, SupplierDto, C
 
     [HttpGet("template")]
     [AllowAnonymous]
-    public IActionResult GetTemplate()
+    public override async Task<IActionResult> GetTemplate()
     {
-        var csv = "Code,Name,Email,Phone,Address,TaxCode,ContactPerson,IsActive\nSUP001,Sample Supplier,supplier@example.com,0901234567,123 Street,123456789,John Doe,true";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-        return File(bytes, "text/csv", "suppliers_template.csv");
+        var bytes = await Task.Run(() => VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.SupplierImportDto>());
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "suppliers_template.xlsx");
     }
 }

@@ -23,7 +23,7 @@ public class BrandsController : BaseApiController<TblBrand, BrandDto, CreateBran
     [HttpPost("import")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Import(IFormFile file)
+    public override async Task<IActionResult> Import(IFormFile file)
     {
         if (file == null || file.Length == 0) return BadRequest("File is empty");
         using var memoryStream = new MemoryStream();
@@ -36,9 +36,9 @@ public class BrandsController : BaseApiController<TblBrand, BrandDto, CreateBran
 
     [HttpGet("template")]
     [AllowAnonymous]
-    public IActionResult GetTemplate()
+    public override async Task<IActionResult> GetTemplate()
     {
-        var bytes = VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.BrandImportDto>();
+        var bytes = await Task.Run(() => VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.BrandImportDto>());
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "brands_template.xlsx");
     }
 }

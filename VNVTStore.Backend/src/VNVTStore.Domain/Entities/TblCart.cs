@@ -66,7 +66,6 @@ public partial class TblCart : IEntity
             var newItem = TblCartItem.Create(Code, productCode, quantity, size, color);
             TblCartItems.Add(newItem);
         }
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void UpdateItem(string cartItemCode, int quantity, int maxStock)
@@ -86,7 +85,6 @@ public partial class TblCart : IEntity
             }
             item.UpdateQuantity(quantity);
         }
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void RemoveItem(string cartItemCode)
@@ -95,13 +93,11 @@ public partial class TblCart : IEntity
         if (item != null)
         {
             TblCartItems.Remove(item);
-            UpdatedAt = DateTime.UtcNow;
         }
     }
 
     public void Clear()
     {
         TblCartItems.Clear();
-        UpdatedAt = DateTime.UtcNow;
     }
 }

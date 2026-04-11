@@ -2,6 +2,8 @@ using AutoMapper;
 using MediatR;
 using Moq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Coupons.Commands;
 using VNVTStore.Application.Coupons.Handlers;
@@ -63,7 +65,7 @@ public class CouponHandlersTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("COUPON_GENERATED", result.Value.Code);
+        Assert.Equal("COUPON_GENERATED", result.Value!.Code);
         _couponRepositoryMock.Verify(x => x.AddAsync(It.IsAny<TblCoupon>(), It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -76,14 +78,14 @@ public class CouponHandlersTests
         var command = new CreateCommand<CreateCouponDto, CouponDto>(dto);
 
         _promotionRepositoryMock.Setup(x => x.GetByCodeAsync("INVALID", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TblPromotion)null);
+            .ReturnsAsync((TblPromotion?)null);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal("NotFound", result.Error.Code);
+        Assert.Equal("NotFound", result.Error!.Code);
     }
 
     [Fact]
@@ -101,27 +103,7 @@ public class CouponHandlersTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("COUPON123", result.Value.Code);
+        Assert.Equal("COUPON123", result.Value!.Code);
         _couponServiceMock.Verify(x => x.ValidateCouponAsync("COUPON123", 1000, It.IsAny<CancellationToken>()), Times.Once);
     }
-
-    /*
-    [Fact]
-    public async Task Handle_DeleteCoupon_Success_ShouldReturnSuccess()
-    {
-         // Arrange
-        var command = new DeleteCommand<TblCoupon>("COUPON123");
-        var coupon = new TblCoupon { Code = "COUPON123" };
-
-        _couponRepositoryMock.Setup(x => x.GetByCodeAsync("COUPON123", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(coupon);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        _couponRepositoryMock.Verify(x => x.Delete(coupon), Times.Once);
-    }
-    */
 }

@@ -40,9 +40,9 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
         // Ideally we pass IWebHostEnvironment but for now checking config or defaulting
-        var useMock = configuration.GetValue<bool>("EmailSettings:UseMock", false);
+        var useMockImage = configuration.GetValue<bool>("ImageSettings:UseMock", false);
         
-        if (useMock)
+        if (useMockImage)
         {
             services.AddScoped<IImageUploadService, MockImageUploadService>();
         }

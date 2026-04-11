@@ -7,6 +7,7 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Constants;
 
+using Serilog;
 using VNVTStore.Application.Products.Queries;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
@@ -118,14 +119,27 @@ public class ProductsController : BaseApiController<TblProduct, ProductDto, Crea
         => new GetProductByCodeQuery(code, includeChildren);
 
     [HttpPost]
-    [Authorize(Roles = nameof(UserRole.Admin))]
-    public override Task<IActionResult> Create([FromBody] RequestDTO<CreateProductDto> request) => base.Create(request);
+    [Authorize(Roles = "Admin,admin")] // Be flexible with case
+    public override async Task<IActionResult> Create([FromBody] RequestDTO<CreateProductDto> request)
+    {
+        Console.WriteLine(">>> ProductsController.Create: HIT");
+        Log.Information(">>> [API] Creating Product: {Name}", request.PostObject?.Name);
+        
+        var result = await base.Create(request);
+        
+        if (result is ObjectResult obj && obj.StatusCode != 200 && obj.StatusCode != 201)
+        {
+             Log.Warning(">>> [API] Product Creation FAILED with status {Status}", obj.StatusCode);
+        }
+        
+        return result;
+    }
 
     [HttpPost("import")]
     [EnableRateLimiting("ExpensiveLimit")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Import(IFormFile file)
+    public override async Task<IActionResult> Import(IFormFile file)
     {
         if (file == null || file.Length == 0) return BadRequest("File is empty");
         // Create a memory stream to copy the file content because the request stream might not be seekable or might close
@@ -142,9 +156,9 @@ public class ProductsController : BaseApiController<TblProduct, ProductDto, Crea
 
     [HttpGet("template")]
     [AllowAnonymous]
-    public IActionResult GetTemplate()
+    public override async Task<IActionResult> GetTemplate()
     {
-        var bytes = VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.ProductImportDto>();
+        var bytes = await Task.Run(() => VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.ProductImportDto>());
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "products_template.xlsx");
     }
 

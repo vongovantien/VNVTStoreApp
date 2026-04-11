@@ -128,21 +128,21 @@ export const Header = memo(() => {
           </button>
         </div>
       )}
-      <header className="bg-primary transition-colors duration-200 relative z-[101]">
-        {/* Top Bar */}
-        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-slate-300 text-xs py-2">
-          <div className="container mx-auto px-4 flex justify-between items-center">
-            <div className="flex gap-6">
-              <a href="tel:1900123456" className="flex items-center gap-1 hover:text-white transition-colors">
-                <Phone size={12} />
+      <header className="bg-white dark:bg-slate-950 transition-all duration-300 relative z-[101]">
+        {/* Top Bar - Refined */}
+        <div className="bg-slate-900 dark:bg-black text-slate-400 text-[11px] py-2 border-b border-white/5">
+          <div className="container mx-auto px-4 flex justify-between items-center tracking-wide font-medium">
+            <div className="flex gap-8">
+              <a href="tel:1900123456" className="flex items-center gap-2 hover:text-white transition-all duration-300 group">
+                <Phone size={10} className="group-hover:scale-110 transition-transform" />
                 <span>{t('shared.hotlineFull')}</span>
               </a>
-              <a href="https://zalo.me" className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors">
-                <MessageCircle size={12} />
+              <a href="https://zalo.me" className="flex items-center gap-2 text-sky-400 hover:text-sky-300 transition-all duration-300 group">
+                <MessageCircle size={10} className="group-hover:scale-110 transition-transform" />
                 <span>{t('shared.chatZalo')}</span>
               </a>
             </div>
-            <div className="hidden md:flex gap-4">
+            <div className="hidden md:flex gap-6">
               <Link to="/tracking" className="hover:text-white transition-colors">{t('header.trackOrder')}</Link>
               <Link to="/support" className="hover:text-white transition-colors">{t('header.support')}</Link>
               <Link to="/about" className="hover:text-white transition-colors">{t('header.about')}</Link>
@@ -150,25 +150,29 @@ export const Header = memo(() => {
           </div>
         </div>
 
-        {/* Main Header */}
-        <div className="border-b py-3">
-          <div className="container mx-auto px-4 flex items-center gap-6">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-3xl">🏠</span>
-              <span className="flex flex-col leading-tight">
-                <span className="text-xl font-extrabold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+        {/* Main Header - Clean & Spacious */}
+        <div className="py-5 border-b border-slate-100 dark:border-slate-900">
+          <div className="container mx-auto px-4 flex items-center gap-10">
+            {/* Logo - Elegant */}
+            <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-indigo-500/20 group-hover:rotate-6 transition-transform duration-300">
+                <span>🏠</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
                   VNVT
                 </span>
-                <span className="text-xs text-secondary font-medium">Store</span>
-              </span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold -mt-1">
+                  Premium Store
+                </span>
+              </div>
             </Link>
 
-            {/* Search Bar */}
-            <div className="flex-1 max-w-xl mx-8 hidden md:block relative">
+            {/* Search Bar - Modern & Minimal */}
+            <div className="flex-1 max-w-xl hidden md:block relative group">
               <form onSubmit={handleSearch} className="relative z-50">
-                <div className="flex items-center bg-tertiary border border-transparent focus-within:border-indigo-500 rounded-full pl-4 pr-1 py-1 transition-all duration-200">
-                  <Search size={20} className="text-secondary" />
+                <div className="flex items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 rounded-2xl pl-5 pr-1.5 py-1.5 transition-all duration-300">
+                  <Search size={18} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                   <div className="flex-1 ml-3 mr-2">
                     <input
                       type="text"
@@ -176,19 +180,19 @@ export const Header = memo(() => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setShowSearchResults(true)}
                       placeholder={t('header.searchPlaceholder')}
-                      className="w-full bg-transparent text-sm outline-none text-primary placeholder:text-tertiary border-0 ring-0 shadow-none focus:ring-0"
+                      className="w-full bg-transparent text-[13px] !border-none !ring-0 !outline-none focus:!ring-0 focus:!border-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-none"
                     />
                   </div>
                   {searchQuery && (
                     <button 
                       type="button" 
                       onClick={() => setSearchQuery('')}
-                      className="p-1 hover:bg-hover rounded-full mr-2 text-slate-400"
+                      className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg mr-2 text-slate-400 transition-colors"
                     >
                       <X size={14} />
                     </button>
                   )}
-                  <Button type="submit" rounded size="sm" className="px-6 h-9 shrink-0">
+                  <Button type="submit" size="sm" className="rounded-xl px-5 font-bold shadow-md shadow-indigo-500/20 active:scale-95 transition-transform">
                     {t('common.search')}
                   </Button>
                 </div>
@@ -256,51 +260,57 @@ export const Header = memo(() => {
               </AnimatePresence>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1">
-              <LanguageSwitcher variant="ghost" align="right" className="mr-1" />
-
-              {isAuthenticated && (
-                <NotificationDropdown 
-                  isConnected={isConnected}
-                  onNotificationClick={() => navigate('/account/notifications')}
-                />
-              )}
-              
-              <Button variant="ghost" size="sm" onClick={toggleTheme} className="transition-all duration-300">
-                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-              </Button>
-
-              <Link to="/compare" className="hidden sm:flex">
-                <Button variant="ghost" size="sm" className="relative">
-                  <Scale size={20} />
-                  {compareCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                      {compareCount}
-                    </span>
-                  )}
+            {/* Actions - Refined & Balanced */}
+            <div className="flex items-center gap-3">
+              <div className="hidden lg:flex items-center bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-1 gap-1">
+                <LanguageSwitcher variant="ghost" align="right" className="transition-all hover:bg-white dark:hover:bg-slate-800 rounded-xl" />
+                
+                <Button variant="ghost" size="sm" onClick={toggleTheme} className="w-9 h-9 p-0 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all">
+                  {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
                 </Button>
-              </Link>
+              </div>
 
-              <Link to="/wishlist" className="hidden sm:flex">
-                <Button variant="ghost" size="sm" className="relative">
-                  <Heart size={20} />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-
-              <Button variant="ghost" size="sm" className="relative" onClick={() => setCartOpen(true)}>
-                <ShoppingCart size={20} />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {cartCount}
-                  </span>
+              <div className="flex items-center gap-1.5 ml-2">
+                {isAuthenticated && (
+                  <NotificationDropdown 
+                    isConnected={isConnected}
+                    onNotificationClick={() => navigate('/account/notifications')}
+                  />
                 )}
-              </Button>
+                
+                <Link to="/compare" className="hidden sm:flex group">
+                  <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-xl relative hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+                    <Scale size={20} className="text-slate-600 dark:text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                    {compareCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-950">
+                        {compareCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+
+                <Link to="/wishlist" className="hidden sm:flex group">
+                  <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-xl relative hover:bg-rose-50 dark:hover:bg-rose-900/30">
+                    <Heart size={20} className="text-slate-600 dark:text-slate-300 group-hover:text-rose-500 transition-colors" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-950">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+
+                <Button variant="ghost" size="sm" className="w-10 h-10 p-0 rounded-xl relative hover:bg-amber-50 dark:hover:bg-amber-900/30 group" onClick={() => setCartOpen(true)}>
+                  <ShoppingCart size={20} className="text-slate-600 dark:text-slate-300 group-hover:text-amber-500 transition-colors" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-950">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </div>
+
+              <div className="h-8 w-[1px] bg-slate-100 dark:bg-slate-800 mx-1 hidden lg:block" />
 
               {isAuthenticated ? (
                 <UserMenu 
@@ -318,21 +328,21 @@ export const Header = memo(() => {
                   ]}
                 />
               ) : (
-                <div className="hidden lg:flex items-center gap-2">
+                <div className="hidden lg:flex items-center gap-2 ml-2">
                   <Link to="/login">
-                    <Button variant="ghost" size="sm" className="font-semibold">
+                    <Button variant="ghost" size="sm" className="px-5 font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600">
                       {t('common.login')}
                     </Button>
                   </Link>
                   <Link to="/register">
-                    <Button size="sm" className="px-6 font-semibold">
+                    <Button size="sm" className="px-6 font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-transform">
                       {t('common.register')}
                     </Button>
                   </Link>
                 </div>
               )}
 
-              <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setMobileMenuOpen(true)}>
+              <Button variant="ghost" size="sm" className="lg:hidden w-10 h-10 p-0 rounded-xl" onClick={() => setMobileMenuOpen(true)}>
                 <Menu size={24} />
               </Button>
             </div>
@@ -340,8 +350,8 @@ export const Header = memo(() => {
         </div>
       </header>
 
-      {/* Navigation */}
-      <nav className="hidden lg:block border-b bg-primary transition-colors duration-200 sticky top-0 z-[100] shadow-md">
+      {/* Navigation - Premium Glassmorphism */}
+      <nav className="hidden lg:block border-b border-slate-100 dark:border-slate-900/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md transition-all duration-300 sticky top-0 z-[100] shadow-sm">
         <div className="container mx-auto px-4 flex items-center gap-6">
           <div className="relative" ref={categoriesRef}>
             <Button

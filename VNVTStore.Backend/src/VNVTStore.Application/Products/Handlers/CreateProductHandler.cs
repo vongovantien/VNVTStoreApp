@@ -64,6 +64,9 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
             
             if (dto.Images != null && dto.Images.Any())
             {
+                // Console logging for dev debugging since this is a common failure point
+                Console.WriteLine($"[CreateProductHandler] Processing {dto.Images.Count()} images for Product: {product.Code}");
+                
                 var saveImagesResult = await _fileService.SaveAndLinkImagesAsync(
                     product.Code, 
                     "TblProduct", 
@@ -73,9 +76,11 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
                 
                 if (saveImagesResult.IsFailure)
                 {
+                    Console.WriteLine($"[CreateProductHandler] Image saving FAILED: {saveImagesResult.Error}");
                     await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                     return Result.Failure<ProductDto>(saveImagesResult.Error);
                 }
+                Console.WriteLine($"[CreateProductHandler] Image saving SUCCESS. Linked URLs: {string.Join(", ", saveImagesResult.Value)}");
             }
 
             if (dto.ProductUnits != null && dto.ProductUnits.Any())
@@ -137,6 +142,8 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
                 .Where(f => f.MasterCode == product.Code && f.MasterType == "TblProduct")
                 .ToListAsync(cancellationToken);
 
+            Console.WriteLine($"[CreateProductHandler] Found {finalFiles.Count} linked files in DB for Product: {product.Code}");
+
             var baseUrl = _baseUrlService.GetBaseUrl().TrimEnd('/');
             productDto.ProductImages = finalFiles.Select(f => new ProductImageDto
             {
@@ -145,6 +152,8 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
                  AltText = f.OriginalName,
                  IsPrimary = finalFiles.IndexOf(f) == 0
             }).ToList();
+            
+            Console.WriteLine($"[CreateProductHandler] Returning {productDto.ProductImages.Count} product images in DTO.");
 
             return Result.Success(productDto);
         }

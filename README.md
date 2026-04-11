@@ -1,90 +1,90 @@
-# VNVTStore - Modern E-Commerce Platform
+# 🛍️ VNVTStore - Modern Full-Stack E-Commerce Platform
 
-VNVTStore is a full-stack e-commerce solution built with modern technologies, following **Domain-Driven Design (DDD)** and **Clean Architecture** principles on the backend, and a robust component-driven approach on the frontend.
+[![CI/CD Pipeline](https://github.com/vongovantien/VNVTStoreApp/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/vongovantien/VNVTStoreApp/actions)
+[![Backend](https://img.shields.io/badge/.NET-8.0-blueviolet)](VNVTStore.Backend)
+[![Frontend](https://img.shields.io/badge/React-19-61dafb)](VNVTStore.Frontend)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-## 🏗️ Project Architecture
+VNVTStore is a state-of-the-art e-commerce ecosystem designed for performance, scalability, and developer experience. It features a robust **Clean Architecture** backend and a high-performance **Vite-powered** frontend.
 
-This repository uses a monorepo-style structure:
-- **[VNVTStore.Backend](VNVTStore.Backend)**: .NET 8 Web API.
-    - **Architecture**: Clean Architecture + CQRS + Rich Domain Models.
-    - **Key Principles**: 
-        - **Rich Domain Models**: Entities (`TblCart`, `TblOrder`, `TblProduct`) encapsulate business logic and use **Private Setters** to ensure integrity.
-        - **Factory Methods**: Controlled object creation via static `Create` methods using `Result` pattern.
-        - **Unit of Work & Repository**: Abstractions for data access.
-- **[VNVTStore.Frontend](VNVTStore.Frontend)**: React 19 + Vite 7 + TypeScript.
-    - **Architecture**: Feature-Sliced Design inspiration.
-    - **Key Features**: 
-        - **Axios Service**: Centralized API client with **Interceptors**, **Auto-Refresh Token** handling (Retry Queue), and standardized Error handling.
-        - **State Management**: Zustand.
+---
 
-## 🚀 Quick Start
+## 🏗️ System Architecture
 
-### Prerequisites
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Node.js 20+](https://nodejs.org/)
-- [PostgreSQL](https://www.postgresql.org/)
+Our solution follows a **Monorepo** structure, ensuring atomic coordination between the API and the User Interface.
 
-### 1. Backend Setup (`/VNVTStore.Backend`)
-```bash
-cd VNVTStore.Backend
-# Restore dependencies
-dotnet restore
+### [🚀 VNVTStore.Backend](VNVTStore.Backend)
+A high-performance API built with **.NET 8** and **PostgreSQL**.
+- **Patterns**: Clean Architecture, CQRS (MediatR), Repository & Unit of Work.
+- **Domain Logic**: Rich Domain Models with encapsulated business rules (DDD).
+- **Security**: JWT-based Authentication with sliding window Refresh Tokens.
 
-# Build the API
-dotnet build src/VNVTStore.API/VNVTStore.API.csproj
+### [🎨 VNVTStore.Frontend](VNVTStore.Frontend)
+A premium user experience built with **React 19** and **Vite 7**.
+- **Styling**: Tailwind CSS 4 with custom design tokens and glassmorphism.
+- **State**: Lightweight stores using **Zustand**.
+- **Data Flow**: Custom Axios service with automated **Interceptor-based** token refresh.
+- **Micro-animations**: Powered by **Framer Motion** for a fluid UX.
 
-# Run Tests (Strict Validation)
-dotnet test src/VNVTStore.Tests/VNVTStore.Tests.csproj
-
-# Run the API
-dotnet run --project src/VNVTStore.API/VNVTStore.API.csproj
-```
-API Documentation (Swagger) will be available at `http://localhost:5178/swagger`.
-
-### 2. Frontend Setup (`/VNVTStore.Frontend`)
-```bash
-cd VNVTStore.Frontend
-# Install dependencies
-npm install
-
-# Run Tests (Vitest)
-npm test
-
-# Start Development Server
-npm run dev
-```
-Frontend will be available at `http://localhost:5173`.
-
-## 🔄 CI/CD Pipeline (GitHub Actions)
-
-This project includes a fully configured CI/CD pipeline in [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
-It triggers on `push` and `pull_request` to `main/master`.
-
-### Automation Steps:
-1.  **Backend Pipeline**:
-    -   Restores NuGet packages.
-    -   Builds the Solution.
-    -   Runs Unit Tests (Clean Architecture Compliance).
-2.  **Frontend Pipeline**:
-    -   Installs NPM packages.
-    -   Runs `vitest` suite.
-    -   Builds the Production bundle (`vite build`).
-
-## 📜 Features
-
-- **Authentication**: Secure JWT with **Auto-Refresh** mechanism on the frontend.
-- **Rich Domain Logic**: Stock management (`DeductStock`, `RestoreStock`), Cart logic (`AddItem`, `Clear`) encapsulated in Entities.
-- **Checkout Process**: Multi-step checkout with address management and shipping fee calculation.
-- **Admin Panel**: Manage products, categories, orders, customers, and system statistics.
+---
 
 ## 🛠️ Technology Stack
 
-| Part | Technologies |
-|------|--------------|
-| **Backend** | .NET 8, EF Core 8, PostgreSQL, MediatR, AutoMapper, FluentValidation, Asp.Versioning, xUnit, Moq |
-| **Frontend** | React 19, Vite 7, TypeScript, Axios (with Interceptors), Tailwind CSS 4, Zustand, React Query, React Hook Form, Zod |
-| **Patterns** | Clean Architecture, CQRS, Repository, Unit of Work, Domain-Driven Design (Rich Models) |
-| **DevOps** | GitHub Actions (CI/CD), Docker Support |
+| Layer | Technologies |
+| :--- | :--- |
+| **Core Backend** | .NET 8, EF Core 8, MediatR, FluentValidation, AutoMapper |
+| **Persistence** | PostgreSQL |
+| **Core Frontend** | React 19, TypeScript, Vite 7 |
+| **Styling & UI** | Tailwind CSS 4, Lucide Icons, Framer Motion |
+| **Testing** | xUnit, Moq (Backend) / Vitest, Playwright (Frontend) |
+| **Deployment** | GitHub Actions, Render (BE), Vercel (FE) |
 
 ---
-Managed by [vongovantien](https://github.com/vongovantien).
+
+## 🚀 Quick Start Guide
+
+### 1. Prerequisites
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Node.js 20+](https://nodejs.org/)
+- [Docker](https://www.docker.com/) (optional for local database)
+
+### 2. Launch Backend
+```bash
+cd VNVTStore.Backend
+# Configure connection string in appsettings.json
+dotnet run --project src/VNVTStore.API/VNVTStore.API.csproj
+```
+> [!TIP]
+> Access Swagger UI at `http://localhost:5178/swagger` for API documentation.
+
+### 3. Launch Frontend
+```bash
+cd VNVTStore.Frontend
+npm install
+npm run dev
+```
+> [!NOTE]
+> The app will be available at `http://localhost:5173`.
+
+---
+
+## 🔄 Automated CI/CD Pipeline
+
+We utilize **GitHub Actions** to enforce code quality and automate global deployment.
+
+- **Trigger**: Every push to the `dev` or `main` branches.
+- **Stages**:
+  - **Linting & Testing**: Running 130+ backend tests and the full vitest suite for frontend.
+  - **Build**: Compiling optimized Release binaries and production React bundles.
+  - **Multi-Cloud Deploy**: Automatic rollout to **Render** (API) and **Vercel** (UI).
+
+---
+
+## 📬 Contact & Support
+
+- **Author**: [vongovantien](https://github.com/vongovantien)
+- **Email**: vongovantien@gmail.com
+- **Repository**: [VNVTStoreApp](https://github.com/vongovantien/VNVTStoreApp)
+
+---
+<p align="center">© 2026 VNVTStore. All Rights Reserved.</p>

@@ -156,7 +156,7 @@ export const SearchAutocomplete = ({
           onFocus={() => setShowDropdown(true)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(query); }}
           placeholder={t('header.searchPlaceholder', 'Tìm kiếm sản phẩm...')}
-          className="w-full pl-10 pr-10 py-3 bg-secondary border border-transparent focus:border-accent-primary rounded-xl outline-none transition-all text-sm"
+          className="w-full pl-10 pr-10 py-3 !bg-transparent !border-0 !shadow-none !focus:ring-0 !focus:border-0 outline-none transition-all text-sm"
           autoComplete="off"
         />
         {query && (

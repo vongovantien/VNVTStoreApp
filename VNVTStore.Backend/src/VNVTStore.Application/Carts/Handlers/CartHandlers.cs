@@ -193,46 +193,33 @@ public class CartHandlers :
             catch (DbUpdateConcurrencyException ex)
             {
                 retryCount++;
-                _logger.LogWarning(ex, "[Cart] Concurrency exception on attempt {Attempt}/{MaxRetries}. Entries: {Entries}", 
-                    retryCount, maxRetries, 
-                    string.Join(", ", ex.Entries.Select(e => $"{e.Entity.GetType().Name}[{e.State}]")));
+                var entries = string.Join(", ", ex.Entries.Select(e => $"{e.Entity.GetType().Name}[{e.State}]"));
+                _logger.LogWarning(ex, "[Cart] Concurrency conflict on attempt {Attempt}/{MaxRetries}. Entities: {Entries}", 
+                    retryCount, maxRetries, entries);
                 
                 if (retryCount >= maxRetries)
                 {
-                    _logger.LogError(ex, "[Cart] All {MaxRetries} retry attempts exhausted", maxRetries);
+                    _logger.LogError(ex, "[Cart] Concurrency conflict persists after {MaxRetries} retries. Request failing.", maxRetries);
                     throw;
                 }
 
-                // Resolve concurrency by reloading database values
-                foreach (var entry in ex.Entries)
-                {
-                    if (entry.State == EntityState.Modified)
-                    {
-                        // Reload the entity from database
-                        await entry.ReloadAsync(cancellationToken);
-                    }
-                    else if (entry.State == EntityState.Added)
-                    {
-                        // For added entities that conflict, detach and retry
-                        entry.State = EntityState.Detached;
-                    }
-                }
-
-                // Clear tracking to reload fresh entities in next attempt
+                // Prepare for retry: Clear current context state to ensure next fetch gets DB values
                 _unitOfWork.ClearChangeTracker();
                 
-                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
+                // Exponential backoff
+                await Task.Delay(TimeSpan.FromMilliseconds(50 * Math.Pow(2, retryCount)), cancellationToken);
             }
             catch (DbUpdateException ex)
             {
+                // Handle database exceptions that might be transitional (e.g., unique index violation during simultaneous adds)
                 retryCount++;
-                _logger.LogWarning(ex, "[Cart] DbUpdateException on attempt {Attempt}/{MaxRetries}: {Message}", 
+                _logger.LogWarning(ex, "[Cart] Database update exception on attempt {Attempt}/{MaxRetries}: {Message}", 
                     retryCount, maxRetries, ex.InnerException?.Message ?? ex.Message);
                 
                 if (retryCount >= maxRetries) throw;
 
                 _unitOfWork.ClearChangeTracker();
-                await Task.Delay(TimeSpan.FromMilliseconds(100 * retryCount), cancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(50 * Math.Pow(2, retryCount)), cancellationToken);
             }
         }
     }

@@ -16,10 +16,9 @@ public class UnitsController : BaseApiController<TblUnit, CatalogUnitDto, Create
 
     [HttpGet("template")]
     [AllowAnonymous]
-    public IActionResult GetTemplate()
+    public override async Task<IActionResult> GetTemplate()
     {
-        var csv = "Code,Name,Symbol,Description,IsActive\nUNIT001,Kilogram,kg,Weight unit,true";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-        return File(bytes, "text/csv", "units_template.csv");
+        var bytes = await Task.Run(() => VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.UnitImportDto>());
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "units_template.xlsx");
     }
 }

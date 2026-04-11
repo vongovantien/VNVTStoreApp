@@ -1,3 +1,4 @@
+using Serilog;
 using AutoMapper;
 #pragma warning disable CS8602 // Dereference of a possibly null reference
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -803,9 +804,13 @@ public abstract class BaseHandler<TEntity>
                 }
             }
             
+            Log.Debug("[BaseHandler] PopulateCollectionsAsync: SQL=\"{Sql}\", Codes={Codes}, Filter={Filter}", sql, string.Join(",", parentCodes), collAttr.FilterValue);
+            
             // Execute with ConfigureAwait(false)
             var children = await SqlMapper.QueryAsync<dynamic>(connection, sql, parameters)
                 .ConfigureAwait(false);
+            
+            Log.Debug("[BaseHandler] PopulateCollectionsAsync: Fetched {Count} children for {ParentType}", children.Count(), typeof(TResponse).Name);
             
             // Performance Optimization: Direct Mapping for children instead of JSON
             // Refactored to avoid generic reflection and CS8602 errors
@@ -884,10 +889,11 @@ public abstract class BaseHandler<TEntity>
         foreach (var row in source)
         {
             var dict = (IDictionary<string, object>)row;
+            var ciDict = new Dictionary<string, object>(dict, StringComparer.OrdinalIgnoreCase);
             var item = new T();
             foreach (var prop in props)
             {
-                if (dict.TryGetValue(prop.Name, out var value) && value != null && value != DBNull.Value)
+                if (ciDict.TryGetValue(prop.Name, out var value) && value != null && value != DBNull.Value)
                 {
                     try
                     {
@@ -927,12 +933,16 @@ public abstract class BaseHandler<TEntity>
 
         foreach (var row in source)
         {
-            var dict = (IDictionary<string, object>)row;
+            var dict = row as IDictionary<string, object>;
+            if (dict == null) continue;
+            
+            // Create a case-insensitive lookup for the current row's properties
+            var ciDict = new Dictionary<string, object>(dict, StringComparer.OrdinalIgnoreCase);
             var item = Activator.CreateInstance(targetType)!;
             
             foreach (var prop in props)
             {
-                if (dict.TryGetValue(prop.Name, out var value) && value != null && value != DBNull.Value)
+                if (ciDict.TryGetValue(prop.Name, out var value) && value != null && value != DBNull.Value)
                 {
                     try
                     {

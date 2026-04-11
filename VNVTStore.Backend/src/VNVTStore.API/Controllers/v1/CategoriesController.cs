@@ -153,7 +153,7 @@ public class CategoriesController : BaseApiController<TblCategory, CategoryDto, 
     [HttpPost("import")]
     [Authorize(Roles = nameof(UserRole.Admin))]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Import(IFormFile file)
+    public override async Task<IActionResult> Import(IFormFile file)
     {
         if (file == null || file.Length == 0) return BadRequest("File is empty");
         using var memoryStream = new MemoryStream();
@@ -166,9 +166,9 @@ public class CategoriesController : BaseApiController<TblCategory, CategoryDto, 
 
     [HttpGet("template")]
     [AllowAnonymous]
-    public IActionResult GetTemplate()
+    public override async Task<IActionResult> GetTemplate()
     {
-        var bytes = VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.CategoryImportDto>();
+        var bytes = await Task.Run(() => VNVTStore.Application.Common.Helpers.ExcelExportHelper.GenerateTemplate<VNVTStore.Application.DTOs.Import.CategoryImportDto>());
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "categories_template.xlsx");
     }
 }

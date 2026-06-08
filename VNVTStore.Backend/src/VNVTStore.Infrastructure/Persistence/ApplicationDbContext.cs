@@ -72,6 +72,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblMenu> TblMenus { get; set; }
     public virtual DbSet<TblRoleMenu> TblRoleMenus { get; set; }
     public virtual DbSet<TblAuditLog> TblAuditLogs { get; set; }
+    public virtual DbSet<TblNotification> TblNotifications { get; set; }
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<DateTime>()
@@ -1212,11 +1213,53 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
         });
 
+        modelBuilder.Entity<TblNotification>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblNotification_pkey");
+
+            entity.ToTable("TblNotification");
+
+            entity.Property(e => e.Code).HasMaxLength(100);
+            entity.Property(e => e.UserCode).HasMaxLength(100);
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.Message);
+            entity.Property(e => e.Type).HasMaxLength(50).HasDefaultValue("SYSTEM");
+            entity.Property(e => e.IsRead).HasDefaultValue(false);
+            entity.Property(e => e.Link).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.ModifiedType).HasDefaultValue("ADD");
+
+            entity.HasOne(d => d.UserCodeNavigation).WithMany()
+                .HasForeignKey(d => d.UserCode)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblNotification_UserCode_fkey");
+            
+            entity.HasIndex(e => e.UserCode, "idx_notification_user");
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.State != EntityState.Added && entry.State != EntityState.Deleted)
+            {
+                var xminProp = entry.Metadata.FindProperty("xmin");
+                if (xminProp != null)
+                {
+                    var val = entry.Property("xmin").CurrentValue;
+                    if (val is uint uintVal && uintVal == 0)
+                    {
+                        entry.State = EntityState.Added;
+                    }
+                }
+            }
+        }
+
         var entries = ChangeTracker.Entries<IEntity>();
 
         foreach (var entry in entries)

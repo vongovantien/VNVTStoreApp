@@ -30,21 +30,21 @@ public static class DataSeeder
         }
 
         // 2. Seed Base Data (Category, Brand, Unit)
-        var category = await context.TblCategories.FirstOrDefaultAsync();
+        var category = await context.TblCategories.OrderBy(x => x.Code).FirstOrDefaultAsync();
         if (category == null)
         {
             category = new TblCategory { Code = "CAT001", Name = "General", IsActive = true };
             context.TblCategories.Add(category);
         }
 
-        var brand = await context.TblBrands.FirstOrDefaultAsync();
+        var brand = await context.TblBrands.OrderBy(x => x.Code).FirstOrDefaultAsync();
         if (brand == null)
         {
             brand = new TblBrand { Code = "BRAND001", Name = "Generic Brand", IsActive = true };
             context.TblBrands.Add(brand);
         }
 
-        var unit = await context.TblUnits.FirstOrDefaultAsync();
+        var unit = await context.TblUnits.OrderBy(x => x.Code).FirstOrDefaultAsync();
         if (unit == null)
         {
             unit = new TblUnit { Code = "PCS", Name = "Cái" };

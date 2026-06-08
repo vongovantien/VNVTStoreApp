@@ -5,8 +5,8 @@ export default defineConfig({
     fullyParallel: true,
     reporter: 'list',
     use: {
-        // Using port 5176 from launchSettings.json (http profile)
-        baseURL: 'http://localhost:5176',
+        // Using port 5000 from launchSettings.json (http profile)
+        baseURL: 'http://localhost:5000',
         extraHTTPHeaders: {
             'Accept': 'application/json',
         },

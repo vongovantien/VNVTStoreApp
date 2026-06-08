@@ -250,7 +250,7 @@ export default function BrandsPage() {
           try {
               await brandService.import(file);
               queryClient.invalidateQueries({ queryKey: ['brands'] });
-          } catch (err: any) {
+          } catch (_err: any) {
               // Service already handles generic errors but we can log/toast here if needed
           }
         }}

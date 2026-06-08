@@ -12,6 +12,8 @@ public class Repository<T> : IRepository<T> where T : class
     protected readonly ApplicationDbContext _context;
     protected readonly DbSet<T> _dbSet;
 
+    public DbSet<T> DbSet => _dbSet;
+
     public Repository(ApplicationDbContext context)
     {
         _context = context;
@@ -26,9 +28,11 @@ public class Repository<T> : IRepository<T> where T : class
         if (codeProperty == null)
             throw new InvalidOperationException($"Entity {entityType.Name} does not have a Code property");
 
-        return await _dbSet.FirstOrDefaultAsync(
-            e => EF.Property<string>(e, "Code") == code, 
-            cancellationToken);
+        return await _dbSet
+            .OrderBy(e => EF.Property<string>(e, "Code"))
+            .FirstOrDefaultAsync(
+                e => EF.Property<string>(e, "Code") == code, 
+                cancellationToken);
     }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)

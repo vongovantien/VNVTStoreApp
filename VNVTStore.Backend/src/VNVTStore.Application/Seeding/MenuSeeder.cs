@@ -59,7 +59,7 @@ public static class MenuSeeder
         await context.SaveChangesAsync(default);
         
         // 2. Seed ADMIN Role if not exists
-        var adminRole = await context.TblRoles.FirstOrDefaultAsync(r => r.Code == "ADMIN");
+        var adminRole = await context.TblRoles.OrderBy(r => r.Code).FirstOrDefaultAsync(r => r.Code == "ADMIN");
         if (adminRole == null)
         {
             adminRole = new TblRole

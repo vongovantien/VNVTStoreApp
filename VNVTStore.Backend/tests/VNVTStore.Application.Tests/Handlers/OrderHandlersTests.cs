@@ -88,7 +88,7 @@ public class OrderHandlersTests
     {
         // Arrange
         var userCode = "USER001";
-        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
+        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TblCart.Create(userCode)); // Empty cart
 
         var command = new CreateOrderCommand(userCode, new CreateOrderDto());
@@ -113,7 +113,7 @@ public class OrderHandlersTests
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 5, null, null, 100); 
 
-        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
+        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
 
         var cartItem = cart.TblCartItems.First();

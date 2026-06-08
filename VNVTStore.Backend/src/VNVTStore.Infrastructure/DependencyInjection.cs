@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddTransient<INotificationService, NotificationService>();
         services.AddScoped<ILoyaltyService, LoyaltyService>();
         services.AddScoped<IPromotionEngine, PromotionEngine>();
+        services.AddScoped<IProductSynchronizationService, ProductSynchronizationService>();
         
         // Add Caching - Use Redis if configured, otherwise Memory cache
         services.AddMemoryCache();
@@ -96,7 +97,7 @@ public static class DependencyInjection
                 "http://localhost:5173", 
                 "http://localhost:5174", 
                 "http://localhost:5175", 
-                "http://localhost:5176",
+                "http://localhost:5000",
                 "https://scalar.com"
              };
         }

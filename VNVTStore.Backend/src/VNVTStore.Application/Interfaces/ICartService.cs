@@ -5,6 +5,6 @@ namespace VNVTStore.Application.Interfaces;
 
 public interface ICartService
 {
-    Task<TblCart> GetOrCreateCartAsync(string userCode, CancellationToken cancellationToken = default);
+    Task<TblCart> GetOrCreateCartAsync(string userCode, bool lockCart = false, CancellationToken cancellationToken = default);
     Task ClearCartAsync(string userCode, CancellationToken cancellationToken = default);
 }

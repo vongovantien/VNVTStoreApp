@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Scale, X, ShoppingCart, Check, Minus } from 'lucide-react';
 import { Button, Badge } from '@/components/ui';
-import { useCompareStore, useCartStore } from '@/store';
+import { useCompareStore, useCartStore, useToast } from '@/store';
 import SharedImage from '@/components/common/Image';
 import { formatCurrency } from '@/utils/format';
 import { Product } from '@/types';
@@ -18,6 +18,7 @@ export const ComparePage = () => {
   });
   const { items, removeItem, clearCompare } = useCompareStore();
   const addToCart = useCartStore((state) => state.addItem);
+  const toast = useToast();
 
   if (items.length === 0) {
     return (
@@ -187,7 +188,14 @@ export const ComparePage = () => {
                         <Button
                           fullWidth
                           size="sm"
-                          onClick={() => addToCart(product)}
+                          onClick={async () => {
+                            try {
+                              await addToCart(product);
+                              toast.success(`${product.name} ${t('product.addToCartSuccess', 'đã được thêm vào giỏ hàng')}`);
+                            } catch {
+                              toast.error(t('product.addToCartError', 'Có lỗi xảy ra khi thêm vào giỏ hàng'));
+                            }
+                          }}
                           disabled={product.stock === 0}
                           className="bg-slate-900 hover:bg-black text-white rounded-xl py-2.5"
                           leftIcon={<ShoppingCart size={16} />}

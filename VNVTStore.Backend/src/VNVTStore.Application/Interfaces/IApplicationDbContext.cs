@@ -41,5 +41,6 @@ public interface IApplicationDbContext
     DbSet<TblMenu> TblMenus { get; }
     DbSet<TblRoleMenu> TblRoleMenus { get; }
     DbSet<TblAuditLog> TblAuditLogs { get; }
+    DbSet<TblNotification> TblNotifications { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

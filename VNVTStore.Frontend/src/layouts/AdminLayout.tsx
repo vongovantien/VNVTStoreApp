@@ -1,104 +1,23 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Users,
-  FileText,
-  Settings,
-  Folder,
-  Building2,
-  Tag,
-  Ruler,
-  Ticket,
-  Star,
-  Shield,
-  ChevronRight,
-  ChevronLeft,
-  LogOut,
-  Search,
-  Sun,
-  Moon,
-  Menu,
-  User as UserIcon,
-  HelpCircle,
-  FileKey,
-  ExternalLink,
-  AlertTriangle,
-  Command,
-  Home,
-  ChevronRight as BreadcrumbSeparator,
-} from 'lucide-react';
-import { cn } from '@/utils/cn';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { ToastContainer } from '@/components/ui/Toast';
-import { useUIStore, useAuthStore, useToastStore, useNotificationStore } from '@/store';
-import { NotificationDropdown, UserMenu, LanguageSwitcher } from '@/components/common';
-import { useSignalR } from '@/hooks/useSignalR';
+import { useUIStore, useAuthStore } from '@/store';
+import { cn } from '@/utils/cn';
 
-// Navigation items
-interface NavItem {
-  path: string;
-  icon: React.ElementType;
-  label: string;
-  code: string;
-  end?: boolean;
-}
-
-interface NavGroup {
-  title: string;
-  items: NavItem[];
-}
-
-const navGroups: NavGroup[] = [
-  {
-    title: 'admin.sidebar.core',
-    items: [
-      { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', code: 'DASHBOARD', end: true },
-      { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders', code: 'ORDERS', end: false },
-      { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers', code: 'CUSTOMERS', end: false },
-    ]
-  },
-  {
-    title: 'admin.sidebar.inventory',
-    items: [
-      { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories', code: 'CATEGORIES', end: false },
-      { path: '/admin/products', icon: Package, label: 'admin.sidebar.products', code: 'PRODUCTS', end: false },
-      { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers', code: 'SUPPLIERS', end: false },
-      { path: '/admin/brands', icon: Tag, label: 'admin.sidebar.brands', code: 'BRANDS', end: false },
-      { path: '/admin/units', icon: Ruler, label: 'admin.sidebar.units', code: 'UNITS', end: false },
-    ]
-  },
-  {
-    title: 'admin.sidebar.marketing',
-    items: [
-      { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes', code: 'QUOTES', end: false },
-      { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions', code: 'PROMOTIONS', end: false },
-      { path: '/admin/coupons', icon: Ticket, label: 'admin.sidebar.coupons', code: 'COUPONS', end: false },
-      { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners', code: 'BANNERS', end: false },
-      { path: '/admin/news', icon: FileText, label: 'admin.sidebar.news', code: 'NEWS', end: false },
-      { path: '/admin/reviews', icon: Star, label: 'admin.sidebar.reviews', code: 'REVIEWS', end: false },
-    ]
-  },
-  {
-    title: 'admin.sidebar.system',
-    items: [
-      { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings', code: 'SETTINGS', end: false },
-      { path: '/admin/system-configs', icon: LayoutDashboard, label: 'admin.sidebar.systemConfigs', code: 'SETTINGS', end: false },
-      { path: '/admin/system-secrets', icon: Shield, label: 'admin.sidebar.systemSecrets', code: 'SETTINGS', end: false },
-      { path: '/admin/audit-logs', icon: FileText, label: 'admin.sidebar.auditLogs', code: 'AUDIT_LOGS', end: false },
-      { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles', code: 'ROLES', end: false },
-    ]
-  }
-];
+// Extracted Components & Hooks
+import { AdminSidebar, navGroups } from './AdminSidebar';
+import { AdminHeader } from './AdminHeader';
+import { AdminSearchModal } from './AdminSearchModal';
+import { useAdminNotifications } from './useAdminNotifications';
 
 export const AdminLayout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -107,6 +26,7 @@ export const AdminLayout = () => {
 
   const { theme, toggleTheme } = useUIStore();
   const { logout, user, isAuthenticated, hasMenu } = useAuthStore();
+  const { isConnected } = useAdminNotifications();
 
   // Filter navigation items based on user's menus
   const filteredNavGroups = useMemo(() => {
@@ -118,31 +38,7 @@ export const AdminLayout = () => {
       .filter(group => group.items.length > 0);
   }, [hasMenu]);
 
-  // Refs for search
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // SignalR Integration
-  const { on, isConnected } = useSignalR();
-  const { info } = useToastStore();
-  const { addNotification } = useNotificationStore();
-
-  useEffect(() => {
-    // Listen for new orders
-    const cleanupOrder = on('ReceiveOrderNotification', (data: any) => {
-       const message = typeof data === 'string' ? data : data?.Message || t('admin.notifications.newOrder');
-       info(message);
-       addNotification(message);
-       
-       const audio = new Audio('/notification.mp3');
-       audio.play().catch(e => console.log('Audio play failed', e)); 
-    });
-
-    return () => {
-        cleanupOrder();
-    };
-  }, [on, info, addNotification, t]);
-
-  // Ctrl+K keyboard shortcut
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -157,19 +53,12 @@ export const AdminLayout = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Focus search input when modal opens
-  useEffect(() => {
-    if (showSearchModal && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 100);
-    }
-  }, [showSearchModal]);
-
-  // Generate breadcrumbs from current path
+  // Generate breadcrumbs
   const breadcrumbs = useMemo(() => {
     const pathParts = location.pathname.split('/').filter(Boolean);
     const crumbs: { label: string; path: string }[] = [];
-    
     let currentPath = '';
+    
     for (const part of pathParts) {
       currentPath += `/${part}`;
       let label = part.charAt(0).toUpperCase() + part.slice(1);
@@ -178,14 +67,7 @@ export const AdminLayout = () => {
           label = t('admin.sidebar.dashboard');
       } else {
           const translated = t(`admin.sidebar.${part}`);
-          if (translated !== `admin.sidebar.${part}`) {
-              label = translated;
-          } else {
-              const commonModule = t(`common.modules.${part}`);
-              if (commonModule !== `common.modules.${part}`) {
-                  label = commonModule;
-              }
-          }
+          label = translated !== `admin.sidebar.${part}` ? translated : (t(`common.modules.${part}`) !== `common.modules.${part}` ? t(`common.modules.${part}`) : label);
       }
       crumbs.push({ label, path: currentPath });
     }
@@ -196,20 +78,15 @@ export const AdminLayout = () => {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  // Case-insensitive check
   if (String(user.role).toLowerCase() !== 'admin') {
       return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-50 text-gray-800">
-            <h1 className="text-2xl font-bold mb-2">403 - {t('common.forbidden', 'Truy cập bị từ chối')}</h1>
-            <p className="mb-4">{t('messages.adminOnly', 'Bạn không có quyền truy cập trang quản trị.')}</p>
-            <Button onClick={() => navigate('/')}>{t('common.backToHome', 'Về trang chủ')}</Button>
+            <h1 className="text-2xl font-bold mb-2">403 - {t('common.forbidden')}</h1>
+            <p className="mb-4">{t('messages.adminOnly')}</p>
+            <Button onClick={() => navigate('/')}>{t('common.backToHome')}</Button>
         </div>
       );
   }
-
-  const handleLogout = () => {
-    setShowLogoutConfirm(true);
-  };
 
   const confirmLogout = () => {
     setShowLogoutConfirm(false);
@@ -219,93 +96,12 @@ export const AdminLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-secondary">
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed left-0 top-0 z-40 h-screen bg-gray-900 text-white transition-all duration-300 flex flex-col',
-          sidebarCollapsed ? 'w-20' : 'w-64',
-          'hidden lg:block'
-        )}
-      >
-        {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800 shrink-0">
-          <AnimatePresence mode="wait">
-            {!sidebarCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-2xl">🏠</span>
-                <span className="font-bold text-lg">VNVT Admin</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark p-4 space-y-6">
-          {filteredNavGroups.map((group, index) => (
-            <div key={index}>
-              {!sidebarCollapsed && (
-                <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  {t(group.title)}
-                </div>
-              )}
-              <div className="space-y-1">
-                {group.items.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={!!item.end}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all',
-                        isActive
-                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                          : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                      )
-                    }
-                  >
-                    <item.icon size={20} />
-                    <motion.span
-                      initial={false}
-                      animate={{
-                        width: sidebarCollapsed ? 0 : 'auto',
-                        opacity: sidebarCollapsed ? 0 : 1,
-                      }}
-                      transition={{ duration: 0.3 }}
-                      className="whitespace-nowrap overflow-hidden"
-                    >
-                      {t(item.label)}
-                    </motion.span>
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        {/* Logout */}
-        <div className="p-4 border-t border-gray-800 shrink-0">
-          <button
-            onClick={handleLogout}
-            className={cn(
-              'flex items-center gap-3 w-full px-4 py-3 text-gray-400 rounded-lg hover:text-white hover:bg-gray-800 transition-all'
-            )}
-          >
-            <LogOut size={20} />
-            {!sidebarCollapsed && <span>{t('common.logout')}</span>}
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar 
+        collapsed={sidebarCollapsed} 
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        filteredGroups={filteredNavGroups}
+        onLogout={() => setShowLogoutConfirm(true)}
+      />
 
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
@@ -324,148 +120,36 @@ export const AdminLayout = () => {
               exit={{ x: -280 }}
               className="fixed left-0 top-0 z-50 h-screen w-64 bg-gray-900 text-white lg:hidden flex flex-col"
             >
-              <div className="flex items-center h-16 px-4 border-b border-gray-800 shrink-0">
-                <span className="text-2xl">🏠</span>
-                <span className="font-bold text-lg ml-2">VNVT Admin</span>
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="ml-auto p-2 text-gray-400 hover:text-white"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-              </div>
-              <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark p-4 space-y-6">
-                {filteredNavGroups.map((group, index) => (
-                  <div key={index}>
-                    <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      {t(group.title)}
-                    </div>
-                    <div className="space-y-1">
-                      {group.items.map((item) => (
-                        <NavLink
-                          key={item.path}
-                          to={item.path}
-                          end={!!item.end}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={({ isActive }) =>
-                            cn(
-                              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all',
-                              isActive
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                                : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                            )
-                          }
-                        >
-                          <item.icon size={20} />
-                          <span>{t(item.label)}</span>
-                        </NavLink>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </nav>
-              
-              <div className="p-4 border-t border-gray-800 shrink-0">
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 rounded-lg hover:text-white hover:bg-gray-800 transition-all"
-                >
-                  <LogOut size={20} />
-                  <span>{t('common.logout')}</span>
-                </button>
-              </div>
+               <AdminSidebar 
+                collapsed={false} 
+                mobile={true}
+                onToggle={() => {}}
+                filteredGroups={filteredNavGroups}
+                onLogout={() => setShowLogoutConfirm(true)}
+                onCloseMobile={() => setMobileMenuOpen(false)}
+              />
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
-      <div
-        className={cn(
-          'flex-1 min-w-0 overflow-hidden transition-all duration-300',
-          sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
-        )}
-      >
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-primary shadow-sm">
-          <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-            <button
-              className="p-2 rounded-lg hover:bg-hover lg:hidden"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <Menu size={24} />
-            </button>
-
-            {/* Breadcrumbs */}
-            <div className="hidden lg:flex items-center gap-1 text-sm">
-              <Home size={14} className="text-tertiary" />
-              {breadcrumbs.map((crumb, index) => (
-                <div key={crumb.path} className="flex items-center gap-1">
-                  <BreadcrumbSeparator size={14} className="text-tertiary" />
-                  {index === breadcrumbs.length - 1 ? (
-                    <span className="font-medium text-primary">{crumb.label}</span>
-                  ) : (
-                    <NavLink to={crumb.path} className="text-secondary hover:text-primary transition-colors">
-                      {crumb.label}
-                    </NavLink>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Search */}
-            <div className="hidden md:block flex-1 max-w-sm mx-4">
-              <button
-                onClick={() => setShowSearchModal(true)}
-                className="w-full flex items-center gap-3 px-4 py-2 bg-secondary rounded-lg border border-transparent hover:border-indigo-500 transition-all group"
-              >
-                <Search size={18} className="text-tertiary group-hover:text-indigo-500" />
-                <span className="flex-1 text-left text-sm text-tertiary">{t('common.search')}</span>
-                <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-tertiary bg-primary rounded border">
-                  <Command size={10} /> K
-                </kbd>
-              </button>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher variant="ghost" align="right" />
-
-              <Button variant="ghost" size="sm" onClick={toggleTheme}>
-                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-              </Button>
-
-              <NotificationDropdown 
-                isConnected={isConnected}
-                onNotificationClick={() => navigate('/admin/orders')}
-              />
-
-              <a 
-                href="/" 
-                target="_blank"
-                rel="noreferrer"
-                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
-              >
-                <ExternalLink size={14} />
-                {t('admin.viewStore')}
-              </a>
-
-              <UserMenu 
-                onLogout={handleLogout}
-                items={[
-                  { label: t('admin.userMenu.accountSettings'), icon: UserIcon, link: '/admin/settings' },
-                  { label: t('admin.userMenu.support'), icon: HelpCircle },
-                  { label: t('admin.userMenu.license'), icon: FileKey }
-                ]}
-              />
-            </div>
-          </div>
-        </header>
+      <div className={cn('flex-1 min-w-0 overflow-hidden transition-all duration-300', sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64')}>
+        <AdminHeader 
+            onMobileMenuOpen={() => setMobileMenuOpen(true)}
+            breadcrumbs={breadcrumbs}
+            onSearchClick={() => setShowSearchModal(true)}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            isConnected={isConnected}
+            onLogout={() => setShowLogoutConfirm(true)}
+            onNavigate={navigate}
+        />
 
         <main className="p-4 lg:p-6">
           <Outlet />
         </main>
       </div>
+
       <ToastContainer />
       <ConfirmDialog
         isOpen={showLogoutConfirm}
@@ -477,67 +161,12 @@ export const AdminLayout = () => {
         variant="danger"
       />
 
-      {/* Global Search Modal */}
-      <AnimatePresence>
-        {showSearchModal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-[999]"
-              onClick={() => setShowSearchModal(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-primary rounded-2xl shadow-2xl border border-border z-[1000] overflow-hidden"
-            >
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur rounded-xl px-4 py-3">
-                  <Search size={20} className="text-white/80" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t('admin.searchPlaceholder')}
-                    className="flex-1 bg-transparent outline-none text-white placeholder:text-white/60 text-sm font-medium"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && searchQuery.trim()) {
-                        setShowSearchModal(false);
-                        navigate(`/admin/products?search=${encodeURIComponent(searchQuery)}`);
-                      }
-                    }}
-                  />
-                  <kbd className="px-2 py-1 text-[10px] font-bold text-white/80 bg-white/20 rounded-lg">ESC</kbd>
-                </div>
-              </div>
-              
-              <div className="p-4">
-                <p className="mb-3 text-xs font-semibold text-tertiary uppercase tracking-widest">
-                  ⚡ {t('common.quickAccess')}
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  <button onClick={() => { setShowSearchModal(false); navigate('/admin/orders'); }} className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-secondary transition-colors group">
-                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white"><ShoppingCart size={18} /></div>
-                    <span className="text-xs font-medium">{t('admin.sidebar.orders')}</span>
-                  </button>
-                  <button onClick={() => { setShowSearchModal(false); navigate('/admin/products'); }} className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-secondary transition-colors group">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white"><Package size={18} /></div>
-                    <span className="text-xs font-medium">{t('admin.sidebar.products')}</span>
-                  </button>
-                  <button onClick={() => { setShowSearchModal(false); navigate('/admin/customers'); }} className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-secondary transition-colors group">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white"><Users size={18} /></div>
-                    <span className="text-xs font-medium">{t('admin.sidebar.customers')}</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <AdminSearchModal 
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
     </div>
   );
 };

@@ -17,7 +17,7 @@ import { getImageUrl } from '@/utils/format';
 export const CategoriesPage = () => {
     const { t } = useTranslation();
     const toast = useToast();
-    
+
     // State
     const [page, setPage] = useState(PaginationDefaults.PAGE_INDEX);
     const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
@@ -25,7 +25,7 @@ export const CategoriesPage = () => {
     const [viewingCategory, setViewingCategory] = useState<CategoryDto | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
     // Data Fetching
     const { data, isLoading, isFetching, refetch } = useAdminCategories({
@@ -107,13 +107,13 @@ export const CategoriesPage = () => {
         {
             label: t('admin.stats.mainCategories'),
             value: statsData?.main || 0,
-            icon: <Folder size={24} />, 
+            icon: <Folder size={24} />,
             color: 'emerald',
             loading: isStatsLoading
         },
         {
             label: t('admin.stats.active'),
-            value: statsData?.active || 0, 
+            value: statsData?.active || 0,
             icon: <RefreshCw size={24} />,
             color: 'amber',
             loading: isStatsLoading
@@ -190,9 +190,9 @@ export const CategoriesPage = () => {
                     <div className="space-y-4">
                         {viewingCategory.imageURL && (
                             <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
-                                <img 
-                                    src={getImageUrl(viewingCategory.imageURL)} 
-                                    alt={viewingCategory.name} 
+                                <img
+                                    src={getImageUrl(viewingCategory.imageURL)}
+                                    alt={viewingCategory.name}
                                     className="w-full h-full object-cover"
                                 />
                             </div>

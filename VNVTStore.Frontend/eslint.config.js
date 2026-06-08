@@ -63,7 +63,7 @@ export default tseslint.config(
       'react/react-in-jsx-scope': 'off', // Not needed for React 17+
       'react/prop-types': 'off', // We use TS
       'no-unused-vars': 'off', // Handle via @typescript-eslint
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
       'eqeqeq': 'error',
     },

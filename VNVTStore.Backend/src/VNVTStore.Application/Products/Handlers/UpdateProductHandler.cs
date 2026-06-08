@@ -23,6 +23,7 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
     private readonly IBaseUrlService _baseUrlService;
     private readonly IApplicationDbContext _context;
     private readonly ILogger<UpdateProductHandler> _logger;
+    private readonly IProductSynchronizationService _syncService;
 
     public UpdateProductHandler(
         IRepository<TblProduct> repository,
@@ -32,13 +33,15 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
         IBaseUrlService baseUrlService,
         IFileService fileService,
         IApplicationDbContext context,
-        ILogger<UpdateProductHandler> logger)
+        ILogger<UpdateProductHandler> logger,
+        IProductSynchronizationService syncService)
         : base(repository, unitOfWork, mapper, dapperContext)
     {
         _baseUrlService = baseUrlService;
         _fileService = fileService;
         _context = context;
         _logger = logger;
+        _syncService = syncService;
     }
 
     public async Task<Result<ProductDto>> Handle(UpdateCommand<UpdateProductDto, ProductDto> request, CancellationToken cancellationToken)
@@ -84,91 +87,10 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
                 product.IsActive = request.Dto.IsActive.Value;
             }
 
-            if (request.Dto.Details != null)
-            {
-                if (product.TblProductDetails.Any())
-                {
-                    _context.TblProductDetails.RemoveRange(product.TblProductDetails);
-                }
-                
-                product.TblProductDetails.Clear();
-                
-                foreach (var detail in request.Dto.Details)
-                {
-                    product.TblProductDetails.Add(new TblProductDetail {
-                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-                        ProductCode = product.Code,
-                        DetailType = detail.DetailType,
-                        SpecName = detail.SpecName,
-                        SpecValue = detail.SpecValue,
-                        IsActive = true
-                    });
-                }
-            }
-
-            if (request.Dto.ProductUnits != null)
-            {
-                var existingUnits = product.TblProductUnits.ToList();
-                if (existingUnits.Any())
-                {
-                    _context.TblProductUnits.RemoveRange(existingUnits);
-                }
-                
-                product.TblProductUnits.Clear();
-
-                foreach (var unitDto in request.Dto.ProductUnits)
-                {
-                    var unitCatalog = _context.TblUnits.Local.FirstOrDefault(u => u.Name == unitDto.UnitName)
-                                      ?? await _context.TblUnits.FirstOrDefaultAsync(u => u.Name == unitDto.UnitName, cancellationToken);
-                    
-                    if (unitCatalog == null)
-                    {
-                        unitCatalog = new TblUnit { 
-                            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-                            Name = unitDto.UnitName, 
-                            IsActive = true 
-                        };
-                        await _context.TblUnits.AddAsync(unitCatalog, cancellationToken);
-                    }
-
-                    var newProductUnit = new TblProductUnit
-                    {
-                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-                        ProductCode = product.Code,
-                        UnitCode = unitCatalog.Code, 
-                        ConversionRate = unitDto.ConversionRate,
-                        Price = unitDto.Price,
-                        IsBaseUnit = unitDto.IsBaseUnit,
-                        IsActive = true,
-                        Unit = unitCatalog
-                    };
-
-                    product.TblProductUnits.Add(newProductUnit);
-                }
-            }
-
-            if (request.Dto.Variants != null)
-            {
-                if (product.TblProductVariants.Any())
-                {
-                    _context.TblProductVariants.RemoveRange(product.TblProductVariants);
-                }
-                product.TblProductVariants.Clear();
-
-                foreach (var variantDto in request.Dto.Variants)
-                {
-                    product.TblProductVariants.Add(new TblProductVariant
-                    {
-                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
-                        ProductCode = product.Code,
-                        SKU = variantDto.SKU,
-                        Attributes = variantDto.Attributes,
-                        Price = variantDto.Price,
-                        StockQuantity = variantDto.StockQuantity,
-                        IsActive = true
-                    });
-                }
-            }
+            // Cleanly delegate synchronization to dedicated service (FOLLOWS SOLID SRP)
+            await _syncService.SyncDetailsAsync(product, request.Dto.Details, cancellationToken);
+            await _syncService.SyncUnitsAsync(product, request.Dto.ProductUnits, cancellationToken);
+            await _syncService.SyncVariantsAsync(product, request.Dto.Variants, cancellationToken);
 
             if (request.Dto.Images != null && request.Dto.Images.Count > 0)
             {

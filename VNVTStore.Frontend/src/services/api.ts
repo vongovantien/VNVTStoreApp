@@ -34,7 +34,6 @@ export const injectStore = (store: StoreApi<AuthState>) => {
  */
 
 import { getApiUrl } from '@/utils/config';
-const API_BASE_URL = getApiUrl();
 
 // ============ Constants ============
 export const HttpStatus = {
@@ -148,7 +147,6 @@ export const AsyncState = {
 // ============ Axios Setup ============
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
   timeout: 30000, // 30 seconds timeout
   headers: {
     'Content-Type': 'application/json',
@@ -157,9 +155,12 @@ const axiosInstance: AxiosInstance = axios.create({
   withCredentials: true // For XSRF protection if backend supports it
 });
 
-// Request Interceptor: Attach Token
+// Request Interceptor: Attach Token and Dynamic Base URL
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Dynamically set baseURL on every request to pick up port changes
+    config.baseURL = getApiUrl();
+    
     const token = authStore?.getState()?.token;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`; // Use standard 'Bearer' prefix
@@ -235,7 +236,7 @@ axiosInstance.interceptors.response.use(
                 throw new Error('No tokens available');
               }
 
-              const response = await axios.post<ApiResponse<{ token: string; refreshToken: string }>>(`${API_BASE_URL}/auth/refresh-token`, {
+              const response = await axios.post<ApiResponse<{ token: string; refreshToken: string }>>(`${getApiUrl()}/auth/refresh-token`, {
                 token,
                 refreshToken
               });

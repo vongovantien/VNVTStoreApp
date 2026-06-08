@@ -17,9 +17,9 @@ export const uploadService = {
         const relativeUrl = response.data.url;
 
         // Get API Base URL from env or default, remove /api/v1 part to get root
-        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
         // Simple heuristic: assume API is at /api/v1 and we want root
-        // If apiBaseUrl is http://localhost:5176/api/v1, root is http://localhost:5176
+        // If apiBaseUrl is http://localhost:5000/api/v1, root is http://localhost:5000
         const rootUrl = apiBaseUrl.replace(/\/api\/v1\/?$/, '');
 
         // Robust join: ensure one slash between root and relative path

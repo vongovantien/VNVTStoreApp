@@ -143,7 +143,7 @@ export const getImageUrl = (path: string | undefined | null): string => {
     if (path.startsWith('http') || path.startsWith('data:')) return path;
 
     // Get base URL from env or default
-    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
     // Remove /api/v1 suffix to get root
     const root = apiBase.replace(/\/api\/v1\/?$/, '');
 

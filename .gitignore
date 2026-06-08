@@ -94,3 +94,7 @@ obj/
 *.log
 logs/
 VNVTStore.Backend/src/VNVTStore.API/logs/
+
+# Test results & debug artifacts
+test-results/
+e2e/*.png

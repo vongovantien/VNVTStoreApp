@@ -91,7 +91,7 @@ public class CartHandlersTests
             .Returns(CreateMockDbSet(products).Object);
 
         var cart = TblCart.Create("USER001");
-        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync("USER001", It.IsAny<CancellationToken>()))
+        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync("USER001", It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
 
         var command = new AddToCartCommand("USER001", "PROD001", 10, null, null); // Requesting 10 but only 5 available
@@ -116,7 +116,7 @@ public class CartHandlersTests
             .Returns(CreateMockDbSet(products).Object);
 
         var cart = TblCart.Create("USER001");
-        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync("USER001", It.IsAny<CancellationToken>()))
+        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync("USER001", It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
 
         _mapperMock.Setup(x => x.Map<CartDto>(cart)).Returns(new CartDto { UserCode = "USER001" });
@@ -138,7 +138,7 @@ public class CartHandlersTests
     {
         // Arrange
         var cart = TblCart.Create("USER001");
-        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync("USER001", It.IsAny<CancellationToken>()))
+        _cartServiceMock.Setup(x => x.GetOrCreateCartAsync("USER001", It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
 
         var command = new UpdateCartItemCommand("USER001", "ITEM001", 5);

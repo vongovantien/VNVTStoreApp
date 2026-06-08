@@ -45,7 +45,7 @@ export const SystemConfigsPage = () => {
       if (res.success && res.data) {
         setConfigs(res.data);
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error(t('messages.loadError'));
     } finally {
       setIsLoading(false);
@@ -164,7 +164,7 @@ export const SystemConfigsPage = () => {
       } else {
         toast.error(res.message || t('messages.updateError'));
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error(t('messages.errorOccurred'));
     }
   };

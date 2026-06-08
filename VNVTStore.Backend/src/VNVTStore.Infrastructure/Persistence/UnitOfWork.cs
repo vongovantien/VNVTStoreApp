@@ -47,6 +47,16 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
+    public async Task<int> ExecuteSqlRawAsync(string sql, CancellationToken cancellationToken = default, params object[] parameters)
+    {
+        return await _context.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken);
+    }
+
+    public bool IsNew<T>(T entity) where T : class
+    {
+        return _context.Entry(entity).State == EntityState.Added;
+    }
+
     public void ClearChangeTracker()
     {
         _context.ChangeTracker.Clear();

@@ -73,7 +73,7 @@ export const useProductDetail = (id: string | undefined) => {
         if (product && hasFixedPrice) {
             setIsAddingToCart(true);
             try {
-                void addToCart(product, quantity);
+                await addToCart(product, quantity);
                 success(t('product.addToCartSuccess') || 'Đã thêm vào giỏ hàng');
             } catch (err) {
                 console.error(err);

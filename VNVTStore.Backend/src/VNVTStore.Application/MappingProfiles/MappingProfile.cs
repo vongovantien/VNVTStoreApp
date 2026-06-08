@@ -108,6 +108,11 @@ public class MappingProfile : Profile
         // Cart mappings
         CreateMap<TblCart, CartDto>()
             .ForMember(dest => dest.CartItems, opt => opt.MapFrom(src => src.TblCartItems))
+            .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => 
+                src.TblCartItems.Sum(item => 
+                    item.Quantity * (item.ProductCodeNavigation != null ? item.ProductCodeNavigation.Price : 0)
+                )
+            ))
             .ReverseMap();
         
         CreateMap<TblCartItem, CartItemDto>()

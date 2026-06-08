@@ -38,7 +38,7 @@ public static class PermissionSeeder
         await context.SaveChangesAsync(default);
 
         // 2. Seed Admin Role
-        var adminRole = await context.TblRoles.FirstOrDefaultAsync(r => r.Code == "ADMIN");
+        var adminRole = await context.TblRoles.OrderBy(r => r.Code).FirstOrDefaultAsync(r => r.Code == "ADMIN");
         if (adminRole == null)
         {
             adminRole = new TblRole
@@ -53,7 +53,7 @@ public static class PermissionSeeder
         }
 
         // 2b. Seed Customer Role
-        var customerRole = await context.TblRoles.FirstOrDefaultAsync(r => r.Code == "CUSTOMER");
+        var customerRole = await context.TblRoles.OrderBy(r => r.Code).FirstOrDefaultAsync(r => r.Code == "CUSTOMER");
         if (customerRole == null)
         {
             customerRole = new TblRole

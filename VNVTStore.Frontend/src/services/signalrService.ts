@@ -1,6 +1,6 @@
 import * as signalR from '@microsoft/signalr';
 
-const HUB_URL = 'http://localhost:5176/notificationHub';
+const HUB_URL = 'http://localhost:5000/notificationHub';
 
 export interface SignalRNotification {
     Key?: string;

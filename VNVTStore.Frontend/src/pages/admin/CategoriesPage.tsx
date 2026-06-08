@@ -18,7 +18,7 @@ import { useToast } from '@/store';
 export default function CategoriesPage() {
   const { t } = useTranslation();
   const toast = useToast();
-  
+
   // Pagination State
   const [pagination, setPagination] = useState({
     pageIndex: PaginationDefaults.PAGE_INDEX,
@@ -26,17 +26,17 @@ export default function CategoriesPage() {
   });
 
   // Get API Base URL for image previews
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5176/api/v1';
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
   // Data Fetching with Pagination
-  const { 
-    data, 
-    isLoading, 
-    refetch 
+  const {
+    data,
+    isLoading,
+    refetch
   } = useCategoriesList({
     pageIndex: pagination.pageIndex,
     pageSize: pagination.pageSize,
-    fields: CATEGORY_LIST_FIELDS, 
+    fields: CATEGORY_LIST_FIELDS,
   });
 
   const categories = data?.categories || [];
@@ -59,23 +59,23 @@ export default function CategoriesPage() {
     deleteMutation
   } = useEntityManager<CategoryDto, CreateCategoryRequest, UpdateCategoryRequest>({
     service: categoryService,
-    queryKey: ['categories'] 
+    queryKey: ['categories']
   });
 
   const confirmDelete = async (item: CategoryDto) => {
     try {
-        const result = await productService.search({ filters: [{ field: 'CategoryCode', value: item.code }], pageSize: 1 });
-        if (result.success && result.data && result.data.totalItems > 0) {
-             toast.error(t('admin.categories.cannotDelete', { 
-                 count: result.data.totalItems, 
-                 defaultValue: `Cannot delete: Category contains ${result.data.totalItems} products.` 
-             }));
-             return;
-        }
-        baseConfirmDelete(item);
+      const result = await productService.search({ filters: [{ field: 'CategoryCode', value: item.code }], pageSize: 1 });
+      if (result.success && result.data && result.data.totalItems > 0) {
+        toast.error(t('admin.categories.cannotDelete', {
+          count: result.data.totalItems,
+          defaultValue: `Cannot delete: Category contains ${result.data.totalItems} products.`
+        }));
+        return;
+      }
+      baseConfirmDelete(item);
     } catch (error) {
-        console.error("Check dependency failed", error);
-        baseConfirmDelete(item);
+      console.error("Check dependency failed", error);
+      baseConfirmDelete(item);
     }
   };
 
@@ -94,23 +94,23 @@ export default function CategoriesPage() {
   const bulkDeleteMutation = useMutation({
     mutationFn: (codes: string[]) => categoryService.deleteMultiple(codes),
     onSuccess: () => {
-        toast.success(t('common.deleteSuccess'));
-        setItemsToDelete(null);
-        setSelectedIds(new Set());
-        refetch();
+      toast.success(t('common.deleteSuccess'));
+      setItemsToDelete(null);
+      setSelectedIds(new Set());
+      refetch();
     },
     onError: (err: Error) => {
-        toast.error(err.message || t('common.deleteError'));
+      toast.error(err.message || t('common.deleteError'));
     }
   });
 
   const handleBulkDelete = (items: CategoryDto[]) => {
-      setItemsToDelete(items);
+    setItemsToDelete(items);
   };
 
   const confirmBulkDelete = () => {
     if (itemsToDelete) {
-        bulkDeleteMutation.mutate(itemsToDelete.map(i => i.code));
+      bulkDeleteMutation.mutate(itemsToDelete.map(i => i.code));
     }
   };
 
@@ -166,36 +166,36 @@ export default function CategoriesPage() {
       accessor: (category) => {
 
         return (
-        <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600">
-               {category.imageURL ? (
-                 <img 
-                   src={getImageUrl(category.imageURL)} 
-                   alt={category.name} 
-                   className="w-full h-full object-cover"
-                   onError={(e) => console.error("Img Error:", e.currentTarget.src)}
-                 />
-               ) : (
-                 <div className="w-full h-full flex items-center justify-center text-gray-400">
-                   <Folder size={18} />
-                 </div>
-               )}
+              {category.imageURL ? (
+                <img
+                  src={getImageUrl(category.imageURL)}
+                  alt={category.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => console.error("Img Error:", e.currentTarget.src)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <Folder size={18} />
+                </div>
+              )}
             </div>
 
-        </div>
-      );
-    }
-  },
+          </div>
+        );
+      }
+    },
     {
       id: 'name',
       header: t('common.fields.name'),
       accessor: 'name',
     },
-    { 
+    {
       id: 'description',
       header: t('common.fields.description'),
       accessor: 'description',
-      className: 'hidden md:table-cell text-gray-500' 
+      className: 'hidden md:table-cell text-gray-500'
     },
     {
       id: 'parentCode',
@@ -205,7 +205,7 @@ export default function CategoriesPage() {
         return (
           <Badge variant="outline" className="gap-1">
             <Folder size={10} className="mr-1" />
-            {category.parentCode} 
+            {category.parentCode}
           </Badge>
         );
       }
@@ -227,45 +227,45 @@ export default function CategoriesPage() {
   ];
 
   const prepareInitialData = (): Partial<CategoryFormData> | undefined => {
-      if (!editingCategory) return undefined;
-      return {
-          name: editingCategory.name,
-          description: editingCategory.description || undefined,
-          parentCode: editingCategory.parentCode || undefined,
-          imageURL: editingCategory.imageURL || undefined,
-          isActive: editingCategory.isActive ?? true
-      };
+    if (!editingCategory) return undefined;
+    return {
+      name: editingCategory.name,
+      description: editingCategory.description || undefined,
+      parentCode: editingCategory.parentCode || undefined,
+      imageURL: editingCategory.imageURL || undefined,
+      isActive: editingCategory.isActive ?? true
+    };
   };
 
   // Fetch Stats
   const { data: statsData, isLoading: isStatsLoading } = useQuery({
-      queryKey: ['category-stats'],
-      queryFn: () => categoryService.getStats(),
-      staleTime: 60000,
+    queryKey: ['category-stats'],
+    queryFn: () => categoryService.getStats(),
+    staleTime: 60000,
   });
 
   const stats: StatItem[] = [
-      {
-          label: t('admin.stats.totalCategories'),
-          value: statsData?.total || 0,
-          icon: <Folder size={24} />,
-          color: 'indigo',
-          loading: isStatsLoading
-      },
-      {
-          label: t('admin.stats.mainCategories'),
-          value: statsData?.main || 0,
-          icon: <Folder size={24} />, 
-          color: 'emerald',
-          loading: isStatsLoading
-      },
-      {
-          label: t('admin.stats.active'),
-          value: statsData?.active || 0, 
-          icon: <RefreshCw size={24} />,
-          color: 'amber',
-          loading: isStatsLoading
-      }
+    {
+      label: t('admin.stats.totalCategories'),
+      value: statsData?.total || 0,
+      icon: <Folder size={24} />,
+      color: 'indigo',
+      loading: isStatsLoading
+    },
+    {
+      label: t('admin.stats.mainCategories'),
+      value: statsData?.main || 0,
+      icon: <Folder size={24} />,
+      color: 'emerald',
+      loading: isStatsLoading
+    },
+    {
+      label: t('admin.stats.active'),
+      value: statsData?.active || 0,
+      icon: <RefreshCw size={24} />,
+      color: 'amber',
+      loading: isStatsLoading
+    }
   ];
 
   return (
@@ -305,16 +305,16 @@ export default function CategoriesPage() {
           }
         ]}
         onAdvancedSearch={() => {
-             // Basic search simulation
-             refetch(); // In real app, pass filters to hook
+          // Basic search simulation
+          refetch(); // In real app, pass filters to hook
         }}
         onImport={async (file) => {
           try {
-              await categoryService.import(file);
-              toast.success(t('messages.importSuccess'));
-              refetch();
+            await categoryService.import(file);
+            toast.success(t('messages.importSuccess'));
+            refetch();
           } catch (err: any) {
-              toast.error(err.message || t('messages.importError'));
+            toast.error(err.message || t('messages.importError'));
           }
         }}
         importTemplateUrl="/api/v1/categories/template"
@@ -336,20 +336,20 @@ export default function CategoriesPage() {
         onPageSizeChange={handlePageSizeChange}
       />
 
-       {/* Form Modal */}
-       {isFormOpen && (
+      {/* Form Modal */}
+      {isFormOpen && (
         <CategoryForm
-            initialData={prepareInitialData() || {}}
-            onSubmit={handleFormSubmit}
-            onCancel={closeForm}
-            isLoading={isSubmitting}
-            modalOpen={isFormOpen}
-            modalTitle={editingCategory ? t('admin.actions.edit') : t('admin.actions.create')}
-            excludeCode={editingCategory?.code || ''}
-            imageBaseUrl={apiBaseUrl.replace(/\/api\/v1\/?$/, '')}
+          initialData={prepareInitialData() || {}}
+          onSubmit={handleFormSubmit}
+          onCancel={closeForm}
+          isLoading={isSubmitting}
+          modalOpen={isFormOpen}
+          modalTitle={editingCategory ? t('admin.actions.edit') : t('admin.actions.create')}
+          excludeCode={editingCategory?.code || ''}
+          imageBaseUrl={apiBaseUrl.replace(/\/api\/v1\/?$/, '')}
         />
-       )}
-       
+      )}
+
       {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!categoryToDelete}
@@ -374,14 +374,14 @@ export default function CategoriesPage() {
           <div className="space-y-4">
             {viewingCategory.imageURL && (
               <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
-                <img 
-                  src={getImageUrl(viewingCategory.imageURL)} 
-                  alt={viewingCategory.name} 
+                <img
+                  src={getImageUrl(viewingCategory.imageURL)}
+                  alt={viewingCategory.name}
                   className="w-full h-full object-cover"
                 />
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.code')}</label>
@@ -391,19 +391,19 @@ export default function CategoriesPage() {
                 <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.name')}</label>
                 <p className="font-medium">{viewingCategory.name}</p>
               </div>
-              
+
               {viewingCategory.parentCode && (
                 <div className="col-span-2">
-                   <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.parentCategory')}</label>
-                   <div className="mt-1">
-                     <Badge variant="outline">
-                       <Folder size={12} className="mr-1" />
-                       {categories.find(c => c.code === viewingCategory.parentCode)?.name || viewingCategory.parentCode}
-                     </Badge>
-                   </div>
+                  <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.parentCategory')}</label>
+                  <div className="mt-1">
+                    <Badge variant="outline">
+                      <Folder size={12} className="mr-1" />
+                      {categories.find(c => c.code === viewingCategory.parentCode)?.name || viewingCategory.parentCode}
+                    </Badge>
+                  </div>
                 </div>
               )}
-              
+
               <div className="col-span-2">
                 <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.description')}</label>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -411,16 +411,16 @@ export default function CategoriesPage() {
                 </p>
               </div>
 
-               <div className="col-span-2">
-                  <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.status')}</label>
-                  <div className="mt-1">
-                      <Badge color={viewingCategory.isActive !== false ? 'success' : 'secondary'}>
-                          {viewingCategory.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
-                      </Badge>
-                  </div>
+              <div className="col-span-2">
+                <label className="text-xs text-secondary uppercase font-semibold">{t('common.fields.status')}</label>
+                <div className="mt-1">
+                  <Badge color={viewingCategory.isActive !== false ? 'success' : 'secondary'}>
+                    {viewingCategory.isActive !== false ? t('common.status.active') : t('common.status.inactive')}
+                  </Badge>
+                </div>
               </div>
             </div>
-            
+
             <div className="flex justify-end pt-4">
               <Button onClick={() => setViewingCategory(null)}>
                 {t('common.close')}

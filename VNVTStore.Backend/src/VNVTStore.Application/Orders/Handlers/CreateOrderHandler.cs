@@ -86,10 +86,10 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
 
             List<ProcessableOrderItem> itemsToProcess = new();
             
-            if (!string.IsNullOrEmpty(userCode))
+            if (!string.IsNullOrEmpty(request.userCode))
             {
                 // Console.WriteLine($"[HANDLER] Processing userCode: '{userCode}'");
-                var cart = await _cartService.GetOrCreateCartAsync(userCode, cancellationToken);
+                var cart = await _cartService.GetOrCreateCartAsync(userCode, false, cancellationToken);
                 // Console.WriteLine($"[HANDLER] Cart: {(cart == null ? "null" : cart.TblCartItems.Count.ToString())} items");
 
                 if (cart == null || !cart.TblCartItems.Any())

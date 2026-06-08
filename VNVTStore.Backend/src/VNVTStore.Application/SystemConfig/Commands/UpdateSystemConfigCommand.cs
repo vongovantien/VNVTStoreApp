@@ -30,6 +30,7 @@ namespace VNVTStore.Application.SystemConfig.Commands
         public async Task<Result<SystemConfigDto>> Handle(UpdateSystemConfigCommand request, CancellationToken cancellationToken)
         {
             var config = await _context.TblSystemConfigs
+                .OrderBy(c => c.Code)
                 .FirstOrDefaultAsync(c => c.Code == request.ConfigKey, cancellationToken);
 
             if (config == null)

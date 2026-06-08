@@ -5,6 +5,8 @@ import { authService } from '@/services';
 import { injectStore, AuthState } from '@/services/api';
 import { useDiagnosticStore } from './diagnosticStore';
 import { createAuthStorage } from './helpers';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/config/firebase';
 
 // AuthState interface is imported from @/services/api to avoid circular dependency
 
@@ -53,6 +55,12 @@ export const useAuthStore = create<AuthState>()(
                     payload: { email: user?.email },
                     severity: 'INFO'
                 });
+                
+                // Sign out from Firebase Auth as well
+                signOut(auth).catch((err) => {
+                    console.error('Firebase signout failed:', err);
+                });
+
                 set({ user: null, isAuthenticated: false, token: null, refreshToken: null, permissions: [], menus: [] });
             },
             updateUser: (userData: Partial<User>) => {

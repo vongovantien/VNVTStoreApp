@@ -428,6 +428,7 @@ export const ProductsPage = () => {
             // Force unmount on close to reset form state
           >
             <ProductForm
+              key={editingProduct?.code || 'new'}
               initialData={productInitialData as any}
               onSubmit={editingProduct ? handleUpdate : handleCreate}
               onCancel={closeForm}

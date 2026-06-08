@@ -2,19 +2,27 @@
  * Central configuration for API and application settings
  */
 
-const DEFAULT_API_URL = 'http://localhost:5176/api/v1';
+const DEFAULT_API_URL = 'http://localhost:5000/api/v1';
 const STORAGE_KEY = 'vnvt_api_url';
 
 export const getApiUrl = (): string => {
-    // 1. Check localStorage for manual overrides (useful for testing/staging)
+    // 1. Check environment variable first (Vite build time)
+    const envUrl = import.meta.env.VITE_API_URL;
+    
+    // 2. Check localStorage for manual overrides
     const savedUrl = (typeof localStorage !== 'undefined') ? localStorage.getItem(STORAGE_KEY) : null;
+    
+    // If we have a saved URL but it's NOT the target port (5000), clear it and use defaults
+    if (savedUrl && !savedUrl.includes(':5000')) {
+        localStorage.removeItem(STORAGE_KEY);
+        return envUrl || DEFAULT_API_URL;
+    }
+
     if (savedUrl && savedUrl.trim() !== '') {
         return savedUrl.trim();
     }
     
-    // 2. Check environment variable (Vite build time)
-    // 3. Fallback to hardcoded default
-    return import.meta.env.VITE_API_URL || DEFAULT_API_URL;
+    return envUrl || DEFAULT_API_URL;
 };
 
 /**
@@ -53,9 +61,19 @@ export const getApiRoot = (): string => {
     return apiUrl.replace(/\/api\/v1\/?$/, '');
 };
 
+declare global {
+  interface Window {
+    VNVT_CONFIG: {
+        getApiUrl: () => string;
+        setApiUrl: (url: string | null) => void;
+        getApiRoot: () => string;
+    };
+  }
+}
+
 // Expose to window for easy debugging/switching in browser console
 if (typeof window !== 'undefined') {
-    (window as any).VNVT_CONFIG = {
+    window.VNVT_CONFIG = {
         getApiUrl,
         setApiUrl,
         getApiRoot

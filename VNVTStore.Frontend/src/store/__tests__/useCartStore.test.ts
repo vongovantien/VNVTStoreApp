@@ -73,7 +73,7 @@ describe('useCartStore', () => {
 
     it('removeItem should work for Guest', async () => {
         act(() => {
-            useCartStore.setState({ items: [{ code: 'ITEM1', product: { code: 'P1', price: 100 } as any, quantity: 1 }] });
+            useCartStore.setState({ items: [{ code: 'ITEM1', product: { code: 'P1', price: 100 } as unknown as Product, quantity: 1 }] });
         });
 
         const { result } = renderHook(() => useCartStore());
@@ -86,7 +86,7 @@ describe('useCartStore', () => {
 
     it('applyCoupon should calculate discount correctly (Percentage)', async () => {
         act(() => {
-            useCartStore.setState({ items: [{ code: 'ITEM1', product: { code: 'P1', price: 100000 } as any, quantity: 2 }] });
+            useCartStore.setState({ items: [{ code: 'ITEM1', product: { code: 'P1', price: 100000 } as unknown as Product, quantity: 2 }] });
         });
 
         const mockPromotion = {
@@ -111,8 +111,8 @@ describe('useCartStore', () => {
     it('getTotal should return correct summation', () => {
         useCartStore.setState({ 
             items: [
-                { code: '1', product: { price: 100 } as any, quantity: 2 },
-                { code: '2', product: { price: 50 } as any, quantity: 3 }
+                { code: '1', product: { price: 100 } as unknown as Product, quantity: 2 },
+                { code: '2', product: { price: 50 } as unknown as Product, quantity: 3 }
             ] 
         });
 

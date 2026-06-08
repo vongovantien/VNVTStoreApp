@@ -50,7 +50,7 @@ export const SystemSecretsPage = () => {
       if (res.success && res.data) {
         setSecrets(res.data);
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error(t('messages.loadError'));
     } finally {
       setIsLoading(false);
@@ -112,7 +112,7 @@ export const SystemSecretsPage = () => {
         ),
         minWidth: '100px'
     }
-  ], [t, visibleKeys]);
+  ], [t, visibleKeys, toggleVisibility]);
 
   const handleEdit = (secret: SystemSecretDto) => {
     setEditingSecret(secret);
@@ -186,7 +186,7 @@ export const SystemSecretsPage = () => {
       } else {
         toast.error(res.message || t('messages.saveError'));
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error(t('messages.errorOccurred'));
     }
   };

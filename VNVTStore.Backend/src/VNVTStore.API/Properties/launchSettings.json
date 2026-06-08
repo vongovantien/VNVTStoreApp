@@ -5,7 +5,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:5176",
+      "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ConnectionStrings__DefaultConnection": "Host=ep-holy-heart-a58jnnwh-pooler.us-east-2.aws.neon.tech;Port=5432;Database=saleapp;Username=saleapp_owner;Password=yp8tDSnX6vjF;SSL Mode=Require;Trust Server Certificate=true",
@@ -32,7 +32,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "https://localhost:7092;http://localhost:5176",
+      "applicationUrl": "https://localhost:7092;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ConnectionStrings__DefaultConnection": "Host=localhost;Database=shoppingdb;Username=postgres;Password=password",

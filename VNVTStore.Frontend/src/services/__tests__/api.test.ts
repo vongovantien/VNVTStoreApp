@@ -121,7 +121,7 @@ describe('ApiClient & Interceptors', () => {
 
     try {
       await responseInterceptorError(error);
-    } catch (e) {
+    } catch (_e) {
       // Expected
     }
 

@@ -52,6 +52,10 @@ vi.mock('@/store', () => ({
     useCartStore: () => ({
         addItem: vi.fn(),
     }),
+    useToast: () => ({
+        success: vi.fn(),
+        error: vi.fn(),
+    }),
 }));
 
 vi.mock('@/components/ui', () => ({

@@ -1,13 +1,12 @@
 import { apiClient, type ApiResponse } from './api';
 import type { CartItem, Product } from '@/types';
 
-// ============ API DTOs ============
 export interface CartItemDto {
     code: string;
     productCode: string;
     productName: string;
-    productImage: string;
-    price: number;
+    productPrice: number;
+    productImage?: string;
     quantity: number;
     size?: string;
     color?: string;
@@ -37,9 +36,8 @@ function mapCartDtoToCartItems(dto: CartDto): CartItem[] {
     if (!dto || !dto.cartItems) return [];
 
     return dto.cartItems.map(item => {
-        // Use property checking instead of any
         const productName = item.productName || 'Unknown Product';
-        const productPrice = item.price || 0;
+        const productPrice = item.productPrice || 0;
         const productImage = item.productImage || 'https://picsum.photos/seed/product/400/400';
 
         return {

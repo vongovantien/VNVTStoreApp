@@ -25,9 +25,9 @@ public class GetProductStatsHandler : BaseHandler<TblProduct>,
 
     public async Task<Result<ProductStatsDto>> Handle(GetProductStatsQuery request, CancellationToken cancellationToken)
     {
-        var total = await _repository.CountAsync(p => p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
-        var lowStock = await _repository.CountAsync(p => p.ModifiedType != ModificationType.Delete.ToString() && p.StockQuantity > 0 && p.StockQuantity <= (p.MinStockLevel ?? 10), cancellationToken);
-        var outOfStock = await _repository.CountAsync(p => p.ModifiedType != ModificationType.Delete.ToString() && (p.StockQuantity == null || p.StockQuantity <= 0), cancellationToken);
+        var total = await _repository.CountAsync(p => p.ModifiedType == null || p.ModifiedType != ModificationType.Delete.ToString(), cancellationToken);
+        var lowStock = await _repository.CountAsync(p => (p.ModifiedType == null || p.ModifiedType != ModificationType.Delete.ToString()) && p.StockQuantity > 0 && p.StockQuantity <= (p.MinStockLevel ?? 10), cancellationToken);
+        var outOfStock = await _repository.CountAsync(p => (p.ModifiedType == null || p.ModifiedType != ModificationType.Delete.ToString()) && p.StockQuantity != null && p.StockQuantity <= 0, cancellationToken);
 
         return Result.Success(new ProductStatsDto
         {

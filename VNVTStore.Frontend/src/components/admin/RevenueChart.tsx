@@ -9,16 +9,19 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { formatCurrency } from '@/utils/format';
+import { useTranslation } from 'react-i18next';
 
 interface RevenueChartProps {
   data?: { label: string; revenue: number; orderCount: number }[];
 }
 
 const RevenueChartInner = ({ data = [] }: RevenueChartProps) => {
+  const { t } = useTranslation();
+
   if (!data || data.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
-        Chưa có dữ liệu
+        {t('common.noData') || 'Chưa có dữ liệu'}
       </div>
     );
   }
@@ -58,7 +61,7 @@ const RevenueChartInner = ({ data = [] }: RevenueChartProps) => {
           />
           <Tooltip
             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            formatter={(value) => [formatCurrency(Number(value) || 0), 'Doanh thu']}
+            formatter={(value) => [formatCurrency(Number(value) || 0), t('dashboard.stats.revenue') || 'Doanh thu']}
           />
           <Area
             type="monotone"

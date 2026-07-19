@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import i18n from '@/config/i18n';
 
 export interface ExportColumn<T> {
     key: keyof T;
@@ -59,7 +60,7 @@ export const exportToExcel = async <T extends object>(
                 row[String(col.key)] = '';
             } else if (typeof value === 'boolean') {
                 // Translate boolean to Vietnamese
-                row[String(col.key)] = value ? 'Có' : 'Không';
+                row[String(col.key)] = value ? (i18n.t('common.yes', 'Yes')) : (i18n.t('common.no', 'No'));
             } else if (typeof value === 'object') {
                 row[String(col.key)] = JSON.stringify(value);
             } else {
@@ -129,7 +130,7 @@ export const exportToCSV = <T extends object>(
                         return '';
                     }
                     if (typeof value === 'boolean') {
-                        return value ? 'Có' : 'Không';
+                        return value ? (i18n.t('common.yes', 'Yes')) : (i18n.t('common.no', 'No'));
                     }
                     if (typeof value === 'string') {
                         return `"${value.replace(/"/g, '""')}"`;

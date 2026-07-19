@@ -8,22 +8,18 @@ public class CreateReviewDtoValidator : AbstractValidator<CreateReviewDto>
     public CreateReviewDtoValidator()
     {
         RuleFor(x => x.UserCode)
-            .NotEmpty()
-            .WithMessage("Mã người dùng không được để trống");
+            .NotEmpty();
 
         RuleFor(x => x.OrderItemCode)
-            .NotEmpty()
-            .WithMessage("Mã sản phẩm đã mua không được để trống");
+            .NotEmpty();
 
         RuleFor(x => x.Rating)
             .InclusiveBetween(1, 5)
-            .When(x => x.Rating.HasValue)
-            .WithMessage("Đánh giá phải từ 1 đến 5 sao");
+            .When(x => x.Rating.HasValue);
 
         RuleFor(x => x.Comment)
             .MaximumLength(1000)
-            .When(x => !string.IsNullOrEmpty(x.Comment))
-            .WithMessage("Nhận xét không được vượt quá 1000 ký tự");
+            .When(x => !string.IsNullOrEmpty(x.Comment));
     }
 }
 
@@ -33,12 +29,10 @@ public class UpdateReviewDtoValidator : AbstractValidator<UpdateReviewDto>
     {
         RuleFor(x => x.Rating)
             .InclusiveBetween(1, 5)
-            .When(x => x.Rating.HasValue)
-            .WithMessage("Đánh giá phải từ 1 đến 5 sao");
+            .When(x => x.Rating.HasValue);
 
         RuleFor(x => x.Comment)
             .MaximumLength(1000)
-            .When(x => !string.IsNullOrEmpty(x.Comment))
-            .WithMessage("Nhận xét không được vượt quá 1000 ký tự");
+            .When(x => !string.IsNullOrEmpty(x.Comment));
     }
 }

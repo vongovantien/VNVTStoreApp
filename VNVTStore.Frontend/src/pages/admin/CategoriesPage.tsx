@@ -25,6 +25,9 @@ export default function CategoriesPage() {
     pageSize: PaginationDefaults.PAGE_SIZE
   });
 
+  // Search/Filter State
+  const [filters, setFilters] = useState<Record<string, string>>({});
+
   // Get API Base URL for image previews
   const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
@@ -36,6 +39,8 @@ export default function CategoriesPage() {
   } = useCategoriesList({
     pageIndex: pagination.pageIndex,
     pageSize: pagination.pageSize,
+    search: filters.name || '',
+    isActive: filters.isActive || undefined,
     fields: CATEGORY_LIST_FIELDS,
   });
 
@@ -295,18 +300,22 @@ export default function CategoriesPage() {
             placeholder: t('common.placeholders.search')
           },
           {
-            id: 'status',
+            id: 'isActive',
             label: t('common.fields.status'),
             type: 'select',
             options: [
-              { value: 'active', label: t('admin.status.active') },
-              { value: 'inactive', label: t('admin.status.inactive') }
+              { value: 'true', label: t('admin.status.active') },
+              { value: 'false', label: t('admin.status.inactive') }
             ]
           }
         ]}
-        onAdvancedSearch={() => {
-          // Basic search simulation
-          refetch(); // In real app, pass filters to hook
+        onAdvancedSearch={(newFilters) => {
+          setFilters(newFilters);
+          setPagination(prev => ({ ...prev, pageIndex: PaginationDefaults.PAGE_INDEX }));
+        }}
+        onReset={() => {
+          setFilters({});
+          setPagination({ pageIndex: PaginationDefaults.PAGE_INDEX, pageSize: PaginationDefaults.PAGE_SIZE });
         }}
         onImport={async (file) => {
           try {

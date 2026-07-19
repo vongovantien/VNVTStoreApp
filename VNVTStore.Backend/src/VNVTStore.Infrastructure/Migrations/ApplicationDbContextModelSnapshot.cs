@@ -566,6 +566,137 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.ToTable("TblDebtLog", (string)null);
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblDelivery", b =>
+                {
+                    b.Property<string>("Code")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValueSql("('DLV'::text || lpad((nextval('delivery_code_seq'::regclass))::text, 6, '0'::text))");
+
+                    b.Property<string>("CarrierName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EstimatedDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ModifiedType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("OrderCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("PickedUpAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ShipperCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ShipperName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ShipperPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValueSql("'assigned'::character varying");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Code")
+                        .HasName("TblDelivery_pkey");
+
+                    b.HasIndex("OrderCode")
+                        .IsUnique();
+
+                    b.HasIndex("ShipperCode");
+
+                    b.HasIndex(new[] { "OrderCode" }, "idx_delivery_order");
+
+                    b.HasIndex(new[] { "TrackingNumber" }, "idx_delivery_tracking");
+
+                    b.ToTable("TblDelivery", (string)null);
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblDeliveryHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DeliveryCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("UpdatedByCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id")
+                        .HasName("TblDeliveryHistory_pkey");
+
+                    b.HasIndex("UpdatedByCode");
+
+                    b.HasIndex(new[] { "DeliveryCode" }, "idx_deliveryhistory_delivery");
+
+                    b.ToTable("TblDeliveryHistory", (string)null);
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblFile", b =>
                 {
                     b.Property<string>("Code")
@@ -841,6 +972,9 @@ namespace VNVTStore.Infrastructure.Migrations
                         .HasColumnType("numeric(15,2)")
                         .HasDefaultValueSql("0");
 
+                    b.Property<DateTime?>("EstimatedDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<decimal>("FinalAmount")
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
@@ -873,6 +1007,9 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -2247,6 +2384,44 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblDelivery", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblOrder", "OrderCodeNavigation")
+                        .WithOne("TblDelivery")
+                        .HasForeignKey("VNVTStore.Domain.Entities.TblDelivery", "OrderCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblDelivery_OrderCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblUser", "ShipperCodeNavigation")
+                        .WithMany()
+                        .HasForeignKey("ShipperCode")
+                        .HasConstraintName("TblDelivery_ShipperCode_fkey");
+
+                    b.Navigation("OrderCodeNavigation");
+
+                    b.Navigation("ShipperCodeNavigation");
+                });
+
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblDeliveryHistory", b =>
+                {
+                    b.HasOne("VNVTStore.Domain.Entities.TblDelivery", "DeliveryCodeNavigation")
+                        .WithMany("TblDeliveryHistories")
+                        .HasForeignKey("DeliveryCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("TblDeliveryHistory_DeliveryCode_fkey");
+
+                    b.HasOne("VNVTStore.Domain.Entities.TblUser", "UpdatedByCodeNavigation")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByCode")
+                        .HasConstraintName("TblDeliveryHistory_UpdatedByCode_fkey");
+
+                    b.Navigation("DeliveryCodeNavigation");
+
+                    b.Navigation("UpdatedByCodeNavigation");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblNotification", b =>
                 {
                     b.HasOne("VNVTStore.Domain.Entities.TblUser", "UserCodeNavigation")
@@ -2596,6 +2771,11 @@ namespace VNVTStore.Infrastructure.Migrations
                     b.Navigation("TblOrders");
                 });
 
+            modelBuilder.Entity("VNVTStore.Domain.Entities.TblDelivery", b =>
+                {
+                    b.Navigation("TblDeliveryHistories");
+                });
+
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblMenu", b =>
                 {
                     b.Navigation("TblRoleMenus");
@@ -2603,6 +2783,8 @@ namespace VNVTStore.Infrastructure.Migrations
 
             modelBuilder.Entity("VNVTStore.Domain.Entities.TblOrder", b =>
                 {
+                    b.Navigation("TblDelivery");
+
                     b.Navigation("TblOrderItems");
 
                     b.Navigation("TblPayment");

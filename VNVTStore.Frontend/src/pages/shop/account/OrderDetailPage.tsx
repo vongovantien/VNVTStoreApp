@@ -11,6 +11,7 @@ import { useOrder } from '@/hooks';
 import { formatDate, formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { OrderItemDto } from '@/services/orderService';
 import { OrderStatus } from '@/constants';
+import { OrderDeliveryTimeline } from './components/OrderDeliveryTimeline';
 
 // ============ ORDER ITEM COMPONENT (MEMOIZED) ============
 // Extracted to prevent re-renders of list items when parent state changes unrelated to items
@@ -178,6 +179,9 @@ const OrderDetailPage = () => {
                              <span className="text-tertiary">- {formatDate(order.orderDate)}</span>
                         </div>
                     </div>
+
+                    {/* Delivery Timeline */}
+                    <OrderDeliveryTimeline orderCode={order.code} />
                 </div>
 
                 {/* Right Column: Summary & Info */}

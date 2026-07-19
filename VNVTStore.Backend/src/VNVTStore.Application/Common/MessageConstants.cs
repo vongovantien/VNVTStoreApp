@@ -68,6 +68,14 @@ public static class MessageConstants
     public const string NotificationSystemBroadcast = "Notification.SystemBroadcast";
 
     public const string RequireLoginOrGuestInfo = "Auth.RequireLoginOrGuestInfo";
+
+    // Custom Validation Keys
+    public const string UsernameInvalid = "Validation.UsernameInvalid";
+    public const string PhoneInvalid = "Validation.PhoneInvalid";
+    public const string DiscountTypeInvalid = "Validation.DiscountTypeInvalid";
+    public const string OrderOrCartRequired = "Validation.OrderOrCartRequired";
+    public const string SlugInvalid = "Validation.SlugInvalid";
+    public const string UrlInvalid = "Validation.UrlInvalid";
     
     private static readonly Dictionary<string, Dictionary<string, string>> Messages = new()
     {
@@ -121,12 +129,18 @@ public static class MessageConstants
             [CouponExpired] = "Mã giảm giá đã hết hạn hoặc chưa bắt đầu",
             [CouponLimitReached] = "Mã giảm giá đã hết lượt sử dụng",
             [CouponNotFound] = "Không tìm thấy mã giảm giá",
-    [CouponMinOrderAmountNotMet] = "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng mã này",
+            [CouponMinOrderAmountNotMet] = "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng mã này",
             [CategoryHasProducts] = "Không thể xóa danh mục '{0}' vì đang có {1} sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.",
             [NotificationNewOrder] = "Đơn hàng mới: {0}",
             [NotificationSystemBroadcast] = "Thông báo hệ thống: {0}",
             [UserHasOrders] = "Người dùng '{0}' đang có {1} đơn hàng hoạt động.",
-            [RequireLoginOrGuestInfo] = "Vui lòng đăng nhập hoặc điền thông tin liên hệ."
+            [RequireLoginOrGuestInfo] = "Vui lòng đăng nhập hoặc điền thông tin liên hệ.",
+            [UsernameInvalid] = "Tên đăng nhập chỉ được chứa chữ, số và dấu gạch dưới",
+            [PhoneInvalid] = "Số điện thoại phải có 10-11 chữ số",
+            [DiscountTypeInvalid] = "Loại giảm giá phải là 'PERCENTAGE' hoặc 'AMOUNT'",
+            [OrderOrCartRequired] = "Đơn hàng phải có giỏ hàng hoặc danh sách sản phẩm",
+            [SlugInvalid] = "Slug chỉ được chứa chữ thường, số và dấu gạch ngang",
+            [UrlInvalid] = "URL liên kết không hợp lệ"
         },
         ["en"] = new()
         {
@@ -178,12 +192,18 @@ public static class MessageConstants
             [CouponExpired] = "Coupon has expired or not yet started",
             [CouponLimitReached] = "Coupon usage limit reached",
             [CouponNotFound] = "Coupon not found",
-    [CouponMinOrderAmountNotMet] = "Minimum order amount for this coupon not reached",
+            [CouponMinOrderAmountNotMet] = "Minimum order amount for this coupon not reached",
             [CategoryHasProducts] = "Cannot delete category '{0}' because it has {1} products. Please move products to another category first.",
             [NotificationNewOrder] = "New Order: {0}",
             [NotificationSystemBroadcast] = "System Notification: {0}",
             [UserHasOrders] = "User '{0}' has {1} active orders.",
-            [RequireLoginOrGuestInfo] = "Please login or provide contact information."
+            [RequireLoginOrGuestInfo] = "Please login or provide contact information.",
+            [UsernameInvalid] = "Username can only contain letters, numbers, and underscores",
+            [PhoneInvalid] = "Phone number must have 10-11 digits",
+            [DiscountTypeInvalid] = "Discount type must be 'PERCENTAGE' or 'AMOUNT'",
+            [OrderOrCartRequired] = "Order must have either a cart or a list of items",
+            [SlugInvalid] = "Slug can only contain lowercase letters, numbers, and hyphens",
+            [UrlInvalid] = "Invalid link URL"
         }
     };
 

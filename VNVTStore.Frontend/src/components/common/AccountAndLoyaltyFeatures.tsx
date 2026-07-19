@@ -59,12 +59,13 @@ export const PrintableSpecSheet = ({
   productName: string; 
   specs: Record<string, string>;
 }) => {
+  const { t } = useTranslation();
   const handlePrint = () => window.print();
 
   return (
     <div>
       <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-hover transition-colors">
-        <Printer size={16} /> Tải thông số kỹ thuật
+        <Printer size={16} /> {t('common.downloadSpecs', 'Tải thông số kỹ thuật')}
       </button>
       {/* Print-only section */}
       <div className="hidden print:block p-8">
@@ -106,43 +107,46 @@ export const BrandStoryModal = ({
   isOpen: boolean; 
   onClose: () => void; 
   brand: { name: string; description: string; founded?: string; origin?: string };
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-        onClick={onClose}
-      >
+}) => {
+  const { t } = useTranslation();
+  return (
+    <AnimatePresence>
+      {isOpen && (
         <motion.div
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          exit={{ scale: 0.9 }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md bg-primary rounded-2xl shadow-2xl overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={onClose}
         >
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <BookOpen size={20} className="text-indigo-600" /> {brand.name}
-                </h2>
-                {brand.founded && <p className="text-xs text-tertiary mt-0.5">Thành lập: {brand.founded}</p>}
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-primary rounded-2xl shadow-2xl overflow-hidden"
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <BookOpen size={20} className="text-indigo-600" /> {brand.name}
+                  </h2>
+                  {brand.founded && <p className="text-xs text-tertiary mt-0.5">{t('common.founded', 'Thành lập')}: {brand.founded}</p>}
+                </div>
+                <button onClick={onClose} className="p-1 hover:bg-hover rounded-lg"><X size={18} /></button>
               </div>
-              <button onClick={onClose} className="p-1 hover:bg-hover rounded-lg"><X size={18} /></button>
+              <p className="text-sm text-secondary leading-relaxed">{brand.description}</p>
+              {brand.origin && (
+                <p className="text-xs text-tertiary mt-3">📍 {t('common.origin', 'Xuất xứ')}: {brand.origin}</p>
+              )}
             </div>
-            <p className="text-sm text-secondary leading-relaxed">{brand.description}</p>
-            {brand.origin && (
-              <p className="text-xs text-tertiary mt-3">📍 Xuất xứ: {brand.origin}</p>
-            )}
-          </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
+      )}
+    </AnimatePresence>
+  );
+};
 
 // ============ #24 Delayed Shipping Selection ============
 export const DelayedShippingPicker = ({ 
@@ -233,7 +237,7 @@ export const RecurringOrderToggle = ({
 
 // ============ #31 Birthday Rewards ============
 export const BirthdayReward = ({ birthday, couponCode }: { birthday?: string; couponCode?: string }) => {
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   
   if (!couponCode) return null;
@@ -248,15 +252,15 @@ export const BirthdayReward = ({ birthday, couponCode }: { birthday?: string; co
           <Cake size={20} className="text-pink-600" />
         </div>
         <div className="flex-1">
-          <h4 className="text-sm font-bold text-pink-800 dark:text-pink-300">🎂 Chúc mừng sinh nhật!</h4>
-          <p className="text-xs text-pink-600 dark:text-pink-400">Giảm 15% cho đơn hàng trong tháng sinh nhật</p>
+          <h4 className="text-sm font-bold text-pink-800 dark:text-pink-300">🎂 {t('common.happyBirthday', 'Chúc mừng sinh nhật!')}</h4>
+          <p className="text-xs text-pink-600 dark:text-pink-400">{t('common.birthdayPromo', 'Giảm 15% cho đơn hàng trong tháng sinh nhật')}</p>
         </div>
         <button
           onClick={() => { navigator.clipboard.writeText(couponCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
           className="flex items-center gap-1 px-3 py-1.5 bg-pink-600 text-white rounded-lg text-xs font-medium hover:bg-pink-700"
         >
           {copied ? <Check size={12} /> : <Copy size={12} />}
-          {copied ? 'Đã sao chép' : couponCode}
+          {copied ? t('common.copied', 'Đã sao chép') : couponCode}
         </button>
       </div>
     </div>
@@ -265,22 +269,23 @@ export const BirthdayReward = ({ birthday, couponCode }: { birthday?: string; co
 
 // ============ #32 Referral Dashboard ============
 export const ReferralDashboard = ({ referralCode, referralCount, totalEarnings }: { referralCode: string; referralCount: number; totalEarnings: number }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const formatPrice = (p: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
 
   return (
     <div className="bg-primary rounded-xl border p-5">
       <h3 className="font-bold flex items-center gap-2 mb-4">
-        <Users size={18} /> Chương trình giới thiệu
+        <Users size={18} /> {t('common.referralProgram', 'Chương trình giới thiệu')}
       </h3>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-secondary rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-indigo-600">{referralCount}</div>
-          <div className="text-xs text-tertiary">Bạn bè đã mời</div>
+          <div className="text-xs text-tertiary">{t('common.friendsInvited', 'Bạn bè đã mời')}</div>
         </div>
         <div className="bg-secondary rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-green-600">{formatPrice(totalEarnings)}</div>
-          <div className="text-xs text-tertiary">Thu nhập từ giới thiệu</div>
+          <div className="text-xs text-tertiary">{t('common.referralEarnings', 'Thu nhập từ giới thiệu')}</div>
         </div>
       </div>
       <div className="flex items-center gap-2 bg-secondary rounded-lg p-3">
@@ -308,11 +313,11 @@ export const NotificationPreferences = ({
   onChange: (topic: NotifTopic, channel: keyof NotifPref, value: boolean) => void;
 }) => {
   const topics: { key: NotifTopic; label: string; icon: React.ReactNode }[] = [
-    { key: 'orders', label: 'Đơn hàng', icon: <Package size={16} /> },
-    { key: 'promotions', label: 'Khuyến mãi', icon: <Gift size={16} /> },
-    { key: 'reviews', label: 'Đánh giá', icon: <Reply size={16} /> },
-    { key: 'priceDrops', label: 'Giảm giá', icon: <Zap size={16} /> },
-    { key: 'restocks', label: 'Hàng về', icon: <RefreshCw size={16} /> },
+    { key: 'orders', label: t('common.account.orders', 'Đơn hàng'), icon: <Package size={16} /> },
+    { key: 'promotions', label: t('common.account.promotions', 'Khuyến mãi'), icon: <Gift size={16} /> },
+    { key: 'reviews', label: t('common.account.reviews', 'Đánh giá'), icon: <Reply size={16} /> },
+    { key: 'priceDrops', label: t('common.account.priceDrops', 'Giảm giá'), icon: <Zap size={16} /> },
+    { key: 'restocks', label: t('common.account.restocks', 'Hàng về'), icon: <RefreshCw size={16} /> },
   ];
 
   return (
@@ -355,11 +360,11 @@ export const ReturnRequestForm = ({
   const [details, setDetails] = useState('');
 
   const reasons = [
-    'Sản phẩm lỗi',
-    'Sai sản phẩm',
-    'Không đúng mô tả',
-    'Đổi ý / Không cần nữa',
-    'Khác',
+    t('rma.reasons.defective', 'Sản phẩm lỗi'),
+    t('rma.reasons.wrongItem', 'Sai sản phẩm'),
+    t('rma.reasons.notAsDescribed', 'Không đúng mô tả'),
+    t('rma.reasons.changeOfMind', 'Đổi ý / Không cần nữa'),
+    t('rma.reasons.other', 'Khác'),
   ];
 
   return (
@@ -368,18 +373,18 @@ export const ReturnRequestForm = ({
         <RotateCcw size={16} /> {t('order.returnRequest', 'Yêu cầu trả hàng')} — #{orderCode}
       </h4>
       <div>
-        <label className="text-xs text-tertiary mb-1 block">Lý do trả hàng</label>
+        <label className="text-xs text-tertiary mb-1 block">{t('rma.reason', 'Lý do trả hàng')}</label>
         <select value={reason} onChange={(e) => setReason(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-primary focus:outline-none focus:border-indigo-500">
-          <option value="">Chọn lý do...</option>
+          <option value="">{t('rma.selectReason', 'Chọn lý do...')}</option>
           {reasons.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>
       <div>
-        <label className="text-xs text-tertiary mb-1 block">Chi tiết</label>
-        <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm bg-primary focus:outline-none focus:border-indigo-500 resize-none" placeholder="Mô tả chi tiết vấn đề..." />
+        <label className="text-xs text-tertiary mb-1 block">{t('rma.details', 'Chi tiết')}</label>
+        <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm bg-primary focus:outline-none focus:border-indigo-500 resize-none" placeholder={t('rma.detailsPlaceholder', 'Mô tả chi tiết vấn đề...')} />
       </div>
       <button onClick={() => onSubmit({ reason, details })} disabled={!reason} className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
-        Gửi yêu cầu
+        {t('rma.submit', 'Gửi yêu cầu')}
       </button>
     </div>
   );
@@ -390,13 +395,14 @@ export const WalletDisplay = ({ balance, transactions }: {
   balance: number; 
   transactions: Array<{ type: 'credit' | 'debit'; amount: number; description: string; date: string }>;
 }) => {
+  const { t } = useTranslation();
   const formatPrice = (p: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
 
   return (
     <div className="bg-primary rounded-xl border overflow-hidden">
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 text-white">
         <div className="flex items-center gap-2 text-white/70 text-sm mb-1">
-          <Wallet size={16} /> Số dư ví
+          <Wallet size={16} /> {t('wallet.balance', 'Số dư ví')}
         </div>
         <div className="text-3xl font-bold">{formatPrice(balance)}</div>
       </div>

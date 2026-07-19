@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
+  ShoppingBag,
   Users,
   FileText,
   Folder,
@@ -39,6 +40,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', code: 'DASHBOARD', end: true },
       { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders', code: 'ORDERS', end: false },
+      { path: '/admin/pos', icon: ShoppingBag, label: 'admin.sidebar.pos', code: 'ORDERS', end: false },
       { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers', code: 'CUSTOMERS', end: false },
     ]
   },
@@ -128,7 +130,7 @@ export const AdminSidebar = ({
                 )}
             </div>
 
-            <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark p-4 space-y-6">
+            <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark p-4 space-y-6 max-h-[calc(100vh-8.5rem)]">
                 {filteredGroups.map((group, index) => (
                     <div key={index}>
                         {(!collapsed || mobile) && (

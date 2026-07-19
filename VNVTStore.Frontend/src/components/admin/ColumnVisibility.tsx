@@ -73,7 +73,7 @@ export const ColumnVisibility = ({ columns, visibleColumns, onChange }: ColumnVi
               </label>
             ))}
             {filteredColumns.length === 0 && (
-              <p className="px-4 py-3 text-sm text-tertiary text-center">Không tìm thấy</p>
+              <p className="px-4 py-3 text-sm text-tertiary text-center">{t('common.noResults') || 'Không tìm thấy'}</p>
             )}
           </div>
         </div>

@@ -107,7 +107,7 @@ export const CouponSelector: React.FC<CouponSelectorProps> = ({
                                         )}
                                         <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
                                             <Clock size={12} />
-                                            <span>Hết hạn: {new Date(coupon.endDate).toLocaleDateString()}</span>
+                                            <span>{t('checkout.expires', 'Hết hạn')}: {new Date(coupon.endDate).toLocaleDateString()}</span>
                                         </div>
                                     </div>
                                 </div>

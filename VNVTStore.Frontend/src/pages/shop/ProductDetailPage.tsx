@@ -146,7 +146,7 @@ export const ProductDetailPage = () => {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
           {/* Image Gallery */}
-          <div className="lg:col-span-2 sticky top-24 self-start">
+          <div className="lg:col-span-2 lg:sticky lg:top-24 self-start">
             <ImageGallery 
               images={images} 
               video={product.videoURL || undefined}

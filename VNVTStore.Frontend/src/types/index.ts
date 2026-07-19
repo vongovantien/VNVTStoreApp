@@ -219,6 +219,49 @@ export interface OrderItem {
     quantity: number;
 }
 
+// ============ Delivery Types ============
+export enum DeliveryStatus {
+    Pending = 'Pending',
+    Assigned = 'Assigned',
+    PickedUp = 'PickedUp',
+    InTransit = 'InTransit',
+    Delivered = 'Delivered',
+    Failed = 'Failed',
+    Returned = 'Returned'
+}
+
+export interface DeliveryHistory {
+    id: number;
+    deliveryCode: string;
+    status: DeliveryStatus;
+    statusText: string;
+    note?: string;
+    location?: string;
+    timestamp: string;
+    updatedByCode?: string;
+    updatedByName?: string;
+}
+
+export interface Delivery {
+    code: string;
+    orderCode: string;
+    shipperCode?: string;
+    shipperName?: string;
+    shipperPhone?: string;
+    trackingNumber?: string;
+    carrierName?: string;
+    estimatedDeliveryDate?: string;
+    note?: string;
+    status: DeliveryStatus;
+    statusText: string;
+    pickedUpAt?: string;
+    deliveredAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    histories: DeliveryHistory[];
+}
+
+
 // ============ Review Types ============
 export interface Review {
     code: string;

@@ -821,7 +821,7 @@ export const ProductsPage = () => {
           <div className="flex-1 min-w-0">
             {/* Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-primary rounded-xl mb-6 border shadow-sm">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 flex-1 min-w-0">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -869,7 +869,7 @@ export const ProductsPage = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-secondary font-medium uppercase tracking-wider">Tiền tệ:</span>
+                  <span className="text-xs text-secondary font-medium uppercase tracking-wider">{t('filter.currency', 'Tiền tệ:')}</span>
                   <div className="flex bg-secondary rounded-lg p-0.5 border">
                     <button
                       onClick={() => setCurrency('VND')}
@@ -908,7 +908,7 @@ export const ProductsPage = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 {/* Sort */}
                 <div className="relative flex items-center gap-2">
                   <span className="text-sm text-secondary hidden sm:inline">{t('filter.sortBy')}:</span>
@@ -991,7 +991,7 @@ export const ProductsPage = () => {
 
             {/* Feature 27: Related Category Chips */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <span className="text-sm font-medium text-secondary whitespace-nowrap">Gợi ý:</span>
+              <span className="text-sm font-medium text-secondary whitespace-nowrap">{t('product.suggestions', 'Gợi ý:')}</span>
               {categories.slice(0, 8).map(cat => (
                 <button
                   key={cat.code}
@@ -1063,11 +1063,11 @@ export const ProductsPage = () => {
                {isFetchingNextPage && (
                  <div className="flex flex-col items-center gap-2">
                     <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-secondary">Đang tải thêm sản phẩm...</span>
+                    <span className="text-sm text-secondary">{t('product.loadingMore', 'Đang tải thêm sản phẩm...')}</span>
                  </div>
                )}
                {!hasNextPage && products.length > 0 && (
-                 <p className="text-sm text-tertiary">Bạn đã xem hết {products.length} sản phẩm.</p>
+                 <p className="text-sm text-tertiary">{t('product.viewedAll', { count: products.length }, `Bạn đã xem hết ${products.length} sản phẩm.`)}</p>
                )}
             </div>
           </div>
@@ -1139,7 +1139,7 @@ export const ProductsPage = () => {
             <div className="container mx-auto px-4 py-3 flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm font-medium text-slate-700 shrink-0">
                 <Scale size={18} className="text-indigo-600" />
-                So sánh ({compareItems.length}/3)
+                {t('product.compareCount', { current: compareItems.length, max: 3 }, `So sánh (${compareItems.length}/3)`)}
               </div>
               <div className="flex-1 flex gap-3 overflow-x-auto">
                 {compareItems.map((item) => (
@@ -1167,7 +1167,7 @@ export const ProductsPage = () => {
                   onClick={() => { /* navigate to compare page or open modal */ }}
                   leftIcon={<Scale size={14} />}
                 >
-                  So sánh ngay
+                  {t('product.compareNow', 'So sánh ngay')}
                 </Button>
               </div>
             </div>
@@ -1190,10 +1190,10 @@ export const ProductsPage = () => {
                   onClick={handleSelectAll}
                   className="text-sm font-medium underline underline-offset-2 hover:text-indigo-200"
                 >
-                  {selectedCodes.size === filteredProducts.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                  {selectedCodes.size === filteredProducts.length ? t('product.deselectAll', 'Bỏ chọn tất cả') : t('product.selectAll', 'Chọn tất cả')}
                 </button>
                 <span className="text-sm opacity-80">
-                  Đã chọn {selectedCodes.size} sản phẩm
+                  {t('product.selectedCount', { count: selectedCodes.size }, `Đã chọn ${selectedCodes.size} sản phẩm`)}
                 </span>
               </div>
               <div className="flex gap-2">
@@ -1203,14 +1203,14 @@ export const ProductsPage = () => {
                   variant="outline"
                   leftIcon={<Heart size={16} />}
                 >
-                  Yêu thích
+                  {t('product.favorite', 'Yêu thích')}
                 </Button>
                 <Button
                   onClick={handleBulkAddToCart}
                   className="bg-white text-indigo-600 hover:bg-indigo-50"
                   leftIcon={<ShoppingCart size={16} />}
                 >
-                  Mục tiêu {selectedCodes.size} sản phẩm
+                  {t('product.targetCount', { count: selectedCodes.size }, `Mục tiêu ${selectedCodes.size} sản phẩm`)}
                 </Button>
               </div>
             </div>
@@ -1238,11 +1238,12 @@ export const ProductsPage = () => {
               ))}
             </div>
             <div className="text-sm font-medium">
-              <span className="text-indigo-600 font-bold">{compareItems.length}</span> sản phẩm trong danh sách so sánh
+              <span className="text-indigo-600 font-bold mr-1">{compareItems.length}</span>
+              {t('product.compareItemsCountText', 'sản phẩm trong danh sách so sánh')}
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="ghost" onClick={clearCompare}>Xóa hết</Button>
-              <Button size="sm" variant="primary" onClick={() => setCompareOpen(true)}>So sánh ngay</Button>
+              <Button size="sm" variant="ghost" onClick={clearCompare}>{t('product.clearAll', 'Xóa hết')}</Button>
+              <Button size="sm" variant="primary" onClick={() => setCompareOpen(true)}>{t('product.compareNow', 'So sánh ngay')}</Button>
             </div>
           </motion.div>
         )}
@@ -1268,22 +1269,22 @@ export const ProductsPage = () => {
               <HelpCircle size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-900">Câu hỏi thường gặp</h2>
-              <p className="text-slate-500 text-sm">Mọi thứ bạn cần biết về sản phẩm và dịch vụ của chúng tôi</p>
+              <h2 className="text-2xl font-bold text-slate-900">{t('faq.title', 'Câu hỏi thường gặp')}</h2>
+              <p className="text-slate-500 text-sm">{t('faq.subtitle', 'Mọi thứ bạn cần biết về sản phẩm và dịch vụ của chúng tôi')}</p>
             </div>
           </div>
           <div className="space-y-4">
             <FAQItem 
-              question="Chính sách bảo hành của VNVT Store như thế nào?" 
-              answer="Tất cả sản phẩm chính hãng tại VNVT Store được bảo hành từ 12-24 tháng tùy dòng sản phẩm. Chúng tôi hỗ trợ 1 đổi 1 trong vòng 7 ngày nếu có lỗi từ nhà sản xuất."
+              question={t('faq.q1', 'Chính sách bảo hành của VNVT Store như thế nào?')} 
+              answer={t('faq.a1', 'Tất cả sản phẩm chính hãng tại VNVT Store được bảo hành từ 12-24 tháng tùy dòng sản phẩm. Chúng tôi hỗ trợ 1 đổi 1 trong vòng 7 ngày nếu có lỗi từ nhà sản xuất.')}
             />
             <FAQItem 
-              question="Tôi có thể kiểm tra hàng trước khi thanh toán không?" 
-              answer="Có, VNVT Store khuyến khích khách hàng đồng kiểm cùng nhân viên giao hàng để đảm bảo sản phẩm đúng mẫu mã và không bị hư hỏng do vận chuyển."
+              question={t('faq.q2', 'Tôi có thể kiểm tra hàng trước khi thanh toán không?')} 
+              answer={t('faq.a2', 'Có, VNVT Store khuyến khích khách hàng đồng kiểm cùng nhân viên giao hàng để đảm bảo sản phẩm đúng mẫu mã và không bị hư hỏng do vận chuyển.')}
             />
             <FAQItem 
-              question="Làm sao để biết sản phẩm còn hàng?" 
-              answer="Trạng thái tồn kho được cập nhật thời gian thực trên website. Nếu sản phẩm hiển thị 'Hết hàng', bạn có thể bật thông báo restock để nhận tin nhắn ngay khi hàng về."
+              question={t('faq.q3', 'Làm sao để biết sản phẩm còn hàng?')} 
+              answer={t('faq.a3', 'Trạng thái tồn kho được cập nhật thời gian thực trên website. Nếu sản phẩm hiển thị \'Hết hàng\', bạn có thể bật thông báo restock để nhận tin nhắn ngay khi hàng về.')}
             />
           </div>
         </div>

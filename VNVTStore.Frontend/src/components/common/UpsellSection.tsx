@@ -80,7 +80,7 @@ export const UpsellSection: React.FC<UpsellSectionProps> = ({ currentProduct }) 
 
                 <div className="flex flex-col xl:flex-row gap-8 items-start">
                     {/* Products List */}
-                    <div className="flex-1 w-full overflow-x-auto pb-4 custom-scrollbar">
+                    <div className="flex-1 w-full min-w-0 overflow-x-auto pb-4 custom-scrollbar">
                         <div className="flex items-center gap-4 min-w-max">
                             {/* Current Product */}
                             <div className="w-48 group">

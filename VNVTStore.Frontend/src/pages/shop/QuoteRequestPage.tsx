@@ -128,7 +128,7 @@ export const QuoteRequestPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label={t('quote.name')}
-                    placeholder="Nguyễn Văn A"
+                    placeholder={t('common.placeholders.fullName')}
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     leftIcon={<User size={18} />}
@@ -136,7 +136,7 @@ export const QuoteRequestPage = () => {
                   />
                   <Input
                     label={t('quote.phone')}
-                    placeholder="0901234567"
+                    placeholder={t('common.placeholders.phone')}
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     leftIcon={<Phone size={18} />}
@@ -145,7 +145,7 @@ export const QuoteRequestPage = () => {
                   <Input
                     label={t('shared.email')}
                     type="email"
-                    placeholder="email@example.com"
+                    placeholder={t('common.placeholders.email')}
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     leftIcon={<Mail size={18} />}
@@ -153,7 +153,7 @@ export const QuoteRequestPage = () => {
                   />
                   <Input
                     label={t('quote.company')}
-                    placeholder="Tên công ty (không bắt buộc)"
+                    placeholder={t('quote.companyPlaceholder')}
                     value={formData.company}
                     onChange={(e) => handleInputChange('company', e.target.value)}
                   />
@@ -170,7 +170,7 @@ export const QuoteRequestPage = () => {
                 <div>
                   <label className="block text-sm font-medium mb-2">{t('quote.note')}</label>
                   <textarea
-                    placeholder="Mô tả yêu cầu của bạn..."
+                    placeholder={t('quote.notePlaceholder')}
                     value={formData.note}
                     onChange={(e) => handleInputChange('note', e.target.value)}
                     rows={4}

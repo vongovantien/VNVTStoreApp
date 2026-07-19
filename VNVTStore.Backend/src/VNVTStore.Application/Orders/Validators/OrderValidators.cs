@@ -1,5 +1,6 @@
 using FluentValidation;
 using VNVTStore.Application.Orders.Commands;
+using VNVTStore.Application.Common;
 
 namespace VNVTStore.Application.Orders.Validators;
 
@@ -13,7 +14,7 @@ public class CreateOrderDtoValidator : AbstractValidator<CreateOrderDto>
         // Must have either CartCode (for logged users) or Items (for guests)
         RuleFor(x => x)
             .Must(x => !string.IsNullOrEmpty(x.CartCode) || (x.Items != null && x.Items.Count > 0))
-            .WithMessage("Đơn hàng phải có giỏ hàng hoặc danh sách sản phẩm");
+            .WithMessage(_ => MessageConstants.Get(MessageConstants.OrderOrCartRequired));
 
         When(x => x.Items != null && x.Items.Count > 0, () =>
         {
@@ -22,11 +23,10 @@ public class CreateOrderDtoValidator : AbstractValidator<CreateOrderDto>
 
         RuleFor(x => x.Phone)
             .Matches(@"^[0-9]{10,11}$").When(x => !string.IsNullOrEmpty(x.Phone))
-            .WithMessage("Số điện thoại phải có 10-11 chữ số");
+            .WithMessage(_ => MessageConstants.Get(MessageConstants.PhoneInvalid));
 
         RuleFor(x => x.Email)
-            .EmailAddress().When(x => !string.IsNullOrEmpty(x.Email))
-            .WithMessage("Email không hợp lệ");
+            .EmailAddress().When(x => !string.IsNullOrEmpty(x.Email));
     }
 }
 
@@ -35,9 +35,9 @@ public class OrderCreationItemDtoValidator : AbstractValidator<OrderCreationItem
     public OrderCreationItemDtoValidator()
     {
         RuleFor(x => x.ProductCode)
-            .NotEmpty().WithMessage("Mã sản phẩm không được để trống");
+            .NotEmpty();
 
         RuleFor(x => x.Quantity)
-            .GreaterThan(0).WithMessage("Số lượng phải lớn hơn 0");
+            .GreaterThan(0);
     }
 }

@@ -22,6 +22,8 @@ export interface CustomerDto {
     isActive: boolean;
     isEmailVerified: boolean;
     lastLogin?: string;
+    permissions?: string[];
+    menus?: string[];
 }
 
 export interface CreateCustomerRequest {

@@ -5,7 +5,7 @@ import { createTabStorage } from './helpers';
 
 // ============ UI Store ============
 interface UIState {
-    theme: 'light' | 'dark' | 'cyberpunk';
+    theme: 'light' | 'dark';
     sidebarOpen: boolean;
     searchOpen: boolean;
     cartOpen: boolean;
@@ -26,13 +26,10 @@ export const useUIStore = create<UIState>()(
             cartOpen: false,
             quickViewProduct: null,
             toggleTheme: () => {
-                const themes: UIState['theme'][] = ['light', 'dark', 'cyberpunk'];
-                const currentIndex = themes.indexOf(get().theme);
-                const nextIndex = (currentIndex + 1) % themes.length;
-                const newTheme = themes[nextIndex];
+                const newTheme = get().theme === 'light' ? 'dark' : 'light';
 
                 document.documentElement.setAttribute('data-theme', newTheme);
-                if (newTheme !== 'light') {
+                if (newTheme === 'dark') {
                     document.documentElement.classList.add('dark');
                 } else {
                     document.documentElement.classList.remove('dark');
@@ -58,11 +55,15 @@ if (typeof window !== 'undefined' && window.localStorage) {
     if (stored) {
         try {
             const { state } = JSON.parse(stored);
-            if (state?.theme) {
-                document.documentElement.setAttribute('data-theme', state.theme);
-                if (state.theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                }
+            let theme = state?.theme;
+            if (theme !== 'light' && theme !== 'dark') {
+                theme = 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
             }
         } catch {
             // Ignore parse errors

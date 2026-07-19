@@ -15,8 +15,8 @@ export const NewsPage = () => {
     const pageSize = 10;
 
     useSEO({
-        title: 'Tin tức & Bài viết',
-        description: 'Cập nhật những thông tin mới nhất, hướng dẫn sử dụng và mẹo vặt về đồ gia dụng từ VNVT Store.',
+        title: t('newsPage.title', 'Tin tức & Bài viết'),
+        description: t('newsPage.seoDesc', 'Cập nhật những thông tin mới nhất, hướng dẫn sử dụng và mẹo vặt về đồ gia dụng từ VNVT Store.'),
         canonicalPath: '/news',
     });
 
@@ -52,9 +52,9 @@ export const NewsPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-12"
                 >
-                    <h1 className="text-4xl font-bold mb-4">📰 {t('news.title', 'Tin tức & Bài viết')}</h1>
+                    <h1 className="text-4xl font-bold mb-4">📰 {t('newsPage.title', 'Tin tức & Bài viết')}</h1>
                     <p className="text-secondary text-lg max-w-2xl mx-auto">
-                        {t('news.subtitle', 'Cập nhật những thông tin mới nhất từ VNVT Store')}
+                        {t('newsPage.subtitle', 'Cập nhật những thông tin mới nhất từ VNVT Store')}
                     </p>
                 </motion.div>
 
@@ -71,8 +71,8 @@ export const NewsPage = () => {
                         <div className="w-20 h-20 bg-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
                             <Newspaper size={40} className="text-tertiary" />
                         </div>
-                        <h3 className="text-xl font-bold mb-2">{t('news.empty', 'Chưa có bài viết nào')}</h3>
-                        <p className="text-secondary">{t('news.emptyDesc', 'Hãy quay lại sau để xem những bài viết mới nhất.')}</p>
+                        <h3 className="text-xl font-bold mb-2">{t('newsPage.empty', 'Chưa có bài viết nào')}</h3>
+                        <p className="text-secondary">{t('newsPage.emptyDesc', 'Hãy quay lại sau để xem những bài viết mới nhất.')}</p>
                     </div>
                 )}
 
@@ -111,13 +111,13 @@ export const NewsPage = () => {
                                             {news.title}
                                         </h3>
                                         <p className="text-secondary text-sm mb-4 line-clamp-2">
-                                            {news.summary || t('news.noSummary', 'Xem chi tiết bài viết...')}
+                                            {news.summary || t('newsPage.noSummary', 'Xem chi tiết bài viết...')}
                                         </p>
                                         <Link
                                             to={`/news/${news.code}`}
                                             className="inline-flex items-center gap-2 text-primary text-sm font-medium hover:gap-3 transition-all"
                                         >
-                                            {t('news.readMore', 'Đọc thêm')} <ArrowRight size={16} />
+                                            {t('newsPage.readMore', 'Đọc thêm')} <ArrowRight size={16} />
                                         </Link>
                                     </div>
                                 </motion.article>

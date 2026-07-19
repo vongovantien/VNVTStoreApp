@@ -17,6 +17,21 @@ public enum OrderStatus
 }
 
 /// <summary>
+/// Trạng thái giao hàng
+/// </summary>
+public enum DeliveryStatus
+{
+    Assigned,
+    PickedUp,
+    InTransit,
+    AtHub,
+    OutForDelivery,
+    Delivered,
+    Failed,
+    Returned
+}
+
+/// <summary>
 /// Trạng thái thanh toán
 /// </summary>
 public enum PaymentStatus
@@ -39,7 +54,10 @@ public enum PaymentMethod
     BankTransfer,
     COD,
     EWallet,
-    PayPal
+    PayPal,
+    VnPay,
+    MoMo,
+    ZaloPay
 }
 
 /// <summary>

@@ -11,12 +11,11 @@ public class CreateCategoryDtoValidator : AbstractValidator<CreateCategoryDto>
     public CreateCategoryDtoValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Tên danh mục không được để trống")
-            .MaximumLength(100).WithMessage("Tên danh mục không được vượt quá 100 ký tự");
+            .NotEmpty()
+            .MaximumLength(100);
 
         RuleFor(x => x.Description)
-            .MaximumLength(500).When(x => !string.IsNullOrEmpty(x.Description))
-            .WithMessage("Mô tả không được vượt quá 500 ký tự");
+            .MaximumLength(500).When(x => !string.IsNullOrEmpty(x.Description));
     }
 }
 
@@ -25,7 +24,6 @@ public class UpdateCategoryDtoValidator : AbstractValidator<UpdateCategoryDto>
     public UpdateCategoryDtoValidator()
     {
         RuleFor(x => x.Name)
-            .MaximumLength(100).When(x => !string.IsNullOrEmpty(x.Name))
-            .WithMessage("Tên danh mục không được vượt quá 100 ký tự");
+            .MaximumLength(100).When(x => !string.IsNullOrEmpty(x.Name));
     }
 }

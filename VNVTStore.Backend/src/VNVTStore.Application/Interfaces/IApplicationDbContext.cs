@@ -11,14 +11,16 @@ public interface IApplicationDbContext
     DbSet<TblBanner> TblBanners { get; }
     DbSet<TblFile> TblFiles { get; }
     DbSet<TblUserLogin> TblUserLogins { get; }
-    DbSet<TblOrder> TblOrders { get; }
-    DbSet<TblAddress> TblAddresses { get; }
-    DbSet<TblCart> TblCarts { get; }
-    DbSet<TblCartItem> TblCartItems { get; }
-    DbSet<TblCategory> TblCategories { get; }
-    DbSet<TblCoupon> TblCoupons { get; }
-    DbSet<TblOrderItem> TblOrderItems { get; }
-    DbSet<TblPayment> TblPayments { get; }
+    DbSet<TblOrder> TblOrders { get; set; }
+    DbSet<TblAddress> TblAddresses { get; set; }
+    DbSet<TblCart> TblCarts { get; set; }
+    DbSet<TblCartItem> TblCartItems { get; set; }
+    DbSet<TblCategory> TblCategories { get; set; }
+    DbSet<TblCoupon> TblCoupons { get; set; }
+    DbSet<TblOrderItem> TblOrderItems { get; set; }
+    DbSet<TblDelivery> TblDeliveries { get; set; }
+    DbSet<TblDeliveryHistory> TblDeliveryHistories { get; set; }
+    DbSet<TblPayment> TblPayments { get; set; }
     DbSet<TblProductPromotion> TblProductPromotions { get; }
     DbSet<TblPromotion> TblPromotions { get; }
     DbSet<TblReview> TblReviews { get; }

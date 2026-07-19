@@ -161,6 +161,12 @@ axiosInstance.interceptors.request.use(
     // Dynamically set baseURL on every request to pick up port changes
     config.baseURL = getApiUrl();
     
+    // Dynamically set Accept-Language based on current frontend language setting
+    const lang = localStorage.getItem('language') || 'vi';
+    if (config.headers) {
+      config.headers['Accept-Language'] = lang;
+    }
+
     const token = authStore?.getState()?.token;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`; // Use standard 'Bearer' prefix

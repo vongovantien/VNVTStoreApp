@@ -56,7 +56,7 @@ public class OrderItemDto
     [Reference("TblProduct", "ProductCode", "Name")]
     public string? ProductName { get; set; }
     
-    [Reference("TblFile", "ProductCode", "Path", TargetColumn = "MasterCode", FilterColumn = "MasterType", FilterValue = "Product")]
+    [Reference("TblFile", "ProductCode", "Path", TargetColumn = "MasterCode", FilterColumn = "MasterType", FilterValue = "TblProduct")]
     public string? ProductImage { get; set; }
     
     public string? Size { get; set; }

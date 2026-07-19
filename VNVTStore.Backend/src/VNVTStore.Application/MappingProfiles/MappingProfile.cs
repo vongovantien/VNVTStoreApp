@@ -198,6 +198,15 @@ public class MappingProfile : Profile
     CreateMap<UpdateSupplierDto, TblSupplier>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
+        // Delivery mappings
+        CreateMap<TblDelivery, DeliveryDto>()
+            .ForMember(dest => dest.Histories, opt => opt.MapFrom(src => src.TblDeliveryHistories.OrderByDescending(h => h.Timestamp)))
+            .ReverseMap();
+
+        CreateMap<TblDeliveryHistory, DeliveryHistoryDto>()
+            .ForMember(dest => dest.UpdatedByName, opt => opt.MapFrom(src => src.UpdatedByCodeNavigation != null ? src.UpdatedByCodeNavigation.FullName : null))
+            .ReverseMap();
+
         // AuditLog mappings
         CreateMap<TblAuditLog, AuditLogDto>().ReverseMap();
     }

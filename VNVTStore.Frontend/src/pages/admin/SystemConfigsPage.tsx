@@ -187,7 +187,7 @@ export const SystemConfigsPage = () => {
           onEdit={handleEdit}
           onImport={handleImport}
           onExport={handleExport}
-          importTitle={t('admin.systemConfig.importTitle')}
+          importTitle={t('common.importData')}
           searchPlaceholder={t('common.search')}
         />
       </div>

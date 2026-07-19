@@ -1,5 +1,6 @@
 using FluentValidation;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Application.Common;
 
 namespace VNVTStore.Application.Quotes.Validators;
 
@@ -8,30 +9,26 @@ public class CreateQuoteDtoValidator : AbstractValidator<CreateQuoteDto>
     public CreateQuoteDtoValidator()
     {
         RuleFor(x => x.Items)
-            .NotEmpty()
-            .WithMessage("Đơn báo giá phải có ít nhất một sản phẩm");
+            .NotEmpty();
 
         RuleForEach(x => x.Items).SetValidator(new CreateQuoteItemDtoValidator());
 
         RuleFor(x => x.CustomerName)
             .MaximumLength(100)
-            .When(x => !string.IsNullOrEmpty(x.CustomerName))
-            .WithMessage("Tên khách hàng không được vượt quá 100 ký tự");
+            .When(x => !string.IsNullOrEmpty(x.CustomerName));
 
         RuleFor(x => x.CustomerEmail)
             .EmailAddress()
-            .When(x => !string.IsNullOrEmpty(x.CustomerEmail))
-            .WithMessage("Email không hợp lệ");
+            .When(x => !string.IsNullOrEmpty(x.CustomerEmail));
 
         RuleFor(x => x.CustomerPhone)
             .Matches(@"^[0-9]{10,11}$")
             .When(x => !string.IsNullOrEmpty(x.CustomerPhone))
-            .WithMessage("Số điện thoại phải có 10-11 chữ số");
+            .WithMessage(_ => MessageConstants.Get(MessageConstants.PhoneInvalid));
 
         RuleFor(x => x.Note)
             .MaximumLength(500)
-            .When(x => !string.IsNullOrEmpty(x.Note))
-            .WithMessage("Ghi chú không được vượt quá 500 ký tự");
+            .When(x => !string.IsNullOrEmpty(x.Note));
     }
 }
 
@@ -40,12 +37,10 @@ public class CreateQuoteItemDtoValidator : AbstractValidator<CreateQuoteItemDto>
     public CreateQuoteItemDtoValidator()
     {
         RuleFor(x => x.ProductCode)
-            .NotEmpty()
-            .WithMessage("Mã sản phẩm không được để trống");
+            .NotEmpty();
 
         RuleFor(x => x.Quantity)
-            .GreaterThan(0)
-            .WithMessage("Số lượng phải lớn hơn 0");
+            .GreaterThan(0);
     }
 }
 
@@ -55,12 +50,10 @@ public class UpdateQuoteDtoValidator : AbstractValidator<UpdateQuoteDto>
     {
         RuleFor(x => x.TotalAmount)
             .GreaterThanOrEqualTo(0)
-            .When(x => x.TotalAmount.HasValue)
-            .WithMessage("Tổng tiền không được âm");
+            .When(x => x.TotalAmount.HasValue);
 
         RuleFor(x => x.AdminNote)
             .MaximumLength(500)
-            .When(x => !string.IsNullOrEmpty(x.AdminNote))
-            .WithMessage("Ghi chú admin không được vượt quá 500 ký tự");
+            .When(x => !string.IsNullOrEmpty(x.AdminNote));
     }
 }

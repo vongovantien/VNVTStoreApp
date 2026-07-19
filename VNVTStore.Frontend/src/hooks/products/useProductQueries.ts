@@ -125,19 +125,51 @@ export function useProducts(params: {
     fields?: string[] | undefined;  // Selective columns to fetch (reduces data transfer)
     inStockOnly?: boolean | undefined; // Feature 4: filter out-of-stock products
     isNewArrivals?: boolean | undefined; // Feature 36: Filter by Date Added
+    // Admin advanced filter params
+    isActive?: string | undefined;
+    price?: string | undefined;
+    stock?: string | undefined;
+    categoryName?: string | undefined;
+    name?: string | undefined;
+    [key: string]: unknown; // Allow additional dynamic filter params
 }) {
     const { enabled = true, fields = PRODUCT_LIST_FIELDS, ...searchParams } = params;
 
     // Build filters dynamically
     const filters: { field: string; value: string | string[] | number | number[] | boolean; operator?: SearchCondition }[] = [];
 
-    // 1. Generic/Dynamic params (excluding specific ones)
+    // 1. Generic/Dynamic params (excluding specific ones handled below)
     Object.entries(searchParams).forEach(([key, value]) => {
-        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir', 'brands', 'minPrice', 'maxPrice', 'rating', 'category', 'ids', 'priceType', 'inStockOnly', 'isNewArrivals'].includes(key)) return;
+        if (['pageIndex', 'pageSize', 'search', 'sortField', 'sortDir', 'brands', 'minPrice', 'maxPrice', 'rating', 'category', 'ids', 'priceType', 'inStockOnly', 'isNewArrivals', 'price', 'stock', 'isActive', 'categoryName', 'name'].includes(key)) return;
         if (value !== undefined && value !== null && value !== '') {
             filters.push({ field: key, value: String(value), operator: SearchCondition.Equal });
         }
     });
+
+    // 1a. isActive filter (boolean Equal)
+    if (searchParams.isActive !== undefined && searchParams.isActive !== '') {
+        filters.push({ field: 'IsActive', value: searchParams.isActive === 'true', operator: SearchCondition.Equal });
+    }
+
+    // 1b. Price "from" filter (GreaterThanEqual)
+    if (searchParams.price !== undefined && searchParams.price !== '') {
+        filters.push({ field: 'Price', value: Number(searchParams.price), operator: SearchCondition.GreaterThanEqual });
+    }
+
+    // 1c. Stock "from" filter (GreaterThanEqual)
+    if (searchParams.stock !== undefined && searchParams.stock !== '') {
+        filters.push({ field: 'StockQuantity', value: Number(searchParams.stock), operator: SearchCondition.GreaterThanEqual });
+    }
+
+    // 1d. CategoryName text search (Contains)
+    if (searchParams.categoryName && searchParams.categoryName !== '') {
+        filters.push({ field: 'CategoryName', value: searchParams.categoryName, operator: SearchCondition.Contains });
+    }
+
+    // 1e. Name text search fallback (Contains) - used when 'name' is passed directly
+    if (searchParams.name && searchParams.name !== '') {
+        filters.push({ field: 'Name', value: searchParams.name, operator: SearchCondition.Contains });
+    }
 
     // 0. IDs (Multi-select)
     if (searchParams.ids && searchParams.ids.length > 0) {

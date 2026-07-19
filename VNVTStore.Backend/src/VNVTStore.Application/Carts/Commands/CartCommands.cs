@@ -26,6 +26,6 @@ public class AddCartItemDto
 
 public class UpdateCartItemDto
 {
-    public string ProductCode { get; set; } = null!;
+    public string? ProductCode { get; set; }
     public int Quantity { get; set; }
 }

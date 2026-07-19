@@ -115,8 +115,24 @@ export const SettingsContent = () => {
                                 </div>
                                 <div className="flex gap-2">
                                     <button 
+                                        type="button"
                                         onClick={() => setSettings(s => ({ ...s, language: 'vi' }))}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${settings.language === 'vi' ? 'bg-primary text-white shadow-sm' : 'bg-secondary text-secondary hover:bg-hover'}`}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                                            settings.language === 'vi' 
+                                                ? 'bg-accent text-accent-foreground border-accent shadow-sm' 
+                                                : 'bg-secondary text-secondary border-transparent hover:bg-hover'
+                                        }`}
+                                    >
+                                        {t('common.account.settingsPage.vietnamese')}
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setSettings(s => ({ ...s, language: 'en' }))}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                                            settings.language === 'en' 
+                                                ? 'bg-accent text-accent-foreground border-accent shadow-sm' 
+                                                : 'bg-secondary text-secondary border-transparent hover:bg-hover'
+                                        }`}
                                     >
                                         {t('common.account.settingsPage.english')}
                                     </button>

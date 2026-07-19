@@ -53,15 +53,18 @@ public partial class TblCart : IEntity
         {
             if (existingItem.Quantity + quantity > maxStock)
             {
-                throw new InvalidOperationException($"Cannot add more items. Max stock is {maxStock}.");
+                existingItem.UpdateQuantity(maxStock);
             }
-            existingItem.AddQuantity(quantity);
+            else
+            {
+                existingItem.AddQuantity(quantity);
+            }
         }
         else
         {
             if (quantity > maxStock)
             {
-                 throw new InvalidOperationException($"Cannot add more items. Max stock is {maxStock}.");
+                 quantity = maxStock;
             }
             var newItem = TblCartItem.Create(Code, productCode, quantity, size, color);
             TblCartItems.Add(newItem);
@@ -81,7 +84,7 @@ public partial class TblCart : IEntity
         {
             if (quantity > maxStock)
             {
-                 throw new InvalidOperationException($"Cannot update quantity. Max stock is {maxStock}.");
+                 quantity = maxStock;
             }
             item.UpdateQuantity(quantity);
         }

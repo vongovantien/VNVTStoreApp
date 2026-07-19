@@ -67,13 +67,11 @@ export const AdminToolbar = ({
   onViewDetails,
   onEdit,
   onDelete,
-  // onCheck removed
   onSearchClick,
   onRefresh,
   onImport,
   onExport,
-  // onPrint removed
-  // onHelp removed
+  onReset,
   isSearchActive,
   isExporting = false,
   selectedCount = 0,
@@ -108,7 +106,7 @@ export const AdminToolbar = ({
           title={t('common.search')}
           className={isSearchActive ? "bg-blue-100 dark:bg-blue-900/30" : ""}
         />
-        <BlueItem icon={<RefreshCw size={18} className="stroke-[2.5]" />} onClick={onRefresh} title={t('admin.refreshData')} />
+        <BlueItem icon={<RefreshCw size={18} className="stroke-[2.5]" />} onClick={onReset || onRefresh} title={t('admin.resetFilters')} />
       </div>
 
       <div className="h-6 w-px bg-gray-200 dark:bg-slate-600 mx-2" />

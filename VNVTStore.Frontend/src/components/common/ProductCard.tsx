@@ -339,7 +339,7 @@ export const ProductCard = memo(
       [hasFixedPrice, isOutOfStock, product, addToCart, toast, t]
     );
 
-    const { theme: currentTheme, setQuickViewProduct } = useUIStore();
+    const { setQuickViewProduct } = useUIStore();
 
     const handleQuickView = useCallback(
       (e: React.MouseEvent) => {
@@ -365,13 +365,13 @@ export const ProductCard = memo(
               size={12}
               className={cn(
                 i < Math.floor(ratingValue)
-                  ? (currentTheme === 'cyberpunk' ? 'fill-cyan-400 text-cyan-400' : 'fill-yellow-400 text-yellow-400')
+                  ? 'fill-yellow-400 text-yellow-400'
                   : 'fill-gray-200 text-gray-200'
               )}
             />
           );
         }),
-      [product.averageRating, product.rating, currentTheme]
+      [product.averageRating, product.rating]
     );
 
     // List variant
@@ -379,7 +379,7 @@ export const ProductCard = memo(
       return (
         <div className={cn(
           'flex gap-4 p-4 rounded-2xl border transition-all duration-300',
-          currentTheme === 'cyberpunk' ? 'bg-cyber-gradient border-text-primary text-text-primary neon-border shadow-lg' : 'bg-white border-slate-100 shadow-sm',
+          'bg-primary border-slate-100 dark:border-slate-800 shadow-sm',
           hoverable && 'hover:shadow-lg',
           className
         )}>
@@ -387,7 +387,7 @@ export const ProductCard = memo(
           <Link to={`/product/${product.code}`} className="flex-shrink-0">
             <div className={cn(
               "relative w-40 h-40 rounded-lg overflow-hidden",
-              currentTheme === 'cyberpunk' ? "border border-text-primary/30" : "bg-secondary"
+              "bg-secondary"
             )}>
               <CustomImage
                 src={product.image}
@@ -403,17 +403,11 @@ export const ProductCard = memo(
           {/* Content */}
           <div className="flex-1 flex flex-col justify-between">
             <div>
-              <Link to={`/products?category=${product.categoryCode}`} className={cn(
-                "text-xs font-medium uppercase tracking-wide",
-                currentTheme === 'cyberpunk' ? "text-cyan-400" : "text-primary"
-              )}>
+              <Link to={`/products?category=${product.categoryCode}`} className="text-xs font-medium uppercase tracking-wide text-accent">
                 {product.category}
               </Link>
               <Link to={`/product/${product.code}`}>
-                <h3 className={cn(
-                  "font-semibold mt-1 transition-colors",
-                  currentTheme === 'cyberpunk' ? "text-text-primary neon-text" : "text-primary hover:text-primary-dark"
-                )}>
+                <h3 className="font-semibold mt-1 transition-colors text-primary hover:text-accent">
                   {product.name}
                 </h3>
               </Link>
@@ -426,7 +420,7 @@ export const ProductCard = memo(
               )}
               <p className={cn(
                 "text-sm mt-1 line-clamp-2",
-                currentTheme === 'cyberpunk' ? "text-text-secondary" : "text-secondary"
+                "text-secondary"
               )}>{product.description}</p>
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex">{stars}</div>
@@ -441,7 +435,7 @@ export const ProductCard = memo(
                   <>
                     <span className={cn(
                       "text-lg font-bold",
-                      currentTheme === 'cyberpunk' ? "text-pink-500 neon-text-pink" : "text-error"
+                      "text-error"
                     )}>{formatCurrency(product.price * (1 - dynamicDiscount / 100))}</span>
                     {product.originalPrice && (
                       <span className="text-sm text-tertiary line-through">{formatCurrency(product.originalPrice)}</span>
@@ -467,7 +461,7 @@ export const ProductCard = memo(
                     size="sm" 
                     onClick={handleAddToCart} 
                     disabled={isOutOfStock}
-                    className={currentTheme === 'cyberpunk' ? "bg-cyan-500 hover:bg-cyan-600 text-black border-0" : ""}
+                    className=""
                   >
                     <ShoppingCart size={16} />
                     {t('product.addToCart', 'Add to Cart')}
@@ -497,9 +491,7 @@ export const ProductCard = memo(
       <motion.div
         className={cn(
           'group relative rounded-xl overflow-hidden transition-all duration-500 border',
-          currentTheme === 'cyberpunk' 
-            ? 'bg-cyber-gradient border-text-primary/50 text-text-primary neon-border shadow-lg hover:animate-cyber-pulse' 
-            : 'bg-white border-slate-100/80 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-slate-200',
+          'bg-primary border-slate-100/80 dark:border-slate-800/80 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-slate-200 dark:hover:border-slate-700',
           className
         )}
         initial={{ opacity: 0, scale: 0.95 }}
@@ -880,32 +872,23 @@ export const ProductCard = memo(
 
           {/* Content */}
           <div className="p-4 pt-3.5">
-            <div className={cn(
-              "text-[11px] font-bold uppercase tracking-wider mb-1 flex justify-between items-center",
-              currentTheme === 'cyberpunk' ? "text-cyan-400" : "text-indigo-500"
-            )}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-1 flex justify-between items-center text-accent">
               <span>{product.category}</span>
               {/* Feature 9: Trust Icons */}
               <div className="flex gap-1">
-                <ShieldCheck size={12} className={currentTheme === 'cyberpunk' ? "text-cyan-400" : "text-emerald-500"} />
-                <Zap size={12} className={currentTheme === 'cyberpunk' ? "text-pink-500" : "text-amber-500"} />
+                <ShieldCheck size={12} className="text-emerald-500" />
+                <Zap size={12} className="text-amber-500" />
               </div>
             </div>
             
             {/* Title */}
-            <h3 className={cn(
-              "text-[15px] font-medium leading-snug line-clamp-2 min-h-[2.5em] transition-colors mb-1.5",
-              currentTheme === 'cyberpunk' ? "text-text-primary neon-text" : "text-slate-800 group-hover:text-indigo-600"
-            )}>
+            <h3 className="text-[15px] font-medium leading-snug line-clamp-2 min-h-[2.5em] transition-colors mb-1.5 text-primary group-hover:text-accent">
               {product.name}
             </h3>
 
             {/* Feature 4: Product Age Label */}
             {product.createdAt && (
-                <div className={cn(
-                  "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity px-1.5 py-0.5 rounded text-[9px] pointer-events-none",
-                  currentTheme === 'cyberpunk' ? "bg-black/80 text-cyan-400 border border-cyan-400/50" : "bg-white/80 backdrop-blur text-slate-500"
-                )}>
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity px-1.5 py-0.5 rounded text-[9px] pointer-events-none bg-primary/80 dark:bg-slate-900/80 backdrop-blur text-secondary">
                   {formatRelativeTime(product.createdAt)}
                 </div>
             )}
@@ -926,7 +909,7 @@ export const ProductCard = memo(
                     key={i}
                     className={cn(
                       "w-4 h-4 rounded-full border shadow-inner cursor-pointer hover:scale-125 transition-transform",
-                      currentTheme === 'cyberpunk' ? "border-text-primary/50" : "border-slate-200"
+                      "border-slate-200 dark:border-slate-700"
                     )}
                     style={{ backgroundColor: color }}
                     title={color}
@@ -942,23 +925,14 @@ export const ProductCard = memo(
             {hasCountdown && (
               <div className="mb-3">
                 <div className="flex justify-between items-center text-[10px] mb-1">
-                   <span className={cn(
-                     "font-bold uppercase",
-                     currentTheme === 'cyberpunk' ? "text-cyan-400" : "text-orange-600"
-                   )}>🔥 {currentTheme === 'cyberpunk' ? 'SYSTEM OVERLOAD' : 'Đang bán chạy'}</span>
+                   <span className="font-bold uppercase text-orange-600">🔥 Đang bán chạy</span>
                    <span className="text-slate-400">Đã bán {product.soldCount || 12}</span>
                 </div>
-                <div className={cn(
-                  "h-1.5 w-full rounded-full overflow-hidden",
-                  currentTheme === 'cyberpunk' ? "bg-pink-900/30" : "bg-slate-100"
-                )}>
+                <div className="h-1.5 w-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, ((product.soldCount || 12) / (product.promotionOriginalQuantity || 50)) * 100)}%` }}
-                    className={cn(
-                      "h-full rounded-full",
-                      currentTheme === 'cyberpunk' ? "bg-gradient-to-r from-cyan-400 to-pink-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]" : "bg-gradient-to-r from-orange-500 to-red-600"
-                    )}
+                    className="h-full rounded-full bg-gradient-to-r from-orange-500 to-red-600"
                   />
                 </div>
               </div>
@@ -967,29 +941,20 @@ export const ProductCard = memo(
             {/* Feature: Density Micro-Calc (Internal) */}
             <div className="flex flex-wrap gap-2 mb-3">
               {product.weight && (
-                <div className={cn(
-                  "px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1",
-                  currentTheme === 'cyberpunk' ? "bg-cyan-950/30 text-cyan-400 border border-cyan-400/20" : "bg-slate-50 text-slate-500"
-                )} title="Ước tính phí vận chuyển dựa trên khối lượng">
+                <div className="px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 bg-slate-50 dark:bg-slate-900/50 text-secondary border border-slate-100 dark:border-slate-800" title="Ước tính phí vận chuyển dựa trên khối lượng">
                   <Truck size={10} />
                   Est. Ship: {formatCurrency(Math.max(30000, (product.weight || 0.5) * 15000))}
                 </div>
               )}
               {hasFixedPrice && (
-                <div className={cn(
-                  "px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1",
-                  currentTheme === 'cyberpunk' ? "bg-pink-950/30 text-pink-400 border border-pink-400/20" : "bg-indigo-50 text-indigo-500"
-                )} title="Đơn giá trên mỗi kg/đơn vị">
+                <div className="px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/30 text-accent border border-indigo-100 dark:border-indigo-900/50" title="Đơn giá trên mỗi kg/đơn vị">
                   <Coins size={10} />
                   {formatCurrency(product.price / 1.2)} / kg
                 </div>
               )}
               <button 
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowSizeGuide(true); }}
-                className={cn(
-                  "px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 hover:brightness-110 transition-all",
-                  currentTheme === 'cyberpunk' ? "bg-purple-950/30 text-purple-400 border border-purple-400/20" : "bg-emerald-50 text-emerald-600"
-                )}
+                className="px-1.5 py-0.5 rounded text-[9px] flex items-center gap-1 hover:brightness-110 transition-all bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50"
               >
                 <Ruler size={10} />
                 Size Guide

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mail, Phone, Users, AlertTriangle, Key, LogIn } from 'lucide-react';
+import { Mail, Phone, Users, AlertTriangle, Key, LogIn, ShieldCheck, Menu } from 'lucide-react';
 import { Button, Modal, Badge, ConfirmDialog, Input, Select, Switch } from '@/components/ui';
 import { useToast, useAuthStore } from '@/store';
 import { formatDate } from '@/utils/format';
@@ -8,6 +8,7 @@ import { DataTable, type DataTableColumn, CommonColumns } from '@/components/com
 import { AdminPageHeader } from '@/components/admin';
 import { useEntityManager, type EntityService } from '@/hooks';
 import { customerService, type CustomerDto, type CreateCustomerRequest, type UpdateCustomerRequest } from '@/services';
+import { roleService } from '@/services/roleService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaginationDefaults, SortDirection } from '@/constants';
 import { StatsCards, StatItem } from '@/components/admin/StatsCards';
@@ -43,6 +44,22 @@ const CustomersPage = () => {
       fields: USER_LIST_FIELDS
     })
   });
+
+  // Fetch Roles for dropdowns
+  const { data: rolesResponse } = useQuery({
+    queryKey: ['roles-dropdown'],
+    queryFn: () => roleService.search({ pageIndex: 1, pageSize: 100 }),
+    staleTime: 5 * 60 * 1000 // 5 mins
+  });
+  const availableRoles = rolesResponse?.data?.items || [];
+  const roleOptions = availableRoles.map(r => ({ value: r.code, label: r.name }));
+
+  // Fallback if no roles returned yet
+  const safeRoleOptions = roleOptions.length > 0 ? roleOptions : [
+    { value: 'customer', label: t('admin.types.customer', 'Customer') },
+    { value: 'admin', label: t('admin.types.admin', 'Admin') },
+    { value: 'staff', label: t('admin.types.staff', 'Staff') }
+  ];
 
   // Fetch Stats
   const { data: statsData, isLoading: isStatsLoading } = useQuery({
@@ -406,11 +423,7 @@ const CustomersPage = () => {
             id: 'role',
             label: t('common.fields.role'),
             type: 'select',
-            options: [
-              { value: 'customer', label: t('admin.types.customer') },
-              { value: 'admin', label: t('admin.types.admin') },
-              { value: 'staff', label: t('admin.types.staff') }
-            ]
+            options: safeRoleOptions
           }
         ]}
 
@@ -484,6 +497,58 @@ const CustomersPage = () => {
               </div>
             </div>
 
+            {/* Permissions & Menus Section */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                <ShieldCheck size={18} className="text-emerald-500" />
+                {t('rbac.permissions', 'Quyền hạn')} & Menus
+              </h3>
+              
+              <div className="space-y-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <ShieldCheck size={14} /> {t('rbac.permissions', 'Functions')}
+                  </p>
+                  {selectedCustomer.role.toLowerCase() === 'admin' ? (
+                    <Badge variant="solid" color="error" className="text-xs font-medium">
+                      * All Permissions (Full Access)
+                    </Badge>
+                  ) : selectedCustomer.permissions && selectedCustomer.permissions.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedCustomer.permissions.map(p => (
+                        <Badge key={p} variant="outline" color="primary" className="text-xs font-medium">
+                          {p}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 italic">{t('common.noData', 'Không có dữ liệu')}</p>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Menu size={14} /> Menus
+                  </p>
+                  {selectedCustomer.role.toLowerCase() === 'admin' ? (
+                    <Badge variant="solid" color="error" className="text-xs font-medium">
+                      * All Menus (Full Access)
+                    </Badge>
+                  ) : selectedCustomer.menus && selectedCustomer.menus.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedCustomer.menus.map(m => (
+                        <Badge key={m} variant="outline" color="secondary" className="text-xs">
+                          {m}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 italic">{t('common.noData', 'Không có dữ liệu')}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <Button fullWidth>
                 {t('common.fields.email')}
@@ -545,11 +610,7 @@ const CustomersPage = () => {
                     label={t('common.fields.role')}
                     value={formData.role}
                     onChange={e => setFormData({...formData, role: e.target.value})}
-                    options={[
-                        { value: 'customer', label: t('admin.types.customer') },
-                        { value: 'admin', label: t('admin.types.admin') },
-                        { value: 'staff', label: t('admin.types.staff') }
-                    ]}
+                    options={safeRoleOptions}
                 />
             </div>
 

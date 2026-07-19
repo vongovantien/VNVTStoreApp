@@ -189,10 +189,11 @@ export const FirstOrderBanner = () => {
 
 // ============ #53 Tiered Discounts Display ============
 export const TieredDiscounts = ({ quantity }: { quantity: number }) => {
+  const { t } = useTranslation();
   const tiers = [
-    { min: 2, discount: 5, label: 'Mua 2+ giảm 5%' },
-    { min: 5, discount: 10, label: 'Mua 5+ giảm 10%' },
-    { min: 10, discount: 15, label: 'Mua 10+ giảm 15%' },
+    { min: 2, discount: 5 },
+    { min: 5, discount: 10 },
+    { min: 10, discount: 15 },
   ];
 
   const activeTier = tiers.filter(t => quantity >= t.min).pop();
@@ -210,7 +211,7 @@ export const TieredDiscounts = ({ quantity }: { quantity: number }) => {
               : 'bg-gray-100 text-gray-400'
           }`}
         >
-          {tier.label}
+          {t('promo.tieredDiscountLabel', { count: tier.min, discount: tier.discount, defaultValue: `Mua ${tier.min}+ giảm ${tier.discount}%` })}
         </span>
       ))}
     </div>

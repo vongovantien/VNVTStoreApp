@@ -148,6 +148,8 @@ export const USER_LIST_FIELDS = [
     'Email',
     'Phone',
     'Role',
+    'Permissions',
+    'Menus',
     'IsEmailVerified',
     'LastLogin',
 ];

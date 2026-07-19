@@ -280,7 +280,7 @@ export const CheckoutPage = () => {
           ].map((s, i) => (
             <div key={s.num} className="flex items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= s.num ? 'bg-primary text-white' : 'bg-tertiary text-secondary'
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= s.num ? 'bg-accent text-white' : 'bg-tertiary text-secondary'
                   }`}
               >
                 {s.num}
@@ -288,7 +288,7 @@ export const CheckoutPage = () => {
               <span className={`ml-2 hidden sm:inline ${step >= s.num ? 'text-primary' : 'text-tertiary'}`}>
                 {s.label}
               </span>
-              {i < 2 && <div className={`w-12 h-1 mx-4 ${step > s.num ? 'bg-primary' : 'bg-tertiary'}`} />}
+              {i < 2 && <div className={`w-12 h-1 mx-4 ${step > s.num ? 'bg-accent' : 'bg-tertiary'}`} />}
             </div>
           ))}
         </div>
@@ -349,7 +349,7 @@ export const CheckoutPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label={t('checkout.fullName')}
-                    placeholder="Nguyễn Văn A"
+                    placeholder={t('common.placeholders.fullName')}
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
                     leftIcon={<User size={18} />}
@@ -358,7 +358,7 @@ export const CheckoutPage = () => {
                   />
                   <Input
                     label={t('checkout.phone')}
-                    placeholder="0901234567"
+                    placeholder={t('common.placeholders.phone')}
                     value={formData.phone}
                     onChange={(e) => {
                         handleInputChange('phone', e.target.value);
@@ -373,7 +373,7 @@ export const CheckoutPage = () => {
                     <Input
                       label={t('shared.email')}
                       type="email"
-                      placeholder="email@example.com"
+                      placeholder={t('common.placeholders.email')}
                       value={formData.email}
                       onChange={(e) => {
                           handleInputChange('email', e.target.value);
@@ -412,7 +412,7 @@ export const CheckoutPage = () => {
                   <div className="md:col-span-2">
                     <Input
                       label={t('checkout.address')}
-                      placeholder="Số nhà, tên đường..."
+                      placeholder={t('common.placeholders.address')}
                       value={formData.address}
                       onChange={(e) => handleInputChange('address', e.target.value)}
                       leftIcon={<MapPin size={18} />}
@@ -423,7 +423,7 @@ export const CheckoutPage = () => {
                   <div className="md:col-span-2">
                     <Input
                       label={t('checkout.note')}
-                      placeholder="Ghi chú đơn hàng (không bắt buộc)"
+                      placeholder={t('common.placeholders.enterNote')}
                       value={formData.note}
                       onChange={(e) => handleInputChange('note', e.target.value)}
                       leftIcon={<FileText size={18} />}
@@ -459,11 +459,11 @@ export const CheckoutPage = () => {
 
                 <div className="space-y-4">
                     {[
-                      { value: PaymentMethod.COD, label: 'Thanh toán khi nhận hàng (COD)', icon: '💵' },
-                      { value: 'ZALOPAY', label: 'ZaloPay', icon: '💳' },
-                      { value: 'MOMO', label: 'Ví MoMo', icon: '📱' },
-                      { value: 'VNPAY', label: 'VNPAY QR', icon: '🏦' },
-                      { value: PaymentMethod.BANK_TRANSFER, label: 'Chuyển khoản ngân hàng', icon: '🏛️' },
+                      { value: PaymentMethod.COD, label: t('paymentMethods.cod', 'Thanh toán khi nhận hàng (COD)'), icon: '💵' },
+                      { value: PaymentMethod.ZALOPAY, label: t('paymentMethods.zalopay', 'ZaloPay'), icon: '💳' },
+                      { value: PaymentMethod.MOMO, label: t('paymentMethods.momo', 'Ví MoMo'), icon: '📱' },
+                      { value: PaymentMethod.VNPAY, label: t('paymentMethods.vnpay', 'VNPAY QR'), icon: '🏦' },
+                      { value: PaymentMethod.BANK_TRANSFER, label: t('paymentMethods.bankTransfer', 'Chuyển khoản ngân hàng'), icon: '🏛️' },
                     ].map((method) => (
                       <label
                         key={method.value}

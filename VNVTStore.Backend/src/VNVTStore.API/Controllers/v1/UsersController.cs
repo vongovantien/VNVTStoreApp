@@ -155,14 +155,12 @@ public class UsersController : BaseApiController<TblUser, UserDto, CreateUserDto
     /// <summary>
     /// Lấy user theo code (Admin/Staff)
     /// </summary>
-    [HttpGet("{id}")]
+    [HttpGet("{code}")]
     [Authorize(Roles = "Admin,Staff")]
     [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetByCode(string id)
+    public override async Task<IActionResult> Get(string code, [FromQuery] bool includeChildren = false)
     {
-        var query = new GetByCodeQuery<UserDto>(id);
-        var result = await Mediator.Send(query);
-        return HandleResult(result);
+        return await base.Get(code, includeChildren);
     }
 }
 

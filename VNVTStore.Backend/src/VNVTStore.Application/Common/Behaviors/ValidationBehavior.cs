@@ -46,7 +46,7 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
             // Check if TResponse is Result or Result<T>
             if (typeof(TResponse) == typeof(Result))
             {
-                return (TResponse)(object)Result.Failure(Error.Validation("Validation", errorMessage));
+                return (TResponse)(object)Result.Failure(Error.Validation(errorMessage));
             }
             
             // Handle Result<T> responses
@@ -55,11 +55,11 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
             {
                 var innerType = responseType.GetGenericArguments()[0];
                 var failureMethod = typeof(Result)
-                    .GetMethods()
-                    .First(m => m.Name == "Failure" && m.IsGenericMethod)
-                    .MakeGenericMethod(innerType);
+                     .GetMethods()
+                     .First(m => m.Name == "Failure" && m.IsGenericMethod)
+                     .MakeGenericMethod(innerType);
                 
-                return (TResponse)failureMethod.Invoke(null, new object[] { Error.Validation("Validation", errorMessage) })!;
+                return (TResponse)failureMethod.Invoke(null, new object[] { Error.Validation(errorMessage) })!;
             }
             
             // Fallback: throw exception if response type is not Result

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
@@ -37,6 +37,10 @@ public partial class TblOrder : IEntity
     public string? AddressCode { get; private set; }
 
     public string? CouponCode { get; private set; }
+
+    public string? TrackingNumber { get; set; }
+
+    public DateTime? EstimatedDeliveryDate { get; set; }
     
     public string? VerificationToken { get; private set; }
     
@@ -51,6 +55,8 @@ public partial class TblOrder : IEntity
     public virtual TblPayment? TblPayment { get; private set; }
 
     public virtual TblUser UserCodeNavigation { get; private set; } = null!;
+
+    public virtual TblDelivery? TblDelivery { get; set; }
 
     public static TblOrder Create(
         string userCode, 

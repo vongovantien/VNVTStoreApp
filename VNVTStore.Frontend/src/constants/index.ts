@@ -22,10 +22,15 @@ export const OrderStatusLabel: Record<string, string> = {
 
 export enum PaymentMethod {
     COD = 'COD',
-    VNPAY = 'VNPAY',
-    MOMO = 'MOMO',
-    ZALOPAY = 'ZALOPAY',
-    BANK_TRANSFER = 'BANK_TRANSFER'
+    VNPAY = 'VnPay',
+    MOMO = 'MoMo',
+    ZALOPAY = 'ZaloPay',
+    BANK_TRANSFER = 'BankTransfer',
+    CASH = 'Cash',
+    CREDIT_CARD = 'CreditCard',
+    DEBIT_CARD = 'DebitCard',
+    E_WALLET = 'EWallet',
+    PAYPAL = 'PayPal'
 }
 
 export const PaymentMethodLabel: Record<string, string> = {
@@ -33,7 +38,12 @@ export const PaymentMethodLabel: Record<string, string> = {
     [PaymentMethod.VNPAY]: 'VNPAY QR',
     [PaymentMethod.MOMO]: 'Ví MoMo',
     [PaymentMethod.ZALOPAY]: 'ZaloPay',
-    [PaymentMethod.BANK_TRANSFER]: 'Chuyển khoản ngân hàng'
+    [PaymentMethod.BANK_TRANSFER]: 'Chuyển khoản ngân hàng',
+    [PaymentMethod.CASH]: 'Thanh toán tiền mặt',
+    [PaymentMethod.CREDIT_CARD]: 'Thẻ tín dụng',
+    [PaymentMethod.DEBIT_CARD]: 'Thẻ ghi nợ',
+    [PaymentMethod.E_WALLET]: 'Ví điện tử',
+    [PaymentMethod.PAYPAL]: 'PayPal'
 };
 
 export enum PaymentStatus {

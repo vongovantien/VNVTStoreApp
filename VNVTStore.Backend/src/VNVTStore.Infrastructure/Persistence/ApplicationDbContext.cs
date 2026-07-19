@@ -35,6 +35,10 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public virtual DbSet<TblOrderItem> TblOrderItems { get; set; }
 
+    public virtual DbSet<TblDelivery> TblDeliveries { get; set; }
+
+    public virtual DbSet<TblDeliveryHistory> TblDeliveryHistories { get; set; }
+
     public virtual DbSet<TblPayment> TblPayments { get; set; }
 
     public virtual DbSet<TblProduct> TblProducts { get; set; }
@@ -84,6 +88,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             .HaveConversion<UtcNullableDateTimeConverter>();
 
         configurationBuilder.Properties<OrderStatus>().HaveConversion<EnumLowerCaseConverter<OrderStatus>>();
+        configurationBuilder.Properties<DeliveryStatus>().HaveConversion<EnumLowerCaseConverter<DeliveryStatus>>();
         configurationBuilder.Properties<UserRole>().HaveConversion<EnumLowerCaseConverter<UserRole>>();
         configurationBuilder.Properties<PaymentStatus>().HaveConversion<EnumLowerCaseConverter<PaymentStatus>>();
         configurationBuilder.Properties<PaymentMethod>().HaveConversion<EnumLowerCaseConverter<PaymentMethod>>();
@@ -1237,6 +1242,99 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasConstraintName("TblNotification_UserCode_fkey");
             
             entity.HasIndex(e => e.UserCode, "idx_notification_user");
+        });
+
+        modelBuilder.Entity<TblDelivery>(entity =>
+        {
+            entity.HasKey(e => e.Code).HasName("TblDelivery_pkey");
+            entity.ToTable("TblDelivery");
+
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                entity.Property(e => e.Code)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("('DLV'::text || lpad((nextval('delivery_code_seq'::regclass))::text, 6, '0'::text))");
+            }
+            else
+            {
+                entity.Property(e => e.Code).HasMaxLength(100);
+            }
+
+            entity.Property(e => e.OrderCode).HasMaxLength(100);
+            entity.Property(e => e.ShipperCode).HasMaxLength(100);
+            entity.Property(e => e.ShipperName).HasMaxLength(100);
+            entity.Property(e => e.ShipperPhone).HasMaxLength(20);
+            entity.Property(e => e.TrackingNumber).HasMaxLength(100);
+            entity.Property(e => e.CarrierName).HasMaxLength(100);
+            entity.Property(e => e.EstimatedDeliveryDate).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.Note).HasMaxLength(500);
+            entity.Property(e => e.PickedUpAt).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.DeliveredAt).HasColumnType("timestamp with time zone");
+            
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'assigned'::character varying")
+                    .HasSentinel(DeliveryStatus.Assigned);
+            }
+            else
+            {
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValue(DeliveryStatus.Assigned)
+                    .HasSentinel(DeliveryStatus.Assigned);
+            }
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.OrderCodeNavigation).WithOne(p => p.TblDelivery)
+                .HasForeignKey<TblDelivery>(d => d.OrderCode)
+                .HasConstraintName("TblDelivery_OrderCode_fkey");
+
+            entity.HasOne(d => d.ShipperCodeNavigation).WithMany()
+                .HasForeignKey(d => d.ShipperCode)
+                .HasConstraintName("TblDelivery_ShipperCode_fkey");
+                
+            entity.HasIndex(e => e.OrderCode, "idx_delivery_order");
+            entity.HasIndex(e => e.TrackingNumber, "idx_delivery_tracking");
+        });
+
+        modelBuilder.Entity<TblDeliveryHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("TblDeliveryHistory_pkey");
+            entity.ToTable("TblDeliveryHistory");
+
+            entity.Property(e => e.DeliveryCode).HasMaxLength(100);
+            entity.Property(e => e.Note).HasMaxLength(500);
+            entity.Property(e => e.Location).HasMaxLength(200);
+            entity.Property(e => e.UpdatedByCode).HasMaxLength(100);
+            
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20);
+            }
+            else
+            {
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20);
+            }
+
+            entity.Property(e => e.Timestamp).HasDefaultValueSql("CURRENT_TIMESTAMP").HasColumnType("timestamp with time zone");
+
+            entity.HasOne(d => d.DeliveryCodeNavigation).WithMany(p => p.TblDeliveryHistories)
+                .HasForeignKey(d => d.DeliveryCode)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("TblDeliveryHistory_DeliveryCode_fkey");
+
+            entity.HasOne(d => d.UpdatedByCodeNavigation).WithMany()
+                .HasForeignKey(d => d.UpdatedByCode)
+                .HasConstraintName("TblDeliveryHistory_UpdatedByCode_fkey");
+                
+            entity.HasIndex(e => e.DeliveryCode, "idx_deliveryhistory_delivery");
         });
 
         OnModelCreatingPartial(modelBuilder);

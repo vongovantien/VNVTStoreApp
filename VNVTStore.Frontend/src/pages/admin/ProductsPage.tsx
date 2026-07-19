@@ -179,10 +179,31 @@ export const ProductsPage = () => {
   };
 
   const handleAdvancedSearch = (filters: Record<string, string>) => {
-    setAdvancedFilters(filters);
+    // Transform filter keys to match what useProducts expects
+    const transformed: Record<string, string> = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (!value) return;
+      switch (key) {
+        case 'name':
+          // Use the text search pipeline (Contains on name field)
+          transformed.search = value;
+          break;
+        case 'status':
+          // Map 'active'/'inactive' to proper isActive boolean for backend
+          transformed.isActive = value === 'active' ? 'true' : 'false';
+          break;
+        case 'categoryName':
+          // Map to category parameter which useProducts handles specially
+          transformed.category = value;
+          break;
+        default:
+          transformed[key] = value;
+      }
+    });
+    setAdvancedFilters(transformed);
     setCurrentPage(PaginationDefaults.PAGE_INDEX);
     // Sync text search
-    setSearchQuery(filters.search || '');
+    setSearchQuery(transformed.search || '');
   };
 
   const handleReset = () => {
@@ -365,7 +386,7 @@ export const ProductsPage = () => {
                 placeholder: t('common.placeholders.searchProduct')
               },
               {
-                id: 'category',
+                id: 'categoryName',
                 label: t('common.fields.category'),
                 type: 'text',
                 placeholder: t('common.fields.category')

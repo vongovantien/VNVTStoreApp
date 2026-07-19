@@ -8,7 +8,6 @@ public class CreateCouponDtoValidator : AbstractValidator<CreateCouponDto>
     public CreateCouponDtoValidator()
     {
         RuleFor(x => x.PromotionCode)
-            .NotEmpty()
-            .WithMessage("Mã khuyến mãi không được để trống");
+            .NotEmpty();
     }
 }

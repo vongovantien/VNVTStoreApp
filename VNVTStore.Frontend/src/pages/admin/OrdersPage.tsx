@@ -6,7 +6,7 @@ import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
 import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/utils/format';
 import { orderService, type OrderDto } from '@/services/orderService';
-import { AdminPageHeader } from '@/components/admin';
+import { AdminPageHeader, OrderDeliveryPanel } from '@/components/admin';
 import { DataTable } from '@/components/common';
 import { DataTableColumn } from '@/components/common/DataTable';
 import { PaginationDefaults, OrderStatus } from '@/constants';
@@ -118,7 +118,19 @@ export const OrdersPage = () => {
     {
       id: 'date',
       header: t('common.fields.date'),
-      accessor: (row) => <span className="text-secondary text-sm">{formatDate(row.orderDate)}</span>,
+      accessor: (row) => {
+        const d = row.orderDate ? new Date(row.orderDate) : null;
+        return (
+          <div className="flex flex-col">
+            <span className="text-secondary text-sm">{formatDate(row.orderDate)}</span>
+            {d && !isNaN(d.getTime()) && (
+              <span className="text-xs text-tertiary font-mono">
+                {d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+              </span>
+            )}
+          </div>
+        );
+      },
       sortable: true
     }
   ];
@@ -441,6 +453,9 @@ export const OrdersPage = () => {
                 <p className="text-secondary text-sm">{t('common.fields.paymentMethod')}: {selectedOrder.paymentMethod === 'cod' ? t('admin.order.paymentMethodCod') : t('admin.order.paymentMethodTransfer')}</p>
               </div>
             </div>
+
+            {/* Delivery Info */}
+            <OrderDeliveryPanel orderCode={selectedOrder.code} orderStatus={selectedOrder.status} />
 
             {/* Items */}
             <div>

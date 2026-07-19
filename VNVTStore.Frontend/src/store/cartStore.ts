@@ -5,6 +5,7 @@ import { cartService } from '@/services';
 import { promotionService, type Promotion } from '@/services/promotionService';
 import { useDiagnosticStore } from './diagnosticStore';
 import { createTabStorage } from './helpers';
+import i18n from '@/config/i18n';
 
 // NOTE: Circular dependency with authStore is safe here because
 // useAuthStore is only accessed at runtime (inside functions),
@@ -47,7 +48,7 @@ export const useCartStore = create<CartState>()(
                         useDiagnosticStore.getState().track({
                             module: 'CART',
                             eventType: 'COUPON_APPLY',
-                            description: `Applied coupon ${code} with ${coupon.discountValue}${coupon.discountType === 'PERCENTAGE' ? '%' : 'đ'} discount`,
+                            description: `Applied coupon ${code} with ${coupon.discountValue}${coupon.discountType === 'PERCENTAGE' ? '%' : '₫'} discount`,
                             payload: { code, coupon },
                             severity: 'INFO'
                         });
@@ -55,13 +56,13 @@ export const useCartStore = create<CartState>()(
                         // Check active date
                         const now = new Date();
                         if (new Date(coupon.startDate) > now || new Date(coupon.endDate) < now || !coupon.isActive) {
-                            throw new Error('Mã giảm giá đã hết hạn hoặc chưa có hiệu lực');
+                            throw new Error(i18n.t('checkout.voucherExpired', 'Coupon invalid or expired'));
                         }
 
                         // Validate minOrderAmount
                         const subtotal = get().getTotal();
                         if (coupon.minOrderAmount && subtotal < coupon.minOrderAmount) {
-                            throw new Error(`Đơn hàng tối thiểu để áp dụng là ${coupon.minOrderAmount.toLocaleString('vi-VN')}đ`);
+                            throw new Error(i18n.t('checkout.minOrderAmount', 'Minimum order amount') + `: ${coupon.minOrderAmount.toLocaleString()}₫`);
                         }
 
                         // Calculate discount
@@ -77,7 +78,7 @@ export const useCartStore = create<CartState>()(
 
                         set({ coupon, discountAmount: discount });
                     } else {
-                        throw new Error('Mã giảm giá không tồn tại');
+                        throw new Error(i18n.t('checkout.voucherInvalid', 'Coupon does not exist'));
                     }
                 } catch (error) {
                     console.error('[applyCoupon] Failed', error);
@@ -161,7 +162,7 @@ export const useCartStore = create<CartState>()(
                         ...(options?.color && { color: options.color })
                     });
                     if (!res.success) {
-                        throw new Error(res.message || 'Add to cart failed');
+                        throw new Error(res.message || i18n.t('cart.addToCartFailed', 'Add to cart failed'));
                     }
 
                     if (res.success && res.data) {
@@ -267,7 +268,7 @@ export const useCartStore = create<CartState>()(
                 try {
                     const res = await cartService.updateCartItem({ itemCode: itemId, quantity });
                     if (!res.success) {
-                        throw new Error(res.message || 'Update quantity failed');
+                        throw new Error(res.message || i18n.t('cart.updateQuantityFailed', 'Update quantity failed'));
                     }
 
                     if (res.success && res.data) {

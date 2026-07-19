@@ -39,7 +39,36 @@
         "invalidFileType": "Invalid file type. Please use JPEG, PNG, or WebP.",
         "fileTooLarge": "File is too large. Max size is 10MB."
     },
+    "promotions": {
+        "title": "Special Promotions",
+        "subtitle": "Discover special promotions customized for you at VNVT Store",
+        "noPromotions": "No promotions yet",
+        "noPromotionsDesc": "Please check back later to receive our special offers!",
+        "createGuide": "Start creating your first promotion program",
+        "validUntil": "Valid until",
+        "code": "Promo Code",
+        "copyCode": "Copy Code",
+        "copied": "Code copied!",
+        "noDescription": "No description for this promotion",
+        "newsletterTitle": "Subscribe for Offers",
+        "newsletterDesc": "Get the latest promotion info and a 50k voucher!",
+        "subscribe": "Subscribe"
+    },
     "common": {
+        "yes": "Yes",
+        "no": "No",
+        "noResults": "No results found",
+        "noData": "No data available",
+        "useNow": "Use Now",
+        "print": "Print",
+        "downloadSpecs": "Download spec sheet",
+        "founded": "Founded",
+        "origin": "Origin",
+        "happyBirthday": "Happy Birthday!",
+        "birthdayPromo": "15% off during your birthday month",
+        "referralProgram": "Referral program",
+        "friendsInvited": "Friends invited",
+        "referralEarnings": "Referral earnings",
         "adminDashboard": "Admin Dashboard",
         "loyaltyPoints": "Loyalty Points",
         "pointsToNextTier": "{{points}} more points to reach next tier",
@@ -69,6 +98,10 @@
             "wishlist": "Wishlist",
             "addresses": "Addresses",
             "notifications": "Notifications",
+            "promotions": "Promotions",
+            "reviews": "Reviews",
+            "priceDrops": "Price Drops",
+            "restocks": "Restocks",
             "settings": "Account Settings",
             "avatar": "Avatar",
             "avatarHint": "JPG, PNG, WebP supported. Max 10MB.",
@@ -387,7 +420,15 @@
         "noNotifications": "No new notifications",
         "clearAll": "Clear All",
         "viewDetails": "View Details",
-        "never": "Never"
+        "never": "Never",
+        "yes": "Yes",
+        "no": "No",
+        "generate": "Generate",
+        "close": "Close",
+        "noResults": "No results found",
+        "deleteSuccess": "Delete successful!",
+        "deleteError": "Delete failed. Please try again.",
+        "currency": "{{value}}₫"
     },
     "pagination": {
         "previous": "Previous",
@@ -400,6 +441,7 @@
         "display": "Display"
     },
     "admin": {
+        "viewStore": "View Store",
         "promotionForm": {
             "percentage": "Percentage",
             "fixedAmount": "Fixed Amount",
@@ -473,6 +515,7 @@
             "dashboard": "Dashboard",
             "products": "Products",
             "orders": "Orders",
+            "pos": "POS Terminal",
             "users": "Users",
             "settings": "Settings",
             "reviews": "Reviews",
@@ -481,7 +524,22 @@
             "promotions": "Promotions",
             "omniversal": "Omniversal Sync",
             "singularity": "The Singularity",
-            "diagnostic": "Diagnostics"
+            "diagnostic": "Diagnostics",
+            "core": "Core",
+            "inventory": "Inventory & Products",
+            "marketing": "Marketing & Content",
+            "system": "System & Config",
+            "customers": "Customers",
+            "suppliers": "Suppliers",
+            "brands": "Brands",
+            "units": "Units",
+            "quotes": "Quotes",
+            "coupons": "Coupons",
+            "news": "News",
+            "roles": "Roles & Permissions",
+            "auditLogs": "Audit Logs",
+            "systemConfigs": "System Configs",
+            "systemSecrets": "System Secrets"
         },
         "userMenu": {
             "signedInAs": "Signed in as",
@@ -503,7 +561,12 @@
             "coupons": "Coupon Management",
             "news": "News & Blog Management",
             "reviews": "Customer Review Management",
-            "banners": "Banner Management"
+            "banners": "Banner Management",
+            "brands": "Brand Partners Management",
+            "units": "Units of Measure Management",
+            "auditLogs": "View System Activity Logs",
+            "systemConfig": "Manage General Store Operating Configurations",
+            "systemSecrets": "Manage API Keys and Sensitive Configurations"
         },
         "titles": {
             "productEdit": "Edit Product",
@@ -689,6 +752,10 @@
         "bestSellers": "Best Sellers",
         "brands": "Brand Partners",
         "specialOffer": "Special Offer",
+        "announcement": {
+            "title": "Super Hot Deals 2026",
+            "description": "Up to 50% off on all products."
+        },
         "banner": {
             "specialOffer": "Special Offer"
         },
@@ -741,7 +808,11 @@
         "price5to10M": "5 - 10M",
         "priceOver10M": "Over 10M",
         "from": "Min",
-        "to": "Max"
+        "to": "Max",
+        "currency": "Currency:",
+        "inStockOnly": "In Stock Only",
+        "mostDiscounted": "Most Discounted",
+        "shuffle": "Shuffle"
     },
     "cart": {
         "title": "Shopping Cart",
@@ -761,7 +832,9 @@
         "couponPlaceholder": "Enter coupon code",
         "apply": "Apply",
         "securePayment": "Secure payment with",
-        "freeShippingNote": "Add {{amount}} more for free shipping"
+        "freeShippingNote": "Add {{amount}} more for free shipping",
+        "addToCartFailed": "Add to cart failed",
+        "updateQuantityFailed": "Update quantity failed"
     },
     "checkout": {
         "title": "Checkout",
@@ -792,7 +865,15 @@
         "bankName": "Vietcombank",
         "accountNumber": "0071001234567",
         "accountHolder": "VO NGO VAN TIEN",
-        "transferContent": "VNVT [Phone Number]"
+        "transferContent": "VNVT [Phone Number]",
+        "availableCoupons": "Available Coupons",
+        "noCoupons": "No offers found",
+        "noCouponsHint": "There are currently no coupons available for you.",
+        "couponPolicy": "* Only one coupon can be applied per order.",
+        "couponNoDescription": "Save more with this offer",
+        "minSpend": "Spend {{amount}} more",
+        "expires": "Expires",
+        "viewCoupons": "List"
     },
     "search": {
         "resultsFor": "Search results for"
@@ -818,8 +899,10 @@
         "name": "Full Name",
         "phone": "Phone Number",
         "company": "Company",
+        "companyPlaceholder": "Company name (optional)",
         "quantity": "Quantity Needed",
         "note": "Additional Notes",
+        "notePlaceholder": "Describe your request...",
         "submit": "Submit Request",
         "productInfo": "Product Information",
         "success": "Request Submitted!",
@@ -1163,7 +1246,22 @@
         "generateVariants": "Generate Variants",
         "variants": "Variants List",
         "variant": "Variant",
-        "noAttributes": "No attributes added"
+        "noAttributes": "No attributes added",
+        "bulkSelect": "Select Multiple",
+        "suggestions": "Suggestions:",
+        "loadingMore": "Loading more products...",
+        "viewedAll": "You have viewed all {{count}} products.",
+        "recentlyViewed": "Recently Viewed",
+        "compareCount": "Compare ({{current}}/{{max}})",
+        "compareNow": "Compare Now",
+        "compareItemsCount": "{{count}} products in comparison list",
+        "compareItemsCountText": "products in comparison list",
+        "clearAll": "Clear All",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "selectedCount": "Selected {{count}} products",
+        "targetCount": "Target {{count}} products",
+        "favorite": "Favorite"
     },
     "messages": {
         "logoutConfirmTitle": "Confirm Logout",
@@ -1171,5 +1269,67 @@
         "loginSuccess": "Login successful!",
         "impersonateSuccess": "Switched to user session",
         "confirmImpersonate": "Login as {{name}}?"
+    },
+    "rma": {
+        "reasons": {
+            "defective": "Defective product",
+            "wrongItem": "Wrong product",
+            "notAsDescribed": "Not as described",
+            "changeOfMind": "Change of mind / No longer needed",
+            "other": "Other"
+        },
+        "reason": "Return reason",
+        "selectReason": "Select reason...",
+        "details": "Details",
+        "detailsPlaceholder": "Describe details...",
+        "submit": "Submit request"
+    },
+    "wallet": {
+        "balance": "Wallet balance"
+    },
+    "promo": {
+        "firstOrder": "First order: 10% off with code",
+        "tieredDiscountLabel": "Buy {{count}}+ save {{discount}}%"
+    },
+    "paymentMethods": {
+        "cod": "Cash on Delivery (COD)",
+        "zalopay": "ZaloPay",
+        "momo": "MoMo Wallet",
+        "vnpay": "VNPAY QR",
+        "bankTransfer": "Bank Transfer"
+    },
+    "newsPage": {
+        "title": "News & Articles",
+        "subtitle": "Get the latest updates from VNVT Store",
+        "empty": "No articles found",
+        "emptyDesc": "Please check back later for the latest articles.",
+        "noSummary": "View article details...",
+        "readMore": "Read more",
+        "seoDesc": "Get the latest updates, user guides, and tips about home appliances from VNVT Store."
+    },
+    "order": {
+        "successTitle": "Order Successful",
+        "thankYou": "Thank you for your order",
+        "emailConfirmation": "A confirmation email has been sent to",
+        "yourEmail": "your email",
+        "checkEmail": "Please check your email inbox",
+        "buyerInfo": "Buyer Information",
+        "guest": "Guest",
+        "shippingAddress": "Shipping Address",
+        "paymentMethod": "Payment Method",
+        "shippingMethod": "Shipping Method",
+        "freeShip": "FREE SHIPPING",
+        "standardShipping": "Standard Shipping",
+        "order": "Order"
+    },
+    "faq": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Everything you need to know about our products and services",
+        "q1": "What is VNVT Store's warranty policy?",
+        "a1": "All genuine products at VNVT Store are warranted for 12-24 months depending on the product line. We support 1-to-1 exchange within 7 days if there is a manufacturer defect.",
+        "q2": "Can I check the goods before paying?",
+        "a2": "Yes, VNVT Store encourages customers to co-inspect with the delivery staff to ensure the product matches the model and is not damaged during transport.",
+        "q3": "How do I know if a product is in stock?",
+        "a3": "Inventory status is updated in real-time on the website. If a product shows 'Out of Stock', you can turn on restock notifications to receive a message as soon as it is back."
     }
 }

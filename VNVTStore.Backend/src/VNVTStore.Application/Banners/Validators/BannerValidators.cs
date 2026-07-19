@@ -1,5 +1,7 @@
 using FluentValidation;
 using VNVTStore.Application.DTOs;
+using System;
+using VNVTStore.Application.Common;
 
 namespace VNVTStore.Application.Banners.Validators;
 
@@ -9,23 +11,19 @@ public class CreateBannerDtoValidator : AbstractValidator<CreateBannerDto>
     {
         RuleFor(x => x.Title)
             .NotEmpty()
-            .WithMessage("Tiêu đề banner không được để trống")
-            .MaximumLength(200)
-            .WithMessage("Tiêu đề không được vượt quá 200 ký tự");
+            .MaximumLength(200);
 
         RuleFor(x => x.LinkUrl)
             .Must(BeValidUrl)
             .When(x => !string.IsNullOrEmpty(x.LinkUrl))
-            .WithMessage("URL liên kết không hợp lệ");
+            .WithMessage(_ => MessageConstants.Get(MessageConstants.UrlInvalid));
 
         RuleFor(x => x.Priority)
-            .GreaterThanOrEqualTo(0)
-            .WithMessage("Độ ưu tiên phải >= 0");
+            .GreaterThanOrEqualTo(0);
 
         RuleFor(x => x.Content)
             .MaximumLength(500)
-            .When(x => !string.IsNullOrEmpty(x.Content))
-            .WithMessage("Nội dung không được vượt quá 500 ký tự");
+            .When(x => !string.IsNullOrEmpty(x.Content));
     }
 
     private bool BeValidUrl(string? url)
@@ -41,12 +39,10 @@ public class UpdateBannerDtoValidator : AbstractValidator<UpdateBannerDto>
     {
         RuleFor(x => x.Title)
             .MaximumLength(200)
-            .When(x => !string.IsNullOrEmpty(x.Title))
-            .WithMessage("Tiêu đề không được vượt quá 200 ký tự");
+            .When(x => !string.IsNullOrEmpty(x.Title));
 
         RuleFor(x => x.Priority)
             .GreaterThanOrEqualTo(0)
-            .When(x => x.Priority.HasValue)
-            .WithMessage("Độ ưu tiên phải >= 0");
+            .When(x => x.Priority.HasValue);
     }
 }

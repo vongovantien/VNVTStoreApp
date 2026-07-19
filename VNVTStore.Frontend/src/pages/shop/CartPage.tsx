@@ -79,13 +79,12 @@ export const CartPage = () => {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {/* Header - Desktop */}
-            <div className="hidden md:grid grid-cols-12 gap-4 p-4 bg-primary rounded-xl font-semibold text-secondary">
-              <div className="col-span-6">{t('cart.product')}</div>
+            <div className="hidden md:grid grid-cols-12 gap-2 md:gap-4 p-4 bg-primary rounded-xl font-semibold text-secondary">
+              <div className="col-span-5">{t('cart.product')}</div>
               <div className="col-span-2 text-center">{t('cart.price')}</div>
               <div className="col-span-2 text-center">{t('cart.quantity')}</div>
-              <div className="col-span-2 text-right">{t('cart.subtotal')}</div>
+              <div className="col-span-3 text-right">{t('cart.subtotal')}</div>
             </div>
-
             {/* Items */}
             {items.map((item) => (
               <motion.div
@@ -94,10 +93,10 @@ export const CartPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 bg-primary rounded-xl items-center"
+                className="bg-primary rounded-xl p-4 md:grid md:grid-cols-12 md:gap-4 md:items-center"
               >
-                {/* Product */}
-                <div className="md:col-span-6 flex gap-4">
+                {/* Mobile: Flex layout, Desktop: col-span-5 grid cell */}
+                <div className="flex md:col-span-5 gap-4">
                   <Link to={`/product/${item.product.code}`} className="flex-shrink-0">
                     <SharedImage
                       src={item.product.image}
@@ -105,28 +104,59 @@ export const CartPage = () => {
                       className="w-20 h-20 object-cover rounded-lg"
                     />
                   </Link>
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      to={`/product/${item.product.code}`}
-                      className="font-medium text-primary hover:text-primary-dark transition-colors line-clamp-2"
-                    >
-                      {item.product.name}
-                    </Link>
-                    <p className="text-sm text-tertiary">{item.product.category}</p>
-                    {/* Mobile price */}
-                    <p className="md:hidden text-error font-bold mt-1">
-                      {formatCurrency(item.product.price)}
-                    </p>
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <Link
+                          to={`/product/${item.product.code}`}
+                          className="font-medium text-primary hover:text-primary-dark transition-colors line-clamp-2 text-sm md:text-base"
+                        >
+                          {item.product.name}
+                        </Link>
+                        {/* Mobile Delete Button */}
+                        <button
+                          onClick={() => removeItem(item.code)}
+                          className="md:hidden p-1 text-tertiary hover:text-error transition-colors"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                      <p className="text-xs md:text-sm text-tertiary">{item.product.category}</p>
+                    </div>
+                    {/* Mobile price and subtotal layout */}
+                    <div className="flex md:hidden items-center justify-between mt-2">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-tertiary">{t('cart.price')}: {formatCurrency(item.product.price)}</span>
+                        <span className="text-sm font-bold text-primary">{formatCurrency(item.product.price * item.quantity)}</span>
+                      </div>
+                      
+                      {/* Mobile Quantity selector right aligned */}
+                      <div className="flex items-center border rounded-lg bg-primary">
+                        <button
+                          onClick={() => updateQuantity(item.code, Math.max(1, item.quantity - 1))}
+                          className="p-1.5 hover:bg-hover transition-colors"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.code, item.quantity + 1)}
+                          className="p-1.5 hover:bg-hover transition-colors"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Price - Desktop */}
-                <div className="hidden md:block md:col-span-2 text-center font-medium text-error">
+                <div className="hidden md:block md:col-span-2 text-center font-medium text-error whitespace-nowrap">
                   {formatCurrency(item.product.price)}
                 </div>
 
-                {/* Quantity */}
-                <div className="md:col-span-2 flex justify-center">
+                {/* Quantity - Desktop */}
+                <div className="hidden md:flex md:col-span-2 justify-center">
                   <div className="flex items-center border rounded-lg">
                     <button
                       onClick={() => updateQuantity(item.code, Math.max(1, item.quantity - 1))}
@@ -144,14 +174,14 @@ export const CartPage = () => {
                   </div>
                 </div>
 
-                {/* Subtotal & Remove */}
-                <div className="md:col-span-2 flex items-center justify-between md:justify-end gap-4">
-                  <span className="font-bold text-primary">
+                {/* Subtotal & Remove - Desktop */}
+                <div className="hidden md:flex md:col-span-3 items-center justify-end gap-4">
+                  <span className="font-bold text-primary whitespace-nowrap">
                     {formatCurrency(item.product.price * item.quantity)}
                   </span>
                   <button
                     onClick={() => removeItem(item.code)}
-                    className="p-2 text-tertiary hover:text-error transition-colors"
+                    className="p-2 text-tertiary hover:text-error transition-colors flex-shrink-0"
                   >
                     <X size={18} />
                   </button>

@@ -54,6 +54,7 @@ const AdminDashboard = lazy(() => import('@/pages/admin/DashboardPage'));
 const AdminProducts = lazy(() => import('@/pages/admin/ProductsPage'));
 const AdminPromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'));
 const AdminOrders = lazy(() => import('@/pages/admin/OrdersPage'));
+const AdminPOS = lazy(() => import('@/pages/admin/POSPage'));
 const AdminCustomers = lazy(() => import('@/pages/admin/CustomersPage'));
 const AdminQuotes = lazy(() => import('@/pages/admin/QuotesPage'));
 // Admin pages - Second Quarter Part 1 (Element)
@@ -321,6 +322,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminOrders />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'pos',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminPOS />
               </Suspense>
             ),
           },

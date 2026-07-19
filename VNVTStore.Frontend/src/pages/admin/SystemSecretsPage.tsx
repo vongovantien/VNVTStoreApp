@@ -216,7 +216,7 @@ export const SystemSecretsPage = () => {
           onDelete={handleDelete}
           onImport={handleImport}
           onExport={handleExport}
-          importTitle={t('admin.systemSecrets.importTitle')}
+          importTitle={t('common.importData')}
           searchPlaceholder={t('common.search')}
         />
       </div>

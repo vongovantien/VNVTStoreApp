@@ -9,21 +9,21 @@ public class RegisterCommandValidator : AbstractValidator<VNVTStore.Application.
     public RegisterCommandValidator()
     {
         RuleFor(x => x.username)
-            .NotEmpty().WithMessage("Tên đăng nhập không được để trống")
-            .MinimumLength(3).WithMessage("Tên đăng nhập phải có ít nhất 3 ký tự");
+            .NotEmpty()
+            .MinimumLength(3);
 
         RuleFor(x => x.email)
-            .NotEmpty().WithMessage("Email không được để trống")
-            .EmailAddress().WithMessage("Email không hợp lệ");
+            .NotEmpty()
+            .EmailAddress();
 
         RuleFor(x => x.password)
-            .NotEmpty().WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak))
-            .MinimumLength(8).WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak))
+            .NotEmpty().WithMessage(_ => MessageConstants.Get(MessageConstants.PasswordTooWeak))
+            .MinimumLength(8).WithMessage(_ => MessageConstants.Get(MessageConstants.PasswordTooWeak))
             .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")
-            .WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak));
+            .WithMessage(_ => MessageConstants.Get(MessageConstants.PasswordTooWeak));
             
         RuleFor(x => x.fullName)
-            .NotEmpty().WithMessage("Họ tên không được để trống");
+            .NotEmpty();
     }
 }
 
@@ -32,16 +32,16 @@ public class ResetPasswordCommandValidator : AbstractValidator<VNVTStore.Applica
     public ResetPasswordCommandValidator()
     {
         RuleFor(x => x.email)
-            .NotEmpty().WithMessage("Email không được để trống")
-            .EmailAddress().WithMessage("Email không hợp lệ");
+            .NotEmpty()
+            .EmailAddress();
 
         RuleFor(x => x.token)
-            .NotEmpty().WithMessage("Token không được để trống");
+            .NotEmpty();
 
         RuleFor(x => x.newPassword)
-            .NotEmpty().WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak))
-            .MinimumLength(8).WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak))
+            .NotEmpty().WithMessage(_ => MessageConstants.Get(MessageConstants.PasswordTooWeak))
+            .MinimumLength(8).WithMessage(_ => MessageConstants.Get(MessageConstants.PasswordTooWeak))
             .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")
-            .WithMessage(MessageConstants.Get(MessageConstants.PasswordTooWeak));
+            .WithMessage(_ => MessageConstants.Get(MessageConstants.PasswordTooWeak));
     }
 }

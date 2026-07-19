@@ -38,30 +38,41 @@ export const formatDate = (
 };
 
 /**
- * Format relative time (e.g., "2 hours ago")
+ * Format relative time (e.g., "2 hours ago") — locale-aware
  */
 export const formatRelativeTime = (dateString: string | Date): string => {
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    const intervals: Record<string, number> = {
-        năm: 31536000,
-        tháng: 2592000,
-        tuần: 604800,
-        ngày: 86400,
-        giờ: 3600,
-        phút: 60,
-    };
+    // Determine the current locale from i18n or fallback to browser default
+    let locale: string;
+    try {
+        // Dynamic import avoidance: read from HTML lang attribute set by i18n
+        locale = document.documentElement.lang || navigator.language || 'vi';
+    } catch {
+        locale = 'vi';
+    }
 
-    for (const [unit, seconds] of Object.entries(intervals)) {
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+    const intervals: Array<{ unit: Intl.RelativeTimeFormatUnit; seconds: number }> = [
+        { unit: 'year', seconds: 31536000 },
+        { unit: 'month', seconds: 2592000 },
+        { unit: 'week', seconds: 604800 },
+        { unit: 'day', seconds: 86400 },
+        { unit: 'hour', seconds: 3600 },
+        { unit: 'minute', seconds: 60 },
+    ];
+
+    for (const { unit, seconds } of intervals) {
         const interval = Math.floor(diffInSeconds / seconds);
         if (interval >= 1) {
-            return `${interval} ${unit} trước`;
+            return rtf.format(-interval, unit);
         }
     }
 
-    return 'Vừa xong';
+    return rtf.format(0, 'second'); // "just now" / "vừa xong"
 };
 
 /**

@@ -22,6 +22,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 3000000
+      },
       manifest: {
         name: 'VNVT Store - Đồ Gia Dụng Cao Cấp',
         short_name: 'VNVT Store',

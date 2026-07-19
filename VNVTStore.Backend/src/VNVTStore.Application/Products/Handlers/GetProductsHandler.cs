@@ -33,11 +33,8 @@ public class GetProductsHandler : BaseHandler<TblProduct>,
     {
         var searchFields = request.Searching ?? new List<SearchDTO>();
 
-        // Add filter for active products for public APIs
-        if (!searchFields.Any(s => s.SearchField.Equals("IsActive", StringComparison.OrdinalIgnoreCase)))
-        {
-            searchFields.Add(new SearchDTO { SearchField = "IsActive", SearchValue = true, SearchCondition = SearchCondition.Equal });
-        }
+        // NOTE: IsActive filtering is handled by the Controller (ProductsController.Search)
+        // based on user role. Do NOT add it here, or admin users won't see inactive products.
 
         var sortDTO = request.SortDTO ?? new SortDTO { SortBy = request.SortField ?? "CreatedAt", SortDescending = request.SortDescending };
 

@@ -11,10 +11,10 @@ import { useSEO } from '@/hooks/useSEO';
 
 const OrderSuccessPage = () => {
      
-  useTranslation();
+  const { t } = useTranslation();
   
   useSEO({
-    title: 'Đặt hàng thành công',
+    title: t('order.successTitle', 'Đặt hàng thành công'),
     noindex: true,
   });
   const [searchParams] = useSearchParams();
@@ -73,10 +73,10 @@ const OrderSuccessPage = () => {
                         <Check className="text-[#87D068]" size={40} strokeWidth={3} />
                      </div>
                      <div className="mt-2">
-                        <h1 className="text-2xl font-bold text-[#333333] mb-2">Cảm ơn bạn đã đặt hàng</h1>
+                        <h1 className="text-2xl font-bold text-[#333333] mb-2">{t('order.thankYou', 'Cảm ơn bạn đã đặt hàng')}</h1>
                         <p className="text-[#666666] text-sm leading-relaxed">
-                            Một email xác nhận đã được gửi tới <span className="text-[#333333]">{order.userCode || 'email của bạn'}</span>.
-                            <br/>Xin vui lòng kiểm tra email của bạn
+                            {t('order.emailConfirmation', 'Một email xác nhận đã được gửi tới')} <span className="text-[#333333]">{order.userCode || t('order.yourEmail', 'email của bạn')}</span>.
+                            <br/>{t('order.checkEmail', 'Xin vui lòng kiểm tra email của bạn')}
                         </p>
                      </div>
                 </div>
@@ -85,16 +85,16 @@ const OrderSuccessPage = () => {
                 <div className="bg-[#F0F2F5] p-6 sm:p-8 rounded-sm grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-8 text-left border border-gray-100">
                      {/* Buyer Info */}
                     <div>
-                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">Thông tin mua hàng</h3>
+                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">{t('order.buyerInfo', 'Thông tin mua hàng')}</h3>
                         <div className="text-[#666666] text-[13px] space-y-1">
-                            <p>{order.shippingName || 'Khách lẻ'}</p>
+                            <p>{order.shippingName || t('order.guest', 'Khách lẻ')}</p>
                             <p>{order.userCode}</p>
                         </div>
                     </div>
 
                     {/* Shipping Address */}
                     <div>
-                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">Địa chỉ nhận hàng</h3>
+                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">{t('order.shippingAddress', 'Địa chỉ nhận hàng')}</h3>
                         <div className="text-[#666666] text-[13px] space-y-1">
                             <p>{order.shippingName}</p>
                             <p>{order.shippingAddress}</p>
@@ -104,17 +104,17 @@ const OrderSuccessPage = () => {
 
                     {/* Payment Method */}
                     <div>
-                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">Phương thức thanh toán</h3>
+                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">{t('order.paymentMethod', 'Phương thức thanh toán')}</h3>
                         <div className="text-[#666666] text-[13px]">
-                             <p>{order.paymentMethod === 'COD' ? 'Thanh toán khi giao hàng (COD)' : order.paymentMethod}</p>
+                             <p>{order.paymentMethod === 'COD' ? t('paymentMethods.cod', 'Thanh toán khi giao hàng (COD)') : (t(`paymentMethods.${order.paymentMethod.toLowerCase()}`) || order.paymentMethod)}</p>
                         </div>
                     </div>
 
                     {/* Shipping Method */}
                     <div>
-                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">Phương thức vận chuyển</h3>
+                        <h3 className="text-[15px] font-medium text-[#333333] mb-2">{t('order.shippingMethod', 'Phương thức vận chuyển')}</h3>
                         <div className="text-[#666666] text-[13px]">
-                            <p>{order.shippingFee === 0 ? 'FREE SHIP' : 'Giao hàng tiêu chuẩn'}</p>
+                            <p>{order.shippingFee === 0 ? t('order.freeShip', 'FREE SHIP') : t('order.standardShipping', 'Giao hàng tiêu chuẩn')}</p>
                         </div>
                     </div>
                 </div>
@@ -124,7 +124,7 @@ const OrderSuccessPage = () => {
                      
                      <Link to="/" className="w-full sm:w-auto">
                         <Button className="w-full sm:w-auto h-12 px-10 text-[15px] bg-[#337AB7] hover:bg-[#286090] text-white font-medium rounded-[4px] shadow-sm transition-colors">
-                            Tiếp tục mua hàng
+                            {t('cart.continueShopping', 'Tiếp tục mua hàng')}
                         </Button>
                     </Link>
                     
@@ -133,7 +133,7 @@ const OrderSuccessPage = () => {
                         className="flex items-center gap-2 text-[#337AB7] hover:text-[#23527c] font-medium transition-colors"
                     >
                         <Printer size={20} />
-                        <span className="text-[15px]">In</span>
+                        <span className="text-[15px]">{t('common.print', 'In')}</span>
                     </button>
                 </div>
             </div>
@@ -142,7 +142,7 @@ const OrderSuccessPage = () => {
             <div className="lg:col-span-5">
                 <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden">
                     <div className="px-5 py-3 border-b border-gray-100 bg-white">
-                        <h3 className="font-bold text-[#333333] text-[15px]">Đơn hàng #{order.code} ({order.orderItems?.length})</h3>
+                        <h3 className="font-bold text-[#333333] text-[15px]">{t('order.order', 'Đơn hàng')} #{order.code} ({order.orderItems?.length})</h3>
                     </div>
                     <div className="p-5">
                         <div className="space-y-4 mb-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -177,27 +177,27 @@ const OrderSuccessPage = () => {
 
                         <div className="border-t border-gray-100 pt-4 space-y-3 text-[14px]">
                             <div className="flex justify-between text-[#666666]">
-                                <span>Tạm tính</span>
+                                <span>{t('cart.subtotal', 'Tạm tính')}</span>
                                 <span className="text-[#333333]">
                                     {formatCurrency(order.totalAmount - (order.shippingFee || 0) + (order.discountAmount || 0))}
                                 </span>
                             </div>
                             <div className="flex justify-between text-[#666666]">
-                                <span>Phí vận chuyển</span>
+                                <span>{t('cart.shipping', 'Phí vận chuyển')}</span>
                                 <span className="text-[#333333]">
-                                     {order.shippingFee === 0 ? 'Miễn phí' : formatCurrency(order.shippingFee)}
+                                     {order.shippingFee === 0 ? t('cart.free', 'Miễn phí') : formatCurrency(order.shippingFee)}
                                 </span>
                             </div>
                              {(order.discountAmount || 0) > 0 && (
                                 <div className="flex justify-between text-success">
-                                    <span>Giảm giá</span>
+                                    <span>{t('cart.discount', 'Giảm giá')}</span>
                                     <span>-{formatCurrency(order.discountAmount)}</span>
                                 </div>
                             )}
                         </div>
-
+ 
                         <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                            <span className="text-[16px] text-[#666666] font-medium">Tổng cộng</span>
+                            <span className="text-[16px] text-[#666666] font-medium">{t('cart.total', 'Tổng cộng')}</span>
                             <span className="text-[20px] font-bold text-[#337AB7]">
                                 {formatCurrency(order.finalAmount || order.totalAmount)}
                             </span>

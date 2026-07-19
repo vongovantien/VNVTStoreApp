@@ -76,7 +76,7 @@ public class CartHandlers :
             
             try
             {
-                cart.AddItem(request.ProductCode, request.Quantity, request.Size, request.Color, product.StockQuantity ?? 0);
+                cart.AddItem(request.ProductCode, request.Quantity, request.Size, request.Color, product.StockQuantity ?? int.MaxValue);
                 
                 var addedOrUpdatedItem = cart.TblCartItems.FirstOrDefault(ci => 
                     ci.ProductCode == request.ProductCode && 
@@ -92,7 +92,7 @@ public class CartHandlers :
             }
             catch (InvalidOperationException ex)
             {
-                return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
+                return Result.Failure<CartDto>(Error.Validation(MessageConstants.InsufficientStock, product.Name));
             }
 
             _logger.LogInformation("[AddToCart] Successfully processed product {ProductCode} for cart {CartCode}", 
@@ -116,7 +116,7 @@ public class CartHandlers :
             var product = await _productRepository.AsQueryable()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Code == cartItem.ProductCode, cancellationToken);
-            int maxStock = product?.StockQuantity ?? 0;
+            int maxStock = product?.StockQuantity ?? int.MaxValue;
 
             try
             {
@@ -126,7 +126,7 @@ public class CartHandlers :
             }
             catch (InvalidOperationException ex)
             {
-                 return Result.Failure<CartDto>(Error.Validation("InsufficientStock", ex.Message));
+                 return Result.Failure<CartDto>(Error.Validation(MessageConstants.InsufficientStock, product?.Name ?? "Sản phẩm"));
             }
             return Result.Success(_mapper.Map<CartDto>(cart));
         }, cancellationToken);
@@ -179,7 +179,7 @@ public class CartHandlers :
 
                 try
                 {
-                    cart.AddItem(item.ProductCode, item.Quantity, item.Size, item.Color, product.StockQuantity ?? 0);
+                    cart.AddItem(item.ProductCode, item.Quantity, item.Size, item.Color, product.StockQuantity ?? int.MaxValue);
                     
                     var addedOrUpdatedItem = cart.TblCartItems.FirstOrDefault(ci => 
                         ci.ProductCode == item.ProductCode && 

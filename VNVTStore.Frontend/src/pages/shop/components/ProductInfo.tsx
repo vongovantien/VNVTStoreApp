@@ -214,7 +214,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             <Button
               size="lg"
               variant="outline"
-              className="flex-1 border-2 border-primary text-primary hover:bg-bg-tertiary hover:text-primary transition-colors"
+              className="flex-1 border-2 border-accent text-accent hover:bg-bg-tertiary hover:text-accent-hover transition-colors"
               onClick={handleAddToCart}
               disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
               isLoading={isAddingToCart}

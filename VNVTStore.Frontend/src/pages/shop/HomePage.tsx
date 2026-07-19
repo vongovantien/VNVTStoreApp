@@ -489,7 +489,7 @@ export const HomePage = () => {
                 brandPartners.map((brand) => (
                     <div
                       key={brand.code}
-                      className="px-6 py-3 bg-primary rounded-lg font-semibold text-secondary hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                      className="px-6 py-3 bg-primary rounded-lg font-semibold text-secondary hover:bg-accent hover:text-white transition-colors cursor-pointer"
                     >
                       {brand.name}
                     </div>

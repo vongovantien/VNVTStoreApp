@@ -93,9 +93,13 @@ export const useEntityManager = <T extends { code?: string; id?: string | number
             try {
                 const response = await service.getByCode(id, includeChildrenOnEdit ? { includeChildren: true } : undefined);
                 // Check if response wraps data in ApiResponse logic (success/data props)
-                if (response && response.success && response.data) {
-                    setEditingItem(response.data);
-                } else if (response) {
+                if (response && 'success' in response) {
+                    if (response.success && response.data) {
+                        setEditingItem(response.data);
+                    } else {
+                        console.warn("Failed to fetch fresh item details, falling back to grid data", response);
+                    }
+                } else if (response && response.data) {
                     // Fallback if response is direct object or different format
                     setEditingItem(response.data as T);
                 }

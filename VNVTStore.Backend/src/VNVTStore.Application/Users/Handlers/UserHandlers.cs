@@ -250,7 +250,7 @@ public class UserHandlers : BaseHandler<TblUser>,
         return await DeleteAsync(request.Code, MessageConstants.User, cancellationToken);
     }
 
-    public async Task<Result> Handle(DeleteMultipleCommand<TblUser> request, CancellationToken cancellationToken)
+    public override async Task<Result> Handle(DeleteMultipleCommand<TblUser> request, CancellationToken cancellationToken)
     {
         return await DeleteMultipleAsync(request.Codes, MessageConstants.User, cancellationToken);
     }

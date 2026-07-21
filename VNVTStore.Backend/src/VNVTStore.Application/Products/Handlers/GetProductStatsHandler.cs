@@ -7,7 +7,6 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Enums;
-using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Application.Products.Handlers;
 

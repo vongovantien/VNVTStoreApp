@@ -8,7 +8,6 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Orders.Queries;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
-using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Application.Orders.Handlers;
 

@@ -173,7 +173,7 @@ public class BrandHandlers : BaseHandler<TblBrand>,
             cancellationToken);
     }
 
-    public async Task<Result> Handle(DeleteMultipleCommand<TblBrand> request, CancellationToken cancellationToken)
+    public override async Task<Result> Handle(DeleteMultipleCommand<TblBrand> request, CancellationToken cancellationToken)
     {
          return await DeleteMultipleAsync(request.Codes, "Brand", cancellationToken);
     }

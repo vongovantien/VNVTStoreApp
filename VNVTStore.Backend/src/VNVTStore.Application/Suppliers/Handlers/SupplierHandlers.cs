@@ -129,7 +129,7 @@ public class SupplierHandlers : BaseHandler<TblSupplier>,
             cancellationToken);
     }
     
-    public async Task<Result> Handle(DeleteMultipleCommand<TblSupplier> request, CancellationToken cancellationToken)
+    public override async Task<Result> Handle(DeleteMultipleCommand<TblSupplier> request, CancellationToken cancellationToken)
     {
         return await DeleteMultipleAsync(request.Codes, "Supplier", cancellationToken);
     }

@@ -164,7 +164,7 @@ public class CategoryHandlers : BaseHandler<TblCategory>,
         return result;
     }
     
-    public async Task<Result> Handle(DeleteMultipleCommand<TblCategory> request, CancellationToken cancellationToken)
+    public override async Task<Result> Handle(DeleteMultipleCommand<TblCategory> request, CancellationToken cancellationToken)
     {
         return await DeleteMultipleAsync(request.Codes, "Category", cancellationToken);
     }

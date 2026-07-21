@@ -1,5 +1,4 @@
 using MediatR;
-using MediatR;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 

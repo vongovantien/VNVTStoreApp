@@ -1040,7 +1040,7 @@ public class BaseHandler<TEntity, TResponse, TCreateDto, TUpdateDto> : BaseHandl
     public virtual Task<Result> Handle(DeleteCommand<TEntity> request, CancellationToken cancellationToken)
         => DeleteAsync(request.Code, _entityName, cancellationToken);
 
-    public virtual Task<Result> Handle(DeleteMultipleCommand<TEntity> request, CancellationToken cancellationToken)
+    public override Task<Result> Handle(DeleteMultipleCommand<TEntity> request, CancellationToken cancellationToken)
         => DeleteMultipleAsync(request.Codes, _entityName, cancellationToken);
 
     public virtual async Task<Result<EntityStatsDto>> Handle(GetStatsQuery<TEntity> request, CancellationToken cancellationToken)

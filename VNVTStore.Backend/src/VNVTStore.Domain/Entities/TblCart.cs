@@ -53,7 +53,7 @@ public partial class TblCart : IEntity
         {
             if (existingItem.Quantity + quantity > maxStock)
             {
-                existingItem.UpdateQuantity(maxStock);
+                throw new InvalidOperationException("Insufficient stock.");
             }
             else
             {
@@ -64,7 +64,7 @@ public partial class TblCart : IEntity
         {
             if (quantity > maxStock)
             {
-                 quantity = maxStock;
+                 throw new InvalidOperationException("Insufficient stock.");
             }
             var newItem = TblCartItem.Create(Code, productCode, quantity, size, color);
             TblCartItems.Add(newItem);
@@ -84,7 +84,7 @@ public partial class TblCart : IEntity
         {
             if (quantity > maxStock)
             {
-                 quantity = maxStock;
+                 throw new InvalidOperationException("Insufficient stock.");
             }
             item.UpdateQuantity(quantity);
         }

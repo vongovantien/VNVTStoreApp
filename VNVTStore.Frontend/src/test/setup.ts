@@ -1,16 +1,13 @@
-
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
-
 // Runs a cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
     cleanup();
-
 });
 
-// Mock react-i18next
+// Mock react-i18next synchronously so that initReactI18next is immediately available
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string, ...args: unknown[]) => {
@@ -35,7 +32,7 @@ vi.mock('react-i18next', () => ({
         },
         i18n: {
             changeLanguage: vi.fn(),
-            language: 'en',
+            language: 'vi',
         },
     }),
     initReactI18next: {
@@ -47,3 +44,28 @@ vi.mock('react-i18next', () => ({
     Translation: ({ children }: { children: (t: (key: string) => string, { i18n }: { i18n: unknown }) => React.ReactNode }) =>
         children((key: string) => key, { i18n: {} }),
 }));
+
+// Mock IntersectionObserver
+class IntersectionObserverMock {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+  disconnect = vi.fn();
+  observe = vi.fn();
+  takeRecords = vi.fn();
+  unobserve = vi.fn();
+}
+
+Object.defineProperty(window, 'IntersectionObserver', {
+  writable: true,
+  configurable: true,
+  value: IntersectionObserverMock,
+});
+
+if (typeof global !== 'undefined') {
+  Object.defineProperty(global, 'IntersectionObserver', {
+    writable: true,
+    configurable: true,
+    value: IntersectionObserverMock,
+  });
+}

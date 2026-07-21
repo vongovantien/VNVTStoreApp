@@ -13,6 +13,10 @@ vi.mock('react-i18next', () => ({
         return key;
     },
   }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
+  },
 }));
 
 // Mock ConfirmDialog and Badge to simplify testing

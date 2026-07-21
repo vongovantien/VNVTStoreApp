@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { UseQueryResult } from '@tanstack/react-query';
+import { UseQueryResult, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import OrderDetailPage from '../OrderDetailPage';
 import { OrderDto } from '@/services/orderService';
@@ -51,6 +51,22 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+});
+
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            {ui}
+        </QueryClientProvider>
+    );
+};
+
 describe('OrderDetailPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -64,7 +80,7 @@ describe('OrderDetailPage', () => {
             error: null,
         } as unknown as UseQueryResult<OrderDto, Error>);
 
-        render(
+        renderWithProviders(
             <MemoryRouter>
                 <OrderDetailPage />
             </MemoryRouter>
@@ -83,7 +99,7 @@ describe('OrderDetailPage', () => {
             data: null,
         } as unknown as UseQueryResult<OrderDto, Error>);
 
-        render(
+        renderWithProviders(
             <MemoryRouter>
                 <OrderDetailPage />
             </MemoryRouter>
@@ -125,7 +141,7 @@ describe('OrderDetailPage', () => {
             error: null,
         } as unknown as UseQueryResult<OrderDto, Error>);
 
-        render(
+        renderWithProviders(
             <MemoryRouter>
                 <OrderDetailPage />
             </MemoryRouter>
@@ -179,7 +195,7 @@ describe('OrderDetailPage', () => {
             error: null,
         } as unknown as UseQueryResult<OrderDto, Error>);
 
-        render(
+        renderWithProviders(
             <MemoryRouter>
                 <OrderDetailPage />
             </MemoryRouter>

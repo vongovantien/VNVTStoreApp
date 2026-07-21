@@ -312,6 +312,7 @@ export const NotificationPreferences = ({
   prefs: Record<NotifTopic, NotifPref>;
   onChange: (topic: NotifTopic, channel: keyof NotifPref, value: boolean) => void;
 }) => {
+  const { t } = useTranslation();
   const topics: { key: NotifTopic; label: string; icon: React.ReactNode }[] = [
     { key: 'orders', label: t('common.account.orders', 'Đơn hàng'), icon: <Package size={16} /> },
     { key: 'promotions', label: t('common.account.promotions', 'Khuyến mãi'), icon: <Gift size={16} /> },

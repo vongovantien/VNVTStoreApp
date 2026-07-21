@@ -368,7 +368,7 @@ const GridCard = memo(({
           {selectable && (
             <button onClick={handleSelectToggle}
               className={cn('absolute top-3 left-3 w-6 h-6 rounded border-2 flex items-center justify-center z-30 transition-all',
-                selected ? 'bg-accent border-accent text-white' : 'bg-white/80 border-slate-300 hover:border-accent')}
+                selected ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white/80 border-slate-300 hover:border-accent')}
             >
               {selected && <Check size={14} />}
             </button>
@@ -381,7 +381,7 @@ const GridCard = memo(({
             {hasDiscount && <Badge color="warning">-{product.discount}%</Badge>}
             {isLowStock && (
               <Badge color="warning" className="animate-pulse">
-                🔥 {t('product.justLeft', 'Còn {{count}}!', { count: stockQty })}
+                🔥 {t('product.justLeft', 'Chỉ còn {{count}}!', { count: stockQty })}
               </Badge>
             )}
           </div>
@@ -511,10 +511,21 @@ const GridCard = memo(({
                   )}
                 </div>
                 {/* Wholesale callout */}
-                {product.wholesalePrice && (
-                  <p className="text-[10px] text-success font-medium mt-0.5">
-                    Mua sỉ từ {formatCurrency(product.wholesalePrice)}
-                  </p>
+                {product.wholesaleTiers && product.wholesaleTiers.length > 0 ? (
+                  <div className="text-[11px] text-green-600 font-semibold mt-1">
+                    <span>Bán sỉ: </span>
+                    {product.wholesaleTiers.map((tier, idx) => (
+                      <span key={idx} className="block text-[10px] font-normal text-text-secondary">
+                        ≥ {tier.minQuantity} cái: {formatCurrency(tier.price)}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  product.wholesalePrice && (
+                    <p className="text-[10px] text-success font-medium mt-0.5">
+                      Mua sỉ từ {formatCurrency(product.wholesalePrice)}
+                    </p>
+                  )
                 )}
               </>
             ) : (
@@ -522,11 +533,16 @@ const GridCard = memo(({
             )}
           </div>
 
-          {/* Estimated delivery */}
+          {/* Estimated delivery & urgency banner */}
           {hasFixedPrice && !isOutOfStock && (
-            <p className="mt-2 text-[10px] text-text-tertiary">
-              🚚 Giao dự kiến: <span className="font-medium text-text-secondary">{deliveryDate}</span>
-            </p>
+            <div className="mt-2 space-y-1">
+              <p className="text-[10px] text-text-tertiary">
+                🚚 Giao dự kiến: <span className="font-medium text-text-secondary">{deliveryDate}</span>
+              </p>
+              <p className="text-[10px] text-amber-600 font-medium">
+                🕒 Đặt trong 2 giờ tới để giao ngay hôm nay!
+              </p>
+            </div>
           )}
 
           {/* Size guide */}

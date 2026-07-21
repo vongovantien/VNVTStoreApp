@@ -30,11 +30,16 @@ vi.mock('@/store', () => ({
   }),
 }));
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 describe('ContactPage Component', () => {
+  const queryClient = new QueryClient();
   const renderPage = () => render(
-    <BrowserRouter>
-      <ContactPage />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ContactPage />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 
   it('renders contact form fields', () => {

@@ -32,6 +32,7 @@ export const ContactPage = () => {
     const mapsUrl = getContactValue('CONTACT_MAPS', 'https://maps.google.com/?q=VNVT+Store');
     const zaloNumber = getContactValue('CONTACT_ZALO', '');
     const zaloUrl = zaloNumber ? (zaloNumber.startsWith('http') ? zaloNumber : `https://zalo.me/${zaloNumber}`) : '#';
+    const facebookUrl = getContactValue('CONTACT_FACEBOOK', '#');
 
     useSEO({
         title: 'Liên hệ',
@@ -188,9 +189,9 @@ export const ContactPage = () => {
                                 {[
                                     { label: 'Facebook', href: facebookUrl },
                                     { label: 'Zalo', href: zaloUrl },
-                                    { label: 'TikTok', href: getSecretValue('CONTACT_TIKTOK', '#') },
-                                    { label: 'Instagram', href: getSecretValue('CONTACT_INSTAGRAM', '#') },
-                                    { label: 'Youtube', href: getSecretValue('CONTACT_YOUTUBE', '#') }
+                                    { label: 'TikTok', href: getContactValue('CONTACT_TIKTOK', '#') },
+                                    { label: 'Instagram', href: getContactValue('CONTACT_INSTAGRAM', '#') },
+                                    { label: 'Youtube', href: getContactValue('CONTACT_YOUTUBE', '#') }
                                 ].map((social) => (
                                     <a
                                         key={social.label}

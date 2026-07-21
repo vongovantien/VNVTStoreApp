@@ -8,6 +8,10 @@ import { orderService } from '@/services/orderService';
 vi.mock('@/services/orderService');
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
+  },
 }));
 // Helper to render with router
 const renderWithRouter = (initialEntries = ['/verify-order?token=test_token']) => {

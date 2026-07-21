@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CheckoutPage from '../CheckoutPage';
 import { useCartStore, useAuthStore } from '@/store';
 import { useCheckoutStore } from '@/store/checkoutStore';
@@ -32,11 +33,14 @@ vi.mock('@/services/paymentService', () => ({
     create: vi.fn(),
   },
 }));
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
+  },
 }));
 
 describe('CheckoutPage', () => {
@@ -47,6 +51,24 @@ describe('CheckoutPage', () => {
       quantity: 1
     }
   ];
+
+
+
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {ui}
+      </QueryClientProvider>
+    );
+  };
 
   const mockCheckoutStore = {
     step: 1,
@@ -85,7 +107,7 @@ describe('CheckoutPage', () => {
   });
 
   it('renders shipping step initially', () => {
-    render(
+    renderWithProviders(
       <BrowserRouter>
         <CheckoutPage />
       </BrowserRouter>
@@ -96,7 +118,7 @@ describe('CheckoutPage', () => {
   });
 
   it('shows validation error if required fields are missing in step 1', async () => {
-    render(
+    renderWithProviders(
       <BrowserRouter>
         <CheckoutPage />
       </BrowserRouter>
@@ -124,7 +146,7 @@ describe('CheckoutPage', () => {
       }
     });
 
-    render(
+    renderWithProviders(
       <BrowserRouter>
         <CheckoutPage />
       </BrowserRouter>
@@ -157,7 +179,7 @@ describe('CheckoutPage', () => {
       data: { code: 'ORD123' }
     });
 
-    render(
+    renderWithProviders(
       <BrowserRouter>
         <CheckoutPage />
       </BrowserRouter>

@@ -6,6 +6,7 @@ using VNVTStore.Application.Coupons.Commands;
 using VNVTStore.Application.Coupons.Queries;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 
@@ -63,7 +64,7 @@ public class CouponHandlers : BaseHandler<TblCoupon>,
             request.Dto,
             cancellationToken,
             c => {
-                c.Code = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
+                c.Code = CodeGenerator.NewUpper();
                 c.UsageCount = 0;
             });
     }

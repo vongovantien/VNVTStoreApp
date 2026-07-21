@@ -7,6 +7,7 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Constants;
 using VNVTStore.Application.Reviews.Commands;
 using VNVTStore.Application.Reviews.Queries;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Dapper;
@@ -108,7 +109,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             request.Dto,
             cancellationToken,
             r => {
-                r.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
+                r.Code = CodeGenerator.New();
                 r.IsApproved = true; // Auto-approve
                 r.CreatedAt = DateTime.UtcNow;
                 r.ProductCode = productCode;
@@ -327,7 +328,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         // Create a new review as a reply
         var replyReview = new TblReview
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10), // Or use sequence logic if possible
+            Code = CodeGenerator.New(),
             UserCode = userCode,
             ParentCode = parentReview.Code,
             ProductCode = parentReview.ProductCode, // Copy ProductCode from parent

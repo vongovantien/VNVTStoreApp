@@ -617,7 +617,7 @@ function DataTableInner<T extends object>({ // Changed from Record<string, unkno
                             key={column.id}
                             onClick={() => column.sortable && handleSort(column.id)}
                             className={cn(
-                              "px-4 py-3 text-left text-sm font-semibold text-secondary",
+                              "px-4 py-3 text-left text-sm font-semibold text-secondary whitespace-nowrap",
                               column.sortable && "cursor-pointer hover:bg-tertiary select-none transition-colors",
                               column.headerClassName
                             )}

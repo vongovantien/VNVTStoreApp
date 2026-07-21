@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useToast, useUIStore } from '@/store';
+import { useQuery } from '@tanstack/react-query';
+import { systemConfigService } from '@/services/systemConfigService';
 
 export const Footer = memo(() => {
   const { t } = useTranslation();
@@ -25,6 +27,29 @@ export const Footer = memo(() => {
   const { theme, toggleTheme } = useUIStore();
   const [email, setEmail] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
+
+  // Fetch public contact settings from the Backend
+  const { data: contactsRes } = useQuery({
+    queryKey: ['public-contacts'],
+    queryFn: () => systemConfigService.getPublicContacts(),
+    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+  });
+
+  const getContactValue = (code: string, fallback: string) => {
+    return contactsRes?.data?.[code] || fallback;
+  };
+
+  const phone = getContactValue('CONTACT_PHONE', '1900 123 456');
+  const contactEmail = getContactValue('ADMIN_EMAIL', 'contact@vnvtstore.com');
+  const facebookUrl = getContactValue('CONTACT_FACEBOOK', '#');
+  const instagramUrl = getContactValue('CONTACT_INSTAGRAM', '#');
+  const youtubeUrl = getContactValue('CONTACT_YOUTUBE', '#');
+  const zaloNumber = getContactValue('CONTACT_ZALO', '');
+  const mapsUrl = getContactValue('CONTACT_MAPS', 'https://maps.google.com/?q=VNVT+Store');
+
+  const zaloUrl = zaloNumber ? (zaloNumber.startsWith('http') ? zaloNumber : `https://zalo.me/${zaloNumber}`) : '#';
+
+
 
   const features = [
     { icon: Truck, title: t('footer.features.shipping'), desc: t('footer.features.shippingDesc') },
@@ -111,28 +136,36 @@ export const Footer = memo(() => {
               <div className="space-y-2 mb-6">
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin size={16} className="text-indigo-400" />
-                  <span>{t('shared.address')}</span>
+                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {getContactValue('CONTACT_ADDRESS', t('shared.address'))}
+                  </a>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Phone size={16} className="text-indigo-400" />
-                  <span>{t('shared.hotline')}</span>
+                  <a href={`tel:${phone}`} className="hover:underline">
+                    {phone}
+                  </a>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Mail size={16} className="text-indigo-400" />
-                  <span>{t('shared.email')}</span>
+                  <a href={`mailto:${contactEmail}`} className="hover:underline">
+                    {contactEmail}
+                  </a>
                 </div>
               </div>
 
               {/* Social */}
               <div className="flex gap-2">
                 {[
-                  { icon: Facebook, href: '#', color: 'hover:bg-blue-600' },
-                  { icon: Instagram, href: '#', color: 'hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500' },
-                  { icon: Youtube, href: '#', color: 'hover:bg-red-600' },
+                  { icon: Facebook, href: facebookUrl, color: 'hover:bg-blue-600' },
+                  { icon: Instagram, href: instagramUrl, color: 'hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500' },
+                  { icon: Youtube, href: youtubeUrl, color: 'hover:bg-red-600' },
                 ].map((social, i) => (
                   <a
                     key={i}
                     href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={cn(
                       'w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center transition-all hover:text-white',
                       social.color
@@ -141,7 +174,7 @@ export const Footer = memo(() => {
                     <social.icon size={20} />
                   </a>
                 ))}
-                <a href="https://zalo.me" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-500 transition-colors">
+                <a href={zaloUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-500 transition-colors">
                   <span className="text-xs font-bold">{t('shared.chatZalo')}</span>
                 </a>
               </div>

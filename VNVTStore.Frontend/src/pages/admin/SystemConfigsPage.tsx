@@ -76,6 +76,7 @@ export const SystemConfigsPage = () => {
           <span className="text-sm">{c.configValue}</span>
         </div>
       ),
+      sortable: true,
       minWidth: '300px'
     },
     {
@@ -84,6 +85,7 @@ export const SystemConfigsPage = () => {
       accessor: (c: SystemConfigDto) => (
         <span className="text-xs text-secondary italic line-clamp-1">{c.description || '-'}</span>
       ),
+      sortable: true,
       minWidth: '200px'
     },
     {
@@ -98,6 +100,7 @@ export const SystemConfigsPage = () => {
           {c.isActive ? t('common.status.active') : t('common.status.inactive')}
         </Badge>
       ),
+      sortable: true,
       className: 'text-center',
       minWidth: '120px'
     }

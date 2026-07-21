@@ -4,7 +4,7 @@ import { Truck, Package, ClipboardList, Check, X, Printer } from 'lucide-react';
 import defaultImage from '@/assets/default-image.png';
 import { Button, Badge, Modal, ConfirmDialog } from '@/components/ui';
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks';
-import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/utils/format';
+import { formatCurrency, formatDate, getStatusColor, getStatusText, parseOrderCustomer } from '@/utils/format';
 import { orderService, type OrderDto } from '@/services/orderService';
 import { AdminPageHeader, OrderDeliveryPanel } from '@/components/admin';
 import { DataTable } from '@/components/common';
@@ -30,6 +30,7 @@ export const OrdersPage = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [orderToDelete, setOrderToDelete] = useState<OrderDto | null>(null);
+  const [orderToUpdate, setOrderToUpdate] = useState<{ code: string; status: string } | null>(null);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => orderService.delete(id),
@@ -45,12 +46,45 @@ export const OrdersPage = () => {
     }
   };
 
+  const handleConfirmStatusUpdate = () => {
+    if (orderToUpdate) {
+      updateStatusMutation.mutate(
+        { code: orderToUpdate.code, status: orderToUpdate.status },
+        {
+          onSuccess: () => {
+            if (selectedOrder && selectedOrder.code === orderToUpdate.code) {
+              setSelectedOrder({ ...selectedOrder, status: orderToUpdate.status });
+            }
+            setOrderToUpdate(null);
+            toast.success(t('messages.updateSuccess'));
+          },
+          onError: () => {
+            toast.error(t('messages.updateError'));
+          }
+        }
+      );
+    }
+  };
+
+  const getConfirmMessage = () => {
+    if (!orderToUpdate) return '';
+    switch (orderToUpdate.status) {
+      case OrderStatus.CONFIRMED:
+        return t('messages.confirmOrder');
+      case OrderStatus.SHIPPING:
+        return t('messages.confirmShip');
+      case OrderStatus.DELIVERED:
+        return t('messages.confirmDeliver');
+      case OrderStatus.CANCELLED:
+        return t('messages.confirmCancel');
+      default:
+        return t('messages.confirmStatusUpdate');
+    }
+  };
+
   // Actions
   const updateStatus = (orderId: string, newStatus: string) => {
-    updateStatusMutation.mutate({ code: orderId, status: newStatus });
-    if (selectedOrder && selectedOrder.code === orderId) {
-      setSelectedOrder({ ...selectedOrder, status: newStatus });
-    }
+    setOrderToUpdate({ code: orderId, status: newStatus });
   };
 
   const handlePrintInvoice = () => {
@@ -68,12 +102,15 @@ export const OrdersPage = () => {
     {
       id: 'customer',
       header: t('common.fields.customer'),
-      accessor: (row) => (
-        <div>
-          <p className="font-medium">{row.shippingName || row.userCode}</p>
-          <p className="text-xs text-tertiary">{row.shippingPhone || '-'}</p>
-        </div>
-      )
+      accessor: (row) => {
+        const { name, phone } = parseOrderCustomer(row);
+        return (
+          <div>
+            <p className="font-medium">{name}</p>
+            <p className="text-xs text-tertiary">{phone}</p>
+          </div>
+        );
+      }
     },
     {
       id: 'products',
@@ -230,10 +267,9 @@ export const OrdersPage = () => {
           setCurrentPage(PaginationDefaults.PAGE_INDEX);
         }}
         
-        onAdd={() => { }} // Placeholder
         onRefresh={refetch}
         onView={(order) => setSelectedOrder(order)}
-        onEdit={(order) => setSelectedOrder(order)} // Map Edit to View for now as Order Edit is complex
+        onEdit={(order) => setSelectedOrder(order)} // Map Edit to View — order edit is complex, detail modal covers it
         onDelete={(order) => setOrderToDelete(order)}
         renderRowActions={(order) => (
           <>
@@ -405,6 +441,16 @@ export const OrdersPage = () => {
         variant="danger"
       />
 
+      <ConfirmDialog
+        isOpen={!!orderToUpdate}
+        onClose={() => setOrderToUpdate(null)}
+        onConfirm={handleConfirmStatusUpdate}
+        title={t('common.confirm')}
+        message={getConfirmMessage()}
+        isLoading={updateStatusMutation.isPending}
+        variant={orderToUpdate?.status === OrderStatus.CANCELLED ? 'danger' : 'info'}
+      />
+
       {/* Order Detail Modal */}
       <Modal
         isOpen={!!selectedOrder}
@@ -441,8 +487,15 @@ export const OrdersPage = () => {
               {/* Customer Info */}
               <div className="bg-secondary rounded-lg p-4">
                 <h3 className="font-semibold mb-2">{t('admin.order.customerInfo')}</h3>
-                <p className="font-medium">{selectedOrder.shippingName || selectedOrder.userCode}</p>
-                <p className="text-secondary text-sm">{selectedOrder.shippingPhone || '-'}</p>
+                {(() => {
+                  const { name, phone } = parseOrderCustomer(selectedOrder);
+                  return (
+                    <>
+                      <p className="font-medium">{name}</p>
+                      <p className="text-secondary text-sm">{phone}</p>
+                    </>
+                  );
+                })()}
                 <p className="text-secondary text-sm mt-1">{selectedOrder.shippingAddress || '-'}</p>
               </div>
 

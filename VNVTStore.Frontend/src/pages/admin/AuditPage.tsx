@@ -56,16 +56,21 @@ const AdminAuditPage = () => {
     {
         id: 'details',
         header: t('auditLog.details'),
-        accessor: 'details'
+        accessor: 'details',
+        sortable: true
     },
     {
         id: 'status',
         header: t('auditLog.status'),
-        accessor: (row) => (
-            <span className={row.status === 'success' ? 'text-green-600' : 'text-red-600'}>
-                {row.status}
-            </span>
-        ),
+        accessor: (row) => {
+            const isSuccess = row.status === 'success';
+            return (
+                <span className={isSuccess ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                    {isSuccess ? t('auditLog.statusSuccess', 'Thành công') : t('auditLog.statusFailed', 'Thất bại')}
+                </span>
+            );
+        },
+        sortable: true,
         width: '100px'
     }
   ], [t]);

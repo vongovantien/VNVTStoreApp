@@ -82,13 +82,16 @@ export const SystemSecretsPage = () => {
       accessor: (s: SystemSecretDto) => {
         const isVisible = visibleKeys.has(s.code);
         return (
-          <div className="flex items-center gap-2 min-w-[200px]">
-            <span className="text-sm font-mono flex-1 truncate">
+          <div className="flex items-center gap-2 max-w-[350px] w-full">
+            <span 
+              className="text-sm font-mono flex-1 truncate block"
+              title={isVisible ? s.secretValue : undefined}
+            >
               {isVisible ? s.secretValue : '••••••••••••••••'}
             </span>
             <button
               onClick={() => toggleVisibility(s.code)}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400 flex-shrink-0"
               title={isVisible ? t('common.hide') : t('common.show')}
             >
               {isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -96,6 +99,7 @@ export const SystemSecretsPage = () => {
           </div>
         );
       },
+      sortable: true,
       minWidth: '300px'
     },
     {
@@ -110,6 +114,7 @@ export const SystemSecretsPage = () => {
                 {s.isEncrypted ? 'Encrypted' : 'Plain'}
             </Badge>
         ),
+        sortable: true,
         minWidth: '100px'
     }
   ], [t, visibleKeys, toggleVisibility]);

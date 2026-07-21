@@ -1,10 +1,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Common.Commands;
 using VNVTStore.Application.Common.Queries;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Infrastructure.Persistence;
 
 namespace VNVTStore.API.Controllers.v1;
 
@@ -17,6 +21,29 @@ public class ConfigsController : ControllerBase
     public ConfigsController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpGet("contacts")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<Dictionary<string, string>>>> GetPublicContacts([FromServices] ApplicationDbContext context)
+    {
+        var contactCodes = new List<string> 
+        { 
+            "CONTACT_PHONE", 
+            "CONTACT_FACEBOOK", 
+            "CONTACT_TIKTOK", 
+            "CONTACT_MESSENGER", 
+            "CONTACT_ZALO", 
+            "CONTACT_MAPS", 
+            "CONTACT_ADDRESS",
+            "ADMIN_EMAIL"
+        };
+        
+        var secrets = await context.TblSystemSecrets
+            .Where(s => s.IsActive && contactCodes.Contains(s.Code))
+            .ToDictionaryAsync(s => s.Code, s => s.SecretValue ?? string.Empty);
+            
+        return Ok(ApiResponse<Dictionary<string, string>>.Ok(secrets));
     }
 
     [HttpGet]

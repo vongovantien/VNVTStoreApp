@@ -215,15 +215,46 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     }
   };
 
+  // Resolve baseUnit: if it looks like a code (e.g. "UNIT_ROLL"), find the friendly name
+  // from productUnits (base unit entry) or strip the prefix
+  const resolvedBaseUnit = useMemo(() => {
+    const raw = initialData?.baseUnit || 'Cái';
+    if (!raw.startsWith('UNIT_')) return raw; // Already a name like "Cuộn"
+    // Try to find from productUnits
+    const baseUnitEntry = initialData?.productUnits?.find(
+      (u: ProductUnitDto) => u.isBaseUnit && u.unitName
+    );
+    if (baseUnitEntry?.unitName) return baseUnitEntry.unitName;
+    // Fallback: try to find any unit matching the code
+    const matchByCode = initialData?.productUnits?.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (u: any) => u.unitCode === raw && u.unitName
+    );
+    if (matchByCode?.unitName) return matchByCode.unitName;
+    return raw; // Last resort: show the code
+  }, [initialData]);
+
+  // Deduplicate details by specName (keep the first occurrence)
+  const deduplicatedDetails = useMemo(() => {
+    const details = initialData?.details || [];
+    const seen = new Set<string>();
+    return details.filter(d => {
+      const key = `${d.detailType || 'SPEC'}_${d.specName}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [initialData]);
+
   const defaultValues: ProductFormData = useMemo(() => ({
     name: initialData?.name || '',
     price: initialData?.price || 0,
     wholesalePrice: initialData?.wholesalePrice || 0,
     description: initialData?.description || '',
     brandCode: initialData?.brandCode || '',
-    baseUnit: initialData?.baseUnit || 'Cái',
+    baseUnit: resolvedBaseUnit,
     isActive: initialData?.isActive ?? true,
-    details: initialData?.details || [],
+    details: deduplicatedDetails,
     categoryCode: initialData?.categoryCode || '',
     stockQuantity: initialData?.stockQuantity || 0,
     costPrice: initialData?.costPrice ?? initialData?.originalPrice ?? 0,
@@ -245,7 +276,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     countryOfOrigin: initialData?.countryOfOrigin || '',
     supplierCode: initialData?.supplierCode || '',
     variants: initialData?.variants || [],
-  }), [initialData]);
+  }), [initialData, resolvedBaseUnit, deduplicatedDetails]);
 
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);

@@ -1,4 +1,41 @@
 {
+    "messages": {
+        "passwordStrengthError": "Mật khẩu không đạt yêu cầu về độ mạnh.",
+        "checkQuotesPage": "Vui lòng kiểm tra trang Báo giá để xem chi tiết.",
+        "featureComingSoon": "Tính năng đang được phát triển",
+        "saveProductFirst": "Vui lòng lưu sản phẩm trước khi tạo đơn vị tính",
+        "confirmDeleteCount": "Bạn có chắc chắn muốn xóa {{count}} mục đã chọn?",
+        "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất không?",
+        "orderSuccess": "Đặt hàng thành công!",
+        "orderError": "Đặt hàng thất bại. Vui lòng thử lại.",
+        "paymentError": "Có lỗi khi tạo thanh toán, vui lòng liên hệ CSKH.",
+        "forgotPasswordSuccess": "Nếu tài khoản tồn tại, liên kết đặt lại mật khẩu đã được gửi.",
+        "generalError": "Có lỗi xảy ra",
+        "createSuccess": "Tạo thành công!",
+        "createError": "Không thể tạo. Vui lòng thử lại.",
+        "updateSuccess": "Cập nhật thành công!",
+        "updateError": "Không thể cập nhật. Vui lòng thử lại.",
+        "deleteSuccess": "Xóa thành công!",
+        "deleteError": "Không thể xóa. Vui lòng thử lại.",
+        "saveSuccess": "Đã lưu thay đổi thành công!",
+        "exportSuccess": "Xuất dữ liệu thành công!",
+        "exportError": "Xuất dữ liệu thất bại!",
+        "importSuccess": "Nhập dữ liệu thành công ({{count}} mục)!",
+        "importError": "Nhập dữ liệu thất bại!",
+        "selectProductsFlashSale": "Chọn sản phẩm tham gia",
+        "noProductsAvailable": "Không tìm thấy sản phẩm nào",
+        "selectProductsInfo": "Các sản phẩm được chọn sẽ được áp dụng mức giảm giá này.",
+        "saveError": "Không thể lưu. Vui lòng thử lại.",
+        "loginSuccess": "Đăng nhập thành công!",
+        "loginError": "Tên đăng nhập hoặc mật khẩu không đúng",
+        "registerSuccess": "Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.",
+        "logoutConfirmTitle": "Xác nhận đăng xuất",
+        "error": "Có lỗi xảy ra",
+        "newOrder": "Đơn hàng mới",
+        "newQuote": "Yêu cầu báo giá mới",
+        "confirmStopImpersonate": "Dừng giả danh và quay lại trang đăng nhập?",
+        "enterEmail": "Vui lòng nhập email"
+    },
     "auditLog": {
         "title": "Nhật ký hệ thống",
         "createdAt": "Thời gian",
@@ -10,7 +47,12 @@
         "searchPlaceholder": "Tìm kiếm nhật ký...",
         "module": "Phân hệ",
         "details": "Chi tiết",
-        "status": "Trạng thái"
+        "status": "Trạng thái",
+        "statusSuccess": "Thành công",
+        "statusFailed": "Thất bại"
+    },
+    "dashboardStats": {
+        "revenue": "Doanh thu"
     },
     "addresses": {
         "title": "Địa chỉ giao hàng",
@@ -1382,7 +1424,12 @@
         "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
         "loginSuccess": "Đăng nhập thành công!",
         "impersonateSuccess": "Đã chuyển sang phiên người dùng",
-        "confirmImpersonate": "Đăng nhập với tư cách {{name}}?"
+        "confirmImpersonate": "Đăng nhập với tư cách {{name}}?",
+        "confirmOrder": "Bạn có chắc chắn muốn xác nhận đơn hàng này không?",
+        "confirmShip": "Bạn có chắc chắn muốn chuyển trạng thái đơn hàng này sang đang giao không?",
+        "confirmDeliver": "Bạn có chắc chắn muốn đánh dấu đơn hàng này đã giao thành công không?",
+        "confirmCancel": "Bạn có chắc chắn muốn hủy đơn hàng này không?",
+        "confirmDelete": "Bạn có chắc chắn muốn xóa đơn hàng này không?"
     },
     "rma": {
         "reasons": {

@@ -32,7 +32,7 @@ export const StatsCards = ({ stats, className }: StatsCardsProps) => {
         const theme = stat.color && colorMap[stat.color] ? colorMap[stat.color] : colorMap.blue;
         
         return (
-          <div key={index} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-center gap-4 transition-all hover:shadow-md">
+          <div key={index} className="bg-bg-primary p-4 rounded-xl shadow-sm border border-border flex items-center gap-4 transition-all hover:shadow-md">
             <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center transition-colors", theme.bg, theme.text)}>
               {stat.icon}
             </div>

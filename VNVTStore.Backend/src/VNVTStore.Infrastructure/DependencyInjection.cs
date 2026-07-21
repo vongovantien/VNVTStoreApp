@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Domain.Entities;
@@ -16,10 +17,21 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var env = services.BuildServiceProvider().GetService<IHostEnvironment>();
+        var isDevelopment = env?.IsDevelopment() ?? false;
+
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                   .EnableSensitiveDataLogging()
-                   .EnableDetailedErrors());
+        {
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+
+            // Only enable sensitive data logging and detailed errors in Development.
+            // These settings log SQL parameter values (including passwords/tokens) — unsafe in production.
+            if (isDevelopment)
+            {
+                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
+            }
+        });
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 

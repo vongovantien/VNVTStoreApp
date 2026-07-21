@@ -31,7 +31,18 @@
   
   --color-border: var(--border-color);
   --color-error: var(--error);
-  
+
+  /* Status color tokens exposed to Tailwind */
+  --color-success: var(--success);
+  --color-success-hover: var(--success-hover);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-hover: var(--info-hover);
+  --color-info-soft: var(--info-soft);
+
   --color-primary: var(--accent-primary);
   --color-secondary: var(--color-secondary-base);
 }
@@ -68,6 +79,17 @@
 
   --error: #ef4444;
   /* red-500 */
+
+  /* Semantic status colors */
+  --success: #10b981;       /* emerald-500 */
+  --success-hover: #059669; /* emerald-600 */
+  --success-soft: #d1fae5;  /* emerald-100 */
+  --warning: #f59e0b;       /* amber-500 */
+  --warning-hover: #d97706; /* amber-600 */
+  --warning-soft: #fef3c7;  /* amber-100 */
+  --info: #3b82f6;          /* blue-500 */
+  --info-hover: #2563eb;    /* blue-600 */
+  --info-soft: #dbeafe;     /* blue-100 */
 }
 
 [data-theme="dark"] {
@@ -91,6 +113,17 @@
   --color-secondary-base: #475569; /* slate-600 for dark mode secondary */
   
   --error: #f87171; /* red-400 for better visibility on dark */
+
+  /* Semantic status colors — dark-mode adjusted */
+  --success: #34d399;       /* emerald-400 */
+  --success-hover: #10b981; /* emerald-500 */
+  --success-soft: #064e3b;  /* emerald-900 */
+  --warning: #fbbf24;       /* amber-400 */
+  --warning-hover: #f59e0b; /* amber-500 */
+  --warning-soft: #78350f;  /* amber-900 */
+  --info: #60a5fa;          /* blue-400 */
+  --info-hover: #3b82f6;    /* blue-500 */
+  --info-soft: #1e3a5f;     /* blue-900 approx */
 }
 
 
@@ -347,3 +380,118 @@ textarea:focus {
 .animate-shimmer {
   animation: shimmer 2s infinite linear;
 }
+
+/* ============ Status Color Utilities ============ */
+
+.text-success { color: var(--success); }
+.bg-success { background-color: var(--success); }
+.bg-success-soft { background-color: var(--success-soft); }
+.border-success { border-color: var(--success); }
+.hover\:bg-success:hover { background-color: var(--success-hover); }
+
+.text-warning { color: var(--warning); }
+.bg-warning { background-color: var(--warning); }
+.bg-warning-soft { background-color: var(--warning-soft); }
+.border-warning { border-color: var(--warning); }
+.hover\:bg-warning:hover { background-color: var(--warning-hover); }
+
+.text-info { color: var(--info); }
+.bg-info { background-color: var(--info); }
+.bg-info-soft { background-color: var(--info-soft); }
+.border-info { border-color: var(--info); }
+.hover\:bg-info:hover { background-color: var(--info-hover); }
+
+/* ============ Typography Scale ============ */
+/* Consistent heading classes to replace ad-hoc text-* combinations */
+
+.heading-xl {
+  font-size: 2.25rem;   /* 36px */
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.heading-lg {
+  font-size: 1.875rem;  /* 30px */
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.heading-md {
+  font-size: 1.5rem;    /* 24px */
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.heading-sm {
+  font-size: 1.25rem;   /* 20px */
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.heading-xs {
+  font-size: 1rem;      /* 16px */
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.body-lg {
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.body-md {
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.body-sm {
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.55;
+  color: var(--text-tertiary);
+}
+
+.caption {
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--text-tertiary);
+}
+
+.label-md {
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.label-sm {
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* ============ Page Section Utilities ============ */
+
+.section-title {
+  composes: heading-md;
+  margin-bottom: 1.5rem;
+}
+
+.page-header {
+  composes: heading-lg;
+  margin-bottom: 0.5rem;
+}
+

@@ -98,20 +98,25 @@ export const useAuthStore = create<AuthState>()(
             },
             stopImpersonating: () => {
                 const { adminToken } = get();
-                if (adminToken) {
-                    set({
-                        user: null,
-                        isAuthenticated: false,
-                        token: null,
-                        refreshToken: null,
-                        adminToken: null,
-                        permissions: [],
-                        menus: []
-                    });
+                if (!adminToken) return;
 
-                    // Redirect to login
-                    window.location.href = '/login';
-                }
+                // Restore the admin session by re-using the stored admin token.
+                // We clear the impersonated user state first, then trigger a full
+                // profile refresh so the admin's own user/permissions are reloaded.
+                set({
+                    token: adminToken,
+                    adminToken: null,
+                    // Keep isAuthenticated: true so the app doesn't flash to login state.
+                    // The user/permissions will be updated after the page refreshes.
+                    isAuthenticated: true,
+                    user: null,
+                    refreshToken: null,
+                    permissions: [],
+                    menus: [],
+                });
+
+                // Hard-navigate to admin home so all stores re-initialize with the admin token.
+                window.location.href = '/admin';
             },
             setTokens: (token: string, refreshToken: string) => set({ token, refreshToken }),
             setPermissions: (permissions: string[]) => set({ permissions }),

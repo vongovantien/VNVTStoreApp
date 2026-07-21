@@ -1,4 +1,5 @@
-﻿using VNVTStore.Domain.Enums;
+using VNVTStore.Domain.Common;
+using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -105,7 +106,7 @@ public partial class TblUser : IEntity
          
          var user = new TblUser
          {
-             Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+             Code = CodeGenerator.New(),
              Username = email, 
              Email = email,
              FullName = fullName,
@@ -143,7 +144,7 @@ public partial class TblUser : IEntity
 
         var user = new TblUser
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            Code = CodeGenerator.New(),
             Username = username,
             Email = email,
             PasswordHash = passwordHash,
@@ -200,6 +201,7 @@ public partial class TblUser : IEntity
     public void UpdateRole(string roleCode)
     {
         RoleCode = roleCode;
+        Role = roleCode == "ADMIN" ? UserRole.Admin : UserRole.Customer;
         UpdatedAt = DateTime.UtcNow;
     }
 

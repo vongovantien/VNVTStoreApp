@@ -54,6 +54,8 @@ export const createSchemas = (t: TFunction) => {
     const registerSchema = z.object({
         username: z.string().optional(),
         ...baseUserFields,
+        email: zField.email(t), // Enable email validation for registration
+        phone: zField.phone(t), // Enable phone validation for registration
         password: zField.password(t),
         confirmPassword: zField.required(t),
         agreeTerms: z.boolean().refine(v => v === true, t('register.agreeTerms')),

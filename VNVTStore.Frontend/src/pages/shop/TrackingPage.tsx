@@ -66,7 +66,8 @@ export const TrackingPage = () => {
             <div className="container mx-auto px-4">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
                     className="text-center mb-12"
                 >
                     <h1 className="text-4xl font-bold mb-4">📦 {t('tracking.title')}</h1>
@@ -76,7 +77,8 @@ export const TrackingPage = () => {
                 {/* Search Form */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
                     transition={{ delay: 0.1 }}
                     className="max-w-xl mx-auto mb-12"
                 >
@@ -98,8 +100,9 @@ export const TrackingPage = () => {
                 {orderInfo && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="max-w-2xl mx-auto bg-primary rounded-2xl p-8 shadow-lg"
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="max-w-2xl mx-auto bg-bg-primary rounded-2xl p-8 shadow-lg"
                     >
                         <div className="flex items-center justify-between mb-8">
                             <div>

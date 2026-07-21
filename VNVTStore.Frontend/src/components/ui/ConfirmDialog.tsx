@@ -56,7 +56,7 @@ export const ConfirmDialog = memo(({
   icon,
   hideCancel = false,
 }: ConfirmDialogProps) => {
-  const styles = variantStyles[variant];
+  const styles = variantStyles[variant] || variantStyles.danger;
 
   // Default icon based on variant
   const defaultIcon = variant === 'success'

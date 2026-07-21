@@ -22,6 +22,10 @@ class SystemConfigService {
         return apiClient.get(this.endpoint);
     }
 
+    async getPublicContacts(): Promise<ApiResponse<Record<string, string>>> {
+        return apiClient.get('/configs/contacts');
+    }
+
     async get(key: string): Promise<ApiResponse<SystemConfigDto>> {
         return apiClient.get(`${this.endpoint}/${key}`);
     }

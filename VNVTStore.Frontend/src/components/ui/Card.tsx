@@ -52,10 +52,10 @@ export interface CardFooterProps {
 
 // ============ Style Maps ============
 const variantStyles: Record<CardVariant, string> = {
-  default: 'bg-primary border border-gray-100 shadow-sm',
-  elevated: 'bg-primary shadow-lg',
-  outline: 'bg-transparent border-2 border-gray-200',
-  glass: 'bg-white/70 backdrop-blur-xl border border-white/30 shadow-lg',
+  default: 'bg-bg-primary border border-border shadow-sm',
+  elevated: 'bg-bg-primary shadow-lg',
+  outline: 'bg-transparent border-2 border-border',
+  glass: 'bg-bg-primary/70 backdrop-blur-xl border border-border/40 shadow-lg',
 };
 
 const paddingStyles: Record<'none' | 'sm' | 'md' | 'lg', string> = {
@@ -107,14 +107,14 @@ export const Card = memo(
 export const CardHeader = memo(
   ({ title, subtitle, action, className, children }: CardHeaderProps) => {
     if (children) {
-      return <div className={cn('px-4 py-3 border-b border-gray-100', className)}>{children}</div>;
+      return <div className={cn('px-4 py-3 border-b border-border', className)}>{children}</div>;
     }
 
     return (
-      <div className={cn('px-4 py-3 border-b border-gray-100 flex items-center justify-between', className)}>
+      <div className={cn('px-4 py-3 border-b border-border flex items-center justify-between', className)}>
         <div>
-          {title && <h3 className="font-semibold text-primary">{title}</h3>}
-          {subtitle && <p className="text-sm text-secondary mt-0.5">{subtitle}</p>}
+          {title && <h3 className="font-semibold text-text-primary">{title}</h3>}
+          {subtitle && <p className="text-sm text-text-secondary mt-0.5">{subtitle}</p>}
         </div>
         {action && <div>{action}</div>}
       </div>
@@ -129,7 +129,7 @@ export const CardBody = memo(({ className, children }: CardBodyProps) => (
 
 // ============ Card Footer ============
 export const CardFooter = memo(({ className, children }: CardFooterProps) => (
-  <div className={cn('px-4 py-3 border-t border-gray-100 bg-secondary/30', className)}>
+  <div className={cn('px-4 py-3 border-t border-border bg-bg-secondary/50', className)}>
     {children}
   </div>
 ));

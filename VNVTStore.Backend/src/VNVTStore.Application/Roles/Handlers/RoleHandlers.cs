@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Interfaces;
@@ -29,7 +30,7 @@ public class RoleHandlers : BaseHandler<TblRole, RoleDto, CreateRoleDto, UpdateR
          return await base.CreateAsync<CreateRoleDto, RoleDto>(request.Dto, cancellationToken, entity => {
              if (string.IsNullOrEmpty(entity.Code))
              {
-                 entity.Code = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
+                 entity.Code = CodeGenerator.NewUpper();
              }
              
              // Handle Permissions

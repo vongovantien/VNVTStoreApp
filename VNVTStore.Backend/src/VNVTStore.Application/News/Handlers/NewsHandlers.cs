@@ -3,6 +3,7 @@ using MediatR;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +37,7 @@ public class NewsHandlers : BaseHandler<TblNews>,
         try
         {
             var entity = _mapper.Map<TblNews>(request.Dto);
-            entity.Code = Guid.NewGuid().ToString("N").Substring(0, 10);
+            entity.Code = CodeGenerator.New();
             entity.CreatedAt = DateTime.UtcNow;
             if (string.IsNullOrEmpty(entity.Slug))
             {

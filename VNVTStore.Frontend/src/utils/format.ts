@@ -163,3 +163,29 @@ export const getImageUrl = (path: string | undefined | null): string => {
 
     return `${root}${cleanPath}`;
 };
+
+/**
+ * Parse customer name and phone from order details, extracting from shipping address if needed (useful for guest/partial checkouts)
+ */
+export interface ParsableOrderCustomer {
+    customerName?: string;
+    customerPhone?: string;
+    shippingName?: string;
+    shippingPhone?: string;
+    userCode: string;
+    shippingAddress?: string;
+}
+
+export const parseOrderCustomer = (order: ParsableOrderCustomer) => {
+    let name = order.customerName || order.shippingName || order.userCode;
+    let phone = order.customerPhone || order.shippingPhone || '-';
+
+    if ((name === order.userCode || name === 'USR_GUEST') && order.shippingAddress?.includes('Receiver:')) {
+        const matchName = order.shippingAddress.match(/Receiver:\s*([^,|]+)/);
+        const matchPhone = order.shippingAddress.match(/Phone:\s*([^,|]+)/);
+        if (matchName?.[1]) name = matchName[1].trim();
+        if (matchPhone?.[1]) phone = matchPhone[1].trim();
+    }
+
+    return { name, phone };
+};

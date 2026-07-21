@@ -31,6 +31,7 @@ import { useInfiniteProducts, useCategories, useIntersectionObserver } from '@/h
 import { cn } from '@/utils/cn';
 import { useCompareStore, useCartStore, useWishlistStore, useToast } from '@/store';
 import { useRecentStore } from '@/store/recentStore';
+import { FilterDrawer } from '@/components/shop/FilterDrawer';
 import { CompareTable } from '@/components/shop/CompareTable';
 import { formatCurrency } from '@/utils/format';
 import CustomImage from '@/components/common/Image';
@@ -391,6 +392,7 @@ export const ProductsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(true);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
   const pageSize = 12;
 
@@ -756,8 +758,52 @@ export const ProductsPage = () => {
     inStockOnly ||
     isNewArrivals;
 
+  const activeFilterCount =
+    selectedCategories.length +
+    selectedBrands.length +
+    (selectedRating !== null ? 1 : 0) +
+    (selectedDiscount !== null ? 1 : 0) +
+    (priceType !== 'all' ? 1 : 0) +
+    (priceRange[0] > 0 || priceRange[1] < 100000000 ? 1 : 0) +
+    (inStockOnly ? 1 : 0) +
+    (isNewArrivals ? 1 : 0);
+
   return (
     <div className="min-h-screen bg-secondary">
+      {/* Mobile filter drawer */}
+      <FilterDrawer
+        isOpen={showMobileFilter}
+        onClose={() => setShowMobileFilter(false)}
+        activeFilterCount={activeFilterCount}
+        onClearAll={clearFilters}
+      >
+        <FilterSidebar
+          categories={categories}
+          selectedCategories={selectedCategories}
+          onCategoryToggle={handleCategoryToggle}
+          selectedBrands={selectedBrands}
+          onBrandToggle={handleBrandToggle}
+          priceRange={priceRange}
+          onPriceRangeChange={onPriceRangeChange}
+          priceType={priceType}
+          onPriceTypeChange={onPriceTypeChange}
+          selectedRating={selectedRating}
+          onRatingChange={onRatingChange}
+          brands={brands}
+          selectedAttributes={selectedAttributes}
+          onAttributeToggle={handleAttributeToggle}
+          availableAttributes={availableAttributes}
+          onClearAll={clearFilters}
+          hasActiveFilters={hasActiveFilters}
+          inStockOnly={inStockOnly}
+          onInStockOnlyChange={onInStockOnlyChange}
+          isNewArrivals={isNewArrivals}
+          onNewArrivalsChange={onNewArrivalsChange}
+          selectedDiscount={selectedDiscount}
+          onDiscountChange={onDiscountChange}
+        />
+      </FilterDrawer>
+
       {/* Breadcrumb */}
       <div className="bg-primary border-b py-3">
         <div className="container mx-auto px-4 flex items-center gap-2 text-sm">
@@ -830,6 +876,22 @@ export const ProductsPage = () => {
                   className="hidden lg:flex"
                 >
                   {showFilters ? t('filter.hideFilter') : t('filter.showFilter')}
+                </Button>
+
+                {/* Mobile filter trigger */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMobileFilter(true)}
+                  leftIcon={<SlidersHorizontal size={16} />}
+                  className="flex lg:hidden relative"
+                >
+                  {t('filter.filters', 'Bộ lọc')}
+                  {activeFilterCount > 0 && (
+                    <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-accent text-white text-[10px] font-bold">
+                      {activeFilterCount}
+                    </span>
+                  )}
                 </Button>
 
                 {/* Search Input */}
@@ -1218,8 +1280,7 @@ export const ProductsPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Feature 26: Back to Top Progress Circle */}
-      <BackToTop />
+
 
       {/* Feature 21: Mini-Comparison Bar (Floating) */}
       <AnimatePresence>
@@ -1321,72 +1382,6 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
   );
 };
 
-const BackToTop = () => {
-    const [isVisible, setIsVisible] = useState(false);
-    const [progress, setProgress] = useState(0);
 
-    useEffect(() => {
-        const toggleVisibility = () => {
-            const scrolled = window.scrollY;
-            const threshold = 300;
-            setIsVisible(scrolled > threshold);
-
-            const height = document.documentElement.scrollHeight - window.innerHeight;
-            if (height > 0) {
-                setProgress((scrolled / height) * 100);
-            }
-        };
-
-        window.addEventListener('scroll', toggleVisibility);
-        return () => window.removeEventListener('scroll', toggleVisibility);
-    }, []);
-
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-        });
-    };
-
-    return (
-        <AnimatePresence>
-            {isVisible && (
-                <motion.button
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 z-50 p-0 w-12 h-12 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center group"
-                >
-                    <svg className="w-12 h-12 -rotate-90">
-                        <circle
-                            cx="24"
-                            cy="24"
-                            r="20"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            fill="transparent"
-                            className="text-gray-100"
-                        />
-                        <circle
-                            cx="24"
-                            cy="24"
-                            r="20"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            fill="transparent"
-                            strokeDasharray={125.6}
-                            strokeDashoffset={125.6 - (progress / 100) * 125.6}
-                            className="text-indigo-600 transition-all duration-300"
-                        />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-secondary group-hover:text-indigo-600 transition-colors">
-                        <ArrowUp size={20} />
-                    </div>
-                </motion.button>
-            )}
-        </AnimatePresence>
-    );
-};
 
 export default ProductsPage;

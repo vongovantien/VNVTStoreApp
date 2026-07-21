@@ -5,6 +5,7 @@ using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.Notifications.Commands;
 using VNVTStore.Application.Notifications.Queries;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 
@@ -59,7 +60,7 @@ public class NotificationHandlers :
     {
         var notification = new TblNotification
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            Code = CodeGenerator.New(),
             UserCode = request.UserCode,
             Title = request.Title,
             Message = request.Message,

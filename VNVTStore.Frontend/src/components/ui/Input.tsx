@@ -35,9 +35,18 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 
 // ============ Style Maps ============
 const variantStyles: Record<InputVariant, string> = {
-  default: 'border border-border rounded-lg focus:border-accent focus:ring-1 focus:ring-accent bg-bg-primary text-text-primary',
-  filled: 'border border-transparent bg-bg-tertiary rounded-lg focus:bg-bg-secondary focus:border-accent focus:ring-1 focus:ring-accent text-text-primary',
-  flushed: 'border-b border-border rounded-none focus:border-accent focus:ring-0 bg-transparent text-text-primary',
+  default: [
+    'border border-border rounded-lg bg-bg-primary text-text-primary',
+    'focus:border-accent focus:ring-2 focus:ring-accent/20 focus-visible:outline-none',
+  ].join(' '),
+  filled: [
+    'border border-transparent bg-bg-tertiary rounded-lg text-text-primary',
+    'focus:bg-bg-primary focus:border-accent focus:ring-2 focus:ring-accent/20 focus-visible:outline-none',
+  ].join(' '),
+  flushed: [
+    'border-b border-border rounded-none bg-transparent text-text-primary',
+    'focus:border-accent focus:ring-0 focus-visible:outline-none',
+  ].join(' '),
 };
 
 const sizeStyles: Record<InputSize, { input: string; label: string }> = {
@@ -77,7 +86,7 @@ export const Input = memo(
           cn(
             // Base styles
             'w-full bg-bg-primary text-text-primary placeholder:text-text-tertiary',
-            'transition-all duration-200 outline-none',
+            'transition-all duration-200 outline-none focus-visible:outline-none',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             // Variant
             variantStyles[variant],

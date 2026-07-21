@@ -1,4 +1,39 @@
 {
+    "messages": {
+        "passwordStrengthError": "Password does not meet strength requirements.",
+        "checkQuotesPage": "Please check the Quotes page for details.",
+        "featureComingSoon": "Feature coming soon",
+        "importSuccess": "Import successful",
+        "importError": "Import failed",
+        "saveProductFirst": "Please save the product first before creating units",
+        "confirmDeleteCount": "Are you sure you want to delete {{count}} selected items?",
+        "logoutConfirmMessage": "Are you sure you want to log out?",
+        "orderSuccess": "Ordered successfully!",
+        "orderError": "Order failed. Please try again.",
+        "paymentError": "Error creating payment, please contact Support.",
+        "forgotPasswordSuccess": "If the account exists, a reset link has been sent.",
+        "generalError": "An error occurred",
+        "createSuccess": "Create successful!",
+        "createError": "Create failed. Please try again.",
+        "updateSuccess": "Update successful!",
+        "updateError": "Update failed. Please try again.",
+        "deleteSuccess": "Delete successful!",
+        "deleteError": "Delete failed. Please try again.",
+        "saveSuccess": "Changes saved successfully!",
+        "saveError": "Save failed. Please try again.",
+        "selectProductsFlashSale": "Select participating products",
+        "noProductsAvailable": "No products available",
+        "selectProductsInfo": "Selected products will receive this discount.",
+        "loginSuccess": "Login successful!",
+        "loginError": "Invalid username or password",
+        "registerSuccess": "Register successful! You can login now.",
+        "logoutConfirmTitle": "Confirm Logout",
+        "error": "An error occurred",
+        "newOrder": "New Order",
+        "newQuote": "New Quote Request",
+        "confirmStopImpersonate": "Stop impersonating and return to login?",
+        "enterEmail": "Please enter your email"
+    },
     "auditLog": {
         "title": "System Audit Logs",
         "createdAt": "Time",
@@ -10,7 +45,12 @@
         "searchPlaceholder": "Search logs...",
         "module": "Module",
         "details": "Details",
-        "status": "Status"
+        "status": "Status",
+        "statusSuccess": "Success",
+        "statusFailed": "Failed"
+    },
+    "dashboardStats": {
+        "revenue": "Revenue"
     },
     "shared": {
         "hotline": "1900 1234",
@@ -1268,7 +1308,12 @@
         "logoutConfirmMessage": "Are you sure you want to log out of the system?",
         "loginSuccess": "Login successful!",
         "impersonateSuccess": "Switched to user session",
-        "confirmImpersonate": "Login as {{name}}?"
+        "confirmImpersonate": "Login as {{name}}?",
+        "confirmOrder": "Are you sure you want to confirm this order?",
+        "confirmShip": "Are you sure you want to ship this order?",
+        "confirmDeliver": "Are you sure you want to mark this order as delivered?",
+        "confirmCancel": "Are you sure you want to cancel this order?",
+        "confirmDelete": "Are you sure you want to delete this order?"
     },
     "rma": {
         "reasons": {

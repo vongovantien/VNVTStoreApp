@@ -17,7 +17,7 @@ export const AdminLayout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -58,16 +58,21 @@ export const AdminLayout = () => {
     const pathParts = location.pathname.split('/').filter(Boolean);
     const crumbs: { label: string; path: string }[] = [];
     let currentPath = '';
-    
+
     for (const part of pathParts) {
       currentPath += `/${part}`;
       let label = part.charAt(0).toUpperCase() + part.slice(1);
-      
+
       if (part === 'admin') {
-          label = t('admin.sidebar.dashboard');
+        label = t('admin.sidebar.dashboard');
       } else {
-          const translated = t(`admin.sidebar.${part}`);
-          label = translated !== `admin.sidebar.${part}` ? translated : (t(`common.modules.${part}`) !== `common.modules.${part}` ? t(`common.modules.${part}`) : label);
+        const camelPart = part.replace(/-./g, x => x[1].toUpperCase());
+        const translated = t(`admin.sidebar.${camelPart}`);
+        label = translated !== `admin.sidebar.${camelPart}` 
+          ? translated 
+          : (t(`common.modules.${camelPart}`) !== `common.modules.${camelPart}` 
+              ? t(`common.modules.${camelPart}`) 
+              : label);
       }
       crumbs.push({ label, path: currentPath });
     }
@@ -78,14 +83,19 @@ export const AdminLayout = () => {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  if (String(user.role).toLowerCase() !== 'admin') {
-      return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-50 text-gray-800">
-            <h1 className="text-2xl font-bold mb-2">403 - {t('common.forbidden')}</h1>
-            <p className="mb-4">{t('messages.adminOnly')}</p>
-            <Button onClick={() => navigate('/')}>{t('common.backToHome')}</Button>
-        </div>
-      );
+  // Allow access if user has 'admin' role OR has the DASHBOARD menu permission.
+  // This supports custom roles (Manager, Staff) that have been granted admin menus via RBAC.
+  const canAccessAdmin =
+    String(user.role).toLowerCase() === 'admin' || hasMenu('DASHBOARD');
+
+  if (!canAccessAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-bg-secondary text-text-primary">
+        <h1 className="text-2xl font-bold mb-2">403 — {t('common.forbidden')}</h1>
+        <p className="mb-6 text-text-secondary">{t('messages.adminOnly')}</p>
+        <Button onClick={() => navigate('/')}>{t('common.backToHome')}</Button>
+      </div>
+    );
   }
 
   const confirmLogout = () => {
@@ -96,8 +106,8 @@ export const AdminLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-secondary">
-      <AdminSidebar 
-        collapsed={sidebarCollapsed} 
+      <AdminSidebar
+        collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         filteredGroups={filteredNavGroups}
         onLogout={() => setShowLogoutConfirm(true)}
@@ -120,10 +130,10 @@ export const AdminLayout = () => {
               exit={{ x: -280 }}
               className="fixed left-0 top-0 z-50 h-screen w-64 bg-gray-900 text-white lg:hidden flex flex-col"
             >
-               <AdminSidebar 
-                collapsed={false} 
+              <AdminSidebar
+                collapsed={false}
                 mobile={true}
-                onToggle={() => {}}
+                onToggle={() => { }}
                 filteredGroups={filteredNavGroups}
                 onLogout={() => setShowLogoutConfirm(true)}
                 onCloseMobile={() => setMobileMenuOpen(false)}
@@ -134,15 +144,15 @@ export const AdminLayout = () => {
       </AnimatePresence>
 
       <div className={cn('flex-1 min-w-0 overflow-hidden transition-all duration-300', sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64')}>
-        <AdminHeader 
-            onMobileMenuOpen={() => setMobileMenuOpen(true)}
-            breadcrumbs={breadcrumbs}
-            onSearchClick={() => setShowSearchModal(true)}
-            theme={theme}
-            onToggleTheme={toggleTheme}
-            isConnected={isConnected}
-            onLogout={() => setShowLogoutConfirm(true)}
-            onNavigate={navigate}
+        <AdminHeader
+          onMobileMenuOpen={() => setMobileMenuOpen(true)}
+          breadcrumbs={breadcrumbs}
+          onSearchClick={() => setShowSearchModal(true)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          isConnected={isConnected}
+          onLogout={() => setShowLogoutConfirm(true)}
+          onNavigate={navigate}
         />
 
         <main className="p-4 lg:p-6">
@@ -161,7 +171,7 @@ export const AdminLayout = () => {
         variant="danger"
       />
 
-      <AdminSearchModal 
+      <AdminSearchModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         searchQuery={searchQuery}

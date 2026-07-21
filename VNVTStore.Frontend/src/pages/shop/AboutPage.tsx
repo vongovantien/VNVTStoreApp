@@ -33,14 +33,16 @@ export const AboutPage = () => {
                 <div className="container mx-auto px-4 text-center">
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                         className="text-4xl md:text-5xl font-bold mb-4"
                     >
                         {t('about.title')}
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
                         className="text-xl text-white/80 max-w-2xl mx-auto"
                     >
@@ -56,8 +58,9 @@ export const AboutPage = () => {
                         <motion.div
                             key={index}
                             initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.05 }}
                             className="bg-primary rounded-xl p-6 text-center shadow-md"
                         >
                             <p className="text-3xl font-bold text-indigo-600 mb-2">{stat.value}</p>
@@ -89,8 +92,9 @@ export const AboutPage = () => {
                         <motion.div
                             key={index}
                             initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.05 }}
                             className="bg-primary rounded-xl p-6 shadow-md"
                         >
                             <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">

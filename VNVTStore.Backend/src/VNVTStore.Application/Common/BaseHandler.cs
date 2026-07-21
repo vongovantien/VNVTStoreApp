@@ -721,6 +721,22 @@ public abstract class BaseHandler<TEntity>
             var collAttr = prop.GetCustomAttribute<ReferenceCollectionAttribute>();
             if (collAttr == null) continue;
 
+            // Avoid overwriting collections already loaded via EF Core Includes
+            var alreadyLoaded = true;
+            foreach (var item in items)
+            {
+                var val = prop.GetValue(item);
+                if (val == null || !(val is System.Collections.ICollection coll) || coll.Count == 0)
+                {
+                    alreadyLoaded = false;
+                    break;
+                }
+            }
+            if (alreadyLoaded)
+            {
+                continue;
+            }
+
             // Determine which fields to select for this collection
             List<string>? childSelectFields = null;
             if (collectionFieldsMap.TryGetValue(prop.Name, out var requestedChildFields) && requestedChildFields.Any())

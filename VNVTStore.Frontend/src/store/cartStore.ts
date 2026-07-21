@@ -233,6 +233,7 @@ export const useCartStore = create<CartState>()(
                     return;
                 }
 
+                set({ isLoading: true });
                 try {
                     const res = await cartService.removeFromCart(itemId);
                     if (res.success && res.data) {
@@ -245,6 +246,9 @@ export const useCartStore = create<CartState>()(
                         });
                         set({ items: cartService.mapToFrontend(res.data) });
                     }
+                } catch (error) {
+                    console.error('[removeItem] Failed to remove cart item', error);
+                    throw error;
                 } finally {
                     set({ isLoading: false });
                 }

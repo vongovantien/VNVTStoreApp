@@ -98,23 +98,23 @@ public class AuthController : BaseApiController
         return HandleResult(result, "Password reset successfully.");
     }
     /// <summary>
-    /// Đăng nhập bằng mạng xã hội (Google, Facebook)
+    /// Đăng nhập bằng mạng xã hội (Google, Firebase)
     /// </summary>
+    /// <remarks>
+    /// Client phải gửi Firebase ID Token (đã được Firebase SDK cấp sau khi user xác thực).
+    /// Backend sẽ verify token này với Firebase Admin SDK. Không chấp nhận token chưa verify.
+    /// </remarks>
     [HttpPost("external-login")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ExternalLogin([FromBody] ExternalLoginRequest request)
     {
-        // Note: In a real production app, you MUST verify the 'request.Token' with Google/Facebook servers here.
-        // For this implementation, we will assume the client (Frontend) has verified it and sends us the valid email + id.
-        // Ideally, the request should contain the ID Token which we verify.
-        
-        // For demonstration purposes, we'll assume the client sends the email in the 'Token' field for now, 
-        // OR better, let's assume we decode the token here. 
-        // To keep it simple without adding heavy Google.Apis dependencies right now, 
-        // we will implement a "Trust Client" approach for this specific step or use a placeholder command.
-        
-        // Let's create a command for this
+        if (string.IsNullOrWhiteSpace(request.Token))
+            return BadRequest(new ApiResponse<string> { Success = false, Message = "ID Token is required." });
+
+        // The ExternalLoginCommand handler is responsible for verifying the ID token
+        // against Firebase Admin SDK (FirebaseAuth.DefaultInstance.VerifyIdTokenAsync).
+        // It must NOT trust any email or user info from the client payload directly.
         var command = new ExternalLoginCommand(request.Provider, request.Token);
         var result = await Mediator.Send(command);
         return HandleResult(result, MessageConstants.Get(MessageConstants.LoginSuccess));

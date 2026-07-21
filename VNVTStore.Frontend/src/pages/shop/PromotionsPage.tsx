@@ -80,7 +80,8 @@ export const PromotionsPage = () => {
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
                     className="text-center mb-12"
                 >
                     <h1 className="text-4xl font-bold mb-4">🎉 {t('promotions.title')}</h1>
@@ -102,8 +103,9 @@ export const PromotionsPage = () => {
                             <motion.div
                                 key={promo.code}
                                 initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.05 }}
                                 className="bg-primary rounded-2xl overflow-hidden shadow-lg border border-slate-100 dark:border-slate-800"
                             >
                                 <div className={`bg-gradient-to-r ${getGradient(index)} p-6 text-white`}>
@@ -161,8 +163,9 @@ export const PromotionsPage = () => {
                 {/* Newsletter */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
                     className="mt-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-center text-white"
                 >
                     <Gift size={48} className="mx-auto mb-4" />

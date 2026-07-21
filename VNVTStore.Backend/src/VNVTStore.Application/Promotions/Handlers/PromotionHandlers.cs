@@ -2,6 +2,7 @@ using AutoMapper;
 using MediatR;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Application.Interfaces;
@@ -26,7 +27,7 @@ public class PromotionHandlers : BaseHandler<TblPromotion, PromotionDto, CreateP
         
         if (string.IsNullOrEmpty(entity.Code))
         {
-             entity.Code = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
+             entity.Code = CodeGenerator.NewUpper();
         }
 
         if (dto.ProductCodes != null && dto.ProductCodes.Any())
@@ -35,7 +36,7 @@ public class PromotionHandlers : BaseHandler<TblPromotion, PromotionDto, CreateP
             {
                 entity.TblProductPromotions.Add(new TblProductPromotion
                 {
-                    Code = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+                    Code = CodeGenerator.NewUpper(),
                     PromotionCode = entity.Code,
                     ProductCode = productCode
                 });
@@ -71,7 +72,7 @@ public class PromotionHandlers : BaseHandler<TblPromotion, PromotionDto, CreateP
             {
                 entity.TblProductPromotions.Add(new TblProductPromotion
                 {
-                    Code = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+                    Code = CodeGenerator.NewUpper(),
                     PromotionCode = entity.Code,
                     ProductCode = productCode
                 });

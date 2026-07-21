@@ -61,7 +61,7 @@ const RevenueChartInner = ({ data = [] }: RevenueChartProps) => {
           />
           <Tooltip
             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            formatter={(value) => [formatCurrency(Number(value) || 0), t('dashboard.stats.revenue') || 'Doanh thu']}
+            formatter={(value) => [formatCurrency(Number(value) || 0), t('dashboardStats.revenue', 'Doanh thu')]}
           />
           <Area
             type="monotone"

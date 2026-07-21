@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 
@@ -52,7 +53,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
                 foreach (var detail in dto.Details)
                 {
                     product.TblProductDetails.Add(new TblProductDetail {
-                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                        Code = CodeGenerator.New(),
                         ProductCode = product.Code,
                         DetailType = detail.DetailType,
                         SpecName = detail.SpecName,
@@ -93,7 +94,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
                     if (unitCatalog == null)
                     {
                         unitCatalog = new TblUnit { 
-                            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                            Code = CodeGenerator.New(),
                             Name = unitDto.UnitName, 
                             IsActive = true 
                         };
@@ -102,7 +103,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
 
                     var newProductUnit = new TblProductUnit
                     {
-                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                        Code = CodeGenerator.New(),
                         ProductCode = product.Code,
                         UnitCode = unitCatalog.Code,
                         ConversionRate = unitDto.ConversionRate,
@@ -121,7 +122,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
                 {
                     product.TblProductVariants.Add(new TblProductVariant
                     {
-                        Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                        Code = CodeGenerator.New(),
                         ProductCode = product.Code,
                         SKU = variantDto.SKU,
                         Attributes = variantDto.Attributes,

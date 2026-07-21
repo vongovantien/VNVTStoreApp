@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 
 namespace VNVTStore.Infrastructure.Services;
@@ -33,7 +34,7 @@ public class ProductSynchronizationService : IProductSynchronizationService
         foreach (var detail in details)
         {
             product.TblProductDetails.Add(new TblProductDetail {
-                Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                Code = CodeGenerator.New(),
                 ProductCode = product.Code,
                 DetailType = detail.DetailType,
                 SpecName = detail.SpecName,
@@ -63,7 +64,7 @@ public class ProductSynchronizationService : IProductSynchronizationService
             if (unitCatalog == null)
             {
                 unitCatalog = new TblUnit { 
-                    Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                    Code = CodeGenerator.New(),
                     Name = unitDto.UnitName, 
                     IsActive = true 
                 };
@@ -72,7 +73,7 @@ public class ProductSynchronizationService : IProductSynchronizationService
 
             var newProductUnit = new TblProductUnit
             {
-                Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                Code = CodeGenerator.New(),
                 ProductCode = product.Code,
                 UnitCode = unitCatalog.Code, 
                 ConversionRate = unitDto.ConversionRate,
@@ -100,7 +101,7 @@ public class ProductSynchronizationService : IProductSynchronizationService
         {
             product.TblProductVariants.Add(new TblProductVariant
             {
-                Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+                Code = CodeGenerator.New(),
                 ProductCode = product.Code,
                 SKU = variantDto.SKU,
                 Attributes = variantDto.Attributes,

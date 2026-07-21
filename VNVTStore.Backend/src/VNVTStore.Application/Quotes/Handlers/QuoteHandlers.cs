@@ -6,6 +6,7 @@ using VNVTStore.Application.Common;
 using VNVTStore.Application.DTOs;
 using VNVTStore.Application.Quotes.Queries;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 
@@ -60,7 +61,7 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
         // Create Quote Entity
         var quote = new TblQuote
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            Code = CodeGenerator.New(),
             UserCode = userCode,
             Status = "pending",
             CreatedAt = DateTime.UtcNow,

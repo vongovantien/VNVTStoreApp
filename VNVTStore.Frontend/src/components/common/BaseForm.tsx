@@ -142,7 +142,15 @@ function FieldRenderer<T extends FieldValues>({
 
   if (field.hidden) return null;
 
-  const colSpanClass = `col-span-${field.colSpan || 12}`;
+  const colSpanClasses: Record<number, string> = {
+    1: 'col-span-1',
+    2: 'col-span-2',
+    3: 'col-span-3',
+    4: 'col-span-4',
+    6: 'col-span-6',
+    12: 'col-span-12'
+  };
+  const colSpanClass = colSpanClasses[field.colSpan || 12] || 'col-span-12';
   
   // Helper to format image URL
   const getPreviewUrl = (url: string) => {
@@ -430,16 +438,37 @@ export function BaseForm<T extends FieldValues>({
            const mainGroups = fieldGroups.slice(0, fieldGroups.length - 1);
            const sidebarGroup = fieldGroups[fieldGroups.length - 1];
 
-           return (
-            <div className="grid grid-cols-12 gap-6">
-                <div className={`col-span-12 lg:col-span-${12 - sidebarColSpan} space-y-8`}>
-                    {mainGroups.map((group, groupIndex) => renderGroup(group, groupIndex))}
-                </div>
-                <div className={`col-span-12 lg:col-span-${sidebarColSpan} space-y-8`}>
-                    {renderGroup(sidebarGroup, mainGroups.length)}
-                </div>
-            </div>
-           );
+            const mainColSpan = 12 - (sidebarColSpan || 4);
+            const sidebarColSpanVal = sidebarColSpan || 4;
+
+            const lgColSpanClasses: Record<number, string> = {
+              1: 'lg:col-span-1',
+              2: 'lg:col-span-2',
+              3: 'lg:col-span-3',
+              4: 'lg:col-span-4',
+              5: 'lg:col-span-5',
+              6: 'lg:col-span-6',
+              7: 'lg:col-span-7',
+              8: 'lg:col-span-8',
+              9: 'lg:col-span-9',
+              10: 'lg:col-span-10',
+              11: 'lg:col-span-11',
+              12: 'lg:col-span-12',
+            };
+
+            const mainLgColSpan = lgColSpanClasses[mainColSpan] || 'lg:col-span-8';
+            const sidebarLgColSpan = lgColSpanClasses[sidebarColSpanVal] || 'lg:col-span-4';
+
+            return (
+             <div className="grid grid-cols-12 gap-6">
+                 <div className={`col-span-12 ${mainLgColSpan} space-y-8`}>
+                     {mainGroups.map((group, groupIndex) => renderGroup(group, groupIndex))}
+                 </div>
+                 <div className={`col-span-12 ${sidebarLgColSpan} space-y-8`}>
+                     {renderGroup(sidebarGroup, mainGroups.length)}
+                 </div>
+             </div>
+            );
       }
 
       if (layout === 'tabs') {

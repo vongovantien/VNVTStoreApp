@@ -29,7 +29,14 @@ public static class ServiceCollectionExtensions
         });
 
         // Add JWT Authentication
-        var secretKey = configuration["JwtSettings:SecretKey"] ?? "SuperSecretKeyForIntegrationTestingOnly1234567890!";
+        var secretKey = configuration["JwtSettings:SecretKey"];
+        if (string.IsNullOrWhiteSpace(secretKey))
+        {
+            // Fail fast on startup rather than running with a predictable key that anyone can forge tokens with.
+            throw new InvalidOperationException(
+                "JwtSettings:SecretKey is not configured. " +
+                "Set it via appsettings, environment variable, or a secrets manager before starting the application.");
+        }
         var issuer = configuration["JwtSettings:Issuer"] ?? "VNVTStore";
         var audience = configuration["JwtSettings:Audience"] ?? "VNVTStoreUsers";
         var key = Encoding.ASCII.GetBytes(secretKey);

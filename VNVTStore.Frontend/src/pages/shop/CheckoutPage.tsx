@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, CreditCard, Truck, MapPin, Phone, User, Mail, FileText, Ticket, X } from 'lucide-react';
@@ -17,6 +17,8 @@ import { userService, type AddressDto } from '@/services/userService';
 import { Badge } from '@/components/ui';
 
 import { useSEO } from '@/hooks/useSEO';
+import { useQuery } from '@tanstack/react-query';
+import { systemSecretService } from '@/services/systemSecretService';
 
 export const CheckoutPage = () => {
   const { t } = useTranslation();
@@ -40,6 +42,48 @@ export const CheckoutPage = () => {
   } = useCheckoutStore();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Fetch Vietnam provinces API URL from System Secrets
+  const { data: secretsRes } = useQuery({
+    queryKey: ['system-secrets'],
+    queryFn: () => systemSecretService.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const provincesApiUrl = secretsRes?.data?.find(s => s.code === 'VIETNAM_PROVINCES_API_URL')?.secretValue || 'https://provinces.open-api.vn/api';
+
+  // Fetch all provinces
+  const { data: provinces } = useQuery({
+    queryKey: ['provinces', provincesApiUrl],
+    queryFn: async () => {
+      const res = await fetch(`${provincesApiUrl.endsWith('/') ? provincesApiUrl : provincesApiUrl + '/'}`);
+      if (!res.ok) throw new Error('Failed to fetch provinces');
+      return res.json() as Promise<Array<{ code: number; name: string; codename: string }>>;
+    },
+    enabled: !!provincesApiUrl,
+    staleTime: Infinity,
+  });
+
+  // Resolve selected province code
+  const selectedProvinceCode = useMemo(() => {
+    if (!formData.city || !provinces) return undefined;
+    const matched = provinces.find(p => p.name === formData.city || p.code.toString() === formData.city);
+    return matched?.code;
+  }, [formData.city, provinces]);
+
+  // Fetch districts based on selected province
+  const { data: districts } = useQuery({
+    queryKey: ['districts', provincesApiUrl, selectedProvinceCode],
+    queryFn: async () => {
+      const baseUrl = provincesApiUrl.endsWith('/') ? provincesApiUrl.slice(0, -1) : provincesApiUrl;
+      const res = await fetch(`${baseUrl}/p/${selectedProvinceCode}?depth=2`);
+      if (!res.ok) throw new Error('Failed to fetch districts');
+      const data = await res.json();
+      return data.districts as Array<{ code: number; name: string; codename: string }>;
+    },
+    enabled: !!provincesApiUrl && !!selectedProvinceCode,
+    staleTime: Infinity,
+  });
   const [isGuestCheckout, setIsGuestCheckout] = useState(true); 
   const [showCouponSelector, setShowCouponSelector] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<AddressDto[]>([]);
@@ -386,12 +430,13 @@ export const CheckoutPage = () => {
                     <Select
                       label={t('checkout.city')}
                       value={formData.city}
-                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      onChange={(e) => {
+                        handleInputChange('city', e.target.value);
+                        handleInputChange('district', ''); // Reset district when city changes
+                      }}
                       options={[
                         { value: '', label: 'Chọn Tỉnh/Thành phố' },
-                        { value: 'hcm', label: 'TP. Hồ Chí Minh' },
-                        { value: 'hn', label: 'Hà Nội' },
-                        { value: 'dn', label: 'Đà Nẵng' },
+                        ...(provinces || []).map(p => ({ value: p.name, label: p.name }))
                       ]}
                       required
                       isRequired
@@ -402,10 +447,9 @@ export const CheckoutPage = () => {
                       onChange={(e) => handleInputChange('district', e.target.value)}
                       options={[
                         { value: '', label: 'Chọn Quận/Huyện' },
-                        { value: 'q1', label: 'Quận 1' },
-                        { value: 'q3', label: 'Quận 3' },
-                        { value: 'q7', label: 'Quận 7' },
+                        ...(districts || []).map(d => ({ value: d.name, label: d.name }))
                       ]}
+                      disabled={!formData.city}
                       required
                       isRequired
                     />

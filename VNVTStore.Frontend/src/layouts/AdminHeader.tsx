@@ -93,19 +93,10 @@ export const AdminHeader = ({
                         onNotificationClick={() => onNavigate('/admin/orders')}
                     />
 
-                    <a 
-                        href="/" 
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
-                    >
-                        <ExternalLink size={14} />
-                        {t('admin.viewStore')}
-                    </a>
-
                     <UserMenu 
                         onLogout={onLogout}
                         items={[
+                            { label: t('admin.viewStore'), icon: ExternalLink, onClick: () => window.open('/', '_blank') },
                             { label: t('admin.userMenu.accountSettings'), icon: UserIcon, link: '/admin/settings' },
                             { label: t('admin.userMenu.support'), icon: HelpCircle },
                             { label: t('admin.userMenu.license'), icon: FileKey }

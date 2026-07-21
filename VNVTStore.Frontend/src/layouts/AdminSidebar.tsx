@@ -7,10 +7,10 @@ import {
   ShoppingCart,
   ShoppingBag,
   Users,
-  FileText,
+  Newspaper,
   Folder,
   Building2,
-  Tag,
+  Tags,
   Ruler,
   Ticket,
   Star,
@@ -18,6 +18,15 @@ import {
   ChevronRight,
   ChevronLeft,
   LogOut,
+  FileText,
+  Megaphone,
+  Image,
+  ScrollText,
+  Settings,
+  KeyRound,
+  ClipboardList,
+  UserCog,
+  Store,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -40,7 +49,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', code: 'DASHBOARD', end: true },
       { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders', code: 'ORDERS', end: false },
-      { path: '/admin/pos', icon: ShoppingBag, label: 'admin.sidebar.pos', code: 'ORDERS', end: false },
+      { path: '/admin/pos', icon: Store, label: 'admin.sidebar.pos', code: 'ORDERS', end: false },
       { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers', code: 'CUSTOMERS', end: false },
     ]
   },
@@ -50,29 +59,29 @@ export const navGroups: NavGroup[] = [
       { path: '/admin/categories', icon: Folder, label: 'admin.sidebar.categories', code: 'CATEGORIES', end: false },
       { path: '/admin/products', icon: Package, label: 'admin.sidebar.products', code: 'PRODUCTS', end: false },
       { path: '/admin/suppliers', icon: Building2, label: 'admin.sidebar.suppliers', code: 'SUPPLIERS', end: false },
-      { path: '/admin/brands', icon: Tag, label: 'admin.sidebar.brands', code: 'BRANDS', end: false },
+      { path: '/admin/brands', icon: Tags, label: 'admin.sidebar.brands', code: 'BRANDS', end: false },
       { path: '/admin/units', icon: Ruler, label: 'admin.sidebar.units', code: 'UNITS', end: false },
     ]
   },
   {
     title: 'admin.sidebar.marketing',
     items: [
-      { path: '/admin/quotes', icon: FileText, label: 'admin.sidebar.quotes', code: 'QUOTES', end: false },
-      { path: '/admin/promotions', icon: Package, label: 'admin.sidebar.promotions', code: 'PROMOTIONS', end: false },
+      { path: '/admin/quotes', icon: ScrollText, label: 'admin.sidebar.quotes', code: 'QUOTES', end: false },
+      { path: '/admin/promotions', icon: Megaphone, label: 'admin.sidebar.promotions', code: 'PROMOTIONS', end: false },
       { path: '/admin/coupons', icon: Ticket, label: 'admin.sidebar.coupons', code: 'COUPONS', end: false },
-      { path: '/admin/banners', icon: LayoutDashboard, label: 'admin.sidebar.banners', code: 'BANNERS', end: false },
-      { path: '/admin/news', icon: FileText, label: 'admin.sidebar.news', code: 'NEWS', end: false },
+      { path: '/admin/banners', icon: Image, label: 'admin.sidebar.banners', code: 'BANNERS', end: false },
+      { path: '/admin/news', icon: Newspaper, label: 'admin.sidebar.news', code: 'NEWS', end: false },
       { path: '/admin/reviews', icon: Star, label: 'admin.sidebar.reviews', code: 'REVIEWS', end: false },
     ]
   },
   {
     title: 'admin.sidebar.system',
     items: [
-      { path: '/admin/settings', icon: Shield, label: 'admin.sidebar.settings', code: 'SETTINGS', end: false },
-      { path: '/admin/system-configs', icon: LayoutDashboard, label: 'admin.sidebar.systemConfigs', code: 'SETTINGS', end: false },
-      { path: '/admin/system-secrets', icon: Shield, label: 'admin.sidebar.systemSecrets', code: 'SETTINGS', end: false },
+      { path: '/admin/settings', icon: Settings, label: 'admin.sidebar.settings', code: 'SETTINGS', end: false },
+      { path: '/admin/system-configs', icon: ClipboardList, label: 'admin.sidebar.systemConfigs', code: 'SETTINGS', end: false },
+      { path: '/admin/system-secrets', icon: KeyRound, label: 'admin.sidebar.systemSecrets', code: 'SETTINGS', end: false },
       { path: '/admin/audit-logs', icon: FileText, label: 'admin.sidebar.auditLogs', code: 'AUDIT_LOGS', end: false },
-      { path: '/admin/roles', icon: Shield, label: 'admin.sidebar.roles', code: 'ROLES', end: false },
+      { path: '/admin/roles', icon: UserCog, label: 'admin.sidebar.roles', code: 'ROLES', end: false },
     ]
   }
 ];
@@ -148,13 +157,14 @@ export const AdminSidebar = ({
                                     className={({ isActive }) =>
                                         cn(
                                             'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all',
+                                            collapsed && !mobile ? 'justify-center px-0 gap-0' : '',
                                             isActive
                                                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-800'
                                         )
                                     }
                                 >
-                                    <item.icon size={20} />
+                                    <item.icon size={20} className={cn(collapsed && !mobile ? 'shrink-0' : '')} />
                                     <motion.span
                                         initial={false}
                                         animate={{
@@ -177,10 +187,11 @@ export const AdminSidebar = ({
                 <button
                     onClick={onLogout}
                     className={cn(
-                        'flex items-center gap-3 w-full px-4 py-3 text-gray-400 rounded-lg hover:text-white hover:bg-gray-800 transition-all'
+                        'flex items-center gap-3 w-full px-4 py-3 text-gray-400 rounded-lg hover:text-white hover:bg-gray-800 transition-all',
+                        collapsed && !mobile ? 'justify-center px-0 gap-0' : ''
                     )}
                 >
-                    <LogOut size={20} />
+                    <LogOut size={20} className={cn(collapsed && !mobile ? 'shrink-0' : '')} />
                     {(!collapsed || mobile) && <span>{t('common.logout')}</span>}
                 </button>
             </div>

@@ -116,7 +116,8 @@ public class AuthHandlersTests
             _passwordHasherMock.Object,
             _jwtServiceMock.Object,
             _unitOfWorkMock.Object,
-            _mapperMock.Object
+            _mapperMock.Object,
+            _secretConfigMock.Object
         );
 
         var existingUser = TblUser.Create("user", "email", "hashed_password", "Name", UserRole.Customer);
@@ -153,7 +154,8 @@ public class AuthHandlersTests
              _passwordHasherMock.Object,
              _jwtServiceMock.Object,
              _unitOfWorkMock.Object,
-             _mapperMock.Object
+             _mapperMock.Object,
+             _secretConfigMock.Object
          );
 
         var existingUser = TblUser.Create("user", "email", "hashed_password", "Name", UserRole.Customer);

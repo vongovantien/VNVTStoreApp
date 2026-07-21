@@ -188,19 +188,22 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
     private readonly IJwtService _jwtService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ISecretConfigurationService _secretConfig;
 
     public LoginCommandHandler(
         IRepository<TblUser> repository,
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper,
+        ISecretConfigurationService secretConfig)
     {
         _repository = repository;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _secretConfig = secretConfig;
     }
 
     public async Task<Result<AuthResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -229,7 +232,11 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
             return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
         }
 
-        if (!user.IsEmailVerified)
+        var disableEmailVerificationSecret = await _secretConfig.GetSecretAsync("DISABLE_EMAIL_VERIFICATION");
+        bool disableEmailVerification = disableEmailVerificationSecret != null && 
+            (disableEmailVerificationSecret.Equals("true", StringComparison.OrdinalIgnoreCase) || disableEmailVerificationSecret == "1");
+
+        if (!disableEmailVerification && !user.IsEmailVerified)
         {
             return Result.Failure<AuthResponseDto>(Error.Validation("Tài khoản của bạn chưa được xác thực email. Vui lòng kiểm tra hộp thư để kích hoạt tài khoản."));
         }

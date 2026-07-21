@@ -31,6 +31,9 @@ public class OrderDto : IBaseDto
     
     [Reference("TblUser", "UserCode", "FullName")]
     public string? CustomerName { get; set; } // Map FullName to here
+
+    [Reference("TblUser", "UserCode", "Phone")]
+    public string? CustomerPhone { get; set; } // Map Phone to here
 }
 
 public class OrderStatsDto

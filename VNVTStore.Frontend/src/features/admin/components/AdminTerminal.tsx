@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Terminal, ChevronRight } from 'lucide-react';
 import { useDiagnosticStore } from '@/store/diagnosticStore';
-import { useGuardianStore } from '@/store/guardianStore';
 import { contentWeaverService } from '@/services/ContentWeaverService';
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/ui';
@@ -26,7 +25,6 @@ export const AdminTerminal: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const diagnostic = useDiagnosticStore();
-  const guardian = useGuardianStore();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -53,8 +51,6 @@ export const AdminTerminal: React.FC = () => {
         addLog('  /help - Display this documentation');
         addLog('  /diag stress - Trigger logic stress test');
         addLog('  /diag clear - Wipe diagnostic logs');
-        addLog('  /guard start|stop - Toggle Guardian auto-monitoring');
-        addLog('  /guard heal - Trigger manual self-healing audit');
         addLog('  /weaver gen [name] [cat] - Generate autonomous description');
         addLog('  /clear - Purge terminal interface');
         break;
@@ -72,18 +68,7 @@ export const AdminTerminal: React.FC = () => {
         break;
 
       case '/guard':
-        if (args[0] === 'start') {
-          guardian.startGuardian();
-          addLog('GUARDIAN_MATRIX: Monitoring activated.', 'success');
-        } else if (args[0] === 'stop') {
-          guardian.stopGuardian();
-          addLog('GUARDIAN_MATRIX: Monitoring suspended.', 'error');
-        } else if (args[0] === 'heal') {
-          guardian.runSelfHeal();
-          addLog('SELF_HEAL: Recursive audit sequence started.', 'success');
-        } else {
-          addLog('Invalid /guard argument. Use: start | stop | heal', 'error');
-        }
+        addLog('/guard commands have been removed. Use /diag for system diagnostics.', 'error');
         break;
 
       case '/weaver':

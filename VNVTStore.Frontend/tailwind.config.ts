@@ -24,6 +24,21 @@ export default {
                 },
                 border: 'var(--border-color)',
                 error: 'var(--error)',
+                success: {
+                    DEFAULT: 'var(--success)',
+                    hover: 'var(--success-hover)',
+                    soft: 'var(--success-soft)',
+                },
+                warning: {
+                    DEFAULT: 'var(--warning)',
+                    hover: 'var(--warning-hover)',
+                    soft: 'var(--warning-soft)',
+                },
+                info: {
+                    DEFAULT: 'var(--info)',
+                    hover: 'var(--info-hover)',
+                    soft: 'var(--info-soft)',
+                },
             },
             fontFamily: {
                 sans: ['Inter', 'system-ui', 'sans-serif'],

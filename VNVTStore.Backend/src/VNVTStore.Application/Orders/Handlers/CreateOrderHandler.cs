@@ -349,6 +349,8 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             await _mediator.Publish(new OrderCreatedEvent(order, userCode, request.dto.CartCode), cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
+            // Send user confirmation email (Disabled as requested - no longer notify user via email)
+            /*
             var frontendUrl = await _secretConfig.GetSecretAsync("FRONTEND_URL") ?? _configuration["FrontendUrl"] ?? "http://localhost:5173";
             var verifyLink = $"{frontendUrl}/verify-order?token={token}";
             
@@ -370,8 +372,10 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                     _logger.LogError(ex, "[Handle] error: Failed to send email to {Email}", userEmail);
                  }
             }
+            */
 
-            // Send admin notification
+            // Send admin notification (Disabled as requested - no longer notify admin via email)
+            /*
             var adminEmail = await _secretConfig.GetSecretAsync("ADMIN_EMAIL") ?? _configuration["EmailSettings:AdminEmail"];
             if (!string.IsNullOrEmpty(adminEmail))
             {
@@ -385,6 +389,12 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                     _logger.LogError(ex, "Failed to send admin notification email to {AdminEmail}", adminEmail);
                 }
             }
+            */
+
+            // Notify admin bell icon in real-time via SignalR
+            await _notificationService.SendAsync("ReceiveOrderNotification", new { 
+                Message = $"Đơn hàng mới: #{order.Code} ({order.FinalAmount:N0} đ)" 
+            });
 
             await _notificationService.BroadcastLocalizedAsync(MessageConstants.NotificationNewOrder, order.Code);
 

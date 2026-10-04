@@ -903,7 +903,8 @@
             "admin": "Quản trị viên",
             "staff": "Nhân viên",
             "customer": "Khách hàng"
-        }
+        },
+        "searchPlaceholder": "Tìm kiếm đơn hàng, sản phẩm, khách hàng..."
     },
     "header": {
         "trackOrder": "Tra cứu đơn hàng",

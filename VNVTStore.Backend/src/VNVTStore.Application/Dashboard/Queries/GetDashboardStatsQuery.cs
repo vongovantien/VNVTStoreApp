@@ -4,7 +4,7 @@ using VNVTStore.Application.DTOs;
 
 namespace VNVTStore.Application.Dashboard.Queries;
 
-public record GetDashboardStatsQuery() : IRequest<Result<DashboardStatsDto>>;
+public record GetDashboardStatsQuery(DateTime? StartDate = null, DateTime? EndDate = null, string? GroupBy = null) : IRequest<Result<DashboardStatsDto>>;
 
 public class DashboardStatsDto
 {

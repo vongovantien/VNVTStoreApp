@@ -40,8 +40,9 @@ export function mapProductDtoToProduct(item: ProductDto, options?: { includeDeta
         categoryCode: item.categoryCode || (record.CategoryCode as string) || (record.category_code as string) || '',
         stock: item.stockQuantity !== undefined ? item.stockQuantity : ((record.StockQuantity as number) || (record.stock as number) || 0),
         brand: item.brand || (record.Brand as string) || (record.brand as string) || 'VNVT',
-        rating: 5,
-        reviewCount: 0,
+        // Read actual rating from backend DTO — backend maps TblProduct.Rating → ProductDto.AverageRating
+        rating: (item.averageRating as number) ?? (record.AverageRating as number) ?? (record.averageRating as number) ?? 0,
+        reviewCount: (item.reviewCount as number) ?? (record.ReviewCount as number) ?? (record.reviewCount as number) ?? 0,
         createdAt: item.createdAt || (record.CreatedAt as string) || (record.created_at as string) || new Date().toISOString()
     };
 

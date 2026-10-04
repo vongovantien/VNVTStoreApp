@@ -8,6 +8,7 @@ import { formatDate } from '@/utils/format';
 import { Pagination } from '@/components/ui';
 import { useReviewStore } from '@/store/reviewStore';
 import ReviewForm from './ReviewForm';
+import { createSafeHTML } from '@/utils/sanitize';
 
 interface ReviewsListProps {
   productCode: string;
@@ -55,7 +56,11 @@ const ReviewItem = ({
       </div>
       
       <div className={`${isReply ? 'pl-2 border-l-2 border-secondary/20' : 'pl-10'}`}>
-         <p className="text-secondary mb-2 whitespace-pre-wrap">{review.comment}</p>
+         {/* 🛡️ XSS PROTECTION: Sanitize user review comments */}
+         <p 
+           className="text-secondary mb-2 whitespace-pre-wrap"
+           dangerouslySetInnerHTML={createSafeHTML(review.comment, true)}
+         />
          
          {isAdmin && (
            <button 

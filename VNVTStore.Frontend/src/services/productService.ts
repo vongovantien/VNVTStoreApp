@@ -78,6 +78,8 @@ export interface ProductDto {
     variants?: ProductVariantDto[];
     viewCount?: number;
     soldCount24h?: number;
+    averageRating?: number;
+    reviewCount?: number;
 }
 
 export interface CreateProductRequest {

@@ -4,7 +4,7 @@ import { userService } from '@/services/userService';
 import { useToast, useAuthStore } from '@/store';
 import { Loading } from '@/components/ui';
 import { UserRole } from '@/types';
-import { ProfileForm, AccountSecurity, NotificationSettings, LoyaltySummary } from './components';
+import { ProfileForm, AccountSecurity, NotificationSettings, LoyaltySummary, TwoFactorModal } from './components';
 import { type UpdateProfileData } from './components/ProfileForm';
 
 const ProfileContent = () => {
@@ -13,6 +13,8 @@ const ProfileContent = () => {
     const { user, updateUser } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
+    const [isTwoFactorModalOpen, setIsTwoFactorModalOpen] = useState(false);
+    const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
     const [initialData, setInitialData] = useState({
         fullName: '',
         email: '',
@@ -33,6 +35,9 @@ const ProfileContent = () => {
                         avatar: avatarVal || ''
                     };
                     setInitialData(data);
+                    if (res.data.twoFactorEnabled !== undefined) {
+                        setIsTwoFactorEnabled(Boolean(res.data.twoFactorEnabled));
+                    }
                     // Update auth store with normalized avatar
                     updateUser({
                         ...res.data,
@@ -94,7 +99,7 @@ const ProfileContent = () => {
     };
 
     const handleTwoFactorSetup = () => {
-        info(t('common.messages.featureComingSoon'));
+        setIsTwoFactorModalOpen(true);
     };
 
     const handleDeleteAccount = async () => {
@@ -140,6 +145,23 @@ const ProfileContent = () => {
             <AccountSecurity 
                 onPasswordChange={handlePasswordChange}
                 onTwoFactorSetup={handleTwoFactorSetup}
+                isTwoFactorEnabled={isTwoFactorEnabled}
+            />
+
+            {/* Two-Factor Modal */}
+            <TwoFactorModal
+                isOpen={isTwoFactorModalOpen}
+                onClose={() => setIsTwoFactorModalOpen(false)}
+                onSuccess={(enabled) => {
+                    setIsTwoFactorEnabled(enabled);
+                    if (user) {
+                        updateUser({
+                            ...user,
+                            twoFactorEnabled: enabled
+                        });
+                    }
+                }}
+                isCurrentlyEnabled={isTwoFactorEnabled}
             />
 
             {/* Notification Settings */}

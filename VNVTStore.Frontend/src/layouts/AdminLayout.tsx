@@ -11,7 +11,9 @@ import { cn } from '@/utils/cn';
 import { AdminSidebar, navGroups } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { AdminSearchModal } from './AdminSearchModal';
+import { NotificationDrawer } from '@/components/layout/NotificationDrawer';
 import { useAdminNotifications } from './useAdminNotifications';
+import { useNotifications } from '@/hooks';
 
 export const AdminLayout = () => {
   const { t } = useTranslation();
@@ -23,10 +25,14 @@ export const AdminLayout = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const { theme, toggleTheme } = useUIStore();
   const { logout, user, isAuthenticated, hasMenu } = useAuthStore();
   const { isConnected } = useAdminNotifications();
+  
+  // Initialize notification hub
+  useNotifications();
 
   // Filter navigation items based on user's menus
   const filteredNavGroups = useMemo(() => {
@@ -148,6 +154,7 @@ export const AdminLayout = () => {
           onMobileMenuOpen={() => setMobileMenuOpen(true)}
           breadcrumbs={breadcrumbs}
           onSearchClick={() => setShowSearchModal(true)}
+          onNotificationClick={() => setShowNotifications(true)}
           theme={theme}
           onToggleTheme={toggleTheme}
           isConnected={isConnected}
@@ -176,6 +183,11 @@ export const AdminLayout = () => {
         onClose={() => setShowSearchModal(false)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+      />
+      
+      <NotificationDrawer
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
       />
     </div>
   );

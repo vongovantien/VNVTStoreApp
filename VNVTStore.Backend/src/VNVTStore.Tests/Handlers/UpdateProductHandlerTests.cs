@@ -15,6 +15,7 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 using VNVTStore.Domain.Interfaces;
 using VNVTStore.Infrastructure.Persistence;
+using VNVTStore.Infrastructure.Services;
 using VNVTStore.Tests.Common;
 using Xunit;
 using Microsoft.Extensions.Logging;
@@ -65,6 +66,8 @@ public class UpdateProductHandlerTests : IDisposable
             .Returns<string, CancellationToken>((code, ct) => 
                 _context.TblProducts.FirstOrDefaultAsync(p => p.Code == code, ct));
 
+        var syncService = new ProductSynchronizationService(_context);
+
         _handler = new UpdateProductHandler(
             _mockRepository.Object,
             _mockUnitOfWork.Object,
@@ -73,7 +76,8 @@ public class UpdateProductHandlerTests : IDisposable
             _mockBaseUrlService.Object,
             _mockFileService.Object,
             _context,
-            _mockLogger.Object
+            _mockLogger.Object,
+            syncService
         );
     }
 

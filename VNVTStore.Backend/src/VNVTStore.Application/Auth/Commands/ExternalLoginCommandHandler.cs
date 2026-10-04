@@ -100,6 +100,11 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
         if (userLogin != null)
         {
             user = userLogin.User;
+            // Always sync latest avatar from Google/provider on each login
+            if (!string.IsNullOrWhiteSpace(avatar))
+            {
+                user.UpdateAvatar(avatar);
+            }
         }
         else
         {
@@ -109,12 +114,18 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
 
             if (user == null)
             {
+                // Brand new user — create with avatar
                 user = TblUser.CreateExternal(email, name, request.Provider, providerKey, email, avatar);
                 _context.TblUsers.Add(user);
             }
             else
             {
+                // Existing email user, first time social login — link account + sync avatar
                 user.AddLogin(request.Provider, providerKey, email);
+                if (!string.IsNullOrWhiteSpace(avatar))
+                {
+                    user.UpdateAvatar(avatar);
+                }
             }
             
             await _context.SaveChangesAsync(cancellationToken);
@@ -145,7 +156,7 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
             .Select(rm => rm.MenuCodeNavigation!.Code)
             .ToList() ?? new List<string>();
 
-        var accessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, permissions, menus);
+        var accessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.RoleCode ?? "CUSTOMER", permissions, menus);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));
@@ -164,7 +175,7 @@ public class ExternalLoginCommandHandler : IRequestHandler<ExternalLoginCommand,
                 Email = user.Email,
                 FullName = user.FullName,
                 Phone = user.Phone,
-                Role = user.Role.ToString(),
+                Role = user.RoleCode ?? "CUSTOMER",
                 Avatar = user.AvatarUrl
             }
         });

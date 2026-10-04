@@ -24,7 +24,7 @@ public static class DataSeeder
                 "admin@vnvtstore.com",
                 passwordHasher.Hash("Admin@123"),
                 "System Administrator",
-                UserRole.Admin
+                "ADMIN"
             );
             context.TblUsers.Add(admin);
             Log.Information("[SeedAsync] Seeded Admin User: admin / Admin@123");
@@ -50,6 +50,21 @@ public static class DataSeeder
         {
             unit = new TblUnit { Code = "PCS", Name = "Cái" };
             context.TblUnits.Add(unit);
+        }
+
+        // Seed Payment Methods
+        var hasPaymentMethods = await context.TblPaymentMethods.AnyAsync();
+        if (!hasPaymentMethods)
+        {
+            var methods = new List<TblPaymentMethod>
+            {
+                TblPaymentMethod.Create("COD", "Thanh toán khi nhận hàng (COD)", "Nhận hàng kiểm tra rồi mới thanh toán", "💵", 1, isOnline: false, isFixed: true),
+                TblPaymentMethod.Create("BankTransfer", "Chuyển khoản ngân hàng (QR)", "Chuyển khoản trực tiếp tới tài khoản shop", "🏛️", 2, isOnline: false, isFixed: true),
+                TblPaymentMethod.Create("VnPay", "Cổng thanh toán VNPAY (ATM/QR/Visa)", "Thanh toán trực tuyến quét mã VNPAY", "🏦", 3, isOnline: true, isFixed: true),
+                TblPaymentMethod.Create("MoMo", "Ví điện tử MoMo", "Thanh toán qua ứng dụng Ví MoMo", "📱", 4, isOnline: true, isFixed: true)
+            };
+            context.TblPaymentMethods.AddRange(methods);
+            Log.Information("[SeedAsync] Seeded 4 default payment methods.");
         }
 
         await context.SaveChangesAsync(default);
@@ -91,7 +106,7 @@ public static class DataSeeder
                 "webuser@vnvtstore.com",
                 passwordHasher.Hash("Staff@123"),
                 "Web Staff User",
-                UserRole.Staff
+                "STAFF"
             );
             user.UpdateRole("WEB_STAFF");
             context.TblUsers.Add(user);
@@ -106,7 +121,7 @@ public static class DataSeeder
                 "posuser@vnvtstore.com",
                 passwordHasher.Hash("Staff@123"),
                 "POS Staff User",
-                UserRole.Staff
+                "STAFF"
             );
             user.UpdateRole("POS_STAFF");
             context.TblUsers.Add(user);
@@ -137,7 +152,17 @@ public static class DataSeeder
             new TblSystemSecret { Code = "CONTACT_MESSENGER", SecretValue = "https://m.me/vnvtstore", Description = "Link Messenger chat trực tuyến", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
             new TblSystemSecret { Code = "CONTACT_ZALO", SecretValue = "0901234567", Description = "Số điện thoại hoặc Link Zalo liên hệ", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
             new TblSystemSecret { Code = "CONTACT_MAPS", SecretValue = "https://maps.google.com/?q=VNVT+Store", Description = "Link địa chỉ Google Maps của cửa hàng", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-            new TblSystemSecret { Code = "VIETNAM_PROVINCES_API_URL", SecretValue = "https://provinces.open-api.vn/api", Description = "API URL lấy thông tin Tỉnh/Thành phố và Quận/Huyện Việt Nam", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+            new TblSystemSecret { Code = "VIETNAM_PROVINCES_API_URL", SecretValue = "https://provinces.open-api.vn/api", Description = "API URL lấy thông tin Tỉnh/Thành phố và Quận/Huyện Việt Nam", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "VNPAY_TMN_CODE", SecretValue = "", Description = "VNPay Terminal Code (TmnCode)", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "VNPAY_HASH_SECRET", SecretValue = "", Description = "VNPay Hash Secret Key", IsActive = true, IsEncrypted = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "VNPAY_BASE_URL", SecretValue = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html", Description = "VNPay Gateway Base URL", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "MOMO_PARTNER_CODE", SecretValue = "", Description = "MoMo Partner Code", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "MOMO_ACCESS_KEY", SecretValue = "", Description = "MoMo Access Key", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "MOMO_SECRET_KEY", SecretValue = "", Description = "MoMo Secret Key", IsActive = true, IsEncrypted = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "MOMO_ENDPOINT", SecretValue = "https://test-payment.momo.vn/v2/gateway/api/create", Description = "MoMo Gateway Create API Endpoint", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "PAYMENT_RETURN_URL", SecretValue = "", Description = "Frontend Payment Return URL (Mặc định: {FRONTEND_URL}/payment/result)", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "PAYMENT_IPN_BASE_URL", SecretValue = "", Description = "Base URL công khai cho IPN webhook (ví dụ https://myapi.com)", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new TblSystemSecret { Code = "PAYMENT_TIMEOUT_MINUTES", SecretValue = "30", Description = "Thời gian hết hạn đơn hàng online chưa thanh toán (phút)", IsActive = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
         };
 
         foreach (var secret in defaultSecrets)
@@ -145,6 +170,23 @@ public static class DataSeeder
             if (!await context.TblSystemSecrets.AnyAsync(s => s.Code == secret.Code))
             {
                 context.TblSystemSecrets.Add(secret);
+            }
+        }
+
+        // 3.6. Seed Default Payment Methods
+        var defaultPaymentMethods = new[]
+        {
+            TblPaymentMethod.Create("COD", "Thanh toán khi nhận hàng (COD)", "Nhận hàng rồi mới thanh toán tiền mặt", "Banknote", 1, false, true),
+            TblPaymentMethod.Create("VnPay", "VNPAY QR / Thẻ ATM / Visa", "Thanh toán an toàn qua cổng VNPAY", "CreditCard", 2, true, true),
+            TblPaymentMethod.Create("MoMo", "Ví điện tử MoMo", "Quét mã MoMo hoặc chuyển ví siêu tốc", "Smartphone", 3, true, true),
+            TblPaymentMethod.Create("BankTransfer", "Chuyển khoản ngân hàng", "Chuyển khoản qua số tài khoản cửa hàng", "Landmark", 4, false, true),
+        };
+
+        foreach (var pm in defaultPaymentMethods)
+        {
+            if (!await context.TblPaymentMethods.AnyAsync(m => m.Code == pm.Code))
+            {
+                context.TblPaymentMethods.Add(pm);
             }
         }
 

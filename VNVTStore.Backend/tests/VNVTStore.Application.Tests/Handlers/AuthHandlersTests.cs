@@ -131,7 +131,7 @@ public class AuthHandlersTests
             .Returns(mockDbSet.Object);
         
         _passwordHasherMock.Setup(x => x.Verify("Password@123", "hashed_password")).Returns(true);
-        _jwtServiceMock.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>(), It.IsAny<IEnumerable<string>>(), It.IsAny<IEnumerable<string>>())).Returns("token");
+        _jwtServiceMock.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<IEnumerable<string>>())).Returns("token");
         _jwtServiceMock.Setup(x => x.GenerateRefreshToken()).Returns("refresh_token");
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<TblUser>())).Returns(new UserDto { Username = "user" });
 
@@ -207,7 +207,7 @@ public class AuthHandlersTests
         _userRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<TblUser, bool>>>()))
             .Returns(CreateMockDbSet(users).Object);
 
-        _jwtServiceMock.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>(), It.IsAny<IEnumerable<string>>(), It.IsAny<IEnumerable<string>>())).Returns("impersonated_token");
+        _jwtServiceMock.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<IEnumerable<string>>())).Returns("impersonated_token");
         _jwtServiceMock.Setup(x => x.GenerateRefreshToken()).Returns("new_refresh_token");
         _mapperMock.Setup(x => x.Map<UserDto>(It.IsAny<TblUser>())).Returns(new UserDto { Code = targetCode });
 

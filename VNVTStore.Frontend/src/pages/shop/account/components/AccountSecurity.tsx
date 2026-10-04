@@ -5,9 +5,10 @@ import { Button } from '@/components/ui';
 interface AccountSecurityProps {
   onPasswordChange: () => void;
   onTwoFactorSetup: () => void;
+  isTwoFactorEnabled?: boolean;
 }
 
-const AccountSecurity = ({ onPasswordChange, onTwoFactorSetup }: AccountSecurityProps) => {
+const AccountSecurity = ({ onPasswordChange, onTwoFactorSetup, isTwoFactorEnabled = false }: AccountSecurityProps) => {
   const { t } = useTranslation();
 
   return (
@@ -67,23 +68,33 @@ const AccountSecurity = ({ onPasswordChange, onTwoFactorSetup }: AccountSecurity
               </div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-primary text-lg">{t('common.account.twoFactor')}</h3>
-                <span className="px-2 py-0.5 text-[9px] font-extrabold bg-tertiary/20 text-tertiary border border-tertiary/10 rounded-full uppercase tracking-tighter">
-                   {t('common.account.notActivated')}
-                </span>
+                {isTwoFactorEnabled ? (
+                  <span className="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-full uppercase tracking-tighter flex items-center gap-1">
+                    ✓ Đã kích hoạt
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 text-[9px] font-extrabold bg-tertiary/20 text-tertiary border border-tertiary/10 rounded-full uppercase tracking-tighter">
+                     {t('common.account.notActivated')}
+                  </span>
+                )}
               </div>
             </div>
             
             <p className="text-sm text-secondary flex-1 leading-relaxed">
-              {t('common.account.twoFactorDesc') || 'Thêm một lớp bảo mật bằng cách yêu cầu mã xác thực từ điện thoại của bạn.'}
+              {isTwoFactorEnabled
+                ? 'Tài khoản đang được bảo vệ bởi Google Authenticator. Bạn có thể xem mã khôi phục hoặc tắt 2FA.'
+                : (t('common.account.twoFactorDesc') || 'Thêm một lớp bảo mật bằng cách yêu cầu mã xác thực từ điện thoại của bạn.')}
             </p>
             
             <Button 
-              variant="outline" 
+              variant={isTwoFactorEnabled ? "outline" : "default"} 
               onClick={onTwoFactorSetup}
               fullWidth
-              className="mt-4 border-secondary/20 hover:border-accent hover:text-accent group-hover:bg-accent/5 transition-all text-sm font-semibold"
+              className={isTwoFactorEnabled 
+                ? "mt-4 border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all text-sm font-semibold"
+                : "mt-4 border-secondary/20 hover:border-accent hover:text-accent group-hover:bg-accent/5 transition-all text-sm font-semibold"}
             >
-              {t('common.account.setupTwoFactor')}
+              {isTwoFactorEnabled ? 'Quản lý / Tắt 2FA' : (t('common.account.setupTwoFactor') || 'Thiết lập 2FA')}
             </Button>
           </div>
         </div>

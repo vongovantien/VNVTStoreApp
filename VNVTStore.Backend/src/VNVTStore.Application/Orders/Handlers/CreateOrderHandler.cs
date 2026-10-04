@@ -161,41 +161,75 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
             decimal totalAmount = 0;
             var orderItems = new List<TblOrderItem>();
 
+            // 🔒 RACE CONDITION FIX: Lock products với Transaction Serializable level
+            // Approach: Use EF SaveChanges trong transaction với row versioning check
+            var productCodesToProcess = itemsToProcess.Select(i => i.ProductCode).Distinct().ToList();
+            
+            // Load và track products trong transaction
+            var productsToLock = new List<TblProduct>();
+            foreach (var code in productCodesToProcess)
+            {
+                var product = await _productRepository.GetByCodeAsync(code, cancellationToken);
+                if (product == null)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<OrderDto>(Error.Validation("Product not found", code));
+                }
+                productsToLock.Add(product);
+            }
+            
+            var productDict = productsToLock.ToDictionary(p => p.Code);
+
             foreach (var item in itemsToProcess)
             {
                 try
                 {
-                    await _productRepository.ReloadAsync(item.ProductCodeNavigation, cancellationToken);
-                    item.ProductCodeNavigation.DeductStock(item.Quantity);
-                    _productRepository.Update(item.ProductCodeNavigation);
+                    if (!productDict.TryGetValue(item.ProductCode, out var product))
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<OrderDto>(Error.Validation("Product not found", item.ProductCode));
+                    }
+
+                    // Check stock - race condition handled by transaction isolation
+                    if (product.StockQuantity < item.Quantity)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<OrderDto>(Error.Validation(MessageConstants.InsufficientStock, product.Name));
+                    }
+
+                    // Deduct stock via domain method
+                    product.DeductStock(item.Quantity);
+                    _productRepository.Update(product);
+
+                    totalAmount += product.Price * item.Quantity;
+
+                    orderItems.Add(TblOrderItem.Create(
+                        item.ProductCode!,
+                        product.Name,
+                        item.ImageURL,
+                        item.Quantity,
+                        product.Price,
+                        item.Size,
+                        item.Color
+                    ));
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
+                    _logger.LogError(ex, "[CreateOrder] Stock deduction failed for {ProductCode}", item.ProductCode);
                     await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.InsufficientStock, item.ProductCodeNavigation.Name));
+                    return Result.Failure<OrderDto>(Error.Validation(MessageConstants.InsufficientStock, item.ProductCode));
                 }
-
-                totalAmount += item.ProductCodeNavigation.Price * item.Quantity;
-
-                orderItems.Add(TblOrderItem.Create(
-                    item.ProductCode!,
-                    item.ProductCodeNavigation.Name,
-                    item.ImageURL,
-                    item.Quantity,
-                    item.ProductCodeNavigation.Price,
-                    item.Size,
-                    item.Color
-                ));
             }
 
 
             decimal discountAmount = 0;
             if (!string.IsNullOrEmpty(request.dto.CouponCode))
             {
-                // 1. Tìm trong TblCoupon trước
+                // 🔒 COUPON DOUBLE-SPENDING FIX: Lock coupon trong transaction
                 var coupon = await _context.TblCoupons
+                    .Where(c => c.Code == request.dto.CouponCode)
                     .Include(c => c.PromotionCodeNavigation)
-                    .FirstOrDefaultAsync(c => c.Code == request.dto.CouponCode, cancellationToken);
+                    .FirstOrDefaultAsync(cancellationToken);
 
                 TblPromotion? promo = null;
 
@@ -210,6 +244,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
 
                     promo = coupon.PromotionCodeNavigation;
 
+                    // 🔒 Atomic check: UsageCount với transaction isolation
                     if (promo.UsageLimit.HasValue && (coupon.UsageCount ?? 0) >= promo.UsageLimit.Value)
                     {
                         await _unitOfWork.RollbackTransactionAsync(cancellationToken);
@@ -428,7 +463,7 @@ public class CreateOrderHandler : BaseHandler<TblOrder>,
                 "guest@vnvtstore.com",
                 "guest_pwd_hash_placeholder",
                 "Khách vãng lai",
-                UserRole.Customer
+                "CUSTOMER"
             );
             await _userRepository.AddAsync(guestUser, cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken); 

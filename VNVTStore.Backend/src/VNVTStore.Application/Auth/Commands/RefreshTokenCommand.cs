@@ -72,7 +72,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             .Select(rm => rm.MenuCodeNavigation!.Code)
             .ToList() ?? new List<string>();
 
-        var newAccessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, permissions, menus);
+        var newAccessToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.RoleCode ?? "CUSTOMER", permissions, menus);
         var newRefreshToken = _jwtService.GenerateRefreshToken();
 
         user.SetRefreshToken(newRefreshToken, DateTime.UtcNow.AddDays(7));

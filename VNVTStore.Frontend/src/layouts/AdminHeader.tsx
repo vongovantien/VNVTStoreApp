@@ -20,6 +20,7 @@ interface AdminHeaderProps {
     onMobileMenuOpen: () => void;
     breadcrumbs: { label: string; path: string }[];
     onSearchClick: () => void;
+    onNotificationClick?: () => void;
     theme: string;
     onToggleTheme: () => void;
     isConnected: boolean;
@@ -31,6 +32,7 @@ export const AdminHeader = ({
     onMobileMenuOpen,
     breadcrumbs,
     onSearchClick,
+    onNotificationClick,
     theme,
     onToggleTheme,
     isConnected,
@@ -88,10 +90,12 @@ export const AdminHeader = ({
                         {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                     </Button>
 
-                    <NotificationDropdown 
-                        isConnected={isConnected}
-                        onNotificationClick={() => onNavigate('/admin/orders')}
-                    />
+                    {onNotificationClick && (
+                        <NotificationDropdown 
+                            isConnected={isConnected}
+                            onNotificationClick={onNotificationClick}
+                        />
+                    )}
 
                     <UserMenu 
                         onLogout={onLogout}

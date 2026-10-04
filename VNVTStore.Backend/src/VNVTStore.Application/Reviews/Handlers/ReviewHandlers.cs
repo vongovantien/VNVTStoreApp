@@ -12,6 +12,7 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Dapper;
 using System.Data;
+using VNVTStore.Application.Services;
 
 namespace VNVTStore.Application.Reviews.Handlers;
 
@@ -33,6 +34,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
     private readonly IRepository<TblOrder> _orderRepository;
     private readonly ICurrentUser _currentUser;
     private readonly IBaseUrlService _baseUrlService;
+    private readonly IHtmlSanitizerService _htmlSanitizer;
 
     public ReviewHandlers(
         IRepository<TblReview> reviewRepository,
@@ -43,13 +45,15 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IDapperContext dapperContext,
-        IBaseUrlService baseUrlService) : base(reviewRepository, unitOfWork, mapper, dapperContext)
+        IBaseUrlService baseUrlService,
+        IHtmlSanitizerService htmlSanitizer) : base(reviewRepository, unitOfWork, mapper, dapperContext)
     {
         _orderItemRepository = orderItemRepository;
         _productRepository = productRepository;
         _orderRepository = orderRepository;
         _currentUser = currentUser;
         _baseUrlService = baseUrlService;
+        _htmlSanitizer = htmlSanitizer;
     }
 
     private async Task UpdateProductRatingAsync(string productCode, CancellationToken cancellationToken)
@@ -104,6 +108,12 @@ public class ReviewHandlers : BaseHandler<TblReview>,
 
         if (existingReview != null)
             return Result.Failure<ReviewDto>(Error.Conflict(VNVTStore.Application.Common.MessageConstants.ReviewAlreadyExists));
+
+        // 🛡️ XSS PROTECTION: Sanitize comment HTML
+        if (!string.IsNullOrEmpty(request.Dto.Comment))
+        {
+            request.Dto.Comment = _htmlSanitizer.SanitizeForDisplay(request.Dto.Comment);
+        }
 
         var result = await CreateAsync<CreateReviewDto, ReviewDto>(
             request.Dto,
@@ -325,6 +335,9 @@ public class ReviewHandlers : BaseHandler<TblReview>,
         if (string.IsNullOrEmpty(userCode))
             return Result.Failure(Error.Unauthorized());
 
+        // 🛡️ XSS PROTECTION: Sanitize reply HTML
+        var sanitizedReply = _htmlSanitizer.SanitizeForDisplay(request.Reply);
+
         // Create a new review as a reply
         var replyReview = new TblReview
         {
@@ -332,7 +345,7 @@ public class ReviewHandlers : BaseHandler<TblReview>,
             UserCode = userCode,
             ParentCode = parentReview.Code,
             ProductCode = parentReview.ProductCode, // Copy ProductCode from parent
-            Comment = request.Reply,
+            Comment = sanitizedReply,
             Rating = 0, // Replies usually don't have separate ratings
             IsApproved = true, // Admin replies or trusted user replies can be auto-approved
             CreatedAt = DateTime.UtcNow,

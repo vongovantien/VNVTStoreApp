@@ -27,6 +27,7 @@ import {
   ClipboardList,
   UserCog,
   Store,
+  Truck,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -49,6 +50,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { path: '/admin', icon: LayoutDashboard, label: 'admin.sidebar.dashboard', code: 'DASHBOARD', end: true },
       { path: '/admin/orders', icon: ShoppingCart, label: 'admin.sidebar.orders', code: 'ORDERS', end: false },
+      { path: '/admin/deliveries', icon: Truck, label: 'admin.sidebar.deliveries', code: 'ORDERS', end: false },
       { path: '/admin/pos', icon: Store, label: 'admin.sidebar.pos', code: 'ORDERS', end: false },
       { path: '/admin/customers', icon: Users, label: 'admin.sidebar.customers', code: 'CUSTOMERS', end: false },
     ]
@@ -139,43 +141,45 @@ export const AdminSidebar = ({
                 )}
             </div>
 
-            <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark p-4 space-y-6 max-h-[calc(100vh-8.5rem)]">
+            <nav className="flex-1 min-h-0 overflow-y-auto custom-scrollbar-dark py-4 space-y-6 max-h-[calc(100vh-8.5rem)]">
                 {filteredGroups.map((group, index) => (
                     <div key={index}>
+                        {/* Group label — only when expanded */}
                         {(!collapsed || mobile) && (
                             <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 {t(group.title)}
                             </div>
                         )}
-                        <div className="space-y-1">
+                        <div className="space-y-1 px-2">
                             {group.items.map((item) => (
                                 <NavLink
                                     key={item.path}
                                     to={item.path}
                                     end={!!item.end}
                                     onClick={mobile ? onCloseMobile : undefined}
+                                    title={(collapsed && !mobile) ? t(item.label) : undefined}
                                     className={({ isActive }) =>
                                         cn(
-                                            'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all',
-                                            collapsed && !mobile ? 'justify-center px-0 gap-0' : '',
+                                            'flex items-center rounded-lg transition-all duration-200',
+                                            // Collapsed: center icon, no gap, square button
+                                            (collapsed && !mobile)
+                                                ? 'justify-center w-10 h-10 mx-auto p-0'
+                                                : 'gap-3 px-3 py-2.5',
                                             isActive
                                                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-800'
                                         )
                                     }
                                 >
-                                    <item.icon size={20} className={cn(collapsed && !mobile ? 'shrink-0' : '')} />
-                                    <motion.span
-                                        initial={false}
-                                        animate={{
-                                            width: (collapsed && !mobile) ? 0 : 'auto',
-                                            opacity: (collapsed && !mobile) ? 0 : 1,
-                                        }}
-                                        transition={{ duration: 0.3 }}
-                                        className="whitespace-nowrap overflow-hidden"
-                                    >
-                                        {t(item.label)}
-                                    </motion.span>
+                                    {/* Icon always visible */}
+                                    <item.icon size={20} className="shrink-0" />
+
+                                    {/* Label — hidden when collapsed */}
+                                    {(!collapsed || mobile) && (
+                                        <span className="whitespace-nowrap overflow-hidden text-sm">
+                                            {t(item.label)}
+                                        </span>
+                                    )}
                                 </NavLink>
                             ))}
                         </div>
@@ -183,16 +187,21 @@ export const AdminSidebar = ({
                 ))}
             </nav>
 
-            <div className="p-4 border-t border-gray-800 shrink-0">
+            <div className="py-2 px-2 border-t border-gray-800 shrink-0">
                 <button
                     onClick={onLogout}
+                    title={collapsed && !mobile ? t('common.logout') : undefined}
                     className={cn(
-                        'flex items-center gap-3 w-full px-4 py-3 text-gray-400 rounded-lg hover:text-white hover:bg-gray-800 transition-all',
-                        collapsed && !mobile ? 'justify-center px-0 gap-0' : ''
+                        'flex items-center rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200',
+                        (collapsed && !mobile)
+                            ? 'justify-center w-10 h-10 mx-auto p-0'
+                            : 'gap-3 px-3 py-2.5 w-full'
                     )}
                 >
-                    <LogOut size={20} className={cn(collapsed && !mobile ? 'shrink-0' : '')} />
-                    {(!collapsed || mobile) && <span>{t('common.logout')}</span>}
+                    <LogOut size={20} className="shrink-0" />
+                    {(!collapsed || mobile) && (
+                        <span className="text-sm">{t('common.logout')}</span>
+                    )}
                 </button>
             </div>
         </>

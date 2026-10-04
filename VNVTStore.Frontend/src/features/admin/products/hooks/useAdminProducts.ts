@@ -35,9 +35,9 @@ function mapAdminProduct(dto: ProductDto): Product {
         createdAt: dto.createdAt,
         updatedAt: undefined, // Add if available
 
-        // Required by type but maybe not used in list
-        rating: 0,
-        reviewCount: 0,
+        // Use actual rating from backend DTO
+        rating: dto.averageRating ?? 0,
+        reviewCount: dto.reviewCount ?? 0,
         brand: dto.brand || '',
         isFeatured: dto.isFeatured,
         isNew: dto.isNew,

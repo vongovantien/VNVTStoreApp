@@ -1,22 +1,19 @@
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Enums;
 
 namespace VNVTStore.Domain.Entities;
 
-public class TblProductDetail : IEntity
+public class TblProductDetail : BaseEntity
 {
-    public string Code { get; set; } = Guid.NewGuid().ToString("N");
     public string ProductCode { get; set; } = null!;
-    public ProductDetailType DetailType { get; set; } = ProductDetailType.SPEC; // SPEC, LOGISTICS, RELATION, IMAGE
+    public ProductDetailType DetailType { get; set; } = ProductDetailType.SPEC;
     public string SpecName { get; set; } = null!;
     public string SpecValue { get; set; } = null!;
-    public bool IsActive { get; set; } = true;
-    
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public string? ModifiedType { get; set; }
+
+    [NotMapped] public new bool IsFixed { get; set; }
+    [NotMapped] public new string? CreatedBy { get; set; }
+    [NotMapped] public new string? UpdatedBy { get; set; }
 
     public virtual TblProduct Product { get; set; } = null!;
 }

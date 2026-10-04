@@ -3,6 +3,7 @@ using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using VNVTStore.Application.Interfaces;
+using VNVTStore.Infrastructure.Templates;
 
 namespace VNVTStore.Infrastructure.Services;
 
@@ -31,7 +32,7 @@ public class EmailService : IEmailService
 
         if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(fromEmail))
         {
-            _logger.LogWarning("[SendEmailAsync] error: Email settings are missing. Email to {To} with subject {Subject} was not sent.", to, subject);
+            _logger.LogWarning("[SendEmailAsync] Email settings missing. Email to {To} not sent.", to);
             return;
         }
 
@@ -39,7 +40,7 @@ public class EmailService : IEmailService
         {
             using var client = new SmtpClient(host, port)
             {
-                Credentials = new NetworkCredential(fromEmail, password),
+                Credentials = new System.Net.NetworkCredential(fromEmail, password),
                 EnableSsl = enableSsl
             };
 
@@ -53,14 +54,42 @@ public class EmailService : IEmailService
             mailMessage.To.Add(to);
 
             await client.SendMailAsync(mailMessage);
-            _logger.LogInformation("[SendEmailAsync] Email sent to {To} with subject {Subject}", to, subject);
+            _logger.LogInformation("[SendEmailAsync] Email sent to {To}", to);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[SendEmailAsync] error: Failed to send email to {To}", to);
-            // We might not want to throw here to avoid failing the main request if email is secondary
-            // But for verification it is critical.
-            throw; 
+            _logger.LogError(ex, "[SendEmailAsync] Failed to send email to {To}", to);
+            throw;
         }
+    }
+
+    /// <summary>
+    /// Gửi email xác nhận đăng ký với template đẹp
+    /// </summary>
+    public async Task SendVerificationEmailAsync(string to, string userName, string verificationLink)
+    {
+        var html = EmailTemplates.EmailVerification(userName, verificationLink);
+        await SendEmailAsync(to, "Xác nhận tài khoản VNVTStore", html, isHtml: true);
+    }
+
+    /// <summary>
+    /// Gửi email reset password với template đẹp
+    /// </summary>
+    public async Task SendPasswordResetEmailAsync(string to, string userName, string resetLink)
+    {
+        var html = EmailTemplates.PasswordReset(userName, resetLink);
+        await SendEmailAsync(to, "Đặt lại mật khẩu VNVTStore", html, isHtml: true);
+    }
+
+    /// <summary>
+    /// Gửi email xác nhận đơn hàng với template đẹp
+    /// </summary>
+    public async Task SendOrderConfirmationEmailAsync(string to, string customerName, 
+        string orderNumber, decimal totalAmount, 
+        List<(string Name, int Quantity, decimal Price)> items, string orderViewLink)
+    {
+        var itemsHtml = EmailTemplates.BuildOrderItemsHtml(items);
+        var html = EmailTemplates.OrderConfirmation(customerName, orderNumber, totalAmount, itemsHtml, orderViewLink);
+        await SendEmailAsync(to, $"Xác nhận đơn hàng #{orderNumber}", html, isHtml: true);
     }
 }

@@ -47,3 +47,15 @@ public record ImpersonateCommand(
     public string? AuditAction => "IMPERSONATE";
     public string? AuditResourceId => targetUserCode;
 }
+
+public record SetupTwoFactorCommand(string UserCode) : IRequest<Result<TwoFactorSetupDto>>;
+
+public record EnableTwoFactorCommand(string UserCode, string Code) : IRequest<Result<TwoFactorEnableDto>>;
+
+public record DisableTwoFactorCommand(string UserCode, string Password, string Code) : IRequest<Result<bool>>;
+
+public record VerifyTwoFactorLoginCommand(string TwoFactorToken, string Code) : IRequest<Result<AuthResponseDto>>, IAuditableCommand
+{
+    public string? AuditAction => "2FA_VERIFY";
+    public string? AuditResourceId => TwoFactorToken;
+}

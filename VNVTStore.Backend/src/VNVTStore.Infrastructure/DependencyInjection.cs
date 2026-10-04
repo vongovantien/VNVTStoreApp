@@ -98,26 +98,16 @@ public static class DependencyInjection
         services.AddScoped<IBaseUrlService, BaseUrlService>();
         services.AddHttpContextAccessor();
 
+        // Payment Gateways
+        services.AddHttpClient<VNVTStore.Infrastructure.Services.Payments.MoMoGateway>();
+        services.AddScoped<IPaymentGateway, VNVTStore.Infrastructure.Services.Payments.VnPayGateway>();
+        services.AddScoped<IPaymentGateway, VNVTStore.Infrastructure.Services.Payments.MoMoGateway>();
+        services.AddScoped<IPaymentGatewayFactory, VNVTStore.Infrastructure.Services.Payments.PaymentGatewayFactory>();
+        services.AddHostedService<VNVTStore.Infrastructure.Services.Payments.ExpiredPaymentWorker>();
+
         // RBAC Authorization
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionHandler>();
-
-        var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
-        if (allowedOrigins == null || allowedOrigins.Length == 0)
-        {
-             allowedOrigins = new[] { 
-                "http://localhost:5173", 
-                "http://localhost:5174", 
-                "http://localhost:5175", 
-                "http://localhost:5000",
-                "https://scalar.com"
-             };
-        }
-        // Add JWT Settings
-        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
-
-        // Autonomous Logic Hubs (Phase 9)
-        services.AddHostedService<LogicHubWorker>();
 
         return services;
     }

@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useCartStore, useAuthStore } from '../index';
 import { cartService } from '@/services';
 import { promotionService } from '@/services/promotionService';
+import { couponService } from '@/services/couponService';
 import { Product } from '@/types';
 
 // Mock services
@@ -20,6 +21,12 @@ vi.mock('@/services', () => ({
 vi.mock('@/services/promotionService', () => ({
     promotionService: {
         getByCode: vi.fn(),
+    }
+}));
+
+vi.mock('@/services/couponService', () => ({
+    couponService: {
+        validate: vi.fn(),
     }
 }));
 
@@ -99,6 +106,17 @@ describe('useCartStore', () => {
             endDate: '2099-01-01'
         };
         (promotionService.getByCode as Mock).mockResolvedValue({ success: true, data: mockPromotion });
+        (couponService.validate as Mock).mockResolvedValue({
+            data: {
+                success: true,
+                data: {
+                    isValid: true,
+                    discountAmount: 20000,
+                    finalAmount: 180000,
+                    couponDetails: mockPromotion,
+                }
+            }
+        });
 
         const { result } = renderHook(() => useCartStore());
         await act(async () => {

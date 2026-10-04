@@ -83,8 +83,8 @@ const ActionBtn = ({ onClick, title, active, activeClassName, children }: Action
     onClick={onClick}
     title={title}
     className={cn(
-      'w-9 h-9 flex items-center justify-center bg-white rounded-full shadow-md',
-      'transition-transform hover:scale-110 text-slate-600',
+      'w-9 h-9 flex items-center justify-center rounded-full glass-panel shadow-md cursor-pointer',
+      'transition-all duration-200 hover:scale-115 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400',
       active && activeClassName,
     )}
   >
@@ -321,9 +321,9 @@ const GridCard = memo(({
   return (
     <motion.div
       className={cn(
-        'group relative rounded-xl overflow-hidden transition-all duration-300 border',
-        'bg-bg-primary border-border hover:shadow-lg hover:border-border',
-        hoverable && 'hover:-translate-y-0.5',
+        'group relative rounded-2xl overflow-hidden transition-all duration-300 border',
+        'bg-bg-primary border-slate-200/80 dark:border-slate-800/80 hover-lift',
+        'hover:border-indigo-500/50 dark:hover:border-indigo-400/50 hover:shadow-xl',
         className,
       )}
       initial={{ opacity: 0, scale: 0.97 }}
@@ -376,13 +376,13 @@ const GridCard = memo(({
 
           {/* Badges */}
           <div className={cn('absolute top-3 flex flex-col gap-1.5 z-10', selectable ? 'left-12' : 'left-3')}>
-            {isNew && <Badge color="error">NEW</Badge>}
-            {product.isFeatured && <Badge color="error">HOT</Badge>}
-            {hasDiscount && <Badge color="warning">-{product.discount}%</Badge>}
+            {isNew && <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm">MỚI</span>}
+            {product.isFeatured && <span className="px-2 py-0.5 text-[11px] font-bold rounded-md badge-fire shadow-sm">HOT</span>}
+            {hasDiscount && <span className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-sm">-{product.discount}%</span>}
             {isLowStock && (
-              <Badge color="warning" className="animate-pulse">
-                🔥 {t('product.justLeft', 'Chỉ còn {{count}}!', { count: stockQty })}
-              </Badge>
+              <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-500 text-white animate-pulse shadow-sm">
+                🔥 Chỉ còn {stockQty}!
+              </span>
             )}
           </div>
 
@@ -501,7 +501,7 @@ const GridCard = memo(({
             {hasFixedPrice ? (
               <>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[17px] font-bold text-slate-900 dark:text-white">
+                  <span className="text-[18px] font-extrabold text-indigo-600 dark:text-indigo-400">
                     {formatCurrency(product.price)}
                   </span>
                   {product.originalPrice && product.originalPrice > product.price && (

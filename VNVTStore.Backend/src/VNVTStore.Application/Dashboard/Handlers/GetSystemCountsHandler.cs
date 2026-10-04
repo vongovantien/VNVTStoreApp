@@ -32,13 +32,13 @@ public class GetSystemCountsHandler : IRequestHandler<GetSystemCountsQuery, GetS
 
         var userRoles = await _context.TblUsers
             .Take(10)
-            .Select(u => new { u.Username, u.Role })
+            .Select(u => new { u.Username, Role = u.RoleCode })
             .ToListAsync(cancellationToken);
 
         return new GetSystemCountsResult
         {
             AdminUser = adminUser != null
-                ? new { adminUser.Username, Role = adminUser.Role.ToString() }
+                ? new { adminUser.Username, Role = adminUser.RoleCode }
                 : null,
             UsersCount = await _context.TblUsers.CountAsync(cancellationToken),
             SampleUserRoles = userRoles.Cast<object>(),

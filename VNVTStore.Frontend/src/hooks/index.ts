@@ -26,6 +26,9 @@ export * from './usePagination';
 export * from './useRoles';
 export { useDataTable } from './useDataTable';
 export { useSignalR } from './useSignalR';
+export { useNotifications } from './useNotifications';
+export { useGlobalSearch } from './useGlobalSearch';
+export { useCouponValidation } from './useCouponValidation';
 
 /**
  * Hook for debounced value

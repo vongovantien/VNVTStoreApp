@@ -1,27 +1,17 @@
 using System;
 using System.Collections.Generic;
-using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblCart : IEntity
+public partial class TblCart : BaseEntity
 {
     private TblCart() 
     {
         TblCartItems = new List<TblCartItem>();
     }
 
-    public string Code { get; set; } = null!;
-
     public string UserCode { get; private set; } = null!;
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-
-    public string? ModifiedType { get; set; }
-
-    public bool IsActive { get; set; } = true;
 
     public virtual ICollection<TblCartItem> TblCartItems { get; private set; }
 

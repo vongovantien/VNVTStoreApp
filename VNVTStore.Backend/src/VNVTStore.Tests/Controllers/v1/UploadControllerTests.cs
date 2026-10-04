@@ -7,7 +7,6 @@ using VNVTStore.API.Controllers.v1;
 using VNVTStore.Application.Common;
 using VNVTStore.Application.Interfaces;
 using VNVTStore.Application.DTOs;
-using VNVTStore.Application.Common.Models;
 using Xunit;
 
 namespace VNVTStore.Tests.Controllers.v1;

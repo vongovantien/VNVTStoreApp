@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Package, AlertTriangle, XCircle } from 'lucide-react';
 import { Modal, ConfirmDialog } from '@/components/ui';
@@ -41,11 +42,21 @@ export const ProductsPage = () => {
       return detail?.specValue;
   };
 
+  const [searchParams] = useSearchParams();
+
   // State
   const [currentPage, setCurrentPage] = useState<number>(PaginationDefaults.PAGE_INDEX);
   const [pageSize, setPageSize] = useState<number>(PaginationDefaults.PAGE_SIZE);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('search') || '');
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const s = searchParams.get('search');
+    if (s !== null) {
+      setSearchQuery(s);
+      setCurrentPage(PaginationDefaults.PAGE_INDEX);
+    }
+  }, [searchParams]);
 
   // Sorting
   const [sortField, setSortField] = useState<SortField>('createdAt');

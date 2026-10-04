@@ -5,12 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   ChevronRight,
+  ChevronLeft,
   ArrowRight,
   Sparkles,
   Zap,
   Gift,
   TrendingUp,
   Loader2,
+  Truck,
+  ShieldCheck,
+  RotateCcw,
+  Headphones,
+  Flame,
 } from 'lucide-react';
 import { ProductCard } from '@/components/common/ProductCard';
 import SharedImage from '@/components/common/Image';
@@ -258,17 +264,78 @@ export const HomePage = () => {
           </motion.div>
         ))}
 
+        {/* Navigation Arrows */}
+        {banners.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1))}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full glass-panel flex items-center justify-center text-white/90 hover:text-white hover:scale-110 transition-all z-20 shadow-lg cursor-pointer"
+              aria-label="Previous Slide"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev === banners.length - 1 ? 0 : prev + 1))}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full glass-panel flex items-center justify-center text-white/90 hover:text-white hover:scale-110 transition-all z-20 shadow-lg cursor-pointer"
+              aria-label="Next Slide"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </>
+        )}
+
         {/* Dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {banners.map((_, index) => (
-
             <button
               key={index}
-              className={`w-3 h-3 rounded-full border-2 border-white transition-all ${index === currentSlide ? 'bg-white scale-110' : 'bg-transparent'
-                }`}
+              className={`h-2.5 rounded-full transition-all duration-300 ${index === currentSlide ? 'w-8 bg-white shadow-md' : 'w-2.5 bg-white/40 hover:bg-white/70'}`}
               onClick={() => setCurrentSlide(index)}
+              aria-label={`Slide ${index + 1}`}
             />
           ))}
+        </div>
+      </section>
+
+      {/* Value Proposition Bar */}
+      <section className="relative z-20 -mt-6 max-w-7xl mx-auto px-4">
+        <div className="glass-panel rounded-2xl shadow-xl p-4 md:p-6 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 border border-slate-200/80 dark:border-slate-800/80">
+          <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+            <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-white shadow-md flex-shrink-0">
+              <Truck size={22} />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm md:text-base text-text-primary">Giao Hàng Siêu Tốc</h4>
+              <p className="text-xs text-text-tertiary">Miễn phí cho đơn từ 500k</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md flex-shrink-0">
+              <ShieldCheck size={22} />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm md:text-base text-text-primary">100% Chính Hãng</h4>
+              <p className="text-xs text-text-tertiary">Cam kết hoàn tiền gấp 2</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md flex-shrink-0">
+              <RotateCcw size={22} />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm md:text-base text-text-primary">Đổi Trả 7 Ngày</h4>
+              <p className="text-xs text-text-tertiary">Thủ tục nhanh chóng, an tâm</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-md flex-shrink-0">
+              <Headphones size={22} />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm md:text-base text-text-primary">Hỗ Trợ 24/7</h4>
+              <p className="text-xs text-text-tertiary">Đội ngũ kỹ thuật tận tâm</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -279,17 +346,14 @@ export const HomePage = () => {
             title={t('home.categories')}
             icon={<span className="text-2xl">🏷️</span>}
             viewAllLink="/products"
-
           />
 
-
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {loadingCategories ? (
               Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="bg-primary rounded-xl p-4 flex flex-col items-center justify-center gap-3 animate-pulse">
-                  <div className="w-24 h-24 bg-secondary/50 rounded-full" />
-                  <div className="h-4 w-20 bg-secondary/50 rounded" />
+                <div key={idx} className="glass-card rounded-2xl p-5 flex flex-col items-center justify-center gap-3 animate-pulse">
+                  <div className="w-20 h-20 bg-secondary/60 rounded-full" />
+                  <div className="h-4 w-20 bg-secondary/60 rounded" />
                 </div>
               ))
             ) : (
@@ -297,50 +361,54 @@ export const HomePage = () => {
                 <Link
                   key={cat.code}
                   to={`/products?category=${cat.code}`}
-                  className="group bg-primary rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-lg transition-all border border-transparent hover:border-primary"
+                  className="group glass-card rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover-lift border border-slate-200/60 dark:border-slate-800/60 hover:border-indigo-500/50 dark:hover:border-indigo-400/50 transition-all duration-300"
                 >
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-secondary/20 group-hover:scale-110 transition-transform">
+                  <div className="w-20 h-20 rounded-full overflow-hidden bg-secondary/40 p-1 group-hover:scale-110 transition-transform duration-300 shadow-inner">
                     <SharedImage
                       src={cat.imageURL}
                       alt={cat.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-full"
                     />
                   </div>
                   <div className="text-center">
-                    <h3 className="font-semibold text-color-primary group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold text-sm md:text-base text-text-primary group-hover:text-accent-primary transition-colors">
                       {cat.name}
                     </h3>
                   </div>
                 </Link>
               )))}
           </div>
-
         </div>
       </section>
 
       {/* Flash Sale */}
       {/* Flash Sale - Only show if we have active sales */}
       {saleProducts.length > 0 && (
-      <section className="py-12 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-            <div className="flex items-center gap-4">
-              <Zap className="text-yellow-400 animate-pulse" size={28} />
-              <h2 className="text-xl md:text-2xl font-bold">{t('shared.flashSale')}</h2>
+      <section className="py-12 relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white rounded-3xl mx-4 my-8 shadow-2xl border border-indigo-500/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 border-b border-white/10 pb-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 font-bold shadow-lg">
+                <Flame className="text-yellow-300 animate-bounce" size={24} />
+                <span className="tracking-wide uppercase text-sm md:text-base">{t('shared.flashSale')}</span>
+              </div>
+              <span className="text-white/60 text-sm hidden sm:inline">Kết thúc trong:</span>
               {/* Dynamic Countdown */}
-              <div className="flex gap-2 font-mono text-lg font-bold">
-                 <div className="bg-error px-2 py-1 rounded">{String(timeLeft.hours).padStart(2, '0')}</div>
-                 <span className="self-center">:</span>
-                 <div className="bg-error px-2 py-1 rounded">{String(timeLeft.minutes).padStart(2, '0')}</div>
-                 <span className="self-center">:</span>
-                 <div className="bg-error px-2 py-1 rounded">{String(timeLeft.seconds).padStart(2, '0')}</div>
+              <div className="flex items-center gap-2 font-mono text-base md:text-lg font-black">
+                 <div className="bg-slate-900/90 border border-rose-500/40 px-3 py-1.5 rounded-lg shadow-inner text-rose-400">{String(timeLeft.hours).padStart(2, '0')}</div>
+                 <span className="text-rose-500 font-bold animate-pulse">:</span>
+                 <div className="bg-slate-900/90 border border-rose-500/40 px-3 py-1.5 rounded-lg shadow-inner text-rose-400">{String(timeLeft.minutes).padStart(2, '0')}</div>
+                 <span className="text-rose-500 font-bold animate-pulse">:</span>
+                 <div className="bg-slate-900/90 border border-rose-500/40 px-3 py-1.5 rounded-lg shadow-inner text-rose-400">{String(timeLeft.seconds).padStart(2, '0')}</div>
               </div>
             </div>
             <Link
               to="/promotions"
-              className="flex items-center gap-1 text-white/80 hover:text-white font-semibold transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full glass-panel text-white/90 hover:text-white font-semibold transition-all hover:scale-105 border border-white/20 text-sm"
             >
-              {t('common.viewAll')} <ChevronRight size={18} />
+              {t('common.viewAll')} <ArrowRight size={16} />
             </Link>
           </div>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import { useAuthStore, useToast } from '@/store';
 import { UserRole, UserStatus } from '@/types';
@@ -30,6 +30,12 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 2FA state
+  const [step, setStep] = useState<'login' | '2fa'>('login');
+  const [twoFactorToken, setTwoFactorToken] = useState<string | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [isRecoveryCodeMode, setIsRecoveryCodeMode] = useState(false);
 
   const {
       register,
@@ -85,7 +91,19 @@ export const LoginPage = () => {
       });
 
       if (response.success && response.data) {
+        if (response.data.requiresTwoFactor && response.data.twoFactorToken) {
+          setTwoFactorToken(response.data.twoFactorToken);
+          setStep('2fa');
+          setError(null);
+          toast.info('Tài khoản yêu cầu xác thực 2 bước (2FA)');
+          return;
+        }
+
         const { token, refreshToken, user } = response.data;
+        if (!token || !user) {
+          setError(response.message || 'Dữ liệu đăng nhập không hợp lệ');
+          return;
+        }
 
         // Handle Remember Me preference
         try {
@@ -113,7 +131,7 @@ export const LoginPage = () => {
             menus: user.menus
           },
           token,
-          refreshToken,
+          refreshToken || '',
           user.menus
         );
 
@@ -133,6 +151,58 @@ export const LoginPage = () => {
       toast.error(t('messages.error'));
       setError('Có lỗi xảy ra. Vui lòng thử lại.');
       console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onVerify2Fa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!twoFactorCode.trim() || !twoFactorToken) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await authService.verifyTwoFactorLogin({
+        twoFactorToken,
+        code: twoFactorCode.trim()
+      });
+
+      if (response.success && response.data && response.data.token && response.data.user) {
+        const { token, refreshToken, user: userData } = response.data;
+
+        login(
+          {
+            code: userData.code,
+            email: userData.email,
+            fullName: userData.fullName || userData.username,
+            role: (userData.role as UserRole) || UserRole.Customer,
+            status: UserStatus.Active,
+            createdAt: new Date().toISOString(),
+            avatar: userData.avatar,
+            permissions: userData.permissions,
+            menus: userData.menus
+          },
+          token,
+          refreshToken || '',
+          userData.menus
+        );
+
+        toast.success(t('messages.loginSuccess'));
+
+        if (String(userData.role).toLowerCase() === 'admin') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate(from, { replace: true });
+        }
+      } else {
+        setError(response.message || 'Mã xác thực 2FA không chính xác hoặc đã hết hạn.');
+      }
+    } catch (err) {
+      toast.error('Xác thực thất bại');
+      setError('Mã xác thực không hợp lệ. Vui lòng thử lại.');
+      console.error('2FA error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -189,6 +259,85 @@ export const LoginPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (step === '2fa') {
+    return (
+      <AuthLayout title="Xác thực 2 bước (2FA)" subtitle="Bảo mật tài khoản của bạn với Google Authenticator">
+        <form onSubmit={onVerify2Fa} className="space-y-5">
+          <div className="text-center p-4 bg-primary/5 rounded-2xl border border-primary/20">
+            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2 shadow-sm">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <p className="text-xs text-secondary">
+              {isRecoveryCodeMode 
+                ? 'Nhập một trong các mã khôi phục dự phòng 8 ký tự' 
+                : 'Mở ứng dụng Google Authenticator và nhập mã 6 chữ số'}
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3 border border-error bg-error/10 text-error text-sm rounded-lg text-center font-medium">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-semibold text-secondary mb-1">
+              {isRecoveryCodeMode ? 'Mã khôi phục dự phòng' : 'Mã xác thực 6 chữ số'}
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                autoFocus
+                maxLength={isRecoveryCodeMode ? 12 : 6}
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value.toUpperCase())}
+                placeholder={isRecoveryCodeMode ? 'XXXX-XXXX' : '123456'}
+                className="w-full text-center text-2xl font-mono tracking-widest py-3 px-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                required
+              />
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            fullWidth
+            size="lg"
+            isLoading={isLoading}
+            rightIcon={<ArrowRight size={20} />}
+          >
+            Xác nhận & Đăng nhập
+          </Button>
+
+          <div className="flex flex-col gap-2 pt-2 text-center text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRecoveryCodeMode(!isRecoveryCodeMode);
+                setTwoFactorCode('');
+                setError(null);
+              }}
+              className="text-primary hover:underline font-medium"
+            >
+              {isRecoveryCodeMode ? '← Sử dụng mã 6 chữ số từ ứng dụng' : 'Mất thiết bị? Sử dụng mã khôi phục dự phòng'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStep('login');
+                setTwoFactorToken(null);
+                setTwoFactorCode('');
+                setError(null);
+              }}
+              className="text-secondary hover:underline"
+            >
+              Quay lại đăng nhập với tài khoản khác
+            </button>
+          </div>
+        </form>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout title={t('login.title')} subtitle={t('login.subtitle')}>

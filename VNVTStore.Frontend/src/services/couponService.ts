@@ -23,7 +23,24 @@ export interface UpdateCouponRequest {
 
 export interface ValidateCouponRequest {
     couponCode: string;
-    orderAmount: number;
+    orderTotal?: number;
+    orderAmount?: number;
+}
+
+export interface CouponValidationData {
+    isValid: boolean;
+    errors: string[];
+    discountAmount: number;
+    finalAmount: number;
+    couponDetails?: {
+        code: string;
+        promotionName?: string;
+        description?: string;
+        discountType: string;
+        discountValue: number;
+        maxDiscountAmount?: number;
+        minOrderAmount?: number;
+    } | null;
 }
 
 // ============ Service ============
@@ -35,7 +52,14 @@ export const couponService = {
     ...baseService,
 
     validate: (data: ValidateCouponRequest) =>
-        apiClient.post(API_ENDPOINTS.COUPONS.VALIDATE, data),
+        apiClient.post<{ success: boolean; message?: string; data: CouponValidationData }>(
+            API_ENDPOINTS.COUPONS.VALIDATE,
+            {
+                couponCode: data.couponCode,
+                orderTotal: data.orderTotal ?? data.orderAmount ?? 0,
+                orderAmount: data.orderAmount ?? data.orderTotal ?? 0,
+            }
+        ),
 };
 
 export default couponService;

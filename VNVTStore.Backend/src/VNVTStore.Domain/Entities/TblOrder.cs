@@ -1,26 +1,18 @@
 using System;
 using System.Collections.Generic;
 using VNVTStore.Domain.Enums;
-using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblOrder : IEntity
+public partial class TblOrder : BaseEntity
 {
-    public bool IsActive { get; set; } = true;
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-
     private TblOrder() 
     {
         TblOrderItems = new List<TblOrderItem>();
     }
 
-    public string Code { get; set; } = null!;
-
     public string UserCode { get; set; } = null!;
-
-    public string? ModifiedType { get; set; }
 
     public DateTime? OrderDate { get; private set; }
 
@@ -116,5 +108,29 @@ public partial class TblOrder : IEntity
     {
         VerificationToken = token;
         VerificationTokenExpiresAt = expiry;
+    }
+
+    /// <summary>
+    /// Create the payment record for this order. Amount is always taken from FinalAmount
+    /// so it can never be tampered with by the client.
+    /// </summary>
+    public TblPayment AttachPayment(PaymentMethod method)
+    {
+        TblPayment = TblPayment.Create(Code, FinalAmount, method);
+        return TblPayment;
+    }
+
+    /// <summary>
+    /// Mark the order as paid after a confirmed online payment.
+    /// Only orders that have not progressed further are moved to Paid.
+    /// </summary>
+    public bool MarkPaid()
+    {
+        if (Status is OrderStatus.Pending or OrderStatus.Confirmed)
+        {
+            Status = OrderStatus.Paid;
+            return true;
+        }
+        return false;
     }
 }

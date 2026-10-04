@@ -19,7 +19,6 @@ using VNVTStore.Infrastructure.Persistence;
 using Xunit;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query;
-using VNVTStore.Application.Common.Models;
 
 using VNVTStore.Tests.Common;
 
@@ -204,6 +203,9 @@ namespace VNVTStore.Tests.Handlers
             _mockUploadService.Setup(s => s.UploadBase64ImagesAsync(It.IsAny<List<(string, string)>>(), "products"))
                 .ReturnsAsync(Result.Success<IEnumerable<FileDto>>(new List<FileDto> { new FileDto { Url = uploadedPath, Path = uploadedPath } }));
 
+            _mockFileService.Setup(s => s.SaveAndLinkImagesAsync(It.IsAny<string>(), "TblProduct", It.IsAny<IEnumerable<string>>(), "products", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result.Success<IEnumerable<string>>(new List<string> { uploadedPath }));
+
             _mockMapper.Setup(m => m.Map<ProductDto>(It.IsAny<TblProduct>()))
                 .Returns((TblProduct source) => new ProductDto { Code = source.Code, Name = source.Name });
 
@@ -217,15 +219,10 @@ namespace VNVTStore.Tests.Handlers
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockUploadService.Verify(s => s.UploadBase64ImagesAsync(It.IsAny<List<(string, string)>>(), "products"), Times.Once);
+            _mockFileService.Verify(s => s.SaveAndLinkImagesAsync(It.IsAny<string>(), "TblProduct", It.IsAny<IEnumerable<string>>(), "products", It.IsAny<CancellationToken>()), Times.Once);
             
             var dbProduct = await _context.TblProducts.FirstOrDefaultAsync(p => p.Name == "Product With Image");
             dbProduct.Should().NotBeNull();
-            
-            // Verify linking happened on the file entity itself
-            var linkedFile = await _context.TblFiles.FirstOrDefaultAsync(f => f.Url == uploadedPath);
-            linkedFile!.MasterCode.Should().Be(dbProduct!.Code);
-            linkedFile.MasterType.Should().Be("Product");
         }
     }
 }

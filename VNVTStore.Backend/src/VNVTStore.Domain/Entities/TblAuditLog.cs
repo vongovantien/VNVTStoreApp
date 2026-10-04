@@ -1,49 +1,30 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
 [Table("TblAuditLog")]
-public class TblAuditLog : IEntity
+public class TblAuditLog : BaseEntity
 {
-    [Key]
-    [Column("Code")]
-    [StringLength(100)]
-    public string Code { get; set; } = null!;
-
-    [Column("UserCode")]
     [StringLength(100)]
     public string? UserCode { get; set; }
 
-    [Column("Action")]
     [StringLength(100)]
-    public string Action { get; set; } = null!; // e.g., "LOGIN", "UPDATE_PRODUCT", "DELETE_ORDER"
+    public string Action { get; set; } = null!;
 
-    [Column("Target")]
     [StringLength(255)]
-    public string? Target { get; set; } // e.g., "Product:PRD0001"
+    public string? Target { get; set; }
 
-    [Column("Detail")]
-    public string? Detail { get; set; } // JSON or description of change
+    public string? Detail { get; set; }
 
-    [Column("IpAddress")]
     [StringLength(50)]
     public string? IpAddress { get; set; }
 
-    [Column("CreatedAt")]
-    public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
-
-    [Column("UpdatedAt")]
-    public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    [Column("IsActive")]
-    public bool IsActive { get; set; } = true;
-
-    [Column("ModifiedType")]
-    [StringLength(10)]
-    public string? ModifiedType { get; set; } = "ADD";
+    // No IsFixed/CreatedBy/UpdatedBy columns for this table in DB
+    [NotMapped] public new bool IsFixed { get; set; }
+    [NotMapped] public new string? CreatedBy { get; set; }
+    [NotMapped] public new string? UpdatedBy { get; set; }
 
     [ForeignKey("UserCode")]
     public virtual TblUser? UserCodeNavigation { get; set; }

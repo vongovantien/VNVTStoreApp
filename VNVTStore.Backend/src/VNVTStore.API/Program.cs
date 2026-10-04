@@ -150,6 +150,7 @@ try
 
     app.MapControllers();
     app.MapHub<VNVTStore.Infrastructure.Hubs.NotificationHub>("/notificationHub");
+    app.MapHub<VNVTStore.Infrastructure.Hubs.NotificationHub>("/hubs/notifications");
 
     app.MapGet("/", () => "VNVTStore API is running! Access docs at /scalar/v1");
 

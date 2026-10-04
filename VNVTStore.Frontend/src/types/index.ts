@@ -63,14 +63,6 @@ export interface Product {
     videoReviews?: { user: string; videoUrl: string }[]; // New: Feature 40
 }
 
-export enum ProductDetailType {
-    SPEC = 'SPEC',
-    LOGISTICS = 'LOGISTICS',
-    RELATION = 'RELATION',
-    IMAGE = 'IMAGE'
-}
-
-
 export interface ProductDetail {
     code: string;
     productCode: string;
@@ -139,19 +131,25 @@ export interface CartItem {
     size?: string | undefined;
 }
 
-// ============ User Types ============
-export enum UserRole {
-    Admin = 'Admin',
-    Customer = 'Customer',
-    Staff = 'Staff'
-}
-
-export enum UserStatus {
-    Active = 'Active',
-    Inactive = 'Inactive',
-    Locked = 'Locked',
-    Pending = 'Pending'
-}
+// ============ Enums (re-exported from canonical source) ============
+export {
+  UserRole,
+  UserStatus,
+  OrderStatus,
+  DeliveryStatus,
+  PaymentStatus,
+  PaymentMethod,
+  ProductDetailType,
+  DiscountType,
+  QuoteStatus,
+  SearchCondition,
+  ModificationType,
+  UserTier,
+  ORDER_STATUS_LABEL,
+  ORDER_STATUS_COLOR,
+  PAYMENT_METHOD_LABEL,
+  PRODUCT_DETAIL_TYPE_LABEL,
+} from '@/enums';
 
 export interface User {
     code: string; // Users also use Code in DTO? Check UserDto. Yes.
@@ -186,7 +184,6 @@ export interface Address {
 }
 
 // ============ Order Types ============
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'cancelled';
 
 export interface Order {
     code: string;
@@ -220,16 +217,6 @@ export interface OrderItem {
 }
 
 // ============ Delivery Types ============
-export enum DeliveryStatus {
-    Pending = 'Pending',
-    Assigned = 'Assigned',
-    PickedUp = 'PickedUp',
-    InTransit = 'InTransit',
-    Delivered = 'Delivered',
-    Failed = 'Failed',
-    Returned = 'Returned'
-}
-
 export interface DeliveryHistory {
     id: number;
     deliveryCode: string;
@@ -258,6 +245,11 @@ export interface Delivery {
     deliveredAt?: string;
     createdAt?: string;
     updatedAt?: string;
+    customerName?: string;
+    customerPhone?: string;
+    deliveryAddress?: string;
+    orderFinalAmount?: number;
+    orderStatus?: string;
     histories: DeliveryHistory[];
 }
 

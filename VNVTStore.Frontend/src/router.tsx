@@ -18,6 +18,7 @@ const CheckoutPage = lazy(() => import('@/pages/shop/CheckoutPage'));
 
 const OrderSuccessPage = lazy(() => import('@/pages/shop/OrderSuccessPage'));
 const VerifyOrderPage = lazy(() => import('@/pages/shop/VerifyOrderPage'));
+const PaymentResultPage = lazy(() => import('@/pages/shop/PaymentResultPage'));
 const QuoteRequestPage = lazy(() => import('@/pages/shop/QuoteRequestPage'));
 const WishlistPage = lazy(() => import('@/pages/shop/WishlistPage'));
 const ComparePage = lazy(() => import('@/pages/shop/ComparePage'));
@@ -54,6 +55,7 @@ const AdminDashboard = lazy(() => import('@/pages/admin/DashboardPage'));
 const AdminProducts = lazy(() => import('@/pages/admin/ProductsPage'));
 const AdminPromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'));
 const AdminOrders = lazy(() => import('@/pages/admin/OrdersPage'));
+const AdminDeliveries = lazy(() => import('@/pages/admin/DeliveriesPage'));
 const AdminPOS = lazy(() => import('@/pages/admin/POSPage'));
 const AdminCustomers = lazy(() => import('@/pages/admin/CustomersPage'));
 const AdminQuotes = lazy(() => import('@/pages/admin/QuotesPage'));
@@ -134,6 +136,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <OrderSuccessPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'payment/result',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <PaymentResultPage />
               </Suspense>
             ),
           },
@@ -322,6 +332,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <AdminOrders />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'deliveries',
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AdminDeliveries />
               </Suspense>
             ),
           },

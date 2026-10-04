@@ -12,6 +12,7 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Application.Services;
 
 namespace VNVTStore.Application.Products.Handlers;
 
@@ -21,6 +22,7 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
     private readonly IFileService _fileService;
     private readonly IBaseUrlService _baseUrlService;
     private readonly IApplicationDbContext _context;
+    private readonly IHtmlSanitizerService _htmlSanitizer;
 
     public CreateProductHandler(
         IRepository<TblProduct> repository,
@@ -29,12 +31,14 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
         IDapperContext dapperContext,
         IBaseUrlService baseUrlService,
         IFileService fileService,
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        IHtmlSanitizerService htmlSanitizer)
         : base(repository, unitOfWork, mapper, dapperContext)
     {
         _baseUrlService = baseUrlService;
         _fileService = fileService;
         _context = context;
+        _htmlSanitizer = htmlSanitizer;
     }
 
     public async Task<Result<ProductDto>> Handle(CreateCommand<CreateProductDto, ProductDto> request, CancellationToken cancellationToken)
@@ -43,6 +47,12 @@ public class CreateProductHandler : BaseHandler<TblProduct>,
         try
         {
             var dto = request.Dto;
+
+            // 🛡️ XSS PROTECTION: Sanitize HTML description
+            if (!string.IsNullOrEmpty(dto.Description))
+            {
+                dto.Description = _htmlSanitizer.Sanitize(dto.Description);
+            }
 
             var supplierCode = string.IsNullOrWhiteSpace(dto.SupplierCode) ? null : dto.SupplierCode;
             var product = TblProduct.Create(dto.Name, dto.Price, dto.WholesalePrice, dto.StockQuantity ?? 0, dto.CategoryCode, dto.CostPrice, 

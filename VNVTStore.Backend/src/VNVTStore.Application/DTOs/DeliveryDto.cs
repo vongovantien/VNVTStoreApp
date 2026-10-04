@@ -22,6 +22,12 @@ public class DeliveryDto
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
+    public string? CustomerName { get; set; }
+    public string? CustomerPhone { get; set; }
+    public string? DeliveryAddress { get; set; }
+    public decimal OrderFinalAmount { get; set; }
+    public string? OrderStatus { get; set; }
+
     public List<DeliveryHistoryDto> Histories { get; set; } = new List<DeliveryHistoryDto>();
 }
 

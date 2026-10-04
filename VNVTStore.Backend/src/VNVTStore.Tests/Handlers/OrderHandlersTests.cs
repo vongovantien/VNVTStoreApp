@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -73,8 +73,18 @@ public class OrderHandlersTests : IDisposable
         _mockConfiguration = new Mock<IConfiguration>();
         _mockLogger = new Mock<ILogger<CreateOrderHandler>>();
         _mockLoyaltyService = new Mock<ILoyaltyService>();
+        var mockSecretConfig = new Mock<ISecretConfigurationService>();
 
         // Setup common returns
+        _mockLoyaltyService.Setup(s => s.CalculatePointsForOrderAsync(It.IsAny<decimal>()))
+            .ReturnsAsync((decimal amount) => (int)(amount / 10000));
+        _mockLoyaltyService.Setup(s => s.AddPointsToUserAsync(It.IsAny<string>(), It.IsAny<int>()))
+            .Returns((string uCode, int pts) => {
+                var u = _context.TblUsers.FirstOrDefault(x => x.Code == uCode);
+                u?.AddLoyaltyPoints(pts);
+                return Task.CompletedTask;
+            });
+
         _mockShippingStrategy.Setup(s => s.CalculateShippingFee(It.IsAny<decimal>())).Returns(30000);
         _mockConfiguration.Setup(c => c["FrontendUrl"]).Returns("http://localhost:5173");
 
@@ -94,6 +104,7 @@ public class OrderHandlersTests : IDisposable
             _mockEmailService.Object,
             _mockConfiguration.Object,
             _mockLoyaltyService.Object,
+            mockSecretConfig.Object,
             _mockLogger.Object
         );
     }
@@ -111,7 +122,7 @@ public class OrderHandlersTests : IDisposable
         // Arrange
         var userCode = "USR001";
         var cart = TblCart.Create(userCode); 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto());
@@ -149,7 +160,7 @@ public class OrderHandlersTests : IDisposable
         var cartItem = cart.TblCartItems.First();
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cartItem, product);
 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
 
         var dto = new CreateOrderDto { AddressCode = "ADDR001" };
@@ -188,7 +199,7 @@ public class OrderHandlersTests : IDisposable
         var cartItem = cart.TblCartItems.First();
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cartItem, product);
 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>()))
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = "ADDR001" });
@@ -231,7 +242,7 @@ public class OrderHandlersTests : IDisposable
         var cartItem = cart.TblCartItems.First();
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cartItem, product);
 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = address.Code });
 
@@ -273,7 +284,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(guestUser.Code);
         cart.AddItem("PROD_G", 1, null, null, 10000);
         cart.TblCartItems.First().SetProduct(product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Pass explicit userCode to bypass GetOrCreateGuestUser LINQ issue
         var request = new CreateOrderCommand(guestUser.Code, guestDto);
@@ -316,7 +327,7 @@ public class OrderHandlersTests : IDisposable
         cart.AddItem(product.Code, 1, null, null, 100);
         var cartItem = cart.TblCartItems.First();
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cartItem, product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         await _context.SaveChangesAsync();
 
@@ -359,7 +370,7 @@ public class OrderHandlersTests : IDisposable
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.ElementAt(0), p1);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.ElementAt(1), p2);
 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
         _mockMapper.Setup(m => m.Map<OrderDto>(It.IsAny<TblOrder>())).Returns(new OrderDto { Code = "ORD_MULTI" });
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = address.Code });
@@ -418,7 +429,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = address.Code, CouponCode = "SAVE10" });
 
@@ -454,7 +465,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Setup shipping strategy to return 0 for high amounts
         _mockShippingStrategy.Setup(s => s.CalculateShippingFee(It.Is<decimal>(a => a >= 1000000))).Returns(0);
@@ -490,7 +501,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Force exception during mediator publish
         _mockMediator.Setup(m => m.Publish(It.IsAny<OrderCreatedEvent>(), It.IsAny<CancellationToken>()))
@@ -540,7 +551,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(guestUser.Code);
         cart.AddItem("P1", 1, null, null, 100);
         cart.TblCartItems.First().SetProduct(product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Pass explicit userCode to bypass GetOrCreateGuestUser LINQ issue
         var request = new CreateOrderCommand(guestUser.Code, guestDto);
@@ -573,7 +584,7 @@ public class OrderHandlersTests : IDisposable
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.ElementAt(0), p1);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.ElementAt(1), p2);
 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = "ANY" });
 
@@ -614,7 +625,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(p.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), p);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
         _mockShippingStrategy.Setup(s => s.CalculateShippingFee(It.IsAny<decimal>())).Returns(0);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = address.Code });
@@ -658,7 +669,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = "ANY", CouponCode = "EXP01" });
 
@@ -698,7 +709,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create("USR001");
         cart.AddItem(product.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand("USR001", new CreateOrderDto { AddressCode = "ANY", CouponCode = "LIM01" });
 
@@ -727,7 +738,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create("U1");
         cart.AddItem(product.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand("U1", new CreateOrderDto { AddressCode = "ANY", CouponCode = "INACT01" });
 
@@ -769,7 +780,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 200000);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = address.Code, CouponCode = "COUP_P" });
 
@@ -814,7 +825,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 1000000);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = address.Code, CouponCode = "COUP_CAP" });
 
@@ -836,7 +847,7 @@ public class OrderHandlersTests : IDisposable
         cart.AddItem("GHOST_P", 1, null, null, 100);
         // Note: ProductCodeNavigation will be null because it's not in DB.
         
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = "ANY" });
 
         // Act & Assert
@@ -879,7 +890,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 600000);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Mock shipping: 0 if > 500k, 30k if <= 500k
         _mockShippingStrategy.Setup(s => s.CalculateShippingFee(It.Is<decimal>(val => val > 500000))).Returns(0);
@@ -918,7 +929,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Mock mediator to throw
         _mockMediator.Setup(m => m.Publish(It.IsAny<OrderCreatedEvent>(), It.IsAny<CancellationToken>()))
@@ -962,7 +973,7 @@ public class OrderHandlersTests : IDisposable
         await _context.TblAddresses.AddAsync(address);
         await _context.SaveChangesAsync();
 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { AddressCode = address.Code });
 
         // Act
@@ -1008,7 +1019,7 @@ public class OrderHandlersTests : IDisposable
         var cartItem = cart.TblCartItems.First();
         cartItem.SetProduct(product);
 
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Use existing address code
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { 
@@ -1043,7 +1054,7 @@ public class OrderHandlersTests : IDisposable
         cart.AddItem(product.Code, 5, null, null, 100); // 5 + 5 = 10. Stock exactly 0.
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), product);
         
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { Address = "Addr", FullName = "Name", Phone = "123" });
 
         // Act
@@ -1071,7 +1082,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100);
         cart.TblCartItems.First().SetProduct(product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var vnAddress = "123 Đường Láng, Phường Láng Thượng, Quận Đống Đa, Hà Nội";
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { Address = vnAddress, FullName = "Nguyễn Văn A", Phone = "0987654321" });
@@ -1110,7 +1121,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100000);
         cart.TblCartItems.First().SetProduct(product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { Address = "A", CouponCode = "COUP_FUT", FullName="N", Phone="123" });
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -1143,7 +1154,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(product.Code, 1, null, null, 100000);
         cart.TblCartItems.First().SetProduct(product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { Address = "A", CouponCode = "COUP_PAST", FullName="N", Phone="123" });
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -1181,7 +1192,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(trackedProduct.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), trackedProduct);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { Address = "A", CouponCode = "COUP_LIM", FullName="N", Phone="123" });
         var result = await _handler.Handle(request, CancellationToken.None);
@@ -1217,7 +1228,7 @@ public class OrderHandlersTests : IDisposable
         await _context.TblProducts.AddAsync(product);
         cart.TblCartItems.First().SetProduct(product);
         
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
         
         // Pass explicit userCode to skip GetOrCreateGuestUser logic which is crashing with InvalidOperationException
         var request = new CreateOrderCommand(guestUser.Code, new CreateOrderDto { Address = "", Email = "g@g.com", FullName="G", Phone="123" });
@@ -1244,7 +1255,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(guestUser.Code);
         cart.AddItem("P_GUEST_E", 1, "S", "C", 100);
         cart.TblCartItems.First().SetProduct(product);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var request = new CreateOrderCommand(guestUser.Code, new CreateOrderDto { 
             Address = "A", FullName="G", Phone="123", Email = "",
@@ -1279,7 +1290,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(trackedProduct.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), trackedProduct);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         var address = "Số 10, Ngõ 5, Đường Nguyên Hồng, Hà Nội";
         var request = new CreateOrderCommand(userCode, new CreateOrderDto { Address = address, FullName = "Nguyễn Văn A", Phone = "0987654321" });
@@ -1311,7 +1322,7 @@ public class OrderHandlersTests : IDisposable
         var cart = TblCart.Create(userCode);
         cart.AddItem(trackedProduct.Code, 1, null, null, 100);
         typeof(TblCartItem).GetProperty("ProductCodeNavigation")?.SetValue(cart.TblCartItems.First(), trackedProduct);
-        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+        _mockCartService.Setup(s => s.GetOrCreateCartAsync(userCode, It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(cart);
 
         // Address max length is usually 255. 
         // Logic: fullAddressLine.Length > 255 ? fullAddressLine.Substring(0, 255) : fullAddressLine

@@ -19,4 +19,5 @@ export { Checkbox, type CheckboxProps } from './Checkbox';
 export { Textarea, type TextareaProps, type TextareaVariant, type TextareaSize } from './Textarea';
 export { Loading } from './Loading';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+export { DateRangePicker, type DateRange } from './DateRangePicker';
 

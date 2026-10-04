@@ -128,7 +128,7 @@ export const Header = memo(() => {
           </button>
         </div>
       )}
-      <header className="bg-white dark:bg-slate-950 transition-all duration-300 relative z-[101]">
+      <header className="sticky top-0 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md shadow-sm transition-all duration-300 z-[101] border-b border-slate-200/60 dark:border-slate-800/60">
         {/* Top Bar - Refined */}
         <div className="bg-slate-900 dark:bg-black text-slate-400 text-[11px] py-2 border-b border-white/5">
           <div className="container mx-auto px-4 flex justify-between items-center tracking-wide font-medium">

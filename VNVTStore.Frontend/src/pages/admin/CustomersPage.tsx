@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, Phone, Users, AlertTriangle, Key, LogIn, ShieldCheck, Menu } from 'lucide-react';
 import { Button, Modal, Badge, ConfirmDialog, Input, Select, Switch } from '@/components/ui';
@@ -19,6 +20,7 @@ const isPasswordValid = (password: string) => !password || REGEX.PASSWORD.test(p
 
 const CustomersPage = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
   const [resettingCustomer, setResettingCustomer] = useState<CustomerDto | null>(null);
   const [newPassword, setNewPassword] = useState('');
@@ -28,7 +30,19 @@ const CustomersPage = () => {
   const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
   const [sortField, setSortField] = useState('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.DESC);
-  const [filters, setFilters] = useState<Record<string, string>>({ role: 'customer' });
+  const urlSearch = searchParams.get('search');
+  const [filters, setFilters] = useState<Record<string, string>>({
+    role: 'customer',
+    ...(urlSearch ? { search: urlSearch } : {})
+  });
+
+  useEffect(() => {
+    const s = searchParams.get('search');
+    if (s !== null) {
+      setFilters(prev => ({ ...prev, search: s }));
+      setPageIndex(PaginationDefaults.PAGE_INDEX);
+    }
+  }, [searchParams]);
 
   // Fetch Data
   const { data: customerResponse, isLoading, refetch } = useQuery({

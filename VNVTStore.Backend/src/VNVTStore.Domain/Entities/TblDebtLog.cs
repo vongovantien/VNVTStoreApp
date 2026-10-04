@@ -1,14 +1,13 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public class TblDebtLog : IEntity
+public class TblDebtLog : BaseEntity
 {
-    public string Code { get; set; } = Guid.NewGuid().ToString("N");
     public string UserCode { get; set; } = null!;
-    public string? OrderCode { get; set; } // Linked to an Order if applicable
+    public string? OrderCode { get; set; }
     
     [Column(TypeName = "decimal(18,2)")]
     public decimal Amount { get; set; } // Positive = Debt Increase, Negative = Payment
@@ -16,12 +15,9 @@ public class TblDebtLog : IEntity
     public string Reason { get; set; } = null!; // "Order #123", "Payment via Bank"
     public decimal BalanceAfter { get; set; }
     
-    public string? RecordedBy { get; set; } // Admin who recorded it
-    
-    public bool IsActive { get; set; } = true;
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public string? ModifiedType { get; set; }
+    public string? RecordedBy { get; set; }
+
+    // No IsFixed in DB for this table yet
 
     public virtual TblUser User { get; set; } = null!;
     public virtual TblOrder? Order { get; set; }

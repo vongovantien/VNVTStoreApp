@@ -84,6 +84,41 @@ export const CheckoutPage = () => {
     enabled: !!provincesApiUrl && !!selectedProvinceCode,
     staleTime: Infinity,
   });
+
+  // Fetch active payment methods from API
+  const { data: activePaymentMethodsRes } = useQuery({
+    queryKey: ['active-payment-methods'],
+    queryFn: () => paymentService.getActiveMethods(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const paymentOptions = useMemo(() => {
+    const list = activePaymentMethodsRes?.data;
+    if (list && list.length > 0) {
+      return list.map(m => {
+        let icon = '💳';
+        const codeLower = m.code.toLowerCase();
+        if (codeLower.includes('cod')) icon = '💵';
+        else if (codeLower.includes('momo')) icon = '📱';
+        else if (codeLower.includes('vnpay')) icon = '🏦';
+        else if (codeLower.includes('bank')) icon = '🏛️';
+        return {
+          value: m.code,
+          label: m.name,
+          description: m.description,
+          icon,
+          isOnline: m.isOnline
+        };
+      });
+    }
+    return [
+      { value: 'COD', label: t('paymentMethods.cod', 'Thanh toán khi nhận hàng (COD)'), icon: '💵', description: 'Nhận hàng kiểm tra rồi mới thanh toán', isOnline: false },
+      { value: 'VnPay', label: t('paymentMethods.vnpay', 'VNPAY QR / Thẻ nội địa'), icon: '🏦', description: 'Thanh toán trực tuyến quét mã VNPAY', isOnline: true },
+      { value: 'MoMo', label: t('paymentMethods.momo', 'Ví MoMo'), icon: '📱', description: 'Thanh toán qua ứng dụng Ví MoMo', isOnline: true },
+      { value: 'BankTransfer', label: t('paymentMethods.bankTransfer', 'Chuyển khoản ngân hàng'), icon: '🏛️', description: 'Chuyển khoản trực tiếp tới tài khoản shop', isOnline: false },
+    ];
+  }, [activePaymentMethodsRes, t]);
+
   const [isGuestCheckout, setIsGuestCheckout] = useState(true); 
   const [showCouponSelector, setShowCouponSelector] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<AddressDto[]>([]);
@@ -130,47 +165,30 @@ export const CheckoutPage = () => {
     setFormData({ [field]: value });
   };
 
-  // Voucher Logic
+  // Voucher Logic — Single Source of Truth via Backend ICouponValidationService
   const [appliedVoucher, setAppliedVoucher] = useState<{ code: string, discount: number, type: string } | null>(null);
 
   const handleApplyVoucher = async () => {
-    if (!voucherCode.trim()) return;
+    const code = voucherCode.trim();
+    if (!code) return;
     try {
-      const res = await import('@/services/promotionService').then(m => m.promotionService.getByCode(voucherCode));
-      if (res.success && res.data) {
-        const promo = res.data;
-        // Validate
-        const now = new Date();
-        const startDate = new Date(promo.startDate);
-        const endDate = new Date(promo.endDate);
+      const { couponService } = await import('@/services/couponService');
+      const res = await couponService.validate({
+        couponCode: code,
+        orderTotal: subtotal,
+      });
 
-        if (!promo.isActive || startDate > now || endDate < now) {
-          toast.error(t('checkout.voucherExpired') || 'Mã giảm giá không hợp lệ hoặc đã hết hạn');
-          return;
-        }
-
-        if (promo.minOrderAmount !== undefined && subtotal < promo.minOrderAmount) {
-          toast.error(`${t('checkout.minOrderAmount') || 'Đơn hàng tối thiểu'}: ${formatCurrency(promo.minOrderAmount)}`);
-          return;
-        }
-
-        // Calculate Discount
-        let discountCount = 0;
-        if (promo.discountType === 'PERCENTAGE') {
-          discountCount = subtotal * (promo.discountValue / 100);
-          if (promo.maxDiscountAmount) discountCount = Math.min(discountCount, promo.maxDiscountAmount);
-        } else {
-          discountCount = promo.discountValue;
-        }
-
+      if (res.data?.success && res.data.data?.isValid) {
+        const valData = res.data.data;
         setAppliedVoucher({
-          code: promo.code,
-          discount: discountCount,
-          type: promo.discountType
+          code: valData.couponDetails?.code || code,
+          discount: valData.discountAmount,
+          type: valData.couponDetails?.discountType || 'FIXED',
         });
         toast.success(t('checkout.voucherApplied') || 'Áp dụng mã giảm giá thành công');
       } else {
-        toast.error(res.message || t('checkout.voucherInvalid') || 'Mã giảm giá không tồn tại');
+        const msg = res.data?.data?.errors?.[0] || res.data?.message || t('checkout.voucherInvalid') || 'Mã giảm giá không hợp lệ';
+        toast.error(msg);
       }
     } catch {
       toast.error(t('checkout.voucherError') || 'Lỗi kiểm tra mã giảm giá');
@@ -249,31 +267,49 @@ export const CheckoutPage = () => {
 
       if (orderRes.success && orderRes.data) {
         const orderCode = orderRes.data.code;
-        toast.success(t('messages.orderSuccess') || 'Đặt hàng thành công!');
-        
         resetCheckout(); // RESET STORE
 
-        // 2. Process Payment
-        try {
-          // Use the ACTUAL final amount from backend response if available, else local calc
-          const totalAmount = orderRes.data.finalAmount || finalTotal;
-          await paymentService.create({
-            orderCode: orderCode,
-            paymentMethod: paymentMethod,
-            amount: totalAmount
-          });
-        } catch (paymentError) {
-          console.error('Payment creation failed', paymentError);
-          toast.error(t('messages.paymentError') || 'Có lỗi khi tạo thanh toán, vui lòng liên hệ CSKH.');
-        }
-
-        // 3. Clear Cart & Redirect
+        // Clear Cart
         if (isAuthenticated) {
           await fetchCart();
         } else {
           await clearCart();
         }
-        navigate(`/order-success?code=${orderCode}`);
+
+        const selectedOption = paymentOptions.find(o => o.value.toLowerCase() === paymentMethod.toLowerCase());
+        const isOnline = selectedOption ? selectedOption.isOnline : (paymentMethod.toLowerCase() === 'vnpay' || paymentMethod.toLowerCase() === 'momo');
+
+        if (isOnline) {
+          toast.info(t('checkout.redirectingPayment', 'Đang kết nối cổng thanh toán...'));
+          try {
+            const checkoutRes = await paymentService.createCheckoutUrl(orderCode, paymentMethod);
+            if (checkoutRes.success && checkoutRes.data?.paymentUrl) {
+              window.location.href = checkoutRes.data.paymentUrl;
+              return;
+            } else {
+              toast.error(checkoutRes.message || 'Không thể tạo phiên thanh toán trực tuyến.');
+              navigate(`/order-success?code=${orderCode}`);
+              return;
+            }
+          } catch (payErr) {
+            console.error('Online payment URL generation failed', payErr);
+            toast.error('Lỗi khi mở cổng thanh toán. Đơn hàng của bạn đã được ghi nhận.');
+            navigate(`/order-success?code=${orderCode}`);
+            return;
+          }
+        } else {
+          // 2. Process Payment record for COD / BankTransfer
+          try {
+            await paymentService.create({
+              orderCode: orderCode,
+              paymentMethod: paymentMethod,
+            });
+          } catch (paymentError) {
+            console.error('Payment creation failed', paymentError);
+          }
+          toast.success(t('messages.orderSuccess') || 'Đặt hàng thành công!');
+          navigate(`/order-success?code=${orderCode}`);
+        }
       } else {
         toast.error(orderRes.message || t('messages.orderError') || 'Đặt hàng thất bại');
       }
@@ -316,23 +352,32 @@ export const CheckoutPage = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center justify-center mb-10 max-w-2xl mx-auto px-4">
           {[
-            { num: 1, label: t('checkout.shipping') },
-            { num: 2, label: t('checkout.payment') },
-            { num: 3, label: t('checkout.confirm') },
+            { num: 1, label: t('checkout.shipping', 'Giao hàng') },
+            { num: 2, label: t('checkout.payment', 'Thanh toán') },
+            { num: 3, label: t('checkout.confirm', 'Xác nhận') },
           ].map((s, i) => (
-            <div key={s.num} className="flex items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= s.num ? 'bg-accent text-white' : 'bg-tertiary text-secondary'
+            <div key={s.num} className="flex items-center flex-1 last:flex-none">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 shadow-md ${
+                    step >= s.num
+                      ? 'gradient-primary text-white glow-primary scale-105'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                   }`}
-              >
-                {s.num}
+                >
+                  {step > s.num ? '✓' : s.num}
+                </div>
+                <span className={`text-xs md:text-sm font-semibold transition-colors hidden sm:inline ${step >= s.num ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
+                  {s.label}
+                </span>
               </div>
-              <span className={`ml-2 hidden sm:inline ${step >= s.num ? 'text-primary' : 'text-tertiary'}`}>
-                {s.label}
-              </span>
-              {i < 2 && <div className={`w-12 h-1 mx-4 ${step > s.num ? 'bg-accent' : 'bg-tertiary'}`} />}
+              {i < 2 && (
+                <div className="flex-1 mx-3 md:mx-6 h-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                  <div className={`h-full transition-all duration-500 ${step > s.num ? 'gradient-primary w-full' : 'w-0'}`} />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -502,16 +547,10 @@ export const CheckoutPage = () => {
                 </h2>
 
                 <div className="space-y-4">
-                    {[
-                      { value: PaymentMethod.COD, label: t('paymentMethods.cod', 'Thanh toán khi nhận hàng (COD)'), icon: '💵' },
-                      { value: PaymentMethod.ZALOPAY, label: t('paymentMethods.zalopay', 'ZaloPay'), icon: '💳' },
-                      { value: PaymentMethod.MOMO, label: t('paymentMethods.momo', 'Ví MoMo'), icon: '📱' },
-                      { value: PaymentMethod.VNPAY, label: t('paymentMethods.vnpay', 'VNPAY QR'), icon: '🏦' },
-                      { value: PaymentMethod.BANK_TRANSFER, label: t('paymentMethods.bankTransfer', 'Chuyển khoản ngân hàng'), icon: '🏛️' },
-                    ].map((method) => (
+                    {paymentOptions.map((method) => (
                       <label
                         key={method.value}
-                        className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${paymentMethod === method.value ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                        className={`flex items-start sm:items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-colors ${paymentMethod === method.value ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
                           }`}
                       >
                         <input
@@ -520,14 +559,19 @@ export const CheckoutPage = () => {
                           value={method.value}
                           checked={paymentMethod === method.value}
                           onChange={(e) => setPaymentMethod(e.target.value)}
-                          className="w-5 h-5 text-primary"
+                          className="w-5 h-5 text-primary mt-1 sm:mt-0"
                         />
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">{method.icon}</span>
-                            <span className="font-medium">{method.label}</span>
+                            <div>
+                              <span className="font-medium text-primary">{method.label}</span>
+                              {method.description && (
+                                <p className="text-xs text-tertiary mt-0.5">{method.description}</p>
+                              )}
+                            </div>
                           </div>
-                          {paymentMethod === PaymentMethod.BANK_TRANSFER && method.value === PaymentMethod.BANK_TRANSFER && (
+                          {(paymentMethod === 'BankTransfer' || paymentMethod === PaymentMethod.BANK_TRANSFER) && method.value.toLowerCase().includes('bank') && (
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}

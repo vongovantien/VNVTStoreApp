@@ -11,10 +11,14 @@ namespace VNVTStore.Infrastructure.Persistence;
 
 public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 {
+    private readonly ICurrentUser? _currentUser;
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        ICurrentUser? currentUser = null)
         : base(options)
     {
+        _currentUser = currentUser;
     }
 
     public virtual DbSet<TblAddress> TblAddresses { get; set; }
@@ -77,6 +81,7 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
     public virtual DbSet<TblRoleMenu> TblRoleMenus { get; set; }
     public virtual DbSet<TblAuditLog> TblAuditLogs { get; set; }
     public virtual DbSet<TblNotification> TblNotifications { get; set; }
+    public virtual DbSet<TblPaymentMethod> TblPaymentMethods { get; set; }
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<DateTime>()
@@ -799,20 +804,9 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(15);
-            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
-            {
-                entity.Property(e => e.Role)
-                    .HasMaxLength(20)
-                    .HasDefaultValueSql("'customer'::character varying")
-                    .HasSentinel(UserRole.Customer);
-            }
-            else
-            {
-                entity.Property(e => e.Role)
-                    .HasMaxLength(20)
-                    .HasDefaultValue(UserRole.Customer)
-                    .HasSentinel(UserRole.Customer);
-            }
+            entity.Property(e => e.RoleCode)
+                .HasMaxLength(50)
+                .HasDefaultValue("CUSTOMER");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp with time zone");
@@ -820,13 +814,24 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.ModifiedType).HasDefaultValue("Add");
             entity.Property(e => e.AvatarUrl).HasMaxLength(1000).UsePropertyAccessMode(PropertyAccessMode.Field);
-            entity.Property(e => e.RoleCode).HasMaxLength(50);
+            entity.Property(e => e.AccessFailedCount).HasDefaultValue(0);
+            entity.Property(e => e.LockoutEnd).HasColumnType("timestamp with time zone");
+            entity.Property(e => e.TwoFactorEnabled).HasDefaultValue(false);
+            entity.Property(e => e.TwoFactorSecret).HasMaxLength(100);
+            entity.Property(e => e.TwoFactorRecoveryCodes).HasMaxLength(1000);
 
             entity.HasOne(d => d.RoleCodeNavigation).WithMany(p => p.TblUsers)
                 .HasForeignKey(d => d.RoleCode)
                 .HasConstraintName("TblUser_RoleCode_fkey");
 
             entity.HasIndex(e => e.Phone, "idx_user_phone");
+        });
+
+        modelBuilder.Entity<TblPaymentMethod>(entity =>
+        {
+            entity.HasKey(e => e.Code);
+            entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         modelBuilder.Entity<TblFile>(entity =>
@@ -1224,6 +1229,8 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.ToTable("TblNotification");
 
+            entity.ToTable("TblNotification");
+
             entity.Property(e => e.Code).HasMaxLength(100);
             entity.Property(e => e.UserCode).HasMaxLength(100);
             entity.Property(e => e.Title).HasMaxLength(255);
@@ -1359,23 +1366,65 @@ public partial class ApplicationDbContext : DbContext, IApplicationDbContext
         }
 
         var entries = ChangeTracker.Entries<IEntity>();
+        var currentUserCode = _currentUser?.IsAuthenticated == true
+            ? (_currentUser.UserCode ?? _currentUser.Username ?? "system")
+            : "system";
 
         foreach (var entry in entries)
         {
             if (entry.State == EntityState.Added)
             {
                 if (entry.Entity.CreatedAt == default)
-                {
                     entry.Entity.CreatedAt = DateTime.UtcNow;
-                }
+
                 if (entry.Entity.UpdatedAt == default)
-                {
                     entry.Entity.UpdatedAt = DateTime.UtcNow;
-                }
+
+                if (string.IsNullOrEmpty(entry.Entity.CreatedBy))
+                    entry.Entity.CreatedBy = currentUserCode;
+
+                if (string.IsNullOrEmpty(entry.Entity.UpdatedBy))
+                    entry.Entity.UpdatedBy = currentUserCode;
+
+                // Ensure IsFixed is never set to true via code — only the DB/seeder can do it
+                // (allow seeder to set it explicitly, but normal code cannot upgrade to true)
+                // We don't override here — just leave as-is for ADD
             }
             else if (entry.State == EntityState.Modified)
             {
                 entry.Entity.UpdatedAt = DateTime.UtcNow;
+                entry.Entity.UpdatedBy = currentUserCode;
+
+                // Enforce IsFixed: prevent any code from changing IsFixed
+                // and prevent deletion of IsFixed records
+                if (entry.Metadata.FindProperty(nameof(IEntity.IsFixed)) != null)
+                {
+                    var isFixedProp = entry.Property(nameof(IEntity.IsFixed));
+                    if (isFixedProp.IsModified)
+                    {
+                        // Revert any attempt to change IsFixed via application code
+                        isFixedProp.CurrentValue = isFixedProp.OriginalValue;
+                    }
+                }
+
+                // Prevent CreatedBy from being overwritten on updates
+                if (entry.Metadata.FindProperty(nameof(IEntity.CreatedBy)) != null)
+                {
+                    var createdByProp = entry.Property(nameof(IEntity.CreatedBy));
+                    if (createdByProp.IsModified)
+                    {
+                        createdByProp.CurrentValue = createdByProp.OriginalValue;
+                    }
+                }
+            }
+            else if (entry.State == EntityState.Deleted)
+            {
+                // Block hard-delete if IsFixed == true
+                if (entry.Entity.IsFixed)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot delete record '{entry.Entity.Code}' because it is marked as IsFixed (system record).");
+                }
             }
         }
 

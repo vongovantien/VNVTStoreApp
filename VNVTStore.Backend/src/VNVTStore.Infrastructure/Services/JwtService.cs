@@ -7,8 +7,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using VNVTStore.Application.Interfaces;
 
-using VNVTStore.Domain.Enums;
-
 namespace VNVTStore.Infrastructure.Services;
 
 /// <summary>
@@ -38,7 +36,7 @@ public class JwtService : IJwtService
         _logger = logger;
     }
 
-    public string GenerateToken(string userCode, string username, string email, UserRole role, IEnumerable<string> permissions, IEnumerable<string> menus)
+    public string GenerateToken(string userCode, string username, string email, string roleCode, IEnumerable<string> permissions, IEnumerable<string> menus)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
@@ -88,8 +86,8 @@ public class JwtService : IJwtService
             }
         }
 
-        // Always add role
-        claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+        // Always add role — use RoleCode directly (source of truth)
+        claims.Add(new Claim(ClaimTypes.Role, roleCode ?? "CUSTOMER"));
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {

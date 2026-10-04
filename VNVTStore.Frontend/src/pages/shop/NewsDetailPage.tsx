@@ -6,6 +6,7 @@ import { Calendar, ArrowLeft, User } from 'lucide-react';
 import SharedImage from '@/components/common/Image';
 import { newsService, type NewsDto } from '@/services/newsService';
 import { useSEO } from '@/hooks/useSEO';
+import { createSafeHTML } from '@/utils/sanitize';
 
 const NewsDetailPage = () => {
     const { t } = useTranslation();
@@ -96,9 +97,10 @@ const NewsDetailPage = () => {
                             <p className="text-lg text-secondary mb-8 italic">{item.summary}</p>
                         )}
                         
+                        {/* 🛡️ XSS PROTECTION: Sanitize news content HTML */}
                         <div
                             className="prose prose-lg dark:prose-invert max-w-none"
-                            dangerouslySetInnerHTML={{ __html: item.content || '' }}
+                            dangerouslySetInnerHTML={createSafeHTML(item.content || '')}
                         />
                     </div>
                 </motion.div>

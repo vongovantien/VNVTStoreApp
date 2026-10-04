@@ -1,11 +1,9 @@
-﻿using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblPromotion : IEntity
+public partial class TblPromotion : BaseEntity
 {
-    public string Code { get; set; } = null!;
-
     public string Name { get; set; } = null!;
 
     public string? Description { get; set; }
@@ -24,13 +22,6 @@ public partial class TblPromotion : IEntity
 
     public int? UsageLimit { get; set; }
 
-    public bool IsActive { get; set; }
-
     public virtual ICollection<TblCoupon> TblCoupons { get; set; } = new List<TblCoupon>();
-
     public virtual ICollection<TblProductPromotion> TblProductPromotions { get; set; } = new List<TblProductPromotion>();
-
-    public string? ModifiedType { get; set; }
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
 }

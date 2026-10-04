@@ -31,6 +31,8 @@ vi.mock('@/services/orderService', () => ({
 vi.mock('@/services/paymentService', () => ({
   paymentService: {
     create: vi.fn(),
+    getActiveMethods: vi.fn().mockResolvedValue({ success: true, data: [] }),
+    createCheckoutUrl: vi.fn(),
   },
 }));
 vi.mock('react-i18next', () => ({

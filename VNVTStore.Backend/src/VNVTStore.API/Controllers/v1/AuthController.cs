@@ -133,12 +133,75 @@ public class AuthController : BaseApiController
         var result = await Mediator.Send(command);
         return HandleResult(result, "Impersonation successful");
     }
+
+    /// <summary>
+    /// Khởi tạo thiết lập 2FA (tạo secret key và mã QR)
+    /// </summary>
+    [HttpPost("2fa/setup")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<TwoFactorSetupDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SetupTwoFactor()
+    {
+        var userCode = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                    ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userCode)) return Unauthorized();
+
+        var result = await Mediator.Send(new SetupTwoFactorCommand(userCode));
+        return HandleResult(result, "Tạo thông tin thiết lập 2FA thành công.");
+    }
+
+    /// <summary>
+    /// Kích hoạt 2FA sau khi xác nhận mã TOTP
+    /// </summary>
+    [HttpPost("2fa/enable")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<TwoFactorEnableDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> EnableTwoFactor([FromBody] Enable2FaRequest request)
+    {
+        var userCode = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                    ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userCode)) return Unauthorized();
+
+        var result = await Mediator.Send(new EnableTwoFactorCommand(userCode, $"{request.SecretKey}|{request.Code}"));
+        return HandleResult(result, "Kích hoạt xác thực 2 bước thành công.");
+    }
+
+    /// <summary>
+    /// Tắt 2FA (yêu cầu mật khẩu và mã xác thực/recovery code)
+    /// </summary>
+    [HttpPost("2fa/disable")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DisableTwoFactor([FromBody] Disable2FaRequest request)
+    {
+        var userCode = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                    ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userCode)) return Unauthorized();
+
+        var result = await Mediator.Send(new DisableTwoFactorCommand(userCode, request.Password, request.Code));
+        return HandleResult(result, "Đã tắt xác thực 2 bước thành công.");
+    }
+
+    /// <summary>
+    /// Xác thực bước 2 (2FA) khi đăng nhập
+    /// </summary>
+    [HttpPost("2fa/verify")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> VerifyTwoFactor([FromBody] VerifyTwoFactorRequest request)
+    {
+        var result = await Mediator.Send(new VerifyTwoFactorLoginCommand(request.TwoFactorToken, request.Code));
+        return HandleResult(result, MessageConstants.Get(MessageConstants.LoginSuccess));
+    }
 }
 
 public record ForgotPasswordRequest(string Email);
 public record ResetPasswordRequest(string Email, string Token, string NewPassword);
 
 public record RefreshTokenRequest(string Token, string RefreshToken);
+
+public record Enable2FaRequest(string SecretKey, string Code);
+public record Disable2FaRequest(string Password, string Code);
 
 // Request DTOs
 public record RegisterRequest(

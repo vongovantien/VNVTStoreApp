@@ -165,15 +165,10 @@ public class UserHandlers : BaseHandler<TblUser>,
                 return Result.Failure<UserDto>(Error.Conflict(MessageConstants.AlreadyExists, "Username/Email", dto.Username));
             }
 
-            // Parse Role
-            if (!Enum.TryParse<UserRole>(dto.Role, true, out var role))
-            {
-                role = UserRole.Customer; // Default
-            }
-
+            var roleCode = string.IsNullOrWhiteSpace(dto.RoleCode) ? (dto.Role ?? "CUSTOMER") : dto.RoleCode;
             var passwordHash = _passwordHasher.Hash(dto.Password);
 
-            var user = TblUser.Create(dto.Username, dto.Email, passwordHash, dto.FullName, role);
+            var user = TblUser.Create(dto.Username, dto.Email, passwordHash, dto.FullName, roleCode);
             user.IsActive = dto.IsActive;
             if (dto.Phone != null) user.UpdateProfile(dto.FullName, dto.Phone, dto.Email);
 
@@ -208,9 +203,9 @@ public class UserHandlers : BaseHandler<TblUser>,
             user.UpdateProfile(dto.FullName, dto.Phone, dto.Email, dto.AvatarUrl);
 
             // Update Role
-            if (!string.IsNullOrEmpty(dto.Role) && Enum.TryParse<UserRole>(dto.Role, true, out var role))
+            if (!string.IsNullOrEmpty(dto.RoleCode ?? dto.Role))
             {
-                user.UpdateRoleEnum(role);
+                user.UpdateRole(dto.RoleCode ?? dto.Role!);
             }
 
             // Update Active Status

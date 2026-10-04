@@ -50,26 +50,73 @@ VNVTStore.Backend/
 
 ## 🚀 Development Setup
 
-### 1. Database Configuration
-Update the connection string in `VNVTStore.API/appsettings.json`:
+### 1. Prerequisites
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [PostgreSQL 14+](https://www.postgresql.org/download/)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
+
+### 2. Clone & Restore
+```bash
+git clone https://github.com/vongovantien/VNVTStoreApp.git
+cd VNVTStoreApp/VNVTStore.Backend
+dotnet restore
+```
+
+### 3. 🔐 Configure Secrets (CRITICAL)
+**Development uses User Secrets** - secrets are stored outside the project to prevent accidental commits.
+
+```bash
+cd src/VNVTStore.API
+
+# Set JWT Secret (minimum 32 characters)
+dotnet user-secrets set "JwtSettings:SecretKey" "YourSuperSecretKey_MinimumLength32Chars_ChangeMe!"
+dotnet user-secrets set "JwtSettings:Issuer" "VNVTStore"
+dotnet user-secrets set "JwtSettings:Audience" "VNVTStoreUsers"
+
+# Optional: Override database connection
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Database=shoppingdb;Username=postgres;Password=YOUR_PASSWORD"
+```
+
+**Verify secrets:**
+```bash
+dotnet user-secrets list
+```
+
+📖 **For production deployment:** See [DEPLOYMENT_SECRETS.md](docs/DEPLOYMENT_SECRETS.md)
+
+### 4. Database Setup
+Update the connection string in `appsettings.json` (or use User Secrets):
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Database=vnvtstore;Username=postgres;Password=admin"
+  "DefaultConnection": "Host=localhost;Database=shoppingdb;Username=postgres;Password=password"
 }
 ```
 
-### 2. Migrations & Database Init
+**Apply migrations:**
 ```bash
-cd VNVTStore.Backend
-dotnet ef database update --project src/VNVTStore.Infrastructure --startup-project src/VNVTStore.API
+cd src/VNVTStore.API
+dotnet ef database update
 ```
 
-### 3. Run the API
+### 5. Run the API
 ```bash
-dotnet run --project src/VNVTStore.API/VNVTStore.API.csproj
+dotnet run --project src/VNVTStore.API
 ```
 > [!IMPORTANT]
-> The API runs at `http://localhost:5178`. Access the Swagger UI at `/swagger`.
+> The API runs at `http://localhost:5178`. Access Swagger UI at `/swagger` or Scalar at `/scalar/v1`.
+
+---
+
+## 🔒 Security Features
+
+✅ **JWT Authentication** with sliding refresh tokens  
+✅ **Role-Based Access Control (RBAC)** with dynamic permissions  
+✅ **Rate Limiting** (100 req/min global, 5 req/10s for auth)  
+✅ **XSS Protection** via HTML sanitization  
+✅ **SQL Injection Prevention** with parameterized queries  
+✅ **CORS** configured for specific origins  
+✅ **Password Hashing** with BCrypt  
+✅ **User Secrets** for development, Key Vault for production
 
 ---
 

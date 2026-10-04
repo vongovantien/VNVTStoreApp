@@ -1,11 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Interfaces;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblProduct : IEntity
+public partial class TblProduct : BaseEntity
 {
     private TblProduct() 
     {
@@ -14,8 +15,6 @@ public partial class TblProduct : IEntity
         TblProductPromotions = new List<TblProductPromotion>();
         TblQuotes = new List<TblQuote>();
     }
-
-    public string Code { get; set; } = null!;
 
     public string Name { get; private set; } = null!;
 
@@ -31,14 +30,13 @@ public partial class TblProduct : IEntity
 
     public string? CategoryCode { get; private set; }
 
-    public bool IsActive { get; set; }
     public bool? IsNew { get; set; }
     public bool? IsFeatured { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
-    public string? ModifiedType { get; set; }
+    /// <summary>
+    /// When true the selling price is hidden and the storefront shows "Contact for price".
+    /// Price can still be stored for internal cost tracking.
+    /// </summary>
+    public bool ContactPrice { get; private set; } = false;
     
     public decimal Rating { get; private set; }
     public int ReviewCount { get; private set; }
@@ -72,11 +70,11 @@ public partial class TblProduct : IEntity
     public virtual ICollection<TblProductVariant> TblProductVariants { get; private set; } = new List<TblProductVariant>();
 
     public static TblProduct Create(string name, decimal price, decimal? wholesalePrice, int stock, string? categoryCode, decimal? costPrice, 
-        string? supplierCode, string? brandCode = null, string? baseUnit = null, bool? isNew = null, bool? isFeatured = null)
+        string? supplierCode, string? brandCode = null, string? baseUnit = null, bool? isNew = null, bool? isFeatured = null, bool contactPrice = false)
     {
          return new TblProduct
          {
-             Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+             Code = CodeGenerator.New(),
              Name = name,
              Price = price,
              WholesalePrice = wholesalePrice,
@@ -89,14 +87,15 @@ public partial class TblProduct : IEntity
              IsActive = true,
              IsNew = isNew,
              IsFeatured = isFeatured,
+             ContactPrice = contactPrice,
              CreatedAt = DateTime.UtcNow,
-             UpdatedAt = DateTime.UtcNow // Initialize UpdatedAt
+             UpdatedAt = DateTime.UtcNow
          };
     }
 
     public void UpdateInfo(string name, decimal price, decimal? wholesalePrice, string? description, string? categoryCode, decimal? costPrice, int? stockQuantity,
         string? supplierCode, string? brandCode, string? baseUnit, int? minStockLevel, string? binLocation, decimal? vatRate, string? countryOfOrigin, 
-        bool? isNew = null, bool? isFeatured = null)
+        bool? isNew = null, bool? isFeatured = null, bool? contactPrice = null)
     {
         Name = name;
         Price = price;
@@ -117,8 +116,9 @@ public partial class TblProduct : IEntity
 
         if (isNew.HasValue) IsNew = isNew.Value;
         if (isFeatured.HasValue) IsFeatured = isFeatured.Value;
-        else if (isFeatured == null) IsFeatured = null; // Allow setting back to null if needed, or keep existing logic
-        
+        else if (isFeatured == null) IsFeatured = null;
+
+        if (contactPrice.HasValue) ContactPrice = contactPrice.Value;
         UpdatedAt = DateTime.UtcNow;
     }
 

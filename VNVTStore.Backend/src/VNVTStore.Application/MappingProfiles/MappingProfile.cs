@@ -16,13 +16,13 @@ public class MappingProfile : Profile
     {
         // User mappings
         CreateMap<TblUser, UserDto>()
-            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.RoleCode))
             .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.RoleCodeNavigation != null ? src.RoleCodeNavigation.Name : ""))
             .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.RoleCodeNavigation != null 
                 ? src.RoleCodeNavigation.TblRolePermissions.Select(rp => rp.PermissionCode).ToList() 
                 : new List<string>()))
             .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.AvatarUrl));
-        CreateMap<CreateUserDto, TblUser>().ConstructUsing(s => TblUser.Create(s.Username, s.Email, "", s.FullName, UserRole.Customer));
+        CreateMap<CreateUserDto, TblUser>().ConstructUsing(s => TblUser.Create(s.Username, s.Email, "", s.FullName, s.RoleCode ?? "CUSTOMER"));
 
         // Banner mappings
         CreateMap<TblBanner, BannerDto>().ReverseMap();
@@ -43,6 +43,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.TblProductDetails))
             .ForMember(dest => dest.ProductUnits, opt => opt.MapFrom(src => src.TblProductUnits))
             .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.TblProductVariants))
+            // Entity uses "Rating", DTO uses "AverageRating" — map explicitly
+            .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Rating))
+            .ForMember(dest => dest.ReviewCount, opt => opt.MapFrom(src => src.ReviewCount))
             .ReverseMap()
             .ForMember(dest => dest.CategoryCodeNavigation, opt => opt.Ignore())
             .ForMember(dest => dest.Brand, opt => opt.Ignore());
@@ -142,6 +145,10 @@ public class MappingProfile : Profile
 
         // Payment mappings
         CreateMap<TblPayment, PaymentDto>();
+        CreateMap<TblPaymentMethod, PaymentMethodDto>().ReverseMap();
+        CreateMap<CreatePaymentMethodDto, TblPaymentMethod>();
+        CreateMap<UpdatePaymentMethodDto, TblPaymentMethod>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
         // News mappings
         CreateMap<TblNews, NewsDto>().ReverseMap();

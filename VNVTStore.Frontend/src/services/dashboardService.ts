@@ -1,6 +1,6 @@
 /**
  * Dashboard Service
- * Custom service for dashboard statistics
+ * Custom service for dashboard statistics & revenue reporting
  */
 
 import { apiClient } from './api';
@@ -20,18 +20,63 @@ export interface DashboardStatsDto {
     revenueChart?: { label: string; revenue: number; orderCount: number }[];
 }
 
-// ============ Service ============
+export interface RevenueSummaryDto {
+    totalRevenue: number;
+    totalOrders: number;
+    averageOrderValue: number;
+    completedOrders: number;
+    cancelledOrders: number;
+    pendingOrders: number;
+    totalDiscount: number;
+    revenueChangeVsPreviousPeriod: number;
+    ordersChangeVsPreviousPeriod: number;
+}
+
+export interface RevenueTimelineDto {
+    date: string;
+    label: string;
+    revenue: number;
+    totalOrders: number;
+    completedOrders: number;
+    cancelledOrders: number;
+}
+
+export interface PaymentMethodStatDto {
+    method: string;
+    revenue: number;
+    orderCount: number;
+    percentage: number;
+}
+
+export interface OrderStatusStatDto {
+    status: string;
+    count: number;
+    totalAmount: number;
+    percentage: number;
+}
+
+export interface RevenueReportDto {
+    summary: RevenueSummaryDto;
+    timeline: RevenueTimelineDto[];
+    topProducts: { name: string; sales: number; revenue: number }[];
+    paymentMethods: PaymentMethodStatDto[];
+    orderStatuses: OrderStatusStatDto[];
+}
+
 // ============ Service ============
 export const dashboardService = {
-    async getStats(): Promise<ApiResponse<DashboardStatsDto>> {
-        const response = await apiClient.get<Record<string, unknown>>(API_ENDPOINTS.DASHBOARD.STATS);
+    async getStats(dateRange?: { startDate: string; endDate: string }): Promise<ApiResponse<DashboardStatsDto>> {
+        const params = dateRange
+            ? { startDate: dateRange.startDate, endDate: dateRange.endDate }
+            : {};
 
-        console.log('Dashboard Stats Raw Response:', response);
+        const response = await apiClient.get<Record<string, unknown>>(
+            API_ENDPOINTS.DASHBOARD.STATS,
+            { params }
+        );
 
         if (response.success && response.data) {
             const data = response.data;
-            console.log('Dashboard Stats Data:', data);
-
             const mappedData: DashboardStatsDto = {
                 totalRevenue: Number(data.totalRevenue ?? data.TotalRevenue ?? 0),
                 totalOrders: Number(data.totalOrders ?? data.TotalOrders ?? 0),
@@ -55,6 +100,23 @@ export const dashboardService = {
             return { ...response, data: mappedData };
         }
         return response as unknown as ApiResponse<DashboardStatsDto>;
+    },
+
+    async getRevenueReport(params?: { startDate?: string; endDate?: string; groupBy?: string }): Promise<ApiResponse<RevenueReportDto>> {
+        const queryParams = params
+            ? { startDate: params.startDate, endDate: params.endDate, groupBy: params.groupBy }
+            : {};
+
+        const response = await apiClient.get<Record<string, unknown>>(
+            API_ENDPOINTS.DASHBOARD.REVENUE_REPORT,
+            { params: queryParams }
+        );
+
+        if (response.success && response.data) {
+            const data = response.data as unknown as RevenueReportDto;
+            return { ...response, data };
+        }
+        return response as unknown as ApiResponse<RevenueReportDto>;
     }
 };
 

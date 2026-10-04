@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblQuote : IEntity
+public partial class TblQuote : BaseEntity
 {
-    public string Code { get; set; } = null!;
-
     public string? UserCode { get; set; }
     
     public string? CustomerName { get; set; }
@@ -24,11 +22,6 @@ public partial class TblQuote : IEntity
     public string? AdminNote { get; set; }
 
     public string Status { get; set; } = null!; // Pending, Approved, Rejected, ConvertedToOrder
-
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public bool IsActive { get; set; } = true;
-    public string? ModifiedType { get; set; }
 
     public virtual ICollection<TblQuoteItem> TblQuoteItems { get; set; } = new List<TblQuoteItem>();
     public virtual TblUser? UserCodeNavigation { get; set; }

@@ -75,6 +75,10 @@ public class ProductHandlerTests
         // Setup BaseUrlService
         _baseUrlServiceMock.Setup(x => x.GetBaseUrl()).Returns("http://localhost:5000");
 
+        var sanitizerMock = new Mock<VNVTStore.Application.Services.IHtmlSanitizerService>();
+        sanitizerMock.Setup(s => s.Sanitize(It.IsAny<string?>())).Returns<string?>(x => x ?? string.Empty);
+        sanitizerMock.Setup(s => s.SanitizeForDisplay(It.IsAny<string?>())).Returns<string?>(x => x ?? string.Empty);
+
         _createHandler = new CreateProductHandler(
             _productRepoMock.Object,
             _unitOfWorkMock.Object,
@@ -82,7 +86,8 @@ public class ProductHandlerTests
             _dapperContextMock.Object,
             _baseUrlServiceMock.Object,
             _fileServiceMock.Object,
-            _contextMock.Object
+            _contextMock.Object,
+            sanitizerMock.Object
         );
     }
 

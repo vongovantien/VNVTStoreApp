@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using VNVTStore.Domain.Interfaces;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblCoupon : IEntity
+public partial class TblCoupon : BaseEntity
 {
-    public string Code { get; set; } = null!;
-
     public string? PromotionCode { get; set; }
 
     public int? UsageCount { get; set; }
 
-    public bool IsActive { get; set; } = true;
-
-    public string? ModifiedType { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
+    // No IsFixed/CreatedBy/UpdatedBy columns for TblCoupon in DB yet
+    [NotMapped] public new bool IsFixed { get; set; }
+    [NotMapped] public new string? CreatedBy { get; set; }
+    [NotMapped] public new string? UpdatedBy { get; set; }
 
     public virtual TblPromotion? PromotionCodeNavigation { get; set; }
 

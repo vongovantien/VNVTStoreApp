@@ -29,8 +29,6 @@ public class NotificationService : INotificationService
 
     public async Task BroadcastLocalizedAsync(string key, params object[] args)
     {
-        // Persist notification for all admins or specific users if needed. 
-        // For now, we broadcast to SignalR and could persist "Broadcast" type notifications to a global list if needed.
         await _hubContext.Clients.All.SendAsync("ReceiveSystemNotification", new { Key = key, Args = args });
     }
 
@@ -39,7 +37,9 @@ public class NotificationService : INotificationService
         // 1. Persist to DB
         await _mediator.Send(new VNVTStore.Application.Notifications.Commands.CreateNotificationCommand(userCode, title, message, type, link));
 
-        // 2. Notify via SignalR
-        await _hubContext.Clients.User(userCode).SendAsync("ReceiveNotification", new { Title = title, Message = message, Type = type, Link = link });
+        // 2. Notify via SignalR to user identifier and user group
+        var payload = new { Title = title, Message = message, Type = type, Link = link, CreatedAt = DateTime.UtcNow };
+        await _hubContext.Clients.User(userCode).SendAsync("ReceiveNotification", payload);
+        await _hubContext.Clients.Group($"User_{userCode}").SendAsync("ReceiveNotification", payload);
     }
 }

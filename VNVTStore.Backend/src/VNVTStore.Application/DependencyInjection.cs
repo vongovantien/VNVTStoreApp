@@ -109,6 +109,18 @@ public static class DependencyInjection
 
         services.AddSingleton<ILogicHubService, LogicHubService>();
         services.AddScoped<ISingularityService, SingularityService>();
+        
+        // Coupon Validation Service — SINGLE SOURCE OF TRUTH
+        services.AddScoped<ICouponValidationService, CouponValidationService>();
+        
+        // HTML Sanitizer Service — XSS Protection
+        services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
+        
+        // File Validation Service — Upload Security
+        services.AddScoped<IFileValidationService, FileValidationService>();
+
+        // TOTP Service — Two-Factor Authentication (2FA)
+        services.AddSingleton<ITotpService, TotpService>();
 
         return services;
     }

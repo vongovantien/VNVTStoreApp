@@ -9,6 +9,7 @@ using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using VNVTStore.Application.Templates;
 
 
 namespace VNVTStore.Application.Auth.Handlers;
@@ -59,19 +60,19 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Us
             request.email, 
             _passwordHasher.Hash(request.password), 
             request.fullName, 
-            request.email.Contains("admin") ? UserRole.Admin : UserRole.Customer
+            request.email.Contains("admin") ? "ADMIN" : "CUSTOMER"
         );
 
         await _repository.AddAsync(user, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
 
-        // Send Verification Email
+        // Send Verification Email with responsive HTML template
         var frontendUrl = await _secretConfig.GetSecretAsync("FRONTEND_URL") ?? _configuration["FrontendUrl"] ?? "http://localhost:5173";
         var verificationLink = $"{frontendUrl}/verify-email?email={user.Email}&token={user.EmailVerificationToken}";
         try
         {
-            await _emailService.SendEmailAsync(user.Email, "VNVT Store - Email Verification", 
-                $"<h1>Welcome to VNVT Store!</h1><p>Please verify your email by clicking the following link:</p><a href='{verificationLink}'>Verify Email</a>", true);
+            var htmlBody = EmailTemplates.EmailVerification(user.FullName ?? user.Username, verificationLink);
+            await _emailService.SendEmailAsync(user.Email, "Xác nhận tài khoản - VNVT Store", htmlBody, true);
         }
         catch (Exception ex)
         {
@@ -142,8 +143,8 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
         var frontendUrl = await _secretConfig.GetSecretAsync("FRONTEND_URL") ?? _configuration["FrontendUrl"] ?? "http://localhost:5173";
         var resetLink = $"{frontendUrl}/reset-password?email={user.Email}&token={user.PasswordResetToken}";
-        await _emailService.SendEmailAsync(user.Email, "VNVT Store - Reset Password",
-            $"<h1>Reset Your Password</h1><p>Click the link below to reset your password:</p><a href='{resetLink}'>Reset Password</a>", true);
+        var htmlBody = EmailTemplates.PasswordReset(user.FullName ?? user.Username, resetLink);
+        await _emailService.SendEmailAsync(user.Email, "Đặt lại mật khẩu - VNVT Store", htmlBody, true);
 
         return Result.Success(true);
     }
@@ -220,16 +221,37 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         
         if (user == null)
         {
-            Console.WriteLine($"DEBUG: LoginHandler - User '{request.username}' NOT found in database.");
             return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
         }
 
+        // Check Account Lockout
+        if (user.IsLockedOut)
+        {
+            var remainingMinutes = Math.Ceiling((user.LockoutEnd!.Value - DateTime.UtcNow).TotalMinutes);
+            return Result.Failure<AuthResponseDto>(Error.Validation($"Tài khoản tạm thời bị khóa do nhập sai mật khẩu quá 5 lần. Vui lòng thử lại sau {Math.Max(1, (int)remainingMinutes)} phút."));
+        }
+
         var isPasswordValid = _passwordHasher.Verify(request.password, user.PasswordHash);
-        Console.WriteLine($"DEBUG: LoginHandler - User found: {user.Username}, Provided Password: '{request.password}', Hash in DB: '{user.PasswordHash}', IsValid: {isPasswordValid}");
 
         if (!isPasswordValid)
         {
-            return Result.Failure<AuthResponseDto>(Error.Validation(MessageConstants.InvalidCredentials));
+            user.RecordFailedLogin(maxFailedAttempts: 5, lockoutMinutes: 15);
+            _repository.Update(user);
+            await _unitOfWork.CommitAsync(cancellationToken);
+
+            if (user.IsLockedOut)
+            {
+                return Result.Failure<AuthResponseDto>(Error.Validation("Tài khoản tạm thời bị khóa 15 phút do nhập sai mật khẩu 5 lần liên tiếp."));
+            }
+
+            var attemptsRemaining = Math.Max(0, 5 - user.AccessFailedCount);
+            return Result.Failure<AuthResponseDto>(Error.Validation($"Thông tin đăng nhập không chính xác. Bạn còn {attemptsRemaining} lần thử trước khi tài khoản bị khóa tạm thời."));
+        }
+
+        // Reset lockout on successful credentials
+        if (user.AccessFailedCount > 0)
+        {
+            user.ResetAccessFailedCount();
         }
 
         var disableEmailVerificationSecret = await _secretConfig.GetSecretAsync("DISABLE_EMAIL_VERIFICATION");
@@ -259,8 +281,23 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
                 .ToList();
         }
 
-        Console.WriteLine($"DEBUG: LoginHandler - User: {user.Username}, Role: {user.Role}, RoleCode: {user.RoleCode}");
-        var token = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.Role, permissions, menus);
+        // Two-Factor Authentication Check
+        if (user.TwoFactorEnabled && !string.IsNullOrWhiteSpace(user.TwoFactorSecret))
+        {
+            var temp2FaToken = _jwtService.GenerateToken(user.Code, user.Username, user.Email, "2FA_PENDING", new List<string>(), new List<string>());
+            var pendingUserDto = _mapper.Map<UserDto>(user);
+            pendingUserDto.Permissions = permissions;
+            pendingUserDto.Menus = menus;
+
+            return Result.Success(new AuthResponseDto
+            {
+                RequiresTwoFactor = true,
+                TwoFactorToken = temp2FaToken,
+                User = pendingUserDto
+            });
+        }
+
+        var token = _jwtService.GenerateToken(user.Code, user.Username, user.Email, user.RoleCode ?? "CUSTOMER", permissions, menus);
         var refreshToken = _jwtService.GenerateRefreshToken();
         
         user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7)); // 7 days expiry
@@ -313,7 +350,7 @@ public class ImpersonateCommandHandler : IRequestHandler<ImpersonateCommand, Res
         var currentUserCode = _currentUserService.UserCode;
         var adminUser = await _repository.FindAsync(u => u.Code == currentUserCode, cancellationToken);
         
-        if (adminUser == null || adminUser.Role != UserRole.Admin)
+        if (adminUser == null || !adminUser.IsAdmin)
         {
             return Result.Failure<AuthResponseDto>(Error.Forbidden("Only administrators can impersonate users."));
         }
@@ -334,7 +371,7 @@ public class ImpersonateCommandHandler : IRequestHandler<ImpersonateCommand, Res
         }
 
         // 3. Prevent impersonating other admins (security policy)
-        if (targetUser.Role == UserRole.Admin)
+        if (targetUser.IsAdmin)
         {
             return Result.Failure<AuthResponseDto>(Error.Validation("Cannot impersonate another administrator."));
         }
@@ -350,7 +387,7 @@ public class ImpersonateCommandHandler : IRequestHandler<ImpersonateCommand, Res
             .Select(rm => rm.MenuCodeNavigation!.Code)
             .ToList() ?? new List<string>();
 
-        var token = _jwtService.GenerateToken(targetUser.Code, targetUser.Username, targetUser.Email, targetUser.Role, permissions, menus);
+        var token = _jwtService.GenerateToken(targetUser.Code, targetUser.Username, targetUser.Email, targetUser.RoleCode ?? "CUSTOMER", permissions, menus);
         var refreshToken = _jwtService.GenerateRefreshToken();
         
         // Note: We don't necessarily want to update target user's LastLogin during impersonation 

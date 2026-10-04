@@ -1,8 +1,9 @@
-using VNVTStore.Domain.Interfaces;
+using System.Collections.Generic;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public class TblRole : IEntity
+public class TblRole : BaseEntity
 {
     public TblRole()
     {
@@ -11,13 +12,8 @@ public class TblRole : IEntity
         TblUsers = new HashSet<TblUser>();
     }
 
-    public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-    public bool IsActive { get; set; } = true;
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public string? ModifiedType { get; set; }
 
     public virtual ICollection<TblRolePermission> TblRolePermissions { get; set; }
     public virtual ICollection<TblRoleMenu> TblRoleMenus { get; set; }
@@ -27,7 +23,7 @@ public class TblRole : IEntity
     {
         return new TblRole
         {
-            Code = Guid.NewGuid().ToString("N").Substring(0, 10),
+            Code = CodeGenerator.NewUpper(),
             Name = name,
             Description = description,
             IsActive = true

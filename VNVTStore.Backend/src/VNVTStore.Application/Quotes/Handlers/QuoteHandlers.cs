@@ -9,6 +9,7 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Common;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
+using VNVTStore.Application.Templates;
 
 namespace VNVTStore.Application.Quotes.Handlers;
 
@@ -115,14 +116,15 @@ public class QuoteHandlers : BaseHandler<TblQuote>,
             if (admins.Any())
             {
                 var subject = $"[New Quote Request] {quote.Code} - {quote.CustomerName}";
-                var body = $@"
-                    <h3>New Quote Submission</h3>
-                    <p><strong>Quote Code:</strong> {quote.Code}</p>
-                    <p><strong>Customer:</strong> {quote.CustomerName} ({quote.CustomerEmail})</p>
-                    <p><strong>Date:</strong> {quote.CreatedAt:yyyy-MM-dd HH:mm:ss}</p>
-                    <p><strong>Note:</strong> {quote.Note ?? "N/A"}</p>
-                    <hr/>
-                    <p>Please log in to the admin panel to review and approve this quote.</p>";
+                var adminReviewLink = "http://localhost:5173/admin/quotes";
+                var body = EmailTemplates.QuoteNotification(
+                    quote.Code,
+                    quote.CustomerName ?? "Khách hàng",
+                    quote.CustomerEmail ?? "",
+                    quote.Note,
+                    quote.CreatedAt ?? DateTime.UtcNow,
+                    adminReviewLink
+                );
 
                 foreach (var admin in admins)
                 {

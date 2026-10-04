@@ -192,18 +192,20 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       {hasFixedPrice && (
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Quantity */}
-          <div className="flex items-center border rounded-lg bg-white">
+          <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="p-3 hover:bg-hover transition-colors"
+              className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300"
+              aria-label="Decrease quantity"
             >
               <Minus size={18} />
             </button>
-            <span className="w-16 text-center font-semibold">{quantity}</span>
+            <span className="w-14 text-center font-bold text-slate-800 dark:text-slate-100">{quantity}</span>
             <button
               onClick={() => setQuantity(Math.min(product.stockQuantity ?? product.stock, quantity + 1))}
               disabled={quantity >= (product.stockQuantity ?? product.stock)}
-              className={`p-3 transition-colors ${quantity >= (product.stockQuantity ?? product.stock) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-hover'}`}
+              className={`p-3 transition-colors text-slate-600 dark:text-slate-300 ${quantity >= (product.stockQuantity ?? product.stock) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+              aria-label="Increase quantity"
             >
               <Plus size={18} />
             </button>
@@ -214,7 +216,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             <Button
               size="lg"
               variant="outline"
-              className="flex-1 border-2 border-accent text-accent hover:bg-bg-tertiary hover:text-accent-hover transition-colors"
+              className="flex-1 border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 font-bold transition-all rounded-xl active:scale-95 shadow-sm"
               onClick={handleAddToCart}
               disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
               isLoading={isAddingToCart}
@@ -224,7 +226,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             </Button>
             <Button
               size="lg"
-              className="flex-1 bg-slate-900 hover:bg-black text-white hover:text-white"
+              className="flex-1 gradient-primary hover:opacity-95 text-white font-bold transition-all rounded-xl active:scale-95 shadow-lg shadow-indigo-500/25 border-0"
               onClick={onBuyNowClick}
               disabled={(product.stockQuantity ?? product.stock) === 0 || isAddingToCart}
             >

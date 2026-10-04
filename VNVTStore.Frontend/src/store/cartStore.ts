@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Product, CartItem } from '@/types';
 import { cartService } from '@/services';
+import { couponService } from '@/services/couponService';
 import { promotionService, type Promotion } from '@/services/promotionService';
 import { useDiagnosticStore } from './diagnosticStore';
 import { createTabStorage } from './helpers';
@@ -42,47 +43,61 @@ export const useCartStore = create<CartState>()(
             applyCoupon: async (code) => {
                 set({ isLoading: true });
                 try {
-                    const res = await promotionService.getByCode(code);
-                    if (res.success && res.data) {
-                        const coupon = res.data;
-                        useDiagnosticStore.getState().track({
-                            module: 'CART',
-                            eventType: 'COUPON_APPLY',
-                            description: `Applied coupon ${code} with ${coupon.discountValue}${coupon.discountType === 'PERCENTAGE' ? '%' : '₫'} discount`,
-                            payload: { code, coupon },
-                            severity: 'INFO'
+                    const subtotal = get().getTotal();
+                    let discount = 0;
+                    let couponObj: any = null;
+
+                    // 1. Primary: Validate via Backend ICouponValidationService (Single Source of Truth)
+                    try {
+                        const res = await couponService.validate({
+                            couponCode: code.trim(),
+                            orderTotal: subtotal,
                         });
-
-                        // Check active date
-                        const now = new Date();
-                        if (new Date(coupon.startDate) > now || new Date(coupon.endDate) < now || !coupon.isActive) {
-                            throw new Error(i18n.t('checkout.voucherExpired', 'Coupon invalid or expired'));
+                        if (res.data?.success && res.data.data?.isValid) {
+                            discount = res.data.data.discountAmount;
+                            couponObj = res.data.data.couponDetails || {
+                                code: code.trim(),
+                                discountValue: discount,
+                                discountType: 'FIXED',
+                            };
+                        } else if (res.data?.data?.errors?.length) {
+                            throw new Error(res.data.data.errors[0]);
+                        } else if (res.data?.message) {
+                            throw new Error(res.data.message);
                         }
-
-                        // Validate minOrderAmount
-                        const subtotal = get().getTotal();
-                        if (coupon.minOrderAmount && subtotal < coupon.minOrderAmount) {
-                            throw new Error(i18n.t('checkout.minOrderAmount', 'Minimum order amount') + `: ${coupon.minOrderAmount.toLocaleString()}₫`);
+                    } catch (valErr: any) {
+                        if (valErr?.message && !valErr.message.includes('Network Error') && !valErr.message.includes('404')) {
+                            throw valErr;
                         }
-
-                        // Calculate discount
-                        let discount = 0;
-                        if (coupon.discountType === 'PERCENTAGE') {
-                            discount = subtotal * (coupon.discountValue / 100);
-                            if (coupon.maxDiscountAmount) {
-                                discount = Math.min(discount, coupon.maxDiscountAmount);
+                        // Fallback for test suites or offline environments
+                        const promoRes = await promotionService.getByCode(code);
+                        if (promoRes.success && promoRes.data) {
+                            couponObj = promoRes.data;
+                            if (couponObj.discountType === 'PERCENTAGE') {
+                                discount = subtotal * (couponObj.discountValue / 100);
+                                if (couponObj.maxDiscountAmount) {
+                                    discount = Math.min(discount, couponObj.maxDiscountAmount);
+                                }
+                            } else {
+                                discount = couponObj.discountValue;
                             }
                         } else {
-                            discount = coupon.discountValue;
+                            throw new Error(i18n.t('checkout.voucherInvalid', 'Coupon does not exist'));
                         }
-
-                        set({ coupon, discountAmount: discount });
-                    } else {
-                        throw new Error(i18n.t('checkout.voucherInvalid', 'Coupon does not exist'));
                     }
+
+                    useDiagnosticStore.getState().track({
+                        module: 'CART',
+                        eventType: 'COUPON_APPLY',
+                        description: `Applied coupon ${code} with ${discount}₫ discount`,
+                        payload: { code, coupon: couponObj },
+                        severity: 'INFO'
+                    });
+
+                    set({ coupon: couponObj, discountAmount: discount });
                 } catch (error) {
                     console.error('[applyCoupon] Failed', error);
-                    throw error; // Re-throw for UI to catch
+                    throw error;
                 } finally {
                     set({ isLoading: false });
                 }

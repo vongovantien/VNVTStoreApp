@@ -101,6 +101,7 @@ export const API_ENDPOINTS = {
         RECENT_ORDERS: '/dashboard/recent-orders',
         TOP_PRODUCTS: '/dashboard/top-products',
         REVENUE_CHART: '/dashboard/revenue-chart',
+        REVENUE_REPORT: '/dashboard/revenue-report',
     },
 
     // Promotions

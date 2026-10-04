@@ -73,9 +73,10 @@ public class UserHandlersTests : IDisposable
         user.Code = userCode;
         user.IsActive = false;
         await _context.TblUsers.AddAsync(user);
-        
-        var order = TblOrder.Create("ORD01", userCode, 100, "Address", "0909", "Customer", null);
-        order.Status = OrderStatus.Processing;
+        var addr = new TblAddress.Builder().WithUser(userCode).AtLocation("123 St", "City").Build();
+        await _context.TblAddresses.AddAsync(addr);
+        var order = TblOrder.Create(userCode, addr.Code, 100, 0, 0, null);
+        order.UpdateStatus(OrderStatus.Processing);
         await _context.TblOrders.AddAsync(order);
         await _context.SaveChangesAsync();
 

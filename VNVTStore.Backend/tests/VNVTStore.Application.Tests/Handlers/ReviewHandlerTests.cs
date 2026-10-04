@@ -120,6 +120,10 @@ public class ReviewHandlerTests
                 return r;
             });
 
+        var sanitizerMock = new Mock<VNVTStore.Application.Services.IHtmlSanitizerService>();
+        sanitizerMock.Setup(s => s.Sanitize(It.IsAny<string?>())).Returns<string?>(x => x ?? string.Empty);
+        sanitizerMock.Setup(s => s.SanitizeForDisplay(It.IsAny<string?>())).Returns<string?>(x => x ?? string.Empty);
+
         _handler = new ReviewHandlers(
             _reviewRepoMock.Object,
             _orderItemRepoMock.Object,
@@ -129,7 +133,8 @@ public class ReviewHandlerTests
             _unitOfWorkMock.Object,
             _mapperMock.Object,
             _dapperContextMock.Object,
-            _baseUrlServiceMock.Object
+            _baseUrlServiceMock.Object,
+            sanitizerMock.Object
         );
     }
 

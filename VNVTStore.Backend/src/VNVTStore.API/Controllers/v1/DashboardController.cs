@@ -15,12 +15,22 @@ public class DashboardController : BaseApiController
     }
 
     /// <summary>
-    /// Get dashboard statistics (Admin only)
+    /// Get dashboard statistics (Admin only) with optional date filtering
     /// </summary>
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats()
+    public async Task<IActionResult> GetStats([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] string? groupBy)
     {
-        var result = await Mediator.Send(new GetDashboardStatsQuery());
+        var result = await Mediator.Send(new GetDashboardStatsQuery(startDate, endDate, groupBy));
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Get detailed revenue and performance report by custom date range
+    /// </summary>
+    [HttpGet("revenue-report")]
+    public async Task<IActionResult> GetRevenueReport([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] string? groupBy = "day")
+    {
+        var result = await Mediator.Send(new GetRevenueReportQuery(startDate, endDate, groupBy));
         return HandleResult(result);
     }
 }

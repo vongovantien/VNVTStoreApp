@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace VNVTStore.Domain.Entities;
 
-public partial class TblUser : IEntity
+public partial class TblUser : BaseEntity
 {
     private TblUser() 
     {
@@ -19,8 +19,6 @@ public partial class TblUser : IEntity
         TblQuotes = new List<TblQuote>();
         TblUserLogins = new List<TblUserLogin>();
     }
-
-    public string Code { get; set; } = null!;
 
     public string Username { get; private set; } = null!;
 
@@ -35,17 +33,28 @@ public partial class TblUser : IEntity
     public string? RoleCode { get; private set; }
     public virtual TblRole? RoleCodeNavigation { get; private set; }
 
-    public UserRole Role { get; private set; } // Keep for compatibility temporarily
+    // Derived helper — NOT stored in DB, reads from RoleCode
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public bool IsAdmin => string.Equals(RoleCode, "ADMIN", StringComparison.OrdinalIgnoreCase);
 
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public UserRole Role
+    {
+        get => RoleCode?.ToUpperInvariant() switch
+        {
+            "ADMIN" => UserRole.Admin,
+            "STAFF" => UserRole.Staff,
+            _ => UserRole.Customer
+        };
+        private set => RoleCode = value switch
+        {
+            UserRole.Admin => "ADMIN",
+            UserRole.Staff => "STAFF",
+            _ => "CUSTOMER"
+        };
+    }
 
     public DateTime? LastLogin { get; private set; }
-
-    public bool IsActive { get; set; } = true;
-
-    public string? ModifiedType { get; set; }
 
     public string? RefreshToken { get; private set; }
 
@@ -73,6 +82,16 @@ public partial class TblUser : IEntity
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal CurrentDebt { get; private set; } = 0; // Current outstanding debt
+
+    public int AccessFailedCount { get; private set; } = 0;
+
+    public DateTime? LockoutEnd { get; private set; }
+
+    public bool TwoFactorEnabled { get; private set; } = false;
+
+    public string? TwoFactorSecret { get; private set; }
+
+    public string? TwoFactorRecoveryCodes { get; private set; }
 
     public virtual ICollection<TblAddress> TblAddresses { get; private set; }
     public virtual ICollection<TblUserLogin> TblUserLogins { get; private set; }
@@ -110,7 +129,6 @@ public partial class TblUser : IEntity
              Username = email, 
              Email = email,
              FullName = fullName,
-             Role = UserRole.Customer,
              IsActive = true,
              CreatedAt = DateTime.UtcNow,
              UpdatedAt = DateTime.UtcNow,
@@ -136,7 +154,7 @@ public partial class TblUser : IEntity
     public virtual ICollection<TblQuote> TblQuotes { get; private set; }
 
     // Factory method to create a new user (Rich Domain Model)
-    public static TblUser Create(string username, string email, string passwordHash, string? fullName, UserRole role)
+    public static TblUser Create(string username, string email, string passwordHash, string? fullName, string roleCode = "CUSTOMER")
     {
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username cannot be empty", nameof(username));
         if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email cannot be empty", nameof(email));
@@ -149,16 +167,26 @@ public partial class TblUser : IEntity
             Email = email,
             PasswordHash = passwordHash,
             FullName = fullName,
-            Role = role,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             IsEmailVerified = false,
             EmailVerificationToken = Guid.NewGuid().ToString("N"),
-            RoleCode = role == UserRole.Admin ? "ADMIN" : "CUSTOMER"
+            RoleCode = string.IsNullOrWhiteSpace(roleCode) ? "CUSTOMER" : roleCode.ToUpperInvariant()
         };
         
         return user;
+    }
+
+    public static TblUser Create(string username, string email, string passwordHash, string? fullName, UserRole role)
+    {
+        var roleCode = role switch
+        {
+            UserRole.Admin => "ADMIN",
+            UserRole.Staff => "STAFF",
+            _ => "CUSTOMER"
+        };
+        return Create(username, email, passwordHash, fullName, roleCode);
     }
     
     public void UpdateProfile(string? fullName, string? phone, string? email, string? avatarUrl = null)
@@ -200,15 +228,18 @@ public partial class TblUser : IEntity
 
     public void UpdateRole(string roleCode)
     {
-        RoleCode = roleCode;
-        Role = roleCode == "ADMIN" ? UserRole.Admin : UserRole.Customer;
+        RoleCode = string.IsNullOrWhiteSpace(roleCode) ? "CUSTOMER" : roleCode.ToUpperInvariant();
         UpdatedAt = DateTime.UtcNow;
     }
 
     public void UpdateRoleEnum(UserRole role)
     {
-        Role = role;
-        RoleCode = role == UserRole.Admin ? "ADMIN" : "CUSTOMER";
+        RoleCode = role switch
+        {
+            UserRole.Admin => "ADMIN",
+            UserRole.Staff => "STAFF",
+            _ => "CUSTOMER"
+        };
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -265,5 +296,57 @@ public partial class TblUser : IEntity
     {
         DebtLimit = limit;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    [NotMapped]
+    public bool IsLockedOut => LockoutEnd.HasValue && LockoutEnd.Value > DateTime.UtcNow;
+
+    public void RecordFailedLogin(int maxFailedAttempts = 5, int lockoutMinutes = 15)
+    {
+        if (IsLockedOut) return;
+
+        AccessFailedCount++;
+        if (AccessFailedCount >= maxFailedAttempts)
+        {
+            LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutMinutes);
+        }
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ResetAccessFailedCount()
+    {
+        AccessFailedCount = 0;
+        LockoutEnd = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void EnableTwoFactor(string secret, string recoveryCodes)
+    {
+        TwoFactorEnabled = true;
+        TwoFactorSecret = secret;
+        TwoFactorRecoveryCodes = recoveryCodes;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void DisableTwoFactor()
+    {
+        TwoFactorEnabled = false;
+        TwoFactorSecret = null;
+        TwoFactorRecoveryCodes = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public bool ConsumeRecoveryCode(string code)
+    {
+        if (string.IsNullOrWhiteSpace(TwoFactorRecoveryCodes)) return false;
+        var codes = TwoFactorRecoveryCodes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        var normalizedCode = code.Trim().ToUpperInvariant();
+        if (codes.Remove(normalizedCode))
+        {
+            TwoFactorRecoveryCodes = string.Join(",", codes);
+            UpdatedAt = DateTime.UtcNow;
+            return true;
+        }
+        return false;
     }
 }

@@ -274,6 +274,12 @@ public abstract class BaseHandler<TEntity>
         if (entity == null)
             return Result.Failure(Error.NotFound(entityName, code));
 
+        // Check if fixed system entity
+        if (entity.IsFixed)
+        {
+            return Result.Failure(Error.Validation($"Cannot delete fixed system {entityName}."));
+        }
+
         // Check if active
         if (entity.IsActive)
         {
@@ -309,6 +315,12 @@ public abstract class BaseHandler<TEntity>
         if (entities.Count != codes.Count)
         {
              // Ignore missing
+        }
+
+        var fixedItems = entities.Where(e => e.IsFixed).Select(e => e.Code).ToList();
+        if (fixedItems.Any())
+        {
+            return Result.Failure(Error.Validation($"Cannot delete fixed system items: {string.Join(", ", fixedItems)}."));
         }
 
         var activeItems = entities.Where(e => e.IsActive).Select(e => e.Code).ToList();
@@ -672,11 +684,16 @@ public abstract class BaseHandler<TEntity>
     {
         if (items == null || !items.Any()) return;
 
-        using var connection = _dapperContext.CreateConnection();
-        connection.Open();
-        
         var responseType = typeof(TResponse);
         var props = responseType.GetProperties();
+
+        var hasCollectionProps = props.Any(p => p.GetCustomAttribute<ReferenceCollectionAttribute>() != null);
+        if (!hasCollectionProps) return;
+
+        if (_dapperContext == null) return;
+        using var connection = _dapperContext.CreateConnection();
+        if (connection == null) return;
+        connection.Open();
 
         // Parse fields to dictionary: CollectionName -> Set of Fields
         // e.g. "ProductImages.Name" -> "ProductImages": ["Name"]

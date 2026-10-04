@@ -10,8 +10,10 @@ import SharedImage from '@/components/common/Image';
 import { useOrder } from '@/hooks';
 import { formatDate, formatCurrency, getStatusColor, getStatusText } from '@/utils/format';
 import { OrderItemDto } from '@/services/orderService';
-import { OrderStatus } from '@/constants';
+import { OrderStatus, PaymentMethodLabel } from '@/constants';
 import { OrderDeliveryTimeline } from './components/OrderDeliveryTimeline';
+import { useQuery } from '@tanstack/react-query';
+import { paymentService } from '@/services/paymentService';
 
 // ============ ORDER ITEM COMPONENT (MEMOIZED) ============
 // Extracted to prevent re-renders of list items when parent state changes unrelated to items
@@ -69,6 +71,13 @@ const OrderDetailPage = () => {
     
     // Fetch Order Data
     const { data: order, isLoading, isError, error } = useOrder(id || '');
+
+    // Fetch Active Payment Methods from API
+    const { data: activePaymentMethodsRes } = useQuery({
+        queryKey: ['active-payment-methods'],
+        queryFn: () => paymentService.getActiveMethods(),
+        staleTime: 5 * 60 * 1000,
+    });
 
     // Handle Buy Again Action (Memoized Callback)
     const handleBuyAgain = useCallback((item: OrderItemDto) => {
@@ -205,9 +214,45 @@ const OrderDetailPage = () => {
                             <CreditCard size={18} />
                             {t('checkout.paymentMethod')}
                         </h3>
-                        <p className="text-sm text-secondary">
-                            {order.paymentMethod ? t(`payment.${order.paymentMethod}`) : 'N/A'}
+                        <p className="text-sm text-secondary mb-2">
+                            {(() => {
+                                if (!order.paymentMethod) return 'N/A';
+                                const activeMethod = activePaymentMethodsRes?.data?.find(
+                                    (m) => m.code.toLowerCase() === order.paymentMethod?.toLowerCase()
+                                );
+                                return activeMethod?.name || PaymentMethodLabel[order.paymentMethod] || order.paymentMethod;
+                            })()}
                         </p>
+                        {order.status?.toLowerCase() === 'pending' && (() => {
+                            const onlineMethods = activePaymentMethodsRes?.data?.filter((m) => m.isOnline) || [];
+                            if (onlineMethods.length === 0) return null;
+                            return (
+                                <div className="mt-3 pt-3 border-t border-secondary/10 space-y-2">
+                                    <p className="text-xs text-amber-600 font-medium">Đơn hàng đang chờ thanh toán</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {onlineMethods.map((method) => (
+                                            <Button 
+                                                key={method.code}
+                                                size="sm" 
+                                                className="flex-1 min-w-[120px] bg-indigo-600 hover:bg-indigo-700 text-xs text-white"
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await paymentService.createCheckoutUrl(order.code, method.code);
+                                                        if (res.success && res.data?.paymentUrl) {
+                                                            window.location.href = res.data.paymentUrl;
+                                                        }
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                    }
+                                                }}
+                                            >
+                                                Thanh toán {method.name}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {/* Order Summary */}

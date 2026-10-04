@@ -95,6 +95,13 @@ obj/
 logs/
 VNVTStore.Backend/src/VNVTStore.API/logs/
 
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.*.local.json
+
 # Test results & debug artifacts
 test-results/
 e2e/*.png

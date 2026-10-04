@@ -13,8 +13,35 @@ export interface PaymentTransaction {
     createdAt: string;
 }
 
+export interface PaymentMethodDto {
+    code: string;
+    name: string;
+    description?: string;
+    iconUrl?: string;
+    sortOrder: number;
+    isOnline: boolean;
+    isActive: boolean;
+    isFixed: boolean;
+}
+
+export interface PaymentUrlResponse {
+    orderCode: string;
+    paymentCode: string;
+    paymentUrl: string;
+}
+
+export interface PaymentConfirmationResult {
+    outcome: 'Confirmed' | 'AlreadyConfirmed' | 'Failed' | 'InvalidSignature' | 'NotFound' | 'InvalidAmount';
+    isSuccess: boolean;
+    orderCode?: string;
+    paymentCode?: string;
+    amount: number;
+    responseCode?: string;
+    message?: string;
+}
+
 class PaymentService {
-    endpoint = '/payment';
+    endpoint = '/payments';
 
     async getAll(params?: Record<string, unknown>): Promise<ApiResponse<PagedResult<PaymentTransaction>>> {
         return apiClient.get(this.endpoint, { params });
@@ -24,12 +51,32 @@ class PaymentService {
         return apiClient.post(`${this.endpoint}/status`, { paymentCode, status, transactionId });
     }
 
-    async create(data: { orderCode: string, amount: number, paymentMethod: string }): Promise<ApiResponse<{ checkoutUrl: string }>> {
+    async create(data: { orderCode: string, paymentMethod: string, amount?: number }): Promise<ApiResponse<{ checkoutUrl?: string }>> {
         return apiClient.post(`${this.endpoint}`, data);
+    }
+
+    async createCheckoutUrl(orderCode: string, paymentMethod?: string): Promise<ApiResponse<PaymentUrlResponse>> {
+        return apiClient.post(`${this.endpoint}/${orderCode}/checkout`, { paymentMethod });
+    }
+
+    async verifyVnPayReturn(params: Record<string, string>): Promise<ApiResponse<PaymentConfirmationResult>> {
+        return apiClient.get(`${this.endpoint}/vnpay/return`, { params });
+    }
+
+    async verifyMoMoReturn(params: Record<string, string>): Promise<ApiResponse<PaymentConfirmationResult>> {
+        return apiClient.get(`${this.endpoint}/momo/return`, { params });
+    }
+
+    async getActiveMethods(): Promise<ApiResponse<PaymentMethodDto[]>> {
+        return apiClient.get('/paymentmethods/active');
     }
 
     async getMyPayments(): Promise<ApiResponse<PaymentTransaction[]>> {
         return apiClient.get(`${this.endpoint}/history`);
+    }
+
+    async getByOrder(orderCode: string): Promise<ApiResponse<PaymentTransaction>> {
+        return apiClient.get(`${this.endpoint}/order/${orderCode}`);
     }
 }
 

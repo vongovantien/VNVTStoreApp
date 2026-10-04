@@ -13,6 +13,7 @@ using VNVTStore.Application.Interfaces;
 using VNVTStore.Domain.Entities;
 using VNVTStore.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
+using VNVTStore.Application.Services;
 
 namespace VNVTStore.Application.Products.Handlers;
 
@@ -24,6 +25,7 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
     private readonly IApplicationDbContext _context;
     private readonly ILogger<UpdateProductHandler> _logger;
     private readonly IProductSynchronizationService _syncService;
+    private readonly IHtmlSanitizerService _htmlSanitizer;
 
     public UpdateProductHandler(
         IRepository<TblProduct> repository,
@@ -34,7 +36,8 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
         IFileService fileService,
         IApplicationDbContext context,
         ILogger<UpdateProductHandler> logger,
-        IProductSynchronizationService syncService)
+        IProductSynchronizationService syncService,
+        IHtmlSanitizerService htmlSanitizer)
         : base(repository, unitOfWork, mapper, dapperContext)
     {
         _baseUrlService = baseUrlService;
@@ -42,6 +45,7 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
         _context = context;
         _logger = logger;
         _syncService = syncService;
+        _htmlSanitizer = htmlSanitizer;
     }
 
     public async Task<Result<ProductDto>> Handle(UpdateCommand<UpdateProductDto, ProductDto> request, CancellationToken cancellationToken)
@@ -63,11 +67,16 @@ public class UpdateProductHandler : BaseHandler<TblProduct>,
 
             var supplierCode = string.IsNullOrWhiteSpace(request.Dto.SupplierCode) ? null : request.Dto.SupplierCode;
             
+            // 🛡️ XSS PROTECTION: Sanitize HTML description
+            var sanitizedDescription = request.Dto.Description != null 
+                ? _htmlSanitizer.Sanitize(request.Dto.Description) 
+                : product.Description;
+            
             product.UpdateInfo(
                 request.Dto.Name ?? product.Name, 
                 request.Dto.Price ?? product.Price, 
                 request.Dto.WholesalePrice ?? product.WholesalePrice,
-                request.Dto.Description ?? product.Description, 
+                sanitizedDescription, 
                 request.Dto.CategoryCode ?? product.CategoryCode, 
                 request.Dto.CostPrice ?? product.CostPrice, 
                 request.Dto.StockQuantity ?? product.StockQuantity,

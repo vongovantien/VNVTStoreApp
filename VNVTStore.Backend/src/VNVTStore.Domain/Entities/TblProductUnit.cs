@@ -1,22 +1,19 @@
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using VNVTStore.Domain.Interfaces;
+using VNVTStore.Domain.Common;
 
 namespace VNVTStore.Domain.Entities;
 
-public class TblProductUnit : IEntity
+public class TblProductUnit : BaseEntity
 {
-    public string Code { get; set; } = Guid.NewGuid().ToString("N");
     public string ProductCode { get; set; } = null!;
-    public string UnitCode { get; set; } = null!; // FK to TblUnit (Catalog)
+    public string UnitCode { get; set; } = null!;
     public decimal ConversionRate { get; set; }
     public decimal Price { get; set; }
     public bool IsBaseUnit { get; set; }
-    public bool IsActive { get; set; } = true;
 
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public string? ModifiedType { get; set; }
+    [NotMapped] public new bool IsFixed { get; set; }
+    [NotMapped] public new string? CreatedBy { get; set; }
+    [NotMapped] public new string? UpdatedBy { get; set; }
 
     public virtual TblProduct Product { get; set; } = null!;
     public virtual TblUnit Unit { get; set; } = null!;

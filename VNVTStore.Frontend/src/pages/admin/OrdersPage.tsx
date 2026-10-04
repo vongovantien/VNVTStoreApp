@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Truck, Package, ClipboardList, Check, X, Printer } from 'lucide-react';
 import defaultImage from '@/assets/default-image.png';
@@ -16,11 +17,20 @@ import { useToast } from '@/store';
 
 export const OrdersPage = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const updateStatusMutation = useUpdateOrderStatus();
 
   // State
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedOrder, setSelectedOrder] = useState<OrderDto | null>(null);
+
+  useEffect(() => {
+    const s = searchParams.get('search');
+    if (s !== null) {
+      setSearchQuery(s);
+      setCurrentPage(PaginationDefaults.PAGE_INDEX);
+    }
+  }, [searchParams]);
   const [currentPage, setCurrentPage] = useState(PaginationDefaults.PAGE_INDEX);
   const [pageSize, setPageSize] = useState(PaginationDefaults.PAGE_SIZE);
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string>>({});

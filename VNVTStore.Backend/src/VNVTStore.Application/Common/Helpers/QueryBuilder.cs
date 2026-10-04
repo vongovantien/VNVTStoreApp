@@ -138,7 +138,25 @@ public static class QueryBuilder
         parameters.Add("@PageSize", pageSize);
         sb.AppendLine("LIMIT @PageSize OFFSET @PageOffset");
 
-        return new QueryResult(sb.ToString(), parameters);
+        var finalSql = sb.ToString();
+
+        // ── Debug: print SQL + parameters to console ──────────────────────────
+        #if DEBUG
+        Console.WriteLine("\n========== [QueryBuilder] SQL ==========");
+        Console.WriteLine(finalSql);
+        Console.WriteLine("---------- Parameters ----------");
+        foreach (var paramName in parameters.ParameterNames)
+        {
+            var val = parameters.Get<object>(paramName);
+            var valStr = val is System.Collections.IEnumerable enumerable && val is not string
+                ? "[" + string.Join(", ", enumerable.Cast<object>().Select(o => o?.ToString() ?? "null")) + "]"
+                : val?.ToString() ?? "null";
+            Console.WriteLine($"  @{paramName} = {valStr}");
+        }
+        Console.WriteLine("========================================\n");
+        #endif
+
+        return new QueryResult(finalSql, parameters);
     }
 
     /// <summary>
@@ -488,9 +506,36 @@ public static class QueryBuilder
     private static string BuildInParam(string field, object[] values, bool notIn, DynamicParameters parameters, ref int paramIndex)
     {
         var paramName = $"p{paramIndex++}";
-        parameters.Add(paramName, values);
-        // PostgreSQL: Use = ANY(@param) for IN, != ALL(@param) for NOT IN
-        return notIn 
+
+        // Npgsql requires a typed array — object[] is not supported.
+        // Detect element type and cast accordingly so = ANY(@p) / != ALL(@p) works.
+        if (values.Length > 0)
+        {
+            var first = values.FirstOrDefault(v => v != null);
+            if (first is int || values.All(v => v == null || v is int || (v is string s && int.TryParse(s, out _))))
+            {
+                parameters.Add(paramName, values.Select(v => v == null ? (int?)null : Convert.ToInt32(v)).ToArray());
+            }
+            else if (first is long || values.All(v => v == null || v is long))
+            {
+                parameters.Add(paramName, values.Select(v => v == null ? (long?)null : Convert.ToInt64(v)).ToArray());
+            }
+            else if (first is decimal || first is double || first is float)
+            {
+                parameters.Add(paramName, values.Select(v => v == null ? (decimal?)null : Convert.ToDecimal(v)).ToArray());
+            }
+            else
+            {
+                // Default: treat as string[] — covers most FK/code lookups
+                parameters.Add(paramName, values.Select(v => v?.ToString()).ToArray());
+            }
+        }
+        else
+        {
+            parameters.Add(paramName, Array.Empty<string>());
+        }
+
+        return notIn
             ? $"{field} != ALL(@{paramName}) "
             : $"{field} = ANY(@{paramName}) ";
     }

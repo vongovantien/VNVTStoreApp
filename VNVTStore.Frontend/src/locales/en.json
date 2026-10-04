@@ -771,7 +771,8 @@
             "admin": "Admin",
             "staff": "Staff",
             "customer": "Customer"
-        }
+        },
+        "searchPlaceholder": "Search orders, products, customers..."
     },
     "header": {
         "trackOrder": "Track Order",

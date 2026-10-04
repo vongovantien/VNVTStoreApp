@@ -14,7 +14,7 @@ public class TblProductDetailTests
 
         // Assert
         detail.Code.Should().NotBeNullOrEmpty();
-        detail.Code.Should().HaveLength(32, "because it uses Guid.ToString('N')");
+        detail.Code.Should().HaveLength(16, "because it uses CodeGenerator.New()");
         detail.IsActive.Should().BeTrue();
         detail.CreatedAt.Should().BeNull(); // Or whatever default is expected
         detail.DetailType.Should().Be(VNVTStore.Domain.Enums.ProductDetailType.SPEC);

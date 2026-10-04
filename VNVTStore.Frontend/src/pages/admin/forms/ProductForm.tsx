@@ -8,7 +8,7 @@ import { Controller, UseFormReturn } from 'react-hook-form';
 import LazySelect from '@/components/ui/LazySelect';
 import { ProductUnitsManager, ProductUnitDto } from '@/components/common/ProductUnitsManager';
 import { ProductVariantManager, ProductVariantData } from '@/components/common/ProductVariantManager';
-import { ProductImage } from '@/types';
+import { ProductDetailType } from '@/enums';
 import { getApiRoot } from '@/utils/config';
 import { getImageUrl } from '@/utils/format';
 
@@ -50,6 +50,7 @@ export const productSchema = z.object({
   unitsSection: z.unknown().optional(),
   productUnits: z.array(z.unknown()).optional(),
   variants: z.array(z.unknown()).optional(),
+  contactPrice: z.boolean().optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;
@@ -100,6 +101,7 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
         const payload = { 
             ...data, 
             images: processedImages,
+            price: data.contactPrice ? 0 : data.price,
             productUnits: [baseRow, ...conversionUnits],
             variants: localVariants.map(v => ({
                 sku: v.sku,
@@ -167,6 +169,9 @@ export const ProductForm = ({ initialData, onSubmit, onCancel, isLoading }: Prod
     countryOfOrigin: initialData?.countryOfOrigin || '',
     supplierCode: initialData?.supplierCode || '',
     variants: initialData?.variants || [],
+    contactPrice: initialData
+      ? (initialData as { contactPrice?: boolean }).contactPrice ?? (initialData.price === 0 || initialData.price === undefined)
+      : false, // default: false khi tạo mới
   }), [initialData, resolvedBaseUnit, deduplicatedDetails]);
 
   const fieldGroups: FieldGroup[] = [

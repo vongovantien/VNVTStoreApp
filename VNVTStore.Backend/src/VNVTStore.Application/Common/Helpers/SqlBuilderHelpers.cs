@@ -15,19 +15,26 @@ public static class SqlBuilderHelpers
     
     /// <summary>
     /// Quotes an identifier (table/column name) for PostgreSQL.
+    /// Safely escapes double-quotes to prevent identifier-based SQL injection.
     /// </summary>
-    public static string QuoteIdentifier(string name) => $"\"{name}\"";
+    public static string QuoteIdentifier(string name) => string.IsNullOrWhiteSpace(name) ? "\"\"" : $"\"{name.Replace("\"", "\"\"")}\"";
     
     /// <summary>
     /// Quotes a field with optional table alias. Cached for performance.
+    /// Safely escapes double-quotes to prevent identifier-based SQL injection.
     /// </summary>
     public static string QuoteField(string? tableAlias, string field)
     {
+        if (string.IsNullOrWhiteSpace(field)) return "\"\"";
         var cacheKey = $"{tableAlias ?? ""}.{field}";
         return _quotedFieldCache.GetOrAdd(cacheKey, _ =>
-            string.IsNullOrEmpty(tableAlias)
-                ? $"\"{field}\""
-                : $"\"{tableAlias}\".\"{field}\"");
+        {
+            var safeField = field.Replace("\"", "\"\"");
+            if (string.IsNullOrEmpty(tableAlias))
+                return $"\"{safeField}\"";
+            var safeAlias = tableAlias.Replace("\"", "\"\"");
+            return $"\"{safeAlias}\".\"{safeField}\"";
+        });
     }
     
     /// <summary>

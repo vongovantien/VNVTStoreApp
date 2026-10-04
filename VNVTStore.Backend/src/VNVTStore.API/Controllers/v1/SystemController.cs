@@ -65,4 +65,98 @@ public class SystemController : ControllerBase
 
         return Ok(counts);
     }
+
+    /// <summary>
+    /// Multi-entity global search across products, orders, and customers
+    /// </summary>
+    [HttpGet("search")]
+    public async Task<IActionResult> GlobalSearch([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+        {
+            return Ok(new
+            {
+                success = true,
+                data = new
+                {
+                    products = Array.Empty<object>(),
+                    orders = Array.Empty<object>(),
+                    customers = Array.Empty<object>()
+                }
+            });
+        }
+
+        var keyword = q.Trim().ToLower();
+
+        // 1. Products
+        var products = await _context.TblProducts
+            .AsNoTracking()
+            .Where(p => p.IsActive && (
+                p.Name.ToLower().Contains(keyword) || 
+                p.Code.ToLower().Contains(keyword)))
+            .OrderByDescending(p => p.CreatedAt)
+            .Take(5)
+            .Select(p => new
+            {
+                code = p.Code,
+                name = p.Name,
+                price = p.Price,
+                imageUrl = p.TblProductDetails.Where(d => d.SpecName == "image").Select(d => d.SpecValue).FirstOrDefault() ?? "",
+                stock = p.StockQuantity ?? 0
+            })
+            .ToListAsync();
+
+        // 2. Orders
+        var orders = await _context.TblOrders
+            .AsNoTracking()
+            .Include(o => o.AddressCodeNavigation)
+            .Include(o => o.UserCodeNavigation)
+            .Where(o => o.IsActive && (
+                o.Code.ToLower().Contains(keyword) || 
+                (o.AddressCodeNavigation != null && o.AddressCodeNavigation.FullName != null && o.AddressCodeNavigation.FullName.ToLower().Contains(keyword)) ||
+                (o.AddressCodeNavigation != null && o.AddressCodeNavigation.Phone != null && o.AddressCodeNavigation.Phone.Contains(keyword)) ||
+                (o.UserCodeNavigation != null && o.UserCodeNavigation.FullName != null && o.UserCodeNavigation.FullName.ToLower().Contains(keyword))))
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(5)
+            .Select(o => new
+            {
+                code = o.Code,
+                orderNumber = "#" + o.Code,
+                customerName = o.AddressCodeNavigation != null ? o.AddressCodeNavigation.FullName : (o.UserCodeNavigation != null ? o.UserCodeNavigation.FullName : "Khách hàng"),
+                totalAmount = o.FinalAmount,
+                status = o.Status.ToString(),
+                createdAt = o.CreatedAt.HasValue ? o.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm") : ""
+            })
+            .ToListAsync();
+
+        // 3. Customers / Users
+        var customers = await _context.TblUsers
+            .AsNoTracking()
+            .Where(u => u.IsActive && (
+                (u.FullName != null && u.FullName.ToLower().Contains(keyword)) || 
+                u.Username.ToLower().Contains(keyword) || 
+                u.Email.ToLower().Contains(keyword) ||
+                (u.Phone != null && u.Phone.Contains(keyword))))
+            .Take(5)
+            .Select(u => new
+            {
+                code = u.Code,
+                fullName = u.FullName ?? u.Username,
+                email = u.Email,
+                phone = u.Phone,
+                totalSpent = (decimal?)0
+            })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            success = true,
+            data = new
+            {
+                products,
+                orders,
+                customers
+            }
+        });
+    }
 }

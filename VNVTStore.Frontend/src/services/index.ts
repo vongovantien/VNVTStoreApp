@@ -36,4 +36,5 @@ export { promotionService } from './promotionService';
 export { couponService } from './couponService';
 export { roleService } from './roleService';
 export { permissionService } from './permissionService';
+export { notificationService, type NotificationDto } from './notificationService';
 
